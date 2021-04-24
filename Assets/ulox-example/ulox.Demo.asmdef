@@ -2,7 +2,8 @@
     "name": "ulox.Demo",
     "rootNamespace": "",
     "references": [
-        "ulox"
+        "ulox",
+        "Unity.TextMeshPro"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

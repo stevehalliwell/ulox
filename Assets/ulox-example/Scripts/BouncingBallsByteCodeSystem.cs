@@ -4,43 +4,36 @@ using UnityEngine.UI;
 
 namespace ULox.Demo
 {
-    /// <summary>
-    /// This demo uses bytecode lox to move objects, unity just draws things.
-    /// </summary>
     public class BouncingBallsByteCodeSystem : MonoBehaviour
     {
         public TextAsset script;
         public Text text;
-        private ByteCodeInterpreterEngine engine;
         private Value gameUpdateFunction;
-        public List<GameObject> availablePrefabs;
+
+        private ULoxScriptEnvironment _uLoxScriptEnvironment;
 
         private void Start()
         {
-            engine = new ByteCodeInterpreterEngine();
+            _uLoxScriptEnvironment = new ULoxScriptEnvironment(
+                FindObjectOfType<SharedVM>().Engine);
 
-            engine.AddLibrary(new CoreLibrary(Debug.Log));
-            engine.AddLibrary(new StandardClassesLibrary());
-            engine.AddLibrary(new UnityLibrary(availablePrefabs));
-
-            engine.VM.SetGlobal("SetUIText", Value.New((vm, args) =>
+            _uLoxScriptEnvironment.SetGlobal("SetUIText", Value.New((vm, args) =>
             {
                 text.text = vm.GetArg(1).val.asString;
                 return Value.Null();
             }));
 
-            engine.Run(script.text);
+            _uLoxScriptEnvironment.Run(script.text);
 
-            engine.VM.CallFunction(engine.VM.GetGlobal("SetupGame"),0);
-            gameUpdateFunction = engine.VM.GetGlobal("Update");
-
-            Debug.Log(engine.Disassembly);
+            var setupFunc = _uLoxScriptEnvironment.GetGlobal("SetupGame");
+            _uLoxScriptEnvironment.CallFunction(setupFunc, 0);
+            gameUpdateFunction = _uLoxScriptEnvironment.GetGlobal("Update");
         }
 
         private void Update()
         {
-            engine.VM.SetGlobal("dt", Value.New(Time.deltaTime));
-            engine.VM.CallFunction(gameUpdateFunction,0);
+            _uLoxScriptEnvironment.SetGlobal("dt", Value.New(Time.deltaTime));
+            _uLoxScriptEnvironment.CallFunction(gameUpdateFunction, 0);
         }
     }
 }

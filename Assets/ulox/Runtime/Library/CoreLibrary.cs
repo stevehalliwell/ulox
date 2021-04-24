@@ -11,7 +11,7 @@
             engine.VM.SetGlobal("print", Value.New(
                 (vm, args) =>
                 {
-                    _printer?.Invoke(vm.GetArg(1).val.asString);
+                    _printer?.Invoke(vm.GetArg(1).ToString());
                     return Value.Null();
                 }));
         }

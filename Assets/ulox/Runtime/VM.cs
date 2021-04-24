@@ -22,13 +22,13 @@ namespace ULox
     //todo add conditional
     //todo add self assignment
     //todo add pods
-    //todo add sandboxing
     //todo add classof
     //todo multiple returns?
     //todo add operator overloads
     //todo emit functions when no upvals are required https://github.com/munificent/craftinginterpreters/blob/master/note/answers/chapter25_closures/1.md
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
+    //todo interactive webgl build
     public enum InterpreterResult
     {
         OK,
@@ -43,12 +43,19 @@ namespace ULox
         public ClosureInternal closure;
     }
 
-    public class Table : Dictionary<string, Value> { }
-
     public class VM
     {
         public const string InitMethodName = "init";
+        public TestRunner TestRunner { get; private set; } = new TestRunner();
         private FastStack<Value> _valueStack = new FastStack<Value>();
+        private FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
+        private CallFrame currentCallFrame;
+        private LinkedList<Value> openUpvalues = new LinkedList<Value>();
+        private IndexedTable _globals = new IndexedTable();
+        public Environment Environment { get; set; }
+
+
+
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Push(Value val) => _valueStack.Push(val);
@@ -58,20 +65,18 @@ namespace ULox
         private void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Value Peek(int ind = 0) => _valueStack.Peek(ind);
-        private FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
-        private CallFrame currentCallFrame;
-        private LinkedList<Value> openUpvalues = new LinkedList<Value>();
-        private IndexedTable globals = new IndexedTable();
-        public TestRunner TestRunner { get; private set; } = new TestRunner();
 
         public void SetGlobal(string name, Value val)
         {
-            globals[name] = val;
+            _globals[name] = val;
         }
 
         public Value GetGlobal(string name)
         {
-            return globals[name];
+            var ind = _globals.FindIndex(name);
+            if (ind != -1)
+                return _globals[ind];
+            return Value.Null();
         }
 
         public Value GetArg(int index)
@@ -132,7 +137,7 @@ namespace ULox
 
         public string GenerateGlobalsDump()
         {
-            return new DumpGlobals().Generate(globals);
+            return new DumpGlobals().Generate(_globals);
         }
 
         public InterpreterResult Interpret(Chunk chunk)
@@ -274,7 +279,10 @@ namespace ULox
                     {
                         var global = ReadByte(chunk);
                         var globalName = chunk.ReadConstant(global);
-                        globals[globalName.val.asString] = Pop();
+                        if(Environment != null)
+                            Environment[globalName.val.asString] = Pop();
+                        else
+                            _globals[globalName.val.asString] = Pop();
                     }
                     break;
                 case OpCode.FETCH_GLOBAL_UNCACHED:
@@ -282,22 +290,31 @@ namespace ULox
                         var global = ReadByte(chunk);
                         var globalName = chunk.ReadConstant(global);
                         var actualName = globalName.val.asString;
-                        var index = globals.FindIndex(actualName);
-                        if (index == -1)
-                        {
-                            throw new VMException($"Global var of name '{actualName}' was not found.");
-                        }
-                        Push(globals[index]);
 
-                        //it worked patch the instruction so we never have to be in here again.
-                        chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.FETCH_GLOBAL_CACHED;
-                        chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
+                        if (Environment != null &&
+                            Environment.TryGetValue(actualName, out var val))
+                        {
+                            Push(val);
+                        }
+                        else
+                        {
+                            var index = _globals.FindIndex(actualName);
+                            if (index == -1)
+                            {
+                                throw new VMException($"Global var of name '{actualName}' was not found.");
+                            }
+                            Push(_globals[index]);
+
+                            //it worked patch the instruction so we never have to be in here again.
+                            chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.FETCH_GLOBAL_CACHED;
+                            chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
+                        }
                     }
                     break;
                 case OpCode.FETCH_GLOBAL_CACHED:
                     {
                         var index = ReadByte(chunk);
-                        Push(globals[index]);
+                        Push(_globals[index]);
                     }
                     break;
                 case OpCode.ASSIGN_GLOBAL_UNCACHED:
@@ -305,22 +322,29 @@ namespace ULox
                         var global = ReadByte(chunk);
                         var globalName = chunk.ReadConstant(global);
                         var actualName = globalName.val.asString;
-                        var index = globals.FindIndex(actualName);
-                        if (index == -1)
+                        if (Environment != null)
                         {
-                            throw new VMException($"Global var of name '{actualName}' was not found.");
+                            Environment[actualName] = Peek();
                         }
-                        globals[index] = Peek();
+                        else
+                        {
+                            var index = _globals.FindIndex(actualName);
+                            if (index == -1)
+                            {
+                                throw new VMException($"Global var of name '{actualName}' was not found.");
+                            }
+                            _globals[index] = Peek();
 
-                        //it worked patch the instruction so we never have to be in here again.
-                        chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.ASSIGN_GLOBAL_CACHED;
-                        chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
+                            //it worked patch the instruction so we never have to be in here again.
+                            chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.ASSIGN_GLOBAL_CACHED;
+                            chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
+                        }
                     }
                     break;
                 case OpCode.ASSIGN_GLOBAL_CACHED:
                     {
                         var index = ReadByte(chunk);
-                        globals[index] = Peek();
+                        _globals[index] = Peek();
                     }
                     break;
                 case OpCode.CALL:

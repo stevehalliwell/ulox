@@ -2,6 +2,8 @@
 
 namespace ULox
 {
+    //todo for self assign to work, we need to route it through the assign path and
+    //  then dump into a grouping, once the grouping is back, we named var ourselves and then emit the math op
     public class Compiler
     {
         private enum Precedence
@@ -1115,8 +1117,8 @@ namespace ULox
             case TokenType.GREATER:       EmitOpCode(OpCode.GREATER);   break;
             case TokenType.LESS:          EmitOpCode(OpCode.LESS);      break;
             case TokenType.BANG_EQUAL:    EmitOpCodePair(OpCode.EQUAL, OpCode.NOT);    break;
-            case TokenType.GREATER_EQUAL: EmitOpCodePair(OpCode.GREATER, OpCode.NOT);  break;
-            case TokenType.LESS_EQUAL:    EmitOpCodePair(OpCode.LESS, OpCode.NOT);     break;
+            case TokenType.GREATER_EQUAL: EmitOpCodePair(OpCode.LESS, OpCode.NOT);  break;
+            case TokenType.LESS_EQUAL:    EmitOpCodePair(OpCode.GREATER, OpCode.NOT);     break;
 
             default:
                 break;

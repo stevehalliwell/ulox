@@ -50,6 +50,17 @@
                     var keyName = vm.GetArg(1).val.asString;
                     return Value.New(UnityEngine.Input.GetKey(keyName));
                 }));
+
+            engine.VM.SetGlobal("DestroyUnityObject",
+                 Value.New(
+                (vm, args) =>
+                {
+                    var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+                    UnityEngine.Object.Destroy(go);
+                    return Value.Null();
+                }));
+
+            
         }
     }
 }

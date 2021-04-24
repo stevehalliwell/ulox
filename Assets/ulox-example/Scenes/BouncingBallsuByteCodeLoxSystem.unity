@@ -460,6 +460,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1701529282}
+  - component: {fileID: 1701529283}
   - component: {fileID: 1701529281}
   m_Layer: 0
   m_Name: uLoxGame
@@ -482,8 +483,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   script: {fileID: 4900000, guid: 38fc5d2d0f02800449b5145975920517, type: 3}
   text: {fileID: 1264883865}
-  availablePrefabs:
-  - {fileID: 6638345232988510349, guid: 8471a01896fdef4409275edf83d8ad2f, type: 3}
 --- !u!4 &1701529282
 Transform:
   m_ObjectHideFlags: 0
@@ -498,6 +497,20 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1701529283
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1701529280}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e8fa30adad9725c468a6696730ba2f7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  availablePrefabs:
+  - {fileID: 6638345232988510349, guid: 8471a01896fdef4409275edf83d8ad2f, type: 3}
 --- !u!1 &1845959160
 GameObject:
   m_ObjectHideFlags: 0

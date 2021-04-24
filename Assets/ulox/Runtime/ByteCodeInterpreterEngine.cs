@@ -19,15 +19,17 @@
         public string Disassembly => _disassembler.GetString();
         public VM VM => _vm;
 
+        public Chunk LastChunk { get; private set; }
+
         public virtual void Run(string testString)
         {
             _scanner.Reset();
             _compiler.Reset();
 
             var tokens = _scanner.Scan(testString);
-            var chunk = _compiler.Compile(tokens);
-            _disassembler.DoChunk(chunk);
-            _vm.Interpret(chunk);
+            LastChunk = _compiler.Compile(tokens);
+            _disassembler.DoChunk(LastChunk);
+            _vm.Interpret(LastChunk);
         }
 
         public virtual void AddLibrary(ILoxByteCodeLibrary lib)

@@ -8,10 +8,16 @@ namespace ULox.Demo
     {
         [SerializeField] private List<GameObject> availablePrefabs;
 
-        public ByteCodeInterpreterEngine Engine { get; private set; } = new ByteCodeInterpreterEngine();
+        public ByteCodeInterpreterEngine Engine { get; private set; }
 
         private void Awake()
         {
+            Reset();
+        }
+
+        public void Reset()
+        {
+            Engine = new ByteCodeInterpreterEngine();
             Engine.AddLibrary(new CoreLibrary(Debug.Log));
             Engine.AddLibrary(new StandardClassesLibrary());
             Engine.AddLibrary(new UnityLibrary(availablePrefabs));

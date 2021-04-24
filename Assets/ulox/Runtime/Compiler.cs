@@ -1073,9 +1073,39 @@ namespace ULox
                 }
             }
 
-            if (canAssign && Match(TokenType.ASSIGN))
+            if (canAssign && MatchAny(TokenType.ASSIGN,
+                                      TokenType.PLUS_EQUAL,
+                                      TokenType.MINUS_EQUAL,
+                                      TokenType.STAR_EQUAL,
+                                      TokenType.SLASH_EQUAL))
             {
+                var assignTokenType = previousToken.TokenType;
+
                 Expression();
+
+                // self assign ops have to be done here as they tail the previous ordered instructions
+                switch (assignTokenType)
+                {
+                case TokenType.PLUS_EQUAL:
+                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.ADD);
+                    break;
+                case TokenType.MINUS_EQUAL:
+                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SUBTRACT);
+                    break;
+                case TokenType.STAR_EQUAL:
+                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.MULTIPLY);
+                    break;
+                case TokenType.SLASH_EQUAL:
+                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.DIVIDE);
+                    break;
+                case TokenType.ASSIGN:
+                    break;
+                }
+
                 EmitOpAndByte(setOp, (byte)argID);
             }
             else
@@ -1189,6 +1219,18 @@ namespace ULox
                 return false;
             Advance();
             return true;
+        }
+
+        bool MatchAny(params TokenType[] type)
+        {
+            for (int i = 0; i < type.Length; i++)
+            {
+                if (!Check(type[i])) continue;
+
+                Advance();
+                return true;
+            }
+            return false;
         }
 
         void EmitOpCode(OpCode op)

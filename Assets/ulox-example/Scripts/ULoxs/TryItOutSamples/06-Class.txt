@@ -1,0 +1,12 @@
+class Animal
+{
+	Speak(){throw;}
+}
+
+class Cat < Animal
+{
+	Speak(){print("Meow");}
+}
+
+var myCat = Cat();
+myCat.Speak();

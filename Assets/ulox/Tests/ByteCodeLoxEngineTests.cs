@@ -1310,6 +1310,21 @@ print(t.b);");
         }
 
         [Test]
+        public void Engine_Local_MultiVar()
+        {
+            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+
+            engine.Run(@"
+var a = 1,b = 2, c;
+
+print(a);
+print(b);
+print(c);");
+
+            Assert.AreEqual(engine.InterpreterResult, "12null");
+        }
+
+        [Test]
         public void Engine_Assert()
         {
             var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);

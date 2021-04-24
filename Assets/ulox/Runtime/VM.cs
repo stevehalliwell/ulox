@@ -6,7 +6,6 @@ namespace ULox
 {
     //todo multiple lines of execution a la fibres, allowing delayed and paused scripts like coroutines
     //todo external code call lox function with params from external code
-    //todo verifiy instruction count is correct
     //todo introduce labels so that instructions can be modified freely
     //  and afterwards labels can be removed with offsets by an optimizer step.
     //todo add support for long constant, when we overflow 255 constants in 1 chunk
@@ -20,7 +19,6 @@ namespace ULox
     //  identify push local 0 and paired get or set member, replace with specific this accessing ops
     //todo better string parsing token support
     //todo add conditional
-    //todo add self assignment
     //todo add pods
     //todo add classof
     //todo multiple returns?
@@ -28,7 +26,8 @@ namespace ULox
     //todo emit functions when no upvals are required https://github.com/munificent/craftinginterpreters/blob/master/note/answers/chapter25_closures/1.md
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
-    //todo interactive webgl build
+    //todo add try it out demo to own repo with github pages setup
+    //todo self asign needs safety to prevent their use in declarations.
     public enum InterpreterResult
     {
         OK,

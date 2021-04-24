@@ -1,0 +1,10 @@
+fun Add(lhs, rhs)
+{
+	return lhs + rhs;
+}
+
+var a = 2;
+var b = 3;
+var res = Add(a,b);
+
+print(res);

@@ -2,6 +2,6 @@
 {
     public interface ILoxByteCodeLibrary
     {
-        void BindToEngine(ByteCodeInterpreterEngine engine);
+        Table GetBindings();
     }
 }

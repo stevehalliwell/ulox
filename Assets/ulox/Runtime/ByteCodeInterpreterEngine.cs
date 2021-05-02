@@ -2,39 +2,33 @@
 {
     public class ByteCodeInterpreterEngine
     {
-        private Scanner _scanner;
-        private Compiler _compiler;
-        private VM _vm;
-        private Disassembler _disassembler;
-
-        public ByteCodeInterpreterEngine()
-        {
-            _scanner = new Scanner();
-            _compiler = new Compiler();
-            _disassembler = new Disassembler();
-            _vm = new VM();
-        }
-
-        public string StackDump => _vm.GenerateStackDump();
-        public string Disassembly => _disassembler.GetString();
+        private Program _program = new Program();
+        private VM _vm = new VM();
         public VM VM => _vm;
+        public Program Program => _program;
 
-        public Chunk LastChunk { get; private set; }
+        public string Disassembly => _program.Disassembly;
 
         public virtual void Run(string testString)
         {
-            _scanner.Reset();
-            _compiler.Reset();
+            var chunk = _program.Compile(testString);
+            _vm.Interpret(chunk.TopLevelChunk);
+        }
 
-            var tokens = _scanner.Scan(testString);
-            LastChunk = _compiler.Compile(tokens);
-            _disassembler.DoChunk(LastChunk);
-            _vm.Interpret(LastChunk);
+        public virtual void Execute(Program program)
+        {
+            _program = program;
+            _vm.Run(_program);
         }
 
         public virtual void AddLibrary(ILoxByteCodeLibrary lib)
         {
-            lib.BindToEngine(this);
+            var toAdd = lib.GetBindings();
+
+            foreach (var item in toAdd)
+            {
+                _vm.SetGlobal(item.Key, item.Value);
+            }
         }
     }
 }

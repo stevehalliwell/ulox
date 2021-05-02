@@ -2,9 +2,12 @@
 {
     public class StandardClassesLibrary : ILoxByteCodeLibrary
     {
-        public void BindToEngine(ByteCodeInterpreterEngine engine)
+
+        public Table GetBindings()
         {
-            engine.VM.SetGlobal("List", Value.New(new ListClass()));
+            var resTable = new Table();
+            resTable.Add("List", Value.New(new ListClass()));
+            return resTable;
         }
     }
 }

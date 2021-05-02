@@ -1801,99 +1801,74 @@ print(T.a);");
         }
 
         [Test]
-        public void Engine_ExternalSandboxing()
+        public void Engine_SingleProgram_MultiVMs()
         {
             var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
 
-            engine.AddLibrary(new AssertLibrary());
+            var script = @"print(2);";
 
-            engine.Run(@"
-var a = ""Hello"";");
+            engine.Run(script);
 
-            var env1 = new ULoxScriptEnvironment(engine);
-            var env2 = new ULoxScriptEnvironment(engine);
+            var program = engine.Program;
 
-            env1.RunLocal(@"
-var a = ""World"";
-print(a);");
 
-            env2.RunLocal(@"
-print(a);");
+            var engine2 = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            engine2.Execute(program);
 
-            Assert.AreEqual(engine.InterpreterResult, "WorldHello");
+            Assert.AreEqual(engine.InterpreterResult, "2");
+            Assert.AreEqual(engine2.InterpreterResult, "2");
         }
 
         [Test]
         public void Engine_InternalSandbox_CanShadow()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
-
-            engine.AddLibrary(new VMLibrary());
-
-            engine.Run(@"
-var a = 0;
-var a = 10;
-
-print(a);
-var env = CreateEnvironment();
-SetEnvironment(env);
-
-var a = 20;
-print(a);
-
-SetEnvironment(null);
-print(a);");
-
-            Assert.AreEqual(engine.InterpreterResult, "102010");
+            Assert.Fail();
         }
 
         [Test]
         public void Engine_InternalSandbox_CanRestore()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
-
-            engine.AddLibrary(new VMLibrary());
-
-            engine.Run(@"
-var outerEnv = CreateEnvironment();
-SetEnvironment(outerEnv);
-var a = 0;
-var a = 10;
-
-print(a);
-
-var innerEnv = CreateEnvironment();
-SetEnvironment(innerEnv);
-
-var a = 20;
-print(a);
-
-SetEnvironment(outerEnv);
-print(a);");
-
-            Assert.AreEqual(engine.InterpreterResult, "102010");
+            Assert.Fail();
         }
 
         [Test]
         public void Engine_InternalSandbox_CannotAccess()
+        {
+            Assert.Fail();
+        }
+
+        [Test]
+        public void Engine_InternalSandbox_YieldResume()
+        {
+            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+
+            engine.Run(@"
+var a = 2;
+a = a + 2;
+yield;
+print(a);");
+
+            engine.VM.Run();
+
+            Assert.AreEqual(engine.InterpreterResult, "4");
+        }
+
+        [Test]
+        public void Engine_ChildVM_Run()
         {
             var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
 
             engine.AddLibrary(new VMLibrary());
 
             engine.Run(@"
-var outerEnv = CreateEnvironment();
-SetEnvironment(outerEnv);
-var a = 10;
+fun InnerMain()
+{
+    print(""Hello from inner"");
+}
 
-print(a);
+VM.CreateChildVMAndStart(""InnerMain"");");
 
-var innerEnv = CreateEnvironment();
-SetEnvironment(innerEnv);
-
-print(a);");
-
-            Assert.AreEqual(engine.InterpreterResult, "10Global var of name 'a' was not found.");
+            Assert.AreEqual(engine.InterpreterResult, "Hello from inner");
         }
 
         [Test]
@@ -1952,5 +1927,5 @@ print(a);");
             }
         }
     }
-    
+
 }

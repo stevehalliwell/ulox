@@ -597,16 +597,20 @@ namespace ULox
 
         private void VarDeclaration()
         {
-            var global = ParseVariable("Expect variable name");
+            do
+            {
+                var global = ParseVariable("Expect variable name");
 
-            if (Match(TokenType.ASSIGN))
-                Expression();
-            else
-                EmitOpCode(OpCode.NULL);
+                if (Match(TokenType.ASSIGN))
+                    Expression();
+                else
+                    EmitOpCode(OpCode.NULL);
 
+                DefineVariable(global);
+
+            } while (Match(TokenType.COMMA));
 
             Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
-            DefineVariable(global);
         }
 
         private byte ParseVariable(string errMsg)
@@ -764,6 +768,10 @@ namespace ULox
             {
                 ReturnStatement();
             }
+            else if (Match(TokenType.YIELD))
+            {
+                YieldStatement();
+            }
             else if (Match(TokenType.BREAK))
             {
                 BreakStatement();
@@ -819,6 +827,12 @@ namespace ULox
                 Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
                 EmitOpCode(OpCode.RETURN);
             }
+        }
+
+        private void YieldStatement()
+        {
+            EmitOpCode(OpCode.YIELD);
+            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
         }
 
         private void BreakStatement()

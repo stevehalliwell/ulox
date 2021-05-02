@@ -2,14 +2,17 @@
 {
     public class AssertLibrary : ILoxByteCodeLibrary
     {
-        public void BindToEngine(ByteCodeInterpreterEngine engine)
+        public Table GetBindings()
         {
+            var resTable = new Table();
             var assertInst = new InstanceInternal();
-            engine.VM.SetGlobal("Assert", Value.New(assertInst));
+            resTable.Add("Assert", Value.New(assertInst));
 
             assertInst.fields[nameof(AreEqual)] = Value.New(AreEqual);
             assertInst.fields[nameof(AreNotEqual)] = Value.New(AreNotEqual);
             assertInst.fields[nameof(AreApproxEqual)] = Value.New(AreApproxEqual);
+
+            return resTable;
         }
 
         private static Value AreApproxEqual(VM vm, int argCount)

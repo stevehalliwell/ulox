@@ -57,6 +57,7 @@
 
         LOOP,
         RETURN,
+        YIELD,
 
         BREAK,
         CONTINUE,

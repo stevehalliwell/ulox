@@ -41,6 +41,7 @@ namespace ULox
             { "test",  TokenType.TEST},
             { "testcase",  TokenType.TESTCASE},
             { "static",  TokenType.STATIC},
+            { "yield",  TokenType.YIELD},
         };
 
         public Scanner()

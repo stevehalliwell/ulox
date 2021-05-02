@@ -13,9 +13,9 @@
 
         DEFINE_GLOBAL,
         FETCH_GLOBAL_UNCACHED,
-        FETCH_GLOBAL_CACHED,
+        //FETCH_GLOBAL_CACHED,
         ASSIGN_GLOBAL_UNCACHED,
-        ASSIGN_GLOBAL_CACHED,
+        //ASSIGN_GLOBAL_CACHED,
         GET_LOCAL,
         SET_LOCAL,
         GET_UPVALUE,
@@ -40,6 +40,7 @@
         CLOSURE,
 
         RETURN,
+        YIELD,
 
         CLASS,
         METHOD,

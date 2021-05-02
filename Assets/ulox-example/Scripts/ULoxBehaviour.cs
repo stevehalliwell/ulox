@@ -34,9 +34,9 @@ namespace ULox.Demo
 
         private void BindToScript()
         {
-            _uLoxScriptEnvironment.RunLocal(script.text);
+            _uLoxScriptEnvironment.Run(script.text);
 
-            _uLoxScriptEnvironment.LocalEnvironemnt["thisGameObject"] = Value.Object(gameObject);
+            _uLoxScriptEnvironment.SetGlobal("thisGameObject",Value.Object(gameObject));
 
             _anonymousOnCollision = _uLoxScriptEnvironment.FindFunctionWithArity("OnCollision", 0);
             _gameUpdateFunction = _uLoxScriptEnvironment.FindFunctionWithArity("Update", 0);

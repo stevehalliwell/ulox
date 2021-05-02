@@ -9,9 +9,11 @@
             _availablePrefabs = availablePrefabs;
         }
 
-        public void BindToEngine(ByteCodeInterpreterEngine engine)
+        public Table GetBindings()
         {
-            engine.VM.SetGlobal("CreateFromPrefab",
+            var resTable = new Table();
+
+            resTable.Add("CreateFromPrefab",
                  Value.New(
                 (vm, args) =>
                 {
@@ -22,7 +24,7 @@
                     return Value.Null();
                 }));
 
-            engine.VM.SetGlobal("SetGameObjectPosition",
+            resTable.Add("SetGameObjectPosition",
                  Value.New(
                 (vm, args) =>
                 {
@@ -34,7 +36,7 @@
                     return Value.Null();
                 }));
 
-            engine.VM.SetGlobal("RandRange",
+            resTable.Add("RandRange",
                  Value.New(
                 (vm, args) =>
                 {
@@ -43,7 +45,7 @@
                     return Value.New(UnityEngine.Random.Range((float)min, (float)max));
                 }));
 
-            engine.VM.SetGlobal("GetKey",
+            resTable.Add("GetKey",
                  Value.New(
                 (vm, args) =>
                 {
@@ -51,7 +53,7 @@
                     return Value.New(UnityEngine.Input.GetKey(keyName));
                 }));
 
-            engine.VM.SetGlobal("DestroyUnityObject",
+            resTable.Add("DestroyUnityObject",
                  Value.New(
                 (vm, args) =>
                 {
@@ -60,7 +62,8 @@
                     return Value.Null();
                 }));
 
-            
+
+            return resTable;
         }
     }
 }

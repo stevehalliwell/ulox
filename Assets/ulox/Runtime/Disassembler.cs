@@ -139,6 +139,7 @@ namespace ULox
                 case OpCode.CLOSE_UPVALUE:
                 case OpCode.INHERIT:
                 case OpCode.THROW:
+                case OpCode.YIELD:
                 default:
                     break;
                 }

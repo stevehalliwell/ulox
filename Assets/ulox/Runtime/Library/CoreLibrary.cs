@@ -6,14 +6,18 @@
 
         public CoreLibrary(System.Action<string> printer) { _printer = printer; }
 
-        public void BindToEngine(ByteCodeInterpreterEngine engine)
+        public Table GetBindings()
         {
-            engine.VM.SetGlobal("print", Value.New(
+            var resTable = new Table();
+
+            resTable.Add("print", Value.New(
                 (vm, args) =>
                 {
                     _printer?.Invoke(vm.GetArg(1).ToString());
                     return Value.Null();
                 }));
+
+            return resTable;
         }
     }
 }

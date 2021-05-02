@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using UnityEngine;
 
 namespace ULox
 {
@@ -33,6 +32,7 @@ namespace ULox
         OK,
         COMPILE_ERROR,
         RUNTIME_ERROR,
+        YIELD,
     }
 
     public struct CallFrame
@@ -51,7 +51,6 @@ namespace ULox
         private CallFrame currentCallFrame;
         private LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private IndexedTable _globals = new IndexedTable();
-        public Environment Environment { get; set; }
 
 
 
@@ -64,11 +63,10 @@ namespace ULox
         private void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Value Peek(int ind = 0) => _valueStack.Peek(ind);
-
-        public void SetGlobal(string name, Value val)
-        {
-            _globals[name] = val;
-        }
+        public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
+        public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
+        public void SetGlobal(string name, Value val) =>  _globals[name] = val;
+        public Value GetArg(int index) => _valueStack[currentCallFrame.stackStart + index];
 
         public Value GetGlobal(string name)
         {
@@ -78,15 +76,31 @@ namespace ULox
             return Value.Null();
         }
 
-        public Value GetArg(int index)
-        {
-            return _valueStack[currentCallFrame.stackStart+index];
-        }
-
         public InterpreterResult CallFunction(Value func, int args)
         {
             CallValue(func, args);
             return Run();
+        }
+
+        public void CopyGlobals(VM otherVM)
+        {
+            foreach (var val in _globals)
+            {
+                otherVM.SetGlobal(val.Key, _globals[val.Value]);
+            }
+        }
+
+        public Value FindFunctionWithArity(string name, int arity)
+        {
+            var globalVal = GetGlobal(name);
+
+            if (globalVal.type == Value.Type.Closure &&
+                    globalVal.val.asClosure.chunk.Arity == arity)
+            {
+                return globalVal;
+            }
+
+            return Value.Null();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -129,14 +143,17 @@ namespace ULox
                 currentCallFrame = default;
         }
 
-        public string GenerateStackDump()
+        public InterpreterResult Run(Program program)
         {
-            return new DumpStack().Generate(_valueStack);
-        }
+            foreach (var compiled in program.CompiledScripts)
+            {
+                var res = Interpret(compiled.TopLevelChunk);
 
-        public string GenerateGlobalsDump()
-        {
-            return new DumpGlobals().Generate(_globals);
+                if (res != InterpreterResult.OK)
+                    return res;
+            }
+
+            return InterpreterResult.OK;
         }
 
         public InterpreterResult Interpret(Chunk chunk)
@@ -148,7 +165,7 @@ namespace ULox
             return Run();
         }
 
-        private InterpreterResult Run()
+        public InterpreterResult Run()
         {
             while (true)
             {
@@ -185,6 +202,8 @@ namespace ULox
                         Push(result);
                     }
                     break;
+                case OpCode.YIELD:
+                    return InterpreterResult.YIELD;
                 case OpCode.NEGATE:
                     Push(Value.New(-Pop().val.asDouble));
                     break;
@@ -278,10 +297,7 @@ namespace ULox
                     {
                         var global = ReadByte(chunk);
                         var globalName = chunk.ReadConstant(global);
-                        if(Environment != null)
-                            Environment[globalName.val.asString] = Pop();
-                        else
-                            _globals[globalName.val.asString] = Pop();
+                        _globals[globalName.val.asString] = Pop();
                     }
                     break;
                 case OpCode.FETCH_GLOBAL_UNCACHED:
@@ -290,62 +306,47 @@ namespace ULox
                         var globalName = chunk.ReadConstant(global);
                         var actualName = globalName.val.asString;
 
-                        if (Environment != null &&
-                            Environment.TryGetValue(actualName, out var val))
+                        var index = _globals.FindIndex(actualName);
+                        if (index == -1)
                         {
-                            Push(val);
+                            throw new VMException($"Global var of name '{actualName}' was not found.");
                         }
-                        else
-                        {
-                            var index = _globals.FindIndex(actualName);
-                            if (index == -1)
-                            {
-                                throw new VMException($"Global var of name '{actualName}' was not found.");
-                            }
-                            Push(_globals[index]);
-
-                            //it worked patch the instruction so we never have to be in here again.
-                            chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.FETCH_GLOBAL_CACHED;
-                            chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
-                        }
-                    }
-                    break;
-                case OpCode.FETCH_GLOBAL_CACHED:
-                    {
-                        var index = ReadByte(chunk);
                         Push(_globals[index]);
+
+                        //it worked patch the instruction so we never have to be in here again.
+                        //chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.FETCH_GLOBAL_CACHED;
+                        //chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
                     }
                     break;
+                //case OpCode.FETCH_GLOBAL_CACHED:
+                //    {
+                //        var index = ReadByte(chunk);
+                //        Push(_globals[index]);
+                //    }
+                //    break;
                 case OpCode.ASSIGN_GLOBAL_UNCACHED:
                     {
                         var global = ReadByte(chunk);
                         var globalName = chunk.ReadConstant(global);
                         var actualName = globalName.val.asString;
-                        if (Environment != null)
+                        var index = _globals.FindIndex(actualName);
+                        if (index == -1)
                         {
-                            Environment[actualName] = Peek();
+                            throw new VMException($"Global var of name '{actualName}' was not found.");
                         }
-                        else
-                        {
-                            var index = _globals.FindIndex(actualName);
-                            if (index == -1)
-                            {
-                                throw new VMException($"Global var of name '{actualName}' was not found.");
-                            }
-                            _globals[index] = Peek();
-
-                            //it worked patch the instruction so we never have to be in here again.
-                            chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.ASSIGN_GLOBAL_CACHED;
-                            chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
-                        }
-                    }
-                    break;
-                case OpCode.ASSIGN_GLOBAL_CACHED:
-                    {
-                        var index = ReadByte(chunk);
                         _globals[index] = Peek();
+
+                        //it worked patch the instruction so we never have to be in here again.
+                        //chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.ASSIGN_GLOBAL_CACHED;
+                        //chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
                     }
                     break;
+                //case OpCode.ASSIGN_GLOBAL_CACHED:
+                //    {
+                //        var index = ReadByte(chunk);
+                //        _globals[index] = Peek();
+                //    }
+                //    break;
                 case OpCode.CALL:
                     {
                         int argCount = ReadByte(chunk);

@@ -4,22 +4,34 @@ namespace ULox
 {
     public class Chunk
     {
-        public List<byte> instructions = new List<byte>();
-        private List<Value> constants = new List<Value>();
+        public struct RunLengthLineNumber
+        {
+            public int startingInstruction;
+            public int line;
+        }
+
+        private readonly List<Value> constants = new List<Value>();
+        private int instructionCount = -1;
+
+        public List<byte> Instructions { get; private set; } = new List<byte>();
         public IReadOnlyList<Value> Constants => constants.AsReadOnly();
-        public List<RunLengthLineNumber> runLengthLineNumbers = new List<RunLengthLineNumber>();
-        public int instructionCount = -1;
+        public List<RunLengthLineNumber> RunLengthLineNumbers { get; private set; } = new List<RunLengthLineNumber>();
         public string Name { get; set; }
         public int Arity { get; set; }
         public int UpvalueCount { get; internal set; }
+
+        public Chunk(string name)
+        {
+            Name = name;
+        }
 
         public void AddLine(int line)
         {
             instructionCount++;
 
-            if (runLengthLineNumbers.Count == 0)
+            if (RunLengthLineNumbers.Count == 0)
             {
-                runLengthLineNumbers.Add(new RunLengthLineNumber()
+                RunLengthLineNumbers.Add(new RunLengthLineNumber()
                 {
                     line = line,
                     startingInstruction = instructionCount
@@ -27,9 +39,9 @@ namespace ULox
                 return;
             }
 
-            if (runLengthLineNumbers[runLengthLineNumbers.Count-1].line != line)
+            if (RunLengthLineNumbers[RunLengthLineNumbers.Count - 1].line != line)
             {
-                runLengthLineNumbers.Add(new RunLengthLineNumber()
+                RunLengthLineNumbers.Add(new RunLengthLineNumber()
                 {
                     line = line,
                     startingInstruction = instructionCount
@@ -39,40 +51,35 @@ namespace ULox
 
         public int GetLineForInstruction(int instructionNumber)
         {
-            if (runLengthLineNumbers.Count == 0) return -1;
+            if (RunLengthLineNumbers.Count == 0) return -1;
 
-            for (int i = 0; i < runLengthLineNumbers.Count; i++)
+            for (int i = 0; i < RunLengthLineNumbers.Count; i++)
             {
-                if (instructionNumber < runLengthLineNumbers[i].startingInstruction)
-                    return runLengthLineNumbers[i-1].line;
+                if (instructionNumber < RunLengthLineNumbers[i].startingInstruction)
+                    return RunLengthLineNumbers[i - 1].line;
             }
 
-            return runLengthLineNumbers[runLengthLineNumbers.Count-1].line;
-    }
-
-        public Chunk(string name)
-        {
-            Name = name;
+            return RunLengthLineNumbers[RunLengthLineNumbers.Count - 1].line;
         }
 
         public void WriteByte(byte b, int line)
         {
-            instructions.Add(b);
+            Instructions.Add(b);
             AddLine(line);
         }
 
         public byte AddConstantAndWriteInstruction(Value val, int line)
         {
-            instructions.Add((byte)OpCode.CONSTANT);
+            Instructions.Add((byte)OpCode.CONSTANT);
             var at = AddConstant(val);
-            instructions.Add(at);
+            Instructions.Add(at);
             AddLine(line);
             return at;
         }
 
         public void WriteSimple(OpCode opCode, int line)
         {
-            instructions.Add((byte)opCode);
+            Instructions.Add((byte)opCode);
             AddLine(line);
         }
 
@@ -85,8 +92,10 @@ namespace ULox
                 throw new CompilerException($"Cannot have more than '{byte.MaxValue}' constants per chunk.");
 
             constants.Add(val);
-            return (byte) (constants.Count - 1);
+            return (byte)(constants.Count - 1);
         }
+
+        public Value ReadConstant(byte index) => constants[index];
 
         private int ExistingSimpleConstant(Value val)
         {
@@ -96,8 +105,10 @@ namespace ULox
                 throw new CompilerException("Attempted to add a null constant");
             case Value.Type.Double:
                 return constants.FindIndex(x => x.type == val.type && val.val.asDouble == x.val.asDouble);
+
             case Value.Type.Bool:
                 return constants.FindIndex(x => x.type == val.type && val.val.asBool == x.val.asBool);
+
             case Value.Type.String:
                 return constants.FindIndex(x => x.type == val.type && val.val.asString == x.val.asString);
             // none of those are going to be duplicated by the compiler anyway
@@ -113,13 +124,5 @@ namespace ULox
                 return -1;
             }
         }
-
-        public Value ReadConstant(byte index) => constants[index];
-    }
-
-    public struct RunLengthLineNumber
-    {
-        public int startingInstruction;
-        public int line;
     }
 }

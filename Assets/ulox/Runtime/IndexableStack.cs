@@ -4,8 +4,6 @@ namespace ULox
 {
     public class IndexableStack<T> : List<T>
     {
-        public IndexableStack() { }
-
         public void Push(T t) => Add(t);
         public T Pop() { var res = this[Count - 1]; RemoveAt(Count - 1); return res; }
         public T Peek() => Peek(0);

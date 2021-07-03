@@ -2,23 +2,22 @@
 {
     public class ByteCodeInterpreterEngine
     {
-        private Program _program = new Program();
-        private VM _vm = new VM();
+        public Program Program { get; private set; } = new Program();
+        private readonly VM _vm = new VM();
         public VM VM => _vm;
-        public Program Program => _program;
 
-        public string Disassembly => _program.Disassembly;
+        public string Disassembly => Program.Disassembly;
 
         public virtual void Run(string testString)
         {
-            var chunk = _program.Compile(testString);
+            var chunk = Program.Compile(testString);
             _vm.Interpret(chunk.TopLevelChunk);
         }
 
         public virtual void Execute(Program program)
         {
-            _program = program;
-            _vm.Run(_program);
+            Program = program;
+            _vm.Run(Program);
         }
 
         public virtual void AddLibrary(ILoxByteCodeLibrary lib)

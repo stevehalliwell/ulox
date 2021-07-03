@@ -1,5 +1,6 @@
 ﻿namespace ULox
 {
+    //TODO: Split and org in folders
     public class PanicException : System.Exception
     {
         public PanicException(string message = "") : base(message) { }

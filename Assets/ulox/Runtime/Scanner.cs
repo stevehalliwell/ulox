@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+//TODO: Too big, refactor and make more configurable
+
 namespace ULox
 {
     public class Scanner
@@ -13,7 +15,7 @@ namespace ULox
         private StringBuilder workingSpaceStringBuilder;
         private Char _currentChar;
 
-        private Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>()
+        private readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>()
         {
             { "var",    TokenType.VAR},
             { "string", TokenType.STRING},
@@ -44,10 +46,7 @@ namespace ULox
             { "yield",  TokenType.YIELD},
         };
 
-        public Scanner()
-        {
-            Reset();
-        }
+        public Scanner() => Reset();
 
         public void Reset()
         {
@@ -69,62 +68,62 @@ namespace ULox
 
                     switch (_currentChar)
                     {
-                        case '(': AddTokenSingle(TokenType.OPEN_PAREN); break;
-                        case ')': AddTokenSingle(TokenType.CLOSE_PAREN); break;
-                        case '{': AddTokenSingle(TokenType.OPEN_BRACE); break;
-                        case '}': AddTokenSingle(TokenType.CLOSE_BRACE); break;
-                        case ',': AddTokenSingle(TokenType.COMMA); break;
-                        case '.': AddTokenSingle(TokenType.DOT); break;
-                        case ';': AddTokenSingle(TokenType.END_STATEMENT); break;
-                        case '-':
-                            AddTokenSingle(Match('=') ? TokenType.MINUS_EQUAL :
-                                (Match('-') ? TokenType.DECREMENT : TokenType.MINUS)); break;
-                        case '+':
-                            AddTokenSingle(Match('=') ? TokenType.PLUS_EQUAL :
-                                (Match('+') ? TokenType.INCREMENT : TokenType.PLUS)); break;
-                        case '*': AddTokenSingle(Match('=') ? TokenType.STAR_EQUAL : TokenType.STAR); break;
-                        case '%': AddTokenSingle(Match('=') ? TokenType.PERCENT_EQUAL : TokenType.PERCENT); break;
-                        case ':': AddTokenSingle(TokenType.COLON); break;
-                        case '?': AddTokenSingle(TokenType.QUESTION); break;
+                    case '(': AddTokenSingle(TokenType.OPEN_PAREN); break;
+                    case ')': AddTokenSingle(TokenType.CLOSE_PAREN); break;
+                    case '{': AddTokenSingle(TokenType.OPEN_BRACE); break;
+                    case '}': AddTokenSingle(TokenType.CLOSE_BRACE); break;
+                    case ',': AddTokenSingle(TokenType.COMMA); break;
+                    case '.': AddTokenSingle(TokenType.DOT); break;
+                    case ';': AddTokenSingle(TokenType.END_STATEMENT); break;
+                    case '-':
+                        AddTokenSingle(Match('=') ? TokenType.MINUS_EQUAL :
+                            (Match('-') ? TokenType.DECREMENT : TokenType.MINUS)); break;
+                    case '+':
+                        AddTokenSingle(Match('=') ? TokenType.PLUS_EQUAL :
+                            (Match('+') ? TokenType.INCREMENT : TokenType.PLUS)); break;
+                    case '*': AddTokenSingle(Match('=') ? TokenType.STAR_EQUAL : TokenType.STAR); break;
+                    case '%': AddTokenSingle(Match('=') ? TokenType.PERCENT_EQUAL : TokenType.PERCENT); break;
+                    case ':': AddTokenSingle(TokenType.COLON); break;
+                    case '?': AddTokenSingle(TokenType.QUESTION); break;
 
-                        case '!': AddTokenSingle(Match('=') ? TokenType.BANG_EQUAL : TokenType.BANG); break;
-                        case '=': AddTokenSingle(Match('=') ? TokenType.EQUALITY : TokenType.ASSIGN); break;
-                        case '<': AddTokenSingle(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
-                        case '>': AddTokenSingle(Match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
+                    case '!': AddTokenSingle(Match('=') ? TokenType.BANG_EQUAL : TokenType.BANG); break;
+                    case '=': AddTokenSingle(Match('=') ? TokenType.EQUALITY : TokenType.ASSIGN); break;
+                    case '<': AddTokenSingle(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
+                    case '>': AddTokenSingle(Match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
 
-                        case '/':
+                    case '/':
+                        {
+                            if (Match('/'))
                             {
-                                if (Match('/'))
-                                    {
-                                        _stringReader.ReadLine();
-                                        _line++;
-                                    }
-                                    else if (Match('*'))
-                                    {
-                                        ConsumeBlockComment();
-                                    }
-                                    else
-                                    {
-                                        AddTokenSingle(Match('=') ? TokenType.SLASH_EQUAL : TokenType.SLASH);
-                                    }
-                                break;
+                                _stringReader.ReadLine();
+                                _line++;
                             }
-
-                        case ' ':
-                        case '\r':
-                        case '\t':
-                            //skiping over whitespace
-                            _characterNumber++;
+                            else if (Match('*'))
+                            {
+                                ConsumeBlockComment();
+                            }
+                            else
+                            {
+                                AddTokenSingle(Match('=') ? TokenType.SLASH_EQUAL : TokenType.SLASH);
+                            }
                             break;
+                        }
 
-                        case '\n':
-                            _line++;
-                            _characterNumber = 0;
-                            break;
+                    case ' ':
+                    case '\r':
+                    case '\t':
+                        //skiping over whitespace
+                        _characterNumber++;
+                        break;
 
-                        case '"': ConsumeString(); break;
+                    case '\n':
+                        _line++;
+                        _characterNumber = 0;
+                        break;
 
-                        default:
+                    case '"': ConsumeString(); break;
+
+                    default:
                         {
                             if (IsDigit(_currentChar))
                             {
@@ -219,8 +218,6 @@ namespace ULox
 
         private void ConsumeString()
         {
-            var startingLine = _line;
-            var startingChar = _characterNumber;
             workingSpaceStringBuilder.Clear();
             Advance();//skip leading "
             while (!IsAtEnd())
@@ -256,32 +253,19 @@ namespace ULox
             _characterNumber++;
         }
 
-        private static bool IsDigit(int ch)
-        {
-            return ch >= '0' && ch <= '9';
-        }
+        private static bool IsDigit(int ch) => ch >= '0' && ch <= '9';
 
-        private static bool IsAlpha(int c)
-        {
-            return (c >= 'a' && c <= 'z') ||
+        private static bool IsAlpha(int c) 
+            => (c >= 'a' && c <= 'z') ||
                 (c >= 'A' && c <= 'Z') ||
                 c == '_';
-        }
 
-        private static bool IsAlphaNumber(int c)
-        {
-            return IsAlpha(c) || IsDigit(c);
-        }
 
-        private bool IsAtEnd()
-        {
-            return _stringReader.Peek() == -1;
-        }
+        private static bool IsAlphaNumber(int c) => IsAlpha(c) || IsDigit(c);
 
-        private Char Peek()
-        {
-            return (Char)_stringReader.Peek();
-        }
+        private bool IsAtEnd() => _stringReader.Peek() == -1;
+
+        private Char Peek() => (Char)_stringReader.Peek();
 
         private bool Match(Char matchingCharToConsume)
         {
@@ -299,14 +283,9 @@ namespace ULox
             return false;
         }
 
-        private void AddTokenSingle(TokenType token)
-        {
-            AddToken(token, _currentChar.ToString(), null);
-        }
+        private void AddTokenSingle(TokenType token) => AddToken(token, _currentChar.ToString(), null);
 
         private void AddToken(TokenType simpleToken, string str, object literal)
-        {
-            Tokens.Add(new Token(simpleToken, str, literal, _line, _characterNumber));
-        }
+            => Tokens.Add(new Token(simpleToken, str, literal, _line, _characterNumber));
     }
 }

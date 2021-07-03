@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
+//TODO: Too big, split and org into files
+
 namespace ULox
 {
-    //todo multiple lines of execution a la fibres, allowing delayed and paused scripts like coroutines
     //todo external code call lox function with params from external code
     //todo introduce labels so that instructions can be modified freely
     //  and afterwards labels can be removed with offsets by an optimizer step.
@@ -46,14 +47,11 @@ namespace ULox
     {
         public const string InitMethodName = "init";
         public TestRunner TestRunner { get; private set; } = new TestRunner();
-        private FastStack<Value> _valueStack = new FastStack<Value>();
-        private FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
+        private readonly FastStack<Value> _valueStack = new FastStack<Value>();
+        private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         private CallFrame currentCallFrame;
-        private LinkedList<Value> openUpvalues = new LinkedList<Value>();
-        private IndexedTable _globals = new IndexedTable();
-
-
-
+        private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
+        private readonly Table _globals = Table.Empty();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Push(Value val) => _valueStack.Push(val);
@@ -65,16 +63,11 @@ namespace ULox
         private Value Peek(int ind = 0) => _valueStack.Peek(ind);
         public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
         public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
-        public void SetGlobal(string name, Value val) =>  _globals[name] = val;
+        public void SetGlobal(string name, Value val) => _globals[name] = val;
         public Value GetArg(int index) => _valueStack[currentCallFrame.stackStart + index];
+        public Value StackTop => _valueStack.Peek();
 
-        public Value GetGlobal(string name)
-        {
-            var ind = _globals.FindIndex(name);
-            if (ind != -1)
-                return _globals[ind];
-            return Value.Null();
-        }
+        public Value GetGlobal(string name)=> _globals[name];
 
         public InterpreterResult CallFunction(Value func, int args)
         {
@@ -86,7 +79,7 @@ namespace ULox
         {
             foreach (var val in _globals)
             {
-                otherVM.SetGlobal(val.Key, _globals[val.Value]);
+                otherVM.SetGlobal(val.Key, val.Value);
             }
         }
 
@@ -104,16 +97,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private byte ReadByte(Chunk chunk)
-        {
-            return chunk.instructions[currentCallFrame.ip++];
-        }
+        private byte ReadByte(Chunk chunk) => chunk.Instructions[currentCallFrame.ip++];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ushort ReadUShort(Chunk chunk)
         {
-            var bhi = chunk.instructions[currentCallFrame.ip++];
-            var blo = chunk.instructions[currentCallFrame.ip++];
+            var bhi = chunk.Instructions[currentCallFrame.ip++];
+            var blo = chunk.Instructions[currentCallFrame.ip++];
             return (ushort)((bhi << 8) | blo);
         }
 
@@ -190,16 +180,17 @@ namespace ULox
                         var prevStackStart = currentCallFrame.stackStart;
 
                         PopCallFrame();
-                        
-                        if (_callFrames.Count == 0)
-                        {
-                            
-                            return InterpreterResult.OK;
-                        }
 
-                        DiscardPop(_valueStack.Count - prevStackStart);
+                        var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
+
+                        DiscardPop(toRemove);
 
                         Push(result);
+
+                        if (_callFrames.Count == 0)
+                        {
+                            return InterpreterResult.OK;
+                        }
                     }
                     break;
                 case OpCode.YIELD:
@@ -278,7 +269,7 @@ namespace ULox
                         var slot = ReadByte(chunk);
                         var upval = currentCallFrame.closure.upvalues[slot].val.asUpvalue;
                         if (!upval.isClosed)
-                             Push(_valueStack[upval.index]);
+                            Push(_valueStack[upval.index]);
                         else
                             Push(upval.value);
                     }
@@ -305,48 +296,22 @@ namespace ULox
                         var global = ReadByte(chunk);
                         var globalName = chunk.ReadConstant(global);
                         var actualName = globalName.val.asString;
-
-                        var index = _globals.FindIndex(actualName);
-                        if (index == -1)
-                        {
-                            throw new VMException($"Global var of name '{actualName}' was not found.");
-                        }
-                        Push(_globals[index]);
-
-                        //it worked patch the instruction so we never have to be in here again.
-                        //chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.FETCH_GLOBAL_CACHED;
-                        //chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
+                        Push(_globals[actualName]);
                     }
                     break;
-                //case OpCode.FETCH_GLOBAL_CACHED:
-                //    {
-                //        var index = ReadByte(chunk);
-                //        Push(_globals[index]);
-                //    }
-                //    break;
                 case OpCode.ASSIGN_GLOBAL_UNCACHED:
                     {
                         var global = ReadByte(chunk);
                         var globalName = chunk.ReadConstant(global);
                         var actualName = globalName.val.asString;
-                        var index = _globals.FindIndex(actualName);
-                        if (index == -1)
+                        if (!_globals.ContainsKey(actualName))
                         {
                             throw new VMException($"Global var of name '{actualName}' was not found.");
                         }
-                        _globals[index] = Peek();
+                        _globals[actualName] = Peek();
 
-                        //it worked patch the instruction so we never have to be in here again.
-                        //chunk.instructions[currentCallFrame.ip - 2] = (byte)OpCode.ASSIGN_GLOBAL_CACHED;
-                        //chunk.instructions[currentCallFrame.ip - 1] = (byte)index;
                     }
                     break;
-                //case OpCode.ASSIGN_GLOBAL_CACHED:
-                //    {
-                //        var index = ReadByte(chunk);
-                //        _globals[index] = Peek();
-                //    }
-                //    break;
                 case OpCode.CALL:
                     {
                         int argCount = ReadByte(chunk);
@@ -408,7 +373,7 @@ namespace ULox
                         {
                             var isLocal = ReadByte(chunk);
                             var index = ReadByte(chunk);
-                            if(isLocal == 1)
+                            if (isLocal == 1)
                             {
                                 var local = currentCallFrame.stackStart + index;
                                 closure.upvalues[i] = CaptureUpvalue(local);
@@ -421,14 +386,14 @@ namespace ULox
                     }
                     break;
                 case OpCode.CLOSE_UPVALUE:
-                    CloseUpvalues(_valueStack.Count-1);
+                    CloseUpvalues(_valueStack.Count - 1);
                     DiscardPop();
                     break;
                 case OpCode.CLASS:
                     {
                         var constantIndex = ReadByte(chunk);
                         var name = chunk.ReadConstant(constantIndex);
-                        Push(Value.New( new ClassInternal() { name = name.val.asString }));
+                        Push(Value.New(new ClassInternal() { name = name.val.asString }));
                     }
                     break;
                 case OpCode.GET_PROPERTY_UNCACHED:
@@ -477,7 +442,7 @@ namespace ULox
                         var targetVal = Peek(1);
 
                         InstanceInternal instance = null;
-                        
+
                         switch (targetVal.type)
                         {
                         default:
@@ -494,7 +459,7 @@ namespace ULox
 
                         var constantIndex = ReadByte(chunk);
                         var name = chunk.ReadConstant(constantIndex).val.asString;
-                        
+
                         instance.fields[name] = Peek();
 
                         var value = Pop();
@@ -537,7 +502,7 @@ namespace ULox
                         {
                             closure = currentCallFrame.closure,
                             ip = loc,
-                            stackStart = _valueStack.Count-1,
+                            stackStart = _valueStack.Count - 1,
                         });
                         currentCallFrame.ip = loc;
                     }
@@ -567,7 +532,8 @@ namespace ULox
                         var name = chunk.ReadConstant(constantIndex).val.asString;
                         var superClassVal = Pop();
                         var superClass = superClassVal.val.asClass;
-                        BindMethod(superClass, name);                    }
+                        BindMethod(superClass, name);
+                    }
                     break;
                 case OpCode.SUPER_INVOKE:
                     {
@@ -589,8 +555,6 @@ namespace ULox
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
             }
-
-            return InterpreterResult.OK;
         }
 
         private void BindMethod(ClassInternal fromClass, string methodName)
@@ -612,7 +576,7 @@ namespace ULox
             Value method = Peek();
             var klass = Peek(1).val.asClass;
             klass.methods[name] = method;
-            if(name == InitMethodName)
+            if (name == InitMethodName)
             {
                 klass.initialiser = method;
             }
@@ -647,7 +611,7 @@ namespace ULox
                 return node.Value;
             }
 
-            var upvalIn = new UpvalueInternal() {index = index };
+            var upvalIn = new UpvalueInternal() { index = index };
             var upval = Value.New(upvalIn);
 
             if (node != null)
@@ -663,16 +627,16 @@ namespace ULox
         {
             switch (callee.type)
             {
-            case Value.Type.NativeFunction: 
+            case Value.Type.NativeFunction:
                 CallNative(callee.val.asNativeFunc, argCount);
                 break;
-            case Value.Type.Closure: 
+            case Value.Type.Closure:
                 Call(callee.val.asClosure, argCount);
                 break;
-            case Value.Type.Class: 
+            case Value.Type.Class:
                 CreateInstance(callee.val.asClass, argCount);
                 break;
-            case Value.Type.BoundMethod: 
+            case Value.Type.BoundMethod:
                 CallMethod(callee.val.asBoundMethod, argCount);
                 break;
             default:
@@ -737,7 +701,7 @@ namespace ULox
 
             PushNewCallframe(new CallFrame()
             {
-                stackStart = _valueStack.Count - argCount-1,
+                stackStart = _valueStack.Count - argCount - 1,
                 closure = closureInternal
             });
         }
@@ -770,13 +734,13 @@ namespace ULox
             if (lhs.type != rhs.type)
                 throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
 
-            if(opCode == OpCode.ADD && lhs.type == Value.Type.String && rhs.type == lhs.type)
+            if (opCode == OpCode.ADD && lhs.type == Value.Type.String && rhs.type == lhs.type)
             {
                 Push(Value.New(lhs.val.asString + rhs.val.asString));
                 return;
             }
 
-            if(lhs.type == Value.Type.Instance)
+            if (lhs.type == Value.Type.Instance)
             {
                 //identify if lhs has a matching method or field
 

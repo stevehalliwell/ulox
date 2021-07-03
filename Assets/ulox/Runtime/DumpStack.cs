@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace ULox
 {
@@ -14,25 +12,6 @@ namespace ULox
             {
                 sb.Append(valueStack[i].ToString());
                 if (i > 0)
-                    sb.AppendLine();
-            }
-
-            return sb.ToString();
-        }
-    }
-
-    public class DumpGlobals
-    {
-        private StringBuilder sb = new StringBuilder();
-
-        public string Generate(IndexedTable globals)
-        {
-            int count = 0;
-            foreach (var item in globals)
-            {
-                sb.Append($"{item.Key} : {item.Value}");
-
-                if (count != globals.Count)
                     sb.AppendLine();
             }
 

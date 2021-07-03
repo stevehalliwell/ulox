@@ -1801,6 +1801,21 @@ print(T.a);");
         }
 
         [Test]
+        public void Engine_SelfAssign()
+        {
+            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+
+            engine.Run(@"
+var a = 2;
+a = a + 2;
+print(a);
+a += 2;
+print(a);");
+
+            Assert.AreEqual(engine.InterpreterResult, "46");
+        }
+
+        [Test]
         public void Engine_SingleProgram_MultiVMs()
         {
             var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
@@ -1820,21 +1835,74 @@ print(T.a);");
         }
 
         [Test]
-        public void Engine_InternalSandbox_CanShadow()
+        public void Engine_InternalSandbox_CanPassIn()
         {
-            Assert.Fail();
+            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+
+            engine.AddLibrary(new VMLibrary());
+
+            engine.Run(@"
+fun InnerMain()
+{
+    print(globalIn);
+}
+
+var globalIn = 10;
+
+var innerVM = VM();
+innerVM.AddGlobal(""globalIn"",globalIn);
+innerVM.AddGlobal(""print"",print);
+
+innerVM.Start(InnerMain);");
+
+            Assert.AreEqual(engine.InterpreterResult, "10");
         }
 
         [Test]
-        public void Engine_InternalSandbox_CanRestore()
+        public void Engine_InternalSandbox_CanWriteGlobalOut()
         {
-            Assert.Fail();
+            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+
+            engine.AddLibrary(new VMLibrary());
+
+            engine.Run(@"
+fun InnerMain()
+{
+    globalOut = 10;
+}
+
+var globalOut = 0;
+
+var innerVM = VM();
+innerVM.AddGlobal(""globalOut"",globalOut);
+
+innerVM.Start(InnerMain);
+
+print(innerVM.GetGlobal(""globalOut""));");
+
+            Assert.AreEqual(engine.InterpreterResult, "10");
         }
 
         [Test]
-        public void Engine_InternalSandbox_CannotAccess()
+        public void Engine_InternalSandbox_CanReturnOut()
         {
-            Assert.Fail();
+            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+
+            engine.AddLibrary(new VMLibrary());
+
+            engine.Run(@"
+fun InnerMain()
+{
+    return 10;
+}
+
+var innerVM = VM();
+
+var res = innerVM.Start(InnerMain);
+
+print(res);");
+
+            Assert.AreEqual(engine.InterpreterResult, "10");
         }
 
         [Test]
@@ -1863,28 +1931,87 @@ print(a);");
             engine.Run(@"
 fun InnerMain()
 {
-    print(""Hello from inner"");
+    print(""Hello from inner "" + a);
 }
 
-VM.CreateChildVMAndStart(""InnerMain"");");
+var a = ""10"";
 
-            Assert.AreEqual(engine.InterpreterResult, "Hello from inner");
+var innerVM = VM();
+innerVM.InheritFromEnclosing();
+innerVM.Start(InnerMain);");
+
+            Assert.AreEqual(engine.InterpreterResult, "Hello from inner 10");
         }
 
         [Test]
-        public void Engine_SelfAssign()
+        public void Engine_Sandbox_CannotAccess()
         {
             var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
 
-            engine.Run(@"
-var a = 2;
-a = a + 2;
-print(a);
-a += 2;
-print(a);");
+            engine.AddLibrary(new VMLibrary());
 
-            Assert.AreEqual(engine.InterpreterResult, "46");
+            engine.Run(@"
+var a = 10;
+fun InnerMain()
+{
+    a = 10;
+}
+
+var innerVM = VM();
+innerVM.Start(InnerMain);");
+
+            Assert.AreEqual("Global var of name 'a' was not found.", engine.InterpreterResult);
         }
+
+        [Test]
+        public void Engine_Sandbox_AsGenerator()
+        {
+            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+
+            engine.AddLibrary(new VMLibrary());
+
+            engine.Run(@"
+fun InnerMain()
+{
+    globalOut = 1;
+    yield;
+    globalOut = 1;
+    yield;
+    globalOut = 2;
+    yield;
+    globalOut = 3;
+    yield;
+    globalOut = 5;
+    yield;
+    globalOut = 8;
+    yield;
+    globalOut = null;
+}
+
+var globalOut = 0;
+
+var innerVM = VM();
+innerVM.AddGlobal(""globalOut"",globalOut);
+
+innerVM.Start(InnerMain);
+loop
+{
+    var curVal = innerVM.GetGlobal(""globalOut"");
+    if(curVal != null)
+    {
+        print(curVal);
+        innerVM.Resume();
+    }
+    else
+    {
+        break;
+    }
+}");
+
+            Assert.AreEqual(engine.InterpreterResult, "112358");
+        }
+
+        //todo yield should be able to multi return, use a yield stack in the vm and clear it at each use?
     }
 
     public class ByteCodeInterpreterTestEngine : ByteCodeInterpreterEngine

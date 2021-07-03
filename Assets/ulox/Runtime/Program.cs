@@ -3,16 +3,10 @@ using System.Linq;
 
 namespace ULox
 {
-    public class CompiledScript
-    {
-        public Chunk TopLevelChunk;
-        public int ScriptHash;
-    }
-
     public class Program
     {
-        private Scanner _scanner = new Scanner();
-        private Compiler _compiler = new Compiler();
+        private readonly Scanner _scanner = new Scanner();
+        private readonly Compiler _compiler = new Compiler();
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
 
@@ -45,7 +39,7 @@ namespace ULox
 
             var tokens = _scanner.Scan(script);
             var chunk = _compiler.Compile(tokens);
-            var compiled = new CompiledScript() { TopLevelChunk = chunk, ScriptHash = hash };
+            var compiled = new CompiledScript(chunk, hash);
             CompiledScripts.Add(compiled);
             return compiled;
         }

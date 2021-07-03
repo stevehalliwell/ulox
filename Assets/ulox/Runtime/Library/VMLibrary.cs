@@ -2,28 +2,80 @@
 {
     public class VMLibrary : ILoxByteCodeLibrary
     {
+        public class VMClass : ClassInternal
+        {
+            private readonly string VMFieldName = "vm";
+
+            public VMClass()
+            {
+                this.name = "VM";
+                this.methods.Add(VM.InitMethodName, Value.New(InitInstance));
+                this.methods.Add(nameof(AddGlobal), Value.New(AddGlobal));
+                this.methods.Add(nameof(GetGlobal), Value.New(GetGlobal));
+                this.methods.Add(nameof(Start), Value.New(Start));
+                this.methods.Add(nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing));
+                this.methods.Add(nameof(Resume), Value.New(Resume));
+
+                this.initialiser = this.methods[VM.InitMethodName];                
+            }
+
+            private Value InitInstance(VM vm, int argCount)
+            {
+                var inst = vm.GetArg(0);
+                inst.val.asInstance.fields.Add(VMFieldName, Value.Object(new VM()));
+                return inst;
+            }
+
+            private Value AddGlobal(VM vm, int argCount)
+            {
+                var inst = vm.GetArg(0);
+                var name = vm.GetArg(1).val.asString;
+                var val = vm.GetArg(2);
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                ourVM.SetGlobal(name, val);
+                return inst;
+            }
+
+            private Value GetGlobal(VM vm, int argCount)
+            {
+                var inst = vm.GetArg(0);
+                var name = vm.GetArg(1).val.asString;
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                return ourVM.GetGlobal(name);
+            }
+
+            private Value InheritFromEnclosing(VM vm, int argCount)
+            {
+                var inst = vm.GetArg(0);
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                vm.CopyGlobals(ourVM);
+                return Value.Null();
+            }
+
+            private Value Start(VM vm, int argCount)
+            {
+                var inst = vm.GetArg(0);
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                var chunk = vm.GetArg(1).val.asClosure.chunk;
+                ourVM.Interpret(chunk);
+                return ourVM.StackTop;
+            }
+
+            private Value Resume(VM vm, int argCount)
+            {
+                var inst = vm.GetArg(0);
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                ourVM.Run();
+                return ourVM.StackTop;
+            }
+        }
+
         public Table GetBindings()
         {
             var resTable = new Table();
-            var vmLibInst = new InstanceInternal();
-            resTable.Add("VM", Value.New(vmLibInst)); 
-
-            vmLibInst.fields[nameof(CreateChildVMAndStart)] = Value.New(CreateChildVMAndStart);
+            resTable.Add("VM", Value.New(new VMClass())); 
 
             return resTable;
-        }
-        
-        private static Value CreateChildVMAndStart(VM vm, int argCount)
-        {
-            var startFunc = vm.GetArg(1);
-
-            var func = vm.FindFunctionWithArity(startFunc.val.asString,0);
-
-            var newVM = new VM();
-            vm.CopyGlobals(newVM);
-            newVM.CallFunction(func, 0);
-
-            return Value.Null();
         }
     }
 }

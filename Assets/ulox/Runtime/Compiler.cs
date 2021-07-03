@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 
+//TODO: Too big, refactor and make more configurable
+
 namespace ULox
 {
     //todo for self assign to work, we need to route it through the assign path and
@@ -76,6 +78,11 @@ namespace ULox
             public int previousInitFragJumpLocation = -1;
             public int testFragStartLocation = -1;
             public int previousTestFragJumpLocation = -1;
+
+            public ClassCompilerState(string currentClassName)
+            {
+                this.currentClassName = currentClassName;
+            }
         }
 
         private class CompilerState
@@ -130,7 +137,7 @@ namespace ULox
         // if we have more than 1 compiler we want this to be static
         private ParseRule[] rules;
 
-        private int CurrentChunkInstructinCount => CurrentChunk.instructions.Count;
+        private int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         private Chunk CurrentChunk => compilerStates.Peek().chunk;
 
         public Compiler()
@@ -167,7 +174,6 @@ namespace ULox
 
         private void GenerateRules()
         {
-
             rules = new ParseRule[System.Enum.GetNames(typeof(TokenType)).Length];
 
             for (int i = 0; i < rules.Length; i++)
@@ -341,11 +347,7 @@ namespace ULox
             Consume(TokenType.IDENTIFIER, "Expect class name.");
             var className = (string)previousToken.Literal;
             var compState = compilerStates.Peek();
-            compState.classCompilerStates.Push(
-                new ClassCompilerState() 
-                { 
-                    currentClassName = className
-                });
+            compState.classCompilerStates.Push(new ClassCompilerState(className));
 
             byte nameConstant = AddStringConstant();
             DeclareVariable();
@@ -453,7 +455,7 @@ namespace ULox
             }
             else
             {
-                classCompState.testFragStartLocation = compState.chunk.instructions.Count;
+                classCompState.testFragStartLocation = compState.chunk.Instructions.Count;
             }
 
             Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
@@ -493,7 +495,7 @@ namespace ULox
                     }
                     else
                     {
-                        classCompState.initFragStartLocation = CurrentChunk.instructions.Count;
+                        classCompState.initFragStartLocation = CurrentChunk.Instructions.Count;
                     }
                 }
 
@@ -810,8 +812,8 @@ namespace ULox
 
         private void ReturnStatement()
         {
-            if (compilerStates.Count <= 1)
-                throw new CompilerException("Cannot return from a top-level statement.");
+            //if (compilerStates.Count <= 1)
+            //    throw new CompilerException("Cannot return from a top-level statement.");
 
             if (Match(TokenType.END_STATEMENT))
             {
@@ -1286,20 +1288,20 @@ namespace ULox
         {
             for (int i = 0; i < b.Length; i++)
             {
-                CurrentChunk.instructions[at+i] = b[i];
+                CurrentChunk.Instructions[at+i] = b[i];
             }
         }
 
         private int EmitJump(OpCode op)
         {
             EmitBytes((byte)op, 0xff, 0xff);
-            return CurrentChunk.instructions.Count - 2;
+            return CurrentChunk.Instructions.Count - 2;
         }
 
         private void EmitLoop(int loopStart)
         {
             EmitOpCode(OpCode.LOOP);
-            int offset = CurrentChunk.instructions.Count - loopStart + 2;
+            int offset = CurrentChunk.Instructions.Count - loopStart + 2;
 
             if (offset > ushort.MaxValue)
                 throw new CompilerException($"Cannot loop '{offset}'. Max loop is '{ushort.MaxValue}'");

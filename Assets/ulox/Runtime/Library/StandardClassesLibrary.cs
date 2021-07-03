@@ -2,7 +2,6 @@
 {
     public class StandardClassesLibrary : ILoxByteCodeLibrary
     {
-
         public Table GetBindings()
         {
             var resTable = new Table();

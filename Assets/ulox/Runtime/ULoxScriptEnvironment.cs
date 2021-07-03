@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ULox
+﻿namespace ULox
 {
     public class ULoxScriptEnvironment
     {

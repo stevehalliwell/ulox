@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
+//TODO: Too big, split and org into files
+
 namespace ULox
 {
     public class ClosureInternal
@@ -64,31 +66,23 @@ namespace ULox
             [FieldOffset(0)]
             public string asString;
             [FieldOffset(0)]
-            public Chunk asChunk;
-            [FieldOffset(0)]
             public System.Func<VM, int, Value> asNativeFunc;
             [FieldOffset(0)]
-            public ClosureInternal asClosure;
-            [FieldOffset(0)]
-            public UpvalueInternal asUpvalue;
-            [FieldOffset(0)]
-            public ClassInternal asClass;
-            [FieldOffset(0)]
-            public InstanceInternal asInstance;
-            [FieldOffset(0)]
-            public BoundMethod asBoundMethod;
-            [FieldOffset(0)]
             public object asObject;
+            public ClosureInternal asClosure => asObject as ClosureInternal;
+            public UpvalueInternal asUpvalue => asObject as UpvalueInternal;
+            public ClassInternal asClass => asObject as ClassInternal;
+            public InstanceInternal asInstance => asObject as InstanceInternal;
+            public Chunk asChunk => asObject as Chunk;
+            public BoundMethod asBoundMethod => asObject as BoundMethod;
         }
 
         public Type type;
         public DataUnion val;
 
-        public bool IsFalsey 
-            => type == Type.Null || (type == Type.Bool && val.asBool == false);
+        public bool IsFalsey => type == Type.Null || (type == Type.Bool && !val.asBool);
 
-        public bool IsNull 
-            => type == Type.Null;
+        public bool IsNull => type == Type.Null;
         
         public override string ToString() 
         {
@@ -137,29 +131,29 @@ namespace ULox
             => new Value() { type = Type.String, val = new DataUnion() { asString = val } };
 
         public static Value New(Chunk val)
-            => new Value() { type = Type.Chunk, val = new DataUnion() { asChunk = val } };
+            => new Value() { type = Type.Chunk, val = new DataUnion() { asObject = val } };
 
         public static Value New(System.Func<VM, int, Value> val)
             => new Value() { type = Type.NativeFunction, val = new DataUnion() { asNativeFunc = val } };
 
         public static Value New(ClosureInternal val)
         { 
-            var res = new Value() { type = Type.Closure, val = new DataUnion() { asClosure = val } };
+            var res = new Value() { type = Type.Closure, val = new DataUnion() { asObject = val } };
             val.upvalues = new Value[val.chunk.UpvalueCount];
             return res;
         }
 
         public static Value New(UpvalueInternal val)
-            => new Value() { type = Type.Upvalue, val = new DataUnion() { asUpvalue = val } };
+            => new Value() { type = Type.Upvalue, val = new DataUnion() { asObject = val } };
 
         public static Value New(ClassInternal val)
-            => new Value() { type = Type.Class, val = new DataUnion() { asClass = val } };
+            => new Value() { type = Type.Class, val = new DataUnion() { asObject = val } };
 
         public static Value New(InstanceInternal val)
-            => new Value() { type = Type.Instance, val = new DataUnion() { asInstance = val } };
+            => new Value() { type = Type.Instance, val = new DataUnion() { asObject = val } };
 
         public static Value New(BoundMethod val)
-            => new Value() { type = Type.BoundMethod, val = new DataUnion() { asBoundMethod = val } };
+            => new Value() { type = Type.BoundMethod, val = new DataUnion() { asObject = val } };
 
         public static Value Null()
             => new Value() { type = Type.Null };

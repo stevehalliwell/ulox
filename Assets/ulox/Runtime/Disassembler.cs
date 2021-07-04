@@ -194,7 +194,7 @@ namespace ULox
                 stringBuilder.Append(v.ToString());
                 stringBuilder.AppendLine();
 
-                if (v.type == Value.Type.Chunk)
+                if (v.type == ValueType.Chunk)
                 {
                     subChunks.Add(v.val.asChunk);
                 }

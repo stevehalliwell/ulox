@@ -1,161 +1,84 @@
-﻿using System.Collections.Generic;
-using System.Runtime.InteropServices;
-
-//TODO: Too big, split and org into files
+﻿//TODO: Too big, split and org into files
 
 namespace ULox
 {
-    public class ClosureInternal
-    {
-        public Chunk chunk;
-        public Value[] upvalues;
-    }
-    public class UpvalueInternal
-    {
-        public int index = -1;
-        public bool isClosed = false;
-        public Value value = Value.Null();
-    }
-    public class ClassInternal : InstanceInternal
-    {
-        public string name;
-        public Dictionary<string, Value> methods = new Dictionary<string, Value>();
-        public List<string> properties = new List<string>();
-        public Value initialiser = Value.Null();
-        public ClosureInternal initChainStartClosure;
-        public int initChainStartLocation = -1;
-    }
-    public class InstanceInternal
-    {
-        public ClassInternal fromClass;
-        public Table fields = new Table();
-    }
-    public class BoundMethod
-    {
-        public Value receiver;
-        public ClosureInternal method;
-    }
-
     public struct Value
     {
-        public enum Type
-        {
-            Null,
-            Double,
-            Bool,
-            String,
-            Chunk,
-            NativeFunction,
-            Closure,
-            Upvalue,
-            Class,
-            Instance,
-            BoundMethod,
-            Object,
-        }
+        public ValueType type;
+        public ValueTypeDataUnion val;
 
-        [StructLayout(LayoutKind.Explicit)]
-        public struct DataUnion
-        {
-            [FieldOffset(0)]
-            public double asDouble;
-            [FieldOffset(0)]
-            public bool asBool;
-            [FieldOffset(0)]
-            public string asString;
-            [FieldOffset(0)]
-            public System.Func<VM, int, Value> asNativeFunc;
-            [FieldOffset(0)]
-            public object asObject;
-            public ClosureInternal asClosure => asObject as ClosureInternal;
-            public UpvalueInternal asUpvalue => asObject as UpvalueInternal;
-            public ClassInternal asClass => asObject as ClassInternal;
-            public InstanceInternal asInstance => asObject as InstanceInternal;
-            public Chunk asChunk => asObject as Chunk;
-            public BoundMethod asBoundMethod => asObject as BoundMethod;
-        }
+        public bool IsFalsey => type == ValueType.Null || (type == ValueType.Bool && !val.asBool);
 
-        public Type type;
-        public DataUnion val;
-
-        public bool IsFalsey => type == Type.Null || (type == Type.Bool && !val.asBool);
-
-        public bool IsNull => type == Type.Null;
+        public bool IsNull => type == ValueType.Null;
         
         public override string ToString() 
         {
             switch (type)
             {
-            case Type.Null:
+            case ValueType.Null:
                 return "null";
-            case Type.Double:
+            case ValueType.Double:
                 return val.asDouble.ToString();
-            case Type.Bool:
+            case ValueType.Bool:
                 return val.asBool.ToString();
-            case Type.String:
+            case ValueType.String:
                 return val.asString?.ToString() ?? "null";
-            case Type.Chunk:
+            case ValueType.Chunk:
                 var chunk = val.asChunk;
                 if (chunk == null)
                     throw new System.Exception("Null Chunk in Value.ToString. Illegal.");
                 var name = chunk.Name;
                 return "<fn " + name + "> ";
-            case Type.NativeFunction:
+            case ValueType.NativeFunction:
                 return "<NativeFunc>";
-            case Type.Closure:
+            case ValueType.Closure:
                 return $"<closure {val.asClosure.chunk.Name} upvals:{val.asClosure.upvalues.Length}>";
-            case Type.Upvalue:
+            case ValueType.Upvalue:
                 return $"<upvalue {val.asUpvalue.index}>";
-            case Type.Class:
+            case ValueType.Class:
                 return $"<class {val.asClass.name}>";
-            case Type.Instance:
+            case ValueType.Instance:
                 return $"<inst {val.asInstance.fromClass?.name}>";
-            case Type.BoundMethod:
+            case ValueType.BoundMethod:
                 return $"<boundMeth {val.asBoundMethod.method.chunk.Name}>";
-            case Type.Object:
+            case ValueType.Object:
                 return $"<object {val.asObject}>";
             default:
                 throw new System.NotImplementedException();
             }
         }
 
-        public static Value New(double val) 
-            => new Value() { type = Type.Double, val = new DataUnion() { asDouble = val} };
+        public static Value New(ValueType valueType, ValueTypeDataUnion dataUnion)
+            => new Value() { type = valueType, val = dataUnion };
 
-        public static Value New(bool val) 
-            => new Value() { type = Type.Bool, val = new DataUnion() { asBool = val } };
+        public static Value New(double val) => New( ValueType.Double,new ValueTypeDataUnion() { asDouble = val});
 
-        public static Value New(string val)
-            => new Value() { type = Type.String, val = new DataUnion() { asString = val } };
+        public static Value New(bool val) => New( ValueType.Bool, new ValueTypeDataUnion() { asBool = val });
 
-        public static Value New(Chunk val)
-            => new Value() { type = Type.Chunk, val = new DataUnion() { asObject = val } };
+        public static Value New(string val) => New(ValueType.String, new ValueTypeDataUnion() { asString = val });
 
-        public static Value New(System.Func<VM, int, Value> val)
-            => new Value() { type = Type.NativeFunction, val = new DataUnion() { asNativeFunc = val } };
+        public static Value New(Chunk val) => New(ValueType.Chunk, new ValueTypeDataUnion() { asObject = val } );
+
+        public static Value New(System.Func<VM, int, Value> val) 
+            => New( ValueType.NativeFunction, new ValueTypeDataUnion() { asNativeFunc = val });
 
         public static Value New(ClosureInternal val)
         { 
-            var res = new Value() { type = Type.Closure, val = new DataUnion() { asObject = val } };
+            var res = New( ValueType.Closure, new ValueTypeDataUnion() { asObject = val });
             val.upvalues = new Value[val.chunk.UpvalueCount];
             return res;
         }
 
-        public static Value New(UpvalueInternal val)
-            => new Value() { type = Type.Upvalue, val = new DataUnion() { asObject = val } };
+        public static Value New(UpvalueInternal val) => New( ValueType.Upvalue, new ValueTypeDataUnion() { asObject = val });
 
-        public static Value New(ClassInternal val)
-            => new Value() { type = Type.Class, val = new DataUnion() { asObject = val } };
+        public static Value New(ClassInternal val) => New(ValueType.Class,new ValueTypeDataUnion() { asObject = val } );
 
-        public static Value New(InstanceInternal val)
-            => new Value() { type = Type.Instance, val = new DataUnion() { asObject = val } };
+        public static Value New(InstanceInternal val) => New( ValueType.Instance, new ValueTypeDataUnion() { asObject = val });
 
-        public static Value New(BoundMethod val)
-            => new Value() { type = Type.BoundMethod, val = new DataUnion() { asObject = val } };
+        public static Value New(BoundMethod val) => New(ValueType.BoundMethod, new ValueTypeDataUnion() { asObject = val });
 
-        public static Value Null()
-            => new Value() { type = Type.Null };
-        public static Value Object(object obj)
-            => new Value() { type = Type.Object, val = new DataUnion() { asObject = obj } };
+        public static Value Null() => new Value() { type = ValueType.Null };
+
+        public static Value Object(object obj) => New( ValueType.Object, new ValueTypeDataUnion() { asObject = obj });
     }
 }

@@ -1239,9 +1239,12 @@ print(c);
 
 for(var i = 0; i < c; i = i + 1)
     print(list.Get(i));
+
+for(var i = 0; i < c; i = i + 1)
+    print(list.Set(i, -i));
 ");
 
-            Assert.AreEqual("501234", engine.InterpreterResult);
+            Assert.AreEqual("5012340-1-2-3-4", engine.InterpreterResult);
         }
 
         [Test]

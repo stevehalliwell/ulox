@@ -87,7 +87,7 @@ namespace ULox
         {
             var globalVal = GetGlobal(name);
 
-            if (globalVal.type == Value.Type.Closure &&
+            if (globalVal.type == ValueType.Closure &&
                     globalVal.val.asClosure.chunk.Arity == arity)
             {
                 return globalVal;
@@ -342,10 +342,10 @@ namespace ULox
                         {
                         default:
                             throw new VMException($"Only classes and instances have properties. Got {targetVal}.");
-                        case Value.Type.Class:
+                        case ValueType.Class:
                             instance = targetVal.val.asClass;
                             break;
-                        case Value.Type.Instance:
+                        case ValueType.Instance:
                             instance = targetVal.val.asInstance;
                             break;
                         }
@@ -450,7 +450,7 @@ namespace ULox
         private void DoInheritOp()
         {
             var superClass = Peek(1);
-            if (superClass.type != Value.Type.Class)
+            if (superClass.type != ValueType.Class)
                 throw new VMException("Superclass must be a class.");
 
             var subClass = Peek();
@@ -477,10 +477,10 @@ namespace ULox
             {
             default:
                 throw new VMException($"Only classes and instances have properties. Got {targetVal}.");
-            case Value.Type.Class:
+            case ValueType.Class:
                 instance = targetVal.val.asClass;
                 break;
-            case Value.Type.Instance:
+            case ValueType.Instance:
                 instance = targetVal.val.asInstance;
                 break;
             }
@@ -533,7 +533,7 @@ namespace ULox
             var receiver = Peek(argCount);
             switch (receiver.type)
             {
-            case Value.Type.Instance:
+            case ValueType.Instance:
                 {
                     var inst = receiver.val.asInstance;
 
@@ -555,7 +555,7 @@ namespace ULox
                     }
                 }
                 break;
-            case Value.Type.Class:
+            case ValueType.Class:
                 {
                     var klass = receiver.val.asClass;
                     CallValue(klass.methods[methodName], argCount);
@@ -656,16 +656,16 @@ namespace ULox
         {
             switch (callee.type)
             {
-            case Value.Type.NativeFunction:
+            case ValueType.NativeFunction:
                 CallNative(callee.val.asNativeFunc, argCount);
                 break;
-            case Value.Type.Closure:
+            case ValueType.Closure:
                 Call(callee.val.asClosure, argCount);
                 break;
-            case Value.Type.Class:
+            case ValueType.Class:
                 CreateInstance(callee.val.asClass, argCount);
                 break;
-            case Value.Type.BoundMethod:
+            case ValueType.BoundMethod:
                 CallMethod(callee.val.asBoundMethod, argCount);
                 break;
             default:
@@ -764,13 +764,13 @@ namespace ULox
             if (lhs.type != rhs.type)
                 throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
 
-            if (opCode == OpCode.ADD && lhs.type == Value.Type.String && rhs.type == lhs.type)
+            if (opCode == OpCode.ADD && lhs.type == ValueType.String && rhs.type == lhs.type)
             {
                 Push(Value.New(lhs.val.asString + rhs.val.asString));
                 return;
             }
 
-            if (lhs.type == Value.Type.Instance)
+            if (lhs.type == ValueType.Instance)
             {
                 //identify if lhs has a matching method or field
 
@@ -779,7 +779,7 @@ namespace ULox
                 //call the method
             }
 
-            if (lhs.type != Value.Type.Double)
+            if (lhs.type != ValueType.Double)
             {
                 throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
             }
@@ -815,12 +815,12 @@ namespace ULox
                 Push(Value.New(VMValueCompare(ref lhs, ref rhs)));
                 break;
             case OpCode.LESS:
-                if (lhs.type != Value.Type.Double || rhs.type != Value.Type.Double)
+                if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                     throw new VMException($"Cannot less compare on different types '{lhs.type}' and '{rhs.type}'.");
                 Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
                 break;
             case OpCode.GREATER:
-                if (lhs.type != Value.Type.Double || rhs.type != Value.Type.Double)
+                if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                     throw new VMException($"Cannot greater across on different types '{lhs.type}' and '{rhs.type}'.");
                 Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
                 break;
@@ -838,13 +838,13 @@ namespace ULox
             {
                 switch (lhs.type)
                 {
-                case Value.Type.Null:
+                case ValueType.Null:
                     return true;
-                case Value.Type.Double:
+                case ValueType.Double:
                     return lhs.val.asDouble == rhs.val.asDouble;
-                case Value.Type.Bool:
+                case ValueType.Bool:
                     return lhs.val.asBool == rhs.val.asBool;
-                case Value.Type.String:
+                case ValueType.String:
                     return lhs.val.asString == rhs.val.asString;
                 default:
                     throw new VMException($"Cannot perform compare on type '{lhs.type}'.");

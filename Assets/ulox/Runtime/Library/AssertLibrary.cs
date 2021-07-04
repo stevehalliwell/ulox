@@ -19,7 +19,7 @@
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
-            if(lhs.type != Value.Type.Double || rhs.type != Value.Type.Double)
+            if(lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                 throw new AssertException($"Cannot perform AreApproxEqual on non-double types, '{lhs}', '{rhs}'.");
 
             var dif = lhs.val.asDouble - rhs.val.asDouble;

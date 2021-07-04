@@ -4,12 +4,6 @@ namespace ULox
 {
     public class Chunk
     {
-        public struct RunLengthLineNumber
-        {
-            public int startingInstruction;
-            public int line;
-        }
-
         private readonly List<Value> constants = new List<Value>();
         private int instructionCount = -1;
 
@@ -23,30 +17,6 @@ namespace ULox
         public Chunk(string name)
         {
             Name = name;
-        }
-
-        public void AddLine(int line)
-        {
-            instructionCount++;
-
-            if (RunLengthLineNumbers.Count == 0)
-            {
-                RunLengthLineNumbers.Add(new RunLengthLineNumber()
-                {
-                    line = line,
-                    startingInstruction = instructionCount
-                });
-                return;
-            }
-
-            if (RunLengthLineNumbers[RunLengthLineNumbers.Count - 1].line != line)
-            {
-                RunLengthLineNumbers.Add(new RunLengthLineNumber()
-                {
-                    line = line,
-                    startingInstruction = instructionCount
-                });
-            }
         }
 
         public int GetLineForInstruction(int instructionNumber)
@@ -101,27 +71,51 @@ namespace ULox
         {
             switch (val.type)
             {
-            case Value.Type.Null:
+            case ValueType.Null:
                 throw new CompilerException("Attempted to add a null constant");
-            case Value.Type.Double:
+            case ValueType.Double:
                 return constants.FindIndex(x => x.type == val.type && val.val.asDouble == x.val.asDouble);
 
-            case Value.Type.Bool:
+            case ValueType.Bool:
                 return constants.FindIndex(x => x.type == val.type && val.val.asBool == x.val.asBool);
 
-            case Value.Type.String:
+            case ValueType.String:
                 return constants.FindIndex(x => x.type == val.type && val.val.asString == x.val.asString);
             // none of those are going to be duplicated by the compiler anyway
-            case Value.Type.Object:
-            case Value.Type.Chunk:
-            case Value.Type.NativeFunction:
-            case Value.Type.Closure:
-            case Value.Type.Upvalue:
-            case Value.Type.Class:
-            case Value.Type.Instance:
-            case Value.Type.BoundMethod:
+            case ValueType.Object:
+            case ValueType.Chunk:
+            case ValueType.NativeFunction:
+            case ValueType.Closure:
+            case ValueType.Upvalue:
+            case ValueType.Class:
+            case ValueType.Instance:
+            case ValueType.BoundMethod:
             default:
                 return -1;
+            }
+        }
+
+        private void AddLine(int line)
+        {
+            instructionCount++;
+
+            if (RunLengthLineNumbers.Count == 0)
+            {
+                RunLengthLineNumbers.Add(new RunLengthLineNumber()
+                {
+                    line = line,
+                    startingInstruction = instructionCount
+                });
+                return;
+            }
+
+            if (RunLengthLineNumbers[RunLengthLineNumbers.Count - 1].line != line)
+            {
+                RunLengthLineNumbers.Add(new RunLengthLineNumber()
+                {
+                    line = line,
+                    startingInstruction = instructionCount
+                });
             }
         }
     }

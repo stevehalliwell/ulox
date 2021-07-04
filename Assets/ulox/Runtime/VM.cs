@@ -67,7 +67,7 @@ namespace ULox
         public Value GetArg(int index) => _valueStack[currentCallFrame.stackStart + index];
         public Value StackTop => _valueStack.Peek();
 
-        public Value GetGlobal(string name)=> _globals[name];
+        public Value GetGlobal(string name) => _globals[name];
 
         public InterpreterResult CallFunction(Value func, int args)
         {
@@ -133,6 +133,15 @@ namespace ULox
                 currentCallFrame = default;
         }
 
+        public InterpreterResult Interpret(Chunk chunk)
+        {
+            Push(Value.New(""));
+            Push(Value.New(new ClosureInternal() { chunk = chunk }));
+            CallValue(Peek(), 0);
+
+            return Run();
+        }
+
         public InterpreterResult Run(Program program)
         {
             foreach (var compiled in program.CompiledScripts)
@@ -144,15 +153,6 @@ namespace ULox
             }
 
             return InterpreterResult.OK;
-        }
-
-        public InterpreterResult Interpret(Chunk chunk)
-        {
-            Push(Value.New(""));
-            Push(Value.New(new ClosureInternal() { chunk = chunk }));
-            CallValue(Peek(), 0);
-
-            return Run();
         }
 
         public InterpreterResult Run()
@@ -173,19 +173,7 @@ namespace ULox
                     break;
                 case OpCode.RETURN:
                     {
-                        Value result = Pop();
-
-                        CloseUpvalues(currentCallFrame.stackStart);
-
-                        var prevStackStart = currentCallFrame.stackStart;
-
-                        PopCallFrame();
-
-                        var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
-
-                        DiscardPop(toRemove);
-
-                        Push(result);
+                        DoReturnOp();
 
                         if (_callFrames.Count == 0)
                         {
@@ -215,10 +203,7 @@ namespace ULox
                 case OpCode.PUSH_BOOL:
                     {
                         var b = ReadByte(chunk);
-                        if (b == 1)
-                            Push(Value.New(true));
-                        else
-                            Push(Value.New(false));
+                        Push(Value.New(b == 1));
                     }
                     break;
                 case OpCode.NULL:
@@ -320,69 +305,12 @@ namespace ULox
                     break;
                 case OpCode.INVOKE:
                     {
-                        var constantIndex = ReadByte(chunk);
-                        var methodName = chunk.ReadConstant(constantIndex).val.asString;
-                        var argCount = ReadByte(chunk);
-
-                        var receiver = Peek(argCount);
-                        switch (receiver.type)
-                        {
-                        case Value.Type.Instance:
-                            {
-                                var inst = receiver.val.asInstance;
-
-                                //it could be a field
-                                if (inst.fields.TryGetValue(methodName, out var fieldFunc))
-                                {
-                                    _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
-                                    CallValue(fieldFunc, argCount);
-                                }
-                                else
-                                {
-                                    var fromClass = inst.fromClass;
-                                    if (!fromClass.methods.TryGetValue(methodName, out var method))
-                                    {
-                                        throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
-                                    }
-
-                                    CallValue(method, argCount);
-                                }
-                            }
-                            break;
-                        case Value.Type.Class:
-                            {
-                                var klass = receiver.val.asClass;
-                                CallValue(klass.methods[methodName], argCount);
-                            }
-                            break;
-                        default:
-                            throw new VMException($"Cannot invoke on '{receiver}'.");
-                        }
+                        DoInvokeOp(chunk);
                     }
                     break;
                 case OpCode.CLOSURE:
                     {
-                        var constantIndex = ReadByte(chunk);
-                        var func = chunk.ReadConstant(constantIndex);
-                        var closureVal = Value.New(new ClosureInternal() { chunk = func.val.asChunk });
-                        Push(closureVal);
-
-                        var closure = closureVal.val.asClosure;
-
-                        for (int i = 0; i < closure.upvalues.Length; i++)
-                        {
-                            var isLocal = ReadByte(chunk);
-                            var index = ReadByte(chunk);
-                            if (isLocal == 1)
-                            {
-                                var local = currentCallFrame.stackStart + index;
-                                closure.upvalues[i] = CaptureUpvalue(local);
-                            }
-                            else
-                            {
-                                closure.upvalues[i] = currentCallFrame.closure.upvalues[index];
-                            }
-                        }
+                        DoClosureOp(chunk);
                     }
                     break;
                 case OpCode.CLOSE_UPVALUE:
@@ -439,32 +367,7 @@ namespace ULox
                     break;
                 case OpCode.SET_PROPERTY_UNCACHED:
                     {
-                        var targetVal = Peek(1);
-
-                        InstanceInternal instance = null;
-
-                        switch (targetVal.type)
-                        {
-                        default:
-                            throw new VMException($"Only classes and instances have properties. Got {targetVal}.");
-                        case Value.Type.Class:
-                            instance = targetVal.val.asClass;
-                            break;
-                        case Value.Type.Instance:
-                            instance = targetVal.val.asInstance;
-                            break;
-                        }
-
-                        //todo add inline caching of some kind
-
-                        var constantIndex = ReadByte(chunk);
-                        var name = chunk.ReadConstant(constantIndex).val.asString;
-
-                        instance.fields[name] = Peek();
-
-                        var value = Pop();
-                        DiscardPop();
-                        Push(value);
+                        DoSetPropertyOp(chunk);
                     }
                     break;
                 case OpCode.METHOD:
@@ -509,21 +412,7 @@ namespace ULox
                     break;
                 case OpCode.INHERIT:
                     {
-                        var superClass = Peek(1);
-                        if (superClass.type != Value.Type.Class)
-                            throw new VMException("Superclass must be a class.");
-
-                        var subClass = Peek();
-                        var subMethods = subClass.val.asClass.methods;
-                        var superMethods = superClass.val.asClass.methods;
-                        foreach (var item in superMethods)
-                        {
-                            var k = item.Key;
-                            var v = item.Value;
-                            subMethods.Add(k, v);
-                        }
-
-                        DiscardPop();
+                        DoInheritOp();
                     }
                     break;
                 case OpCode.GET_SUPER:
@@ -557,6 +446,145 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoInheritOp()
+        {
+            var superClass = Peek(1);
+            if (superClass.type != Value.Type.Class)
+                throw new VMException("Superclass must be a class.");
+
+            var subClass = Peek();
+            var subMethods = subClass.val.asClass.methods;
+            var superMethods = superClass.val.asClass.methods;
+            foreach (var item in superMethods)
+            {
+                var k = item.Key;
+                var v = item.Value;
+                subMethods.Add(k, v);
+            }
+
+            DiscardPop();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSetPropertyOp(Chunk chunk)
+        {
+            var targetVal = Peek(1);
+
+            InstanceInternal instance = null;
+
+            switch (targetVal.type)
+            {
+            default:
+                throw new VMException($"Only classes and instances have properties. Got {targetVal}.");
+            case Value.Type.Class:
+                instance = targetVal.val.asClass;
+                break;
+            case Value.Type.Instance:
+                instance = targetVal.val.asInstance;
+                break;
+            }
+
+            //todo add inline caching of some kind
+
+            var constantIndex = ReadByte(chunk);
+            var name = chunk.ReadConstant(constantIndex).val.asString;
+
+            instance.fields[name] = Peek();
+
+            var value = Pop();
+            DiscardPop();
+            Push(value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoClosureOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var func = chunk.ReadConstant(constantIndex);
+            var closureVal = Value.New(new ClosureInternal() { chunk = func.val.asChunk });
+            Push(closureVal);
+
+            var closure = closureVal.val.asClosure;
+
+            for (int i = 0; i < closure.upvalues.Length; i++)
+            {
+                var isLocal = ReadByte(chunk);
+                var index = ReadByte(chunk);
+                if (isLocal == 1)
+                {
+                    var local = currentCallFrame.stackStart + index;
+                    closure.upvalues[i] = CaptureUpvalue(local);
+                }
+                else
+                {
+                    closure.upvalues[i] = currentCallFrame.closure.upvalues[index];
+                }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoInvokeOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var methodName = chunk.ReadConstant(constantIndex).val.asString;
+            var argCount = ReadByte(chunk);
+
+            var receiver = Peek(argCount);
+            switch (receiver.type)
+            {
+            case Value.Type.Instance:
+                {
+                    var inst = receiver.val.asInstance;
+
+                    //it could be a field
+                    if (inst.fields.TryGetValue(methodName, out var fieldFunc))
+                    {
+                        _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
+                        CallValue(fieldFunc, argCount);
+                    }
+                    else
+                    {
+                        var fromClass = inst.fromClass;
+                        if (!fromClass.methods.TryGetValue(methodName, out var method))
+                        {
+                            throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
+                        }
+
+                        CallValue(method, argCount);
+                    }
+                }
+                break;
+            case Value.Type.Class:
+                {
+                    var klass = receiver.val.asClass;
+                    CallValue(klass.methods[methodName], argCount);
+                }
+                break;
+            default:
+                throw new VMException($"Cannot invoke on '{receiver}'.");
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoReturnOp()
+        {
+            Value result = Pop();
+
+            CloseUpvalues(currentCallFrame.stackStart);
+
+            var prevStackStart = currentCallFrame.stackStart;
+
+            PopCallFrame();
+
+            var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
+
+            DiscardPop(toRemove);
+
+            Push(result);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void BindMethod(ClassInternal fromClass, string methodName)
         {
             if (!fromClass.methods.TryGetValue(methodName, out var method))
@@ -583,6 +611,7 @@ namespace ULox
             DiscardPop();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CloseUpvalues(int last)
         {
             while (openUpvalues.Count > 0 &&
@@ -662,6 +691,7 @@ namespace ULox
             CallValue(method, argCount);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateInstance(ClassInternal asClass, int argCount)
         {
             var instInternal = new InstanceInternal() { fromClass = asClass };

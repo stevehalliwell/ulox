@@ -5,7 +5,7 @@ namespace ULox
 {
     public class TestRunner
     {
-        private Dictionary<string, bool> tests = new Dictionary<string, bool>();
+        private readonly Dictionary<string, bool> tests = new Dictionary<string, bool>();
 
         public void StartTest(string name) => tests[name] = false;
         public void EndTest(string name) => tests[name] = true;

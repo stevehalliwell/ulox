@@ -1,13 +1,17 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
+using System.Linq;
 
 namespace ULox
 {
     public class DumpStack
     {
-        private StringBuilder sb = new StringBuilder();
+        private readonly StringBuilder sb = new StringBuilder();
 
-        public string Generate(FastStack<Value> valueStack)
+        public string Generate(IEnumerable<Value> enumerableValueStack)
         {
+            var valueStack = enumerableValueStack.ToList();
+
             for (int i = valueStack.Count - 1; i >= 0; i--)
             {
                 sb.Append(valueStack[i].ToString());

@@ -19,8 +19,6 @@ namespace ULox
     public class ClassInternal : InstanceInternal
     {
         public string name;
-        //Would like to use these but the calling cites aren't typed so there's no caching
-        //public IndexedTable methods = new IndexedTable();
         public Dictionary<string, Value> methods = new Dictionary<string, Value>();
         public List<string> properties = new List<string>();
         public Value initialiser = Value.Null();

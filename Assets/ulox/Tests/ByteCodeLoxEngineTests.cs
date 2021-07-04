@@ -1,6 +1,11 @@
 ﻿using NUnit.Framework;
 using UnityEngine;
 
+//TODO Test recompile of same script hits the existing stored version
+//      vm find func with arity is unused
+//      list set
+//      
+
 namespace ULox.Tests
 {
     public class ByteCodeLoxEngineTests
@@ -37,7 +42,7 @@ namespace ULox.Tests
             var chunk = GenerateManualChunk();
             VM vm = new VM();
 
-            Assert.AreEqual(vm.Interpret(chunk), InterpreterResult.OK);
+            Assert.AreEqual(InterpreterResult.OK, vm.Interpret(chunk));
         }
 
         [Test]
@@ -47,7 +52,7 @@ namespace ULox.Tests
 
             engine.Run("print (1+2);");
 
-            Assert.AreEqual(engine.InterpreterResult, "3");
+            Assert.AreEqual("3", engine.InterpreterResult);
         }
 
         [Test]
@@ -57,7 +62,7 @@ namespace ULox.Tests
 
             engine.Run("print (!true);");
 
-            Assert.AreEqual(engine.InterpreterResult, "False");
+            Assert.AreEqual("False",engine.InterpreterResult);
         }
 
         [Test]
@@ -67,7 +72,7 @@ namespace ULox.Tests
 
             engine.Run("print (1 < 2 == false);");
 
-            Assert.AreEqual(engine.InterpreterResult, "False");
+            Assert.AreEqual("False", engine.InterpreterResult);
         }
 
         [Test]
@@ -77,7 +82,7 @@ namespace ULox.Tests
 
             engine.Run("print (\"hello\" + \" \" + \"world\");");
 
-            Assert.AreEqual(engine.InterpreterResult, "hello world");
+            Assert.AreEqual("hello world", engine.InterpreterResult);
         }
 
         [Test]
@@ -87,7 +92,7 @@ namespace ULox.Tests
 
             engine.Run("print (1 + 2 * 3);");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -104,7 +109,7 @@ var myOtherVar = myVar * 2;
 
 print (myOtherVar);");
 
-            Assert.AreEqual(engine.InterpreterResult, "10null20");
+            Assert.AreEqual("10null20", engine.InterpreterResult);
         }
 
         [Test]
@@ -114,7 +119,7 @@ print (myOtherVar);");
 
             engine.Run(@"{print (1+2);}");
 
-            Assert.AreEqual(engine.InterpreterResult, "3");
+            Assert.AreEqual("3", engine.InterpreterResult);
         }
 
         [Test]
@@ -129,7 +134,7 @@ var b = 1;
     print( a+b);
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "3");
+            Assert.AreEqual("3", engine.InterpreterResult);
         }
 
         [Test]
@@ -148,7 +153,7 @@ var b = 1;
     }
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "36");
+            Assert.AreEqual("36", engine.InterpreterResult);
         }
 
         [Test]
@@ -163,7 +168,7 @@ var b = 1;
     print (a+b);
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "3");
+            Assert.AreEqual("3", engine.InterpreterResult);
         }
 
         [Test]
@@ -184,7 +189,7 @@ var b = 1;
     }
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "36");
+            Assert.AreEqual("36", engine.InterpreterResult);
         }
 
         [Test]
@@ -194,7 +199,7 @@ var b = 1;
 
             engine.Run(@"if(1 > 2) print (""ERROR""); print (""End"");");
 
-            Assert.AreEqual(engine.InterpreterResult, "End");
+            Assert.AreEqual("End", engine.InterpreterResult);
         }
 
         [Test]
@@ -209,7 +214,7 @@ else
     print (""The ""); 
 print (""End"");");
 
-            Assert.AreEqual(engine.InterpreterResult, "The End");
+            Assert.AreEqual("The End", engine.InterpreterResult);
         }
 
         [Test]
@@ -224,7 +229,7 @@ else if (1 == 1 and 2 == 2)
     print (""The ""); 
 print (""End"");");
 
-            Assert.AreEqual(engine.InterpreterResult, "The End");
+            Assert.AreEqual("The End", engine.InterpreterResult);
         }
 
         [Test]
@@ -243,7 +248,7 @@ while(i < 2)
 print (""hurray"");");
 
 
-            Assert.AreEqual(engine.InterpreterResult, "hip, hip, hurray");
+            Assert.AreEqual("hip, hip, hurray", engine.InterpreterResult);
         }
 
         [Test]
@@ -267,7 +272,7 @@ while(i < 5)
 print (""hurray"");");
 
 
-            Assert.AreEqual(engine.InterpreterResult, "success?hurray");
+            Assert.AreEqual("success?hurray", engine.InterpreterResult);
         }
 
         [Test]
@@ -286,7 +291,7 @@ while(i < 3)
 }");
 
 
-            Assert.AreEqual(engine.InterpreterResult, "123");
+            Assert.AreEqual("123", engine.InterpreterResult);
         }
 
         [Test]
@@ -310,7 +315,7 @@ while(i < 5)
     print (i);
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "1020304050111213141512122232425231323334353414243444545");
+            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", engine.InterpreterResult);
         }
 
         [Test]
@@ -333,7 +338,7 @@ while(i < 5)
     print (i);
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "1020304050111213141512122232425231323334353414243444545");
+            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", engine.InterpreterResult);
         }
 
         [Test]
@@ -360,7 +365,7 @@ while(i < 5)
 DoIt();");
 
 
-            Assert.AreEqual(engine.InterpreterResult, "1020304050111213141512122232425231323334353414243444545");
+            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", engine.InterpreterResult);
         }
 
         [Test]
@@ -388,7 +393,7 @@ while(i < 5)
 DoIt();");
 
 
-            Assert.AreEqual(engine.InterpreterResult, "1020304050111213141512122232425231323334353414243444545");
+            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", engine.InterpreterResult);
         }
 
         [Test]
@@ -405,7 +410,7 @@ for(var i = 0; i < 2; i = i + 1)
 print (""hurray"");");
 
 
-            Assert.AreEqual(engine.InterpreterResult, "hip, hip, hurray");
+            Assert.AreEqual("hip, hip, hurray", engine.InterpreterResult);
         }
 
         [Test]
@@ -421,7 +426,7 @@ fun T()
 
 print (T);");
 
-            Assert.AreEqual(engine.InterpreterResult, "<closure T upvals:0>");
+            Assert.AreEqual( "<closure T upvals:0>", engine.InterpreterResult);
         }
 
         [Test]
@@ -437,7 +442,7 @@ fun MyFunc()
 
 MyFunc();");
 
-            Assert.AreEqual(engine.InterpreterResult, "2");
+            Assert.AreEqual("2", engine.InterpreterResult);
         }
 
         [Test]
@@ -448,7 +453,7 @@ MyFunc();");
 
             engine.Run(@"print (CallEmptyNative());");
 
-            Assert.AreEqual(engine.InterpreterResult, "Native");
+            Assert.AreEqual("Native", engine.InterpreterResult);
         }
 
         [Test]
@@ -463,7 +468,7 @@ fun C(){return 10;}
 
 print (A()+B()*C());");
 
-            Assert.AreEqual(engine.InterpreterResult, "32");
+            Assert.AreEqual("32", engine.InterpreterResult);
         }
 
         [Test]
@@ -485,7 +490,7 @@ print( A(1)+B()*C());
 
 print (A(10)+B()*C());");
 
-            Assert.AreEqual(engine.InterpreterResult, "2932");
+            Assert.AreEqual("2932", engine.InterpreterResult);
         }
 
         [Test]
@@ -500,7 +505,7 @@ var c = 10;
 
 print (a+b*c);");
 
-            Assert.AreEqual(engine.InterpreterResult, "32");
+            Assert.AreEqual("32", engine.InterpreterResult);
         }
 
         [Test]
@@ -519,7 +524,7 @@ print (a+b*c);
 
 Func();");
 
-            Assert.AreEqual(engine.InterpreterResult, "32");
+            Assert.AreEqual("32", engine.InterpreterResult);
         }
 
         //[Test]
@@ -534,7 +539,7 @@ Func();");
 
         //    engine.Run(@"print CalEmptylNative();");
 
-        //    Assert.AreEqual(engine.InterpreterResult, "Native");
+        //    Assert.AreEqual("Native");
         //}
 
         [Test]
@@ -559,7 +564,7 @@ print (fib(20));
 print ("" in "");
 print (clock() - start);");
 
-            //Assert.AreEqual(engine.InterpreterResult, "Native");
+            //Assert.AreEqual("Native", engine.InterpreterResult);
         }
 
         [Test]
@@ -578,7 +583,7 @@ print (clock() - start);");
 
 Recur(5);");
 
-            Assert.AreEqual(engine.InterpreterResult, "54321");
+            Assert.AreEqual("54321", engine.InterpreterResult);
         }
 
         [Test]
@@ -601,7 +606,7 @@ fun outer() {
 }
 outer(); ");
 
-            Assert.AreEqual(engine.InterpreterResult, "outer");
+            Assert.AreEqual("outer", engine.InterpreterResult);
         }
 
         [Test]
@@ -629,7 +634,7 @@ var mid = outer();
 var in = mid();
 in();");
 
-            Assert.AreEqual(engine.InterpreterResult, @"return from outercreate inner closurevalue");
+            Assert.AreEqual(@"return from outercreate inner closurevalue", engine.InterpreterResult);
         }
 
         [Test]
@@ -647,7 +652,7 @@ fun outer() {
 }
 outer();");
 
-            Assert.AreEqual(engine.InterpreterResult, "outside");
+            Assert.AreEqual("outside", engine.InterpreterResult);
         }
 
         [Test]
@@ -711,7 +716,7 @@ var c2 = makeCounter();
 c2();
 c2();");
 
-            Assert.AreEqual(engine.InterpreterResult, "A012A012");
+            Assert.AreEqual("A012A012", engine.InterpreterResult);
         }
 
         [Test]
@@ -723,7 +728,7 @@ c2();");
 class Brioche {}
 print (Brioche);");
 
-            Assert.AreEqual(engine.InterpreterResult, "<class Brioche>");
+            Assert.AreEqual("<class Brioche>", engine.InterpreterResult);
         }
 
         [Test]
@@ -735,7 +740,7 @@ print (Brioche);");
 class Brioche {}
 print (Brioche());");
 
-            Assert.AreEqual(engine.InterpreterResult, "<inst Brioche>");
+            Assert.AreEqual("<inst Brioche>", engine.InterpreterResult);
         }
 
         [Test]
@@ -750,7 +755,7 @@ class Brioche
 }
 Brioche().Meth();");
 
-            Assert.AreEqual(engine.InterpreterResult, "Method Called");
+            Assert.AreEqual("Method Called", engine.InterpreterResult);
         }
 
         [Test]
@@ -766,7 +771,7 @@ class Brioche
 
 print (Brioche().Meth());");
 
-            Assert.AreEqual(engine.InterpreterResult, "<inst Brioche>");
+            Assert.AreEqual("<inst Brioche>", engine.InterpreterResult);
         }
 
         [Test]
@@ -778,7 +783,7 @@ print (Brioche().Meth());");
 class Toast {}
 Toast().a = 3;");
 
-            Assert.AreEqual(engine.InterpreterResult, "");
+            Assert.AreEqual("", engine.InterpreterResult);
         }
 
         [Test]
@@ -791,7 +796,7 @@ class Toast {}
 var toast = Toast();
 print (toast.jam = ""grape"");");
 
-            Assert.AreEqual(engine.InterpreterResult, "grape");
+            Assert.AreEqual("grape", engine.InterpreterResult);
         }
 
         [Test]
@@ -807,7 +812,7 @@ pair.first = 1;
 pair.second = 2;
 print( pair.first + pair.second);");
 
-            Assert.AreEqual(engine.InterpreterResult, "3");
+            Assert.AreEqual("3", engine.InterpreterResult);
         }
 
         [Test]
@@ -824,7 +829,7 @@ class T
 var t = T();
 t.Say();");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -842,7 +847,7 @@ var t = T();
 t.name = ""name"";
 t.Say();");
 
-            Assert.AreEqual(engine.InterpreterResult, "name");
+            Assert.AreEqual("name", engine.InterpreterResult);
         }
 
         [Test]
@@ -864,7 +869,7 @@ t.a = 1;
 t.Set();
 print (t.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -886,7 +891,7 @@ t.a = 1;
 t.Set(7);
 print (t.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -908,7 +913,7 @@ var t = T();
 t.Set();
 t.Say();");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -929,7 +934,7 @@ var t = T();
 t.Set(7);
 print (t.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -956,7 +961,7 @@ var maker = CoffeeMaker();
 maker.Set(""coffee and chicory"");
 maker.brew();");
 
-            Assert.AreEqual(engine.InterpreterResult, "Enjoy your cup of coffee and chicory");
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", engine.InterpreterResult);
         }
 
         [Test]
@@ -981,7 +986,7 @@ class CoffeeMaker {
 var maker = CoffeeMaker(""coffee and chicory"");
 maker.brew();");
 
-            Assert.AreEqual(engine.InterpreterResult, "Enjoy your cup of coffee and chicory");
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", engine.InterpreterResult);
         }
 
         [Test]
@@ -1007,7 +1012,7 @@ var maker = CoffeeMaker(""coffee and chicory"");
 var delegate = maker.brew;
 delegate();");
 
-            Assert.AreEqual(engine.InterpreterResult, "Enjoy your cup of coffee and chicory");
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", engine.InterpreterResult);
         }
 
         [Test]
@@ -1031,7 +1036,7 @@ var maker = CoffeeMaker(""coffee and chicory"");
 maker.brew = b;
 maker.brew();");
 
-            Assert.AreEqual(engine.InterpreterResult, "Enjoy your cup of coffee");
+            Assert.AreEqual("Enjoy your cup of coffee", engine.InterpreterResult);
         }
 
         [Test]
@@ -1047,7 +1052,7 @@ var b = B();
 b.MethA();
 b.MethB();");
 
-            Assert.AreEqual(engine.InterpreterResult, "12");
+            Assert.AreEqual("12", engine.InterpreterResult);
         }
 
         [Test]
@@ -1062,7 +1067,7 @@ class B < A {MethB(){this.MethA();print (2);}}
 var b = B();
 b.MethB();");
 
-            Assert.AreEqual(engine.InterpreterResult, "12");
+            Assert.AreEqual("12", engine.InterpreterResult);
         }
 
         [Test]
@@ -1077,7 +1082,7 @@ class B < A {MethA(){print (2);}}
 var b = B();
 b.MethA();");
 
-            Assert.AreEqual(engine.InterpreterResult, "2");
+            Assert.AreEqual("2", engine.InterpreterResult);
         }
 
         [Test]
@@ -1092,7 +1097,7 @@ class B < A {MethA(){super.MethA(); print (2);}}
 var b = B();
 b.MethA();");
 
-            Assert.AreEqual(engine.InterpreterResult, "12");
+            Assert.AreEqual("12", engine.InterpreterResult);
         }
 
         [Test]
@@ -1113,7 +1118,7 @@ bound();
 var b = B();
 b.MethA();");
 
-            Assert.AreEqual(engine.InterpreterResult, "21");
+            Assert.AreEqual("21", engine.InterpreterResult);
         }
 
         [Test]
@@ -1124,7 +1129,7 @@ b.MethA();");
             engine.Run(@"var a = 10;");
             engine.Run(@"print (a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "10");
+            Assert.AreEqual("10", engine.InterpreterResult);
         }
 
         [Test]
@@ -1138,7 +1143,7 @@ class A{MethA(){print (1);}}");
             engine.Run(@"var a = A();");
             engine.Run(@"a.MethA();");
 
-            Assert.AreEqual(engine.InterpreterResult, "1");
+            Assert.AreEqual("1", engine.InterpreterResult);
         }
 
         [Test]
@@ -1150,7 +1155,7 @@ class A{MethA(){print (1);}}");
 
             engine.Run(@"print (a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "1");
+            Assert.AreEqual("1", engine.InterpreterResult);
         }
 
         [Test]
@@ -1163,7 +1168,7 @@ class A{MethA(){print (1);}}");
             var meth = engine.VM.GetGlobal("Meth");
             engine.VM.CallFunction(meth,0);
 
-            Assert.AreEqual(engine.InterpreterResult, "1");
+            Assert.AreEqual("1", engine.InterpreterResult);
         }
 
         [Test]
@@ -1180,7 +1185,7 @@ class A{MethA(){print (1);}}");
 
             engine.Run(@"print (Meth());");
 
-            Assert.AreEqual(engine.InterpreterResult, "Hello from native.");
+            Assert.AreEqual("Hello from native.", engine.InterpreterResult);
         }
 
         [Test]
@@ -1197,7 +1202,7 @@ class A{MethA(){print (1);}}");
 
             engine.Run(@"print (Meth(""Dad""));");
 
-            Assert.AreEqual(engine.InterpreterResult, "Hello, Dad, I'm native.");
+            Assert.AreEqual("Hello, Dad, I'm native.", engine.InterpreterResult);
         }
 
         [Test]
@@ -1213,7 +1218,7 @@ var res = B(A());
 print (res);
 ");
 
-            Assert.AreEqual(engine.InterpreterResult, "8");
+            Assert.AreEqual("8", engine.InterpreterResult);
         }
 
         [Test]
@@ -1236,7 +1241,7 @@ for(var i = 0; i < c; i = i + 1)
     print(list.Get(i));
 ");
 
-            Assert.AreEqual(engine.InterpreterResult, "501234");
+            Assert.AreEqual("501234", engine.InterpreterResult);
         }
 
         [Test]
@@ -1269,7 +1274,7 @@ class T
 var t = T();
 print(t.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "null");
+            Assert.AreEqual("null", engine.InterpreterResult);
         }
 
         [Test]
@@ -1288,7 +1293,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual(engine.InterpreterResult, "nullnull");
+            Assert.AreEqual("nullnull", engine.InterpreterResult);
         }
 
         [Test]
@@ -1306,7 +1311,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual(engine.InterpreterResult, "nullnull");
+            Assert.AreEqual("nullnull", engine.InterpreterResult);
         }
 
         [Test]
@@ -1321,7 +1326,7 @@ print(a);
 print(b);
 print(c);");
 
-            Assert.AreEqual(engine.InterpreterResult, "12null");
+            Assert.AreEqual("12null", engine.InterpreterResult);
         }
 
         [Test]
@@ -1336,7 +1341,7 @@ Assert.AreEqual(1,1);
 Assert.AreEqual(1,2);
 Assert.AreEqual(1,1);");
 
-            Assert.AreEqual(engine.InterpreterResult, "'1' does not equal '2'.");
+            Assert.AreEqual("'1' does not equal '2'.", engine.InterpreterResult);
         }
 
         [Test]
@@ -1351,7 +1356,7 @@ Assert.AreApproxEqual(1,1);
 Assert.AreApproxEqual(1,1.000000001);
 Assert.AreApproxEqual(1,2);");
 
-            Assert.AreEqual(engine.InterpreterResult, "'1' and '2' are '-1' apart.");
+            Assert.AreEqual("'1' and '2' are '-1' apart.", engine.InterpreterResult);
         }
 
         [Test]
@@ -1370,7 +1375,7 @@ loop
     print (i);
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "01122334455");
+            Assert.AreEqual("01122334455", engine.InterpreterResult);
         }
 
         [Test]
@@ -1386,7 +1391,7 @@ loop
     i = i + 1;
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "Loops must contain an termination.");
+            Assert.AreEqual("Loops must contain an termination.", engine.InterpreterResult);
         }
 
         [Test]
@@ -1404,7 +1409,7 @@ class T
 var t = T();
 print(t.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "10");
+            Assert.AreEqual("10", engine.InterpreterResult);
         }
 
         [Test]
@@ -1422,7 +1427,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual(engine.InterpreterResult, "12");
+            Assert.AreEqual("12", engine.InterpreterResult);
         }
 
         [Test]
@@ -1442,7 +1447,7 @@ class T
 var t = T();
 print(t.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "20");
+            Assert.AreEqual("20", engine.InterpreterResult);
         }
 
         [Test]
@@ -1461,7 +1466,7 @@ class T
 var t = T();
 print(t.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "20");
+            Assert.AreEqual("20", engine.InterpreterResult);
         }
 
         [Test]
@@ -1498,7 +1503,7 @@ AddPrint(t2);
 AddPrint(t3);
 ");
 
-            Assert.AreEqual(engine.InterpreterResult, "3Hello World2");
+            Assert.AreEqual("3Hello World2", engine.InterpreterResult);
         }
 
         [Test]
@@ -1541,7 +1546,7 @@ AddPrint(t1);
 AddPrint(t2);
 ");
 
-            Assert.AreEqual(engine.InterpreterResult, "33");
+            Assert.AreEqual("33", engine.InterpreterResult);
         }
 
         [Test]
@@ -1559,7 +1564,7 @@ fun T
 
 print(T());");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -1580,7 +1585,7 @@ class T
 
 print(T().Meth());");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -1599,7 +1604,7 @@ class T
 
 print(T.NoMemberMethod());");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -1618,7 +1623,7 @@ class T
 
 print(T.StaticMethod());");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -1637,7 +1642,7 @@ class T
 
 print(T().StaticMethod());");
 
-            Assert.AreEqual(engine.InterpreterResult, "7");
+            Assert.AreEqual("7", engine.InterpreterResult);
         }
 
         [Test]
@@ -1656,7 +1661,7 @@ test T
     }
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "2");
+            Assert.AreEqual("2", engine.InterpreterResult);
         }
 
         [Test]
@@ -1675,7 +1680,7 @@ test T
     }
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "");
+            Assert.AreEqual("", engine.InterpreterResult);
         }
 
         [Test]
@@ -1696,7 +1701,7 @@ test T
     }
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "");
+            Assert.AreEqual("", engine.InterpreterResult);
         }
 
         [Test]
@@ -1718,7 +1723,7 @@ test T
     }
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "");
+            Assert.AreEqual("", engine.InterpreterResult);
         }
 
         [Test]
@@ -1743,7 +1748,7 @@ test T
     Combine(){return this.a + this.b + T.d;}
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "");
+            Assert.AreEqual("", engine.InterpreterResult);
         }
 
         [Test]
@@ -1763,7 +1768,7 @@ test T
 
 print(T);");
 
-            Assert.AreEqual(engine.InterpreterResult, "null");
+            Assert.AreEqual("null", engine.InterpreterResult);
         }
 
         [Test]
@@ -1780,7 +1785,7 @@ T.a = 2;
 
 print(T.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "2");
+            Assert.AreEqual("2", engine.InterpreterResult);
         }
 
         [Test]
@@ -1797,7 +1802,7 @@ class T
 }
 print(T.a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "2");
+            Assert.AreEqual("2", engine.InterpreterResult);
         }
 
         [Test]
@@ -1812,7 +1817,7 @@ print(a);
 a += 2;
 print(a);");
 
-            Assert.AreEqual(engine.InterpreterResult, "46");
+            Assert.AreEqual("46", engine.InterpreterResult);
         }
 
         [Test]
@@ -1830,8 +1835,8 @@ print(a);");
             var engine2 = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
             engine2.Execute(program);
 
-            Assert.AreEqual(engine.InterpreterResult, "2");
-            Assert.AreEqual(engine2.InterpreterResult, "2");
+            Assert.AreEqual("2", engine.InterpreterResult);
+            Assert.AreEqual(engine2.InterpreterResult, "2", engine2.InterpreterResult);
         }
 
         [Test]
@@ -1855,7 +1860,7 @@ innerVM.AddGlobal(""print"",print);
 
 innerVM.Start(InnerMain);");
 
-            Assert.AreEqual(engine.InterpreterResult, "10");
+            Assert.AreEqual("10", engine.InterpreterResult);
         }
 
         [Test]
@@ -1880,7 +1885,7 @@ innerVM.Start(InnerMain);
 
 print(innerVM.GetGlobal(""globalOut""));");
 
-            Assert.AreEqual(engine.InterpreterResult, "10");
+            Assert.AreEqual("10", engine.InterpreterResult);
         }
 
         [Test]
@@ -1902,7 +1907,7 @@ var res = innerVM.Start(InnerMain);
 
 print(res);");
 
-            Assert.AreEqual(engine.InterpreterResult, "10");
+            Assert.AreEqual("10", engine.InterpreterResult);
         }
 
         [Test]
@@ -1918,7 +1923,7 @@ print(a);");
 
             engine.VM.Run();
 
-            Assert.AreEqual(engine.InterpreterResult, "4");
+            Assert.AreEqual("4", engine.InterpreterResult);
         }
 
         [Test]
@@ -1940,7 +1945,7 @@ var innerVM = VM();
 innerVM.InheritFromEnclosing();
 innerVM.Start(InnerMain);");
 
-            Assert.AreEqual(engine.InterpreterResult, "Hello from inner 10");
+            Assert.AreEqual("Hello from inner 10", engine.InterpreterResult);
         }
 
         [Test]
@@ -1960,7 +1965,7 @@ fun InnerMain()
 var innerVM = VM();
 innerVM.Start(InnerMain);");
 
-            Assert.AreEqual("Global var of name 'a' was not found.", engine.InterpreterResult);
+            Assert.AreEqual("Global var of name 'a' was not found.", engine.InterpreterResult, engine.InterpreterResult);
         }
 
         [Test]
@@ -2008,7 +2013,7 @@ loop
     }
 }");
 
-            Assert.AreEqual(engine.InterpreterResult, "112358");
+            Assert.AreEqual("112358", engine.InterpreterResult);
         }
 
         //todo yield should be able to multi return, use a yield stack in the vm and clear it at each use?

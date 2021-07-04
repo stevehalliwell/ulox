@@ -54,93 +54,97 @@ namespace ULox
 
             switch (opCode)
             {
-            case OpCode.JUMP_IF_FALSE:
-            case OpCode.JUMP:
-            case OpCode.LOOP:
-            case OpCode.INIT_CHAIN_START:
-            case OpCode.TEST_CHAIN_START:
-                stringBuilder.Append(" ");
-                i++;
-                var bhi = chunk.Instructions[i];
-                i++;
-                var blo = chunk.Instructions[i];
-                stringBuilder.Append((ushort)((bhi << 8) | blo));
-                break;
-            case OpCode.CONSTANT:
-            case OpCode.DEFINE_GLOBAL:
-            case OpCode.FETCH_GLOBAL_UNCACHED:
-            case OpCode.ASSIGN_GLOBAL_UNCACHED:
-            case OpCode.GET_PROPERTY_UNCACHED:
-            case OpCode.SET_PROPERTY_UNCACHED:
-            case OpCode.GET_SUPER:
-            case OpCode.CLASS:
-            case OpCode.METHOD:
-            case OpCode.TEST_START:
-            case OpCode.TEST_END:
-                {
+                case OpCode.JUMP_IF_FALSE:
+                case OpCode.JUMP:
+                case OpCode.LOOP:
+                case OpCode.INIT_CHAIN_START:
+                case OpCode.TEST_CHAIN_START:
                     stringBuilder.Append(" ");
                     i++;
-                    var ind = chunk.Instructions[i];
-                    stringBuilder.Append($"({ind})" + chunk.ReadConstant(ind).ToString());
-                }
-                break;
-            case OpCode.SUPER_INVOKE:
-            case OpCode.INVOKE:
-                {
-                    stringBuilder.Append(" ");
+                    var bhi = chunk.Instructions[i];
                     i++;
-                    var constant = chunk.Instructions[i];
-                    stringBuilder.Append($"({constant})" + chunk.ReadConstant(constant).ToString());
+                    var blo = chunk.Instructions[i];
+                    stringBuilder.Append((ushort)((bhi << 8) | blo));
+                    break;
 
-
-                    stringBuilder.Append(" ");
-                    i++;
-                    var argCount = chunk.Instructions[i];
-                    stringBuilder.Append(argCount);
-                }
-                break;
-            case OpCode.GET_UPVALUE:
-            case OpCode.SET_UPVALUE:
-            case OpCode.GET_LOCAL:
-            case OpCode.SET_LOCAL:
-            case OpCode.CALL:
-            case OpCode.PUSH_BOOL:
-            case OpCode.PUSH_BYTE:
-                //case OpCode.GET_PROPERTY_CACHED:
-                //case OpCode.SET_PROPERTY_CACHED:
-                {
-                    stringBuilder.Append(" ");
-                    i++;
-                    var ind = chunk.Instructions[i];
-                    stringBuilder.Append($"({ind})");
-                }
-                break;
-            case OpCode.CLOSURE:
-                {
-                    stringBuilder.Append(" ");
-                    i++;
-                    var ind = chunk.Instructions[i];
-                    var func = chunk.ReadConstant(ind);
-                    stringBuilder.Append($"({ind})" + func.ToString());
-
-                    if (func.val.asChunk.UpvalueCount > 0)
-                        stringBuilder.AppendLine();
-
-                    var count = func.val.asChunk.UpvalueCount;
-                    for (int upVal = 0; upVal < count; upVal++)
+                case OpCode.CONSTANT:
+                case OpCode.DEFINE_GLOBAL:
+                case OpCode.FETCH_GLOBAL_UNCACHED:
+                case OpCode.ASSIGN_GLOBAL_UNCACHED:
+                case OpCode.GET_PROPERTY_UNCACHED:
+                case OpCode.SET_PROPERTY_UNCACHED:
+                case OpCode.GET_SUPER:
+                case OpCode.CLASS:
+                case OpCode.METHOD:
+                case OpCode.TEST_START:
+                case OpCode.TEST_END:
                     {
+                        stringBuilder.Append(" ");
                         i++;
-                        var isLocal = chunk.Instructions[i];
-                        i++;
-                        var upvalIndex = chunk.Instructions[i];
-
-                        stringBuilder.Append($"     {(isLocal == 1 ? "local" : "upvalue")} {upvalIndex}");
-                        if (upVal < count - 1)
-                            stringBuilder.AppendLine();
+                        var ind = chunk.Instructions[i];
+                        stringBuilder.Append($"({ind})" + chunk.ReadConstant(ind).ToString());
                     }
-                }
-                break;
-            case OpCode.RETURN:
+                    break;
+
+                case OpCode.SUPER_INVOKE:
+                case OpCode.INVOKE:
+                    {
+                        stringBuilder.Append(" ");
+                        i++;
+                        var constant = chunk.Instructions[i];
+                        stringBuilder.Append($"({constant})" + chunk.ReadConstant(constant).ToString());
+
+                        stringBuilder.Append(" ");
+                        i++;
+                        var argCount = chunk.Instructions[i];
+                        stringBuilder.Append(argCount);
+                    }
+                    break;
+
+                case OpCode.GET_UPVALUE:
+                case OpCode.SET_UPVALUE:
+                case OpCode.GET_LOCAL:
+                case OpCode.SET_LOCAL:
+                case OpCode.CALL:
+                case OpCode.PUSH_BOOL:
+                case OpCode.PUSH_BYTE:
+                    //case OpCode.GET_PROPERTY_CACHED:
+                    //case OpCode.SET_PROPERTY_CACHED:
+                    {
+                        stringBuilder.Append(" ");
+                        i++;
+                        var ind = chunk.Instructions[i];
+                        stringBuilder.Append($"({ind})");
+                    }
+                    break;
+
+                case OpCode.CLOSURE:
+                    {
+                        stringBuilder.Append(" ");
+                        i++;
+                        var ind = chunk.Instructions[i];
+                        var func = chunk.ReadConstant(ind);
+                        stringBuilder.Append($"({ind})" + func.ToString());
+
+                        if (func.val.asChunk.UpvalueCount > 0)
+                                 stringBuilder.AppendLine();
+
+                        var count = func.val.asChunk.UpvalueCount;
+                        for (int upVal = 0; upVal < count; upVal++)
+                        {
+                            i++;
+                            var isLocal = chunk.Instructions[i];
+                            i++;
+                            var upvalIndex = chunk.Instructions[i];
+
+                            stringBuilder.Append($"     {(isLocal == 1 ? "local" : "upvalue")} {upvalIndex}");
+                            if (upVal < count - 1)
+                                stringBuilder.AppendLine();
+                        }
+                    }
+                    break;
+
+                case OpCode.RETURN:
             case OpCode.NEGATE:
             case OpCode.ADD:
             case OpCode.SUBTRACT:

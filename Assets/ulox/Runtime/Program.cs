@@ -10,7 +10,7 @@ namespace ULox
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
 
-        public Table Globals = new Table();
+        public Table Globals { get; private set; } = new Table();
 
         public string Disassembly
         {

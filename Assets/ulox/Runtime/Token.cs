@@ -8,17 +8,18 @@
         public readonly int Line;
         public readonly int Character;
 
-        public Token(TokenType tokenType,
-                     string lexeme,
-                     object literal,
-                     int line,
-                     int character)
+        public Token(
+            TokenType tokenType,
+            string lexeme,
+            object literal,
+            int line,
+            int character)
         {
-            this.TokenType = tokenType;
-            this.Lexeme = lexeme;
-            this.Literal = literal;
-            this.Line = line;
-            this.Character = character;
+            TokenType = tokenType;
+            Lexeme = lexeme;
+            Literal = literal;
+            Line = line;
+            Character = character;
         }
     }
 }

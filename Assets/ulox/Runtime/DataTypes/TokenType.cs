@@ -10,8 +10,8 @@
         DOT,
         END_STATEMENT,
         
-        INCREMENT,
-        DECREMENT,
+        //INCREMENT,
+        //DECREMENT,
 
         MINUS,
         PLUS,

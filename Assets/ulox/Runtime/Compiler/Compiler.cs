@@ -8,43 +8,22 @@ namespace ULox
     //  then dump into a grouping, once the grouping is back, we named var ourselves and then emit the math op
     public class Compiler
     {
-        private enum Precedence
-        {
-            None,
-            Assignment,
-            Or,
-            And,
-            Equality,
-            Comparison,
-            Term,
-            Factor,
-            Unary,
-            Call,
-            Primary,
-        }
+        private IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
 
-        private enum FunctionType
-        {
-            Script,
-            Function,
-            Method,
-            Init,
-        }
+        private Token currentToken, previousToken;
+        private List<Token> tokens;
+        private int tokenIndex;
+        
+        // if we have more than 1 compiler we want this to be static
+        private ParseRule[] rules;
 
-        private class ParseRule
-        {
-            public System.Action<bool> prefix, infix;
-            public Precedence precedence;
+        private int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
+        private Chunk CurrentChunk => compilerStates.Peek().chunk;
 
-            public ParseRule(
-                System.Action<bool> prefix,
-                System.Action<bool> infix,
-                Precedence pre)
-            {
-                this.prefix = prefix;
-                this.infix = infix;
-                this.precedence = pre;
-            }
+        public Compiler()
+        {
+            GenerateRules();
+            Reset();
         }
 
         public void Reset()
@@ -56,59 +35,6 @@ namespace ULox
             tokens = null;
 
             PushCompilerState(string.Empty, FunctionType.Script);
-        }
-
-        private class Local
-        {
-            public string name;
-            public int depth;
-            public bool isCaptured;
-        }
-
-        private class Upvalue
-        {
-            public byte index;
-            public bool isLocal;
-        }
-
-        private class ClassCompilerState
-        {
-            public string currentClassName;
-            public int initFragStartLocation = -1;
-            public int previousInitFragJumpLocation = -1;
-            public int testFragStartLocation = -1;
-            public int previousTestFragJumpLocation = -1;
-
-            public ClassCompilerState(string currentClassName)
-            {
-                this.currentClassName = currentClassName;
-            }
-        }
-
-        private class CompilerState
-        {
-            public Local[] locals = new Local[byte.MaxValue + 1];
-            public Upvalue[] upvalues = new Upvalue[byte.MaxValue + 1];
-            public int localCount;
-            public int scopeDepth;
-            public Chunk chunk;
-            public CompilerState enclosing;
-            public Stack<ClassCompilerState> classCompilerStates = new Stack<ClassCompilerState>();
-            public FunctionType functionType;
-            public CompilerState(CompilerState enclosingState, FunctionType funcType) 
-            { 
-                enclosing = enclosingState;
-                functionType = funcType;
-            }
-
-            public class LoopState
-            {
-                public int loopStart = -1;
-                public List<int> loopExitPatchLocations = new List<int>();
-
-            }
-
-            public Stack<LoopState> loopStates = new Stack<LoopState>();
         }
 
         private string GetEnclosingClass()
@@ -126,24 +52,6 @@ namespace ULox
             }
 
             return null;
-        }
-
-        private IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
-
-        private Token currentToken, previousToken;
-        private List<Token> tokens;
-        private int tokenIndex;
-        
-        // if we have more than 1 compiler we want this to be static
-        private ParseRule[] rules;
-
-        private int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
-        private Chunk CurrentChunk => compilerStates.Peek().chunk;
-
-        public Compiler()
-        {
-            GenerateRules();
-            Reset();
         }
 
         public Chunk Compile(List<Token> inTokens)
@@ -635,10 +543,10 @@ namespace ULox
             for (int i = comp.localCount - 1; i >= 0; i--)
             {
                 var local = comp.locals[i];
-                if (local.depth != -1 && local.depth < comp.scopeDepth)
+                if (local.Depth != -1 && local.Depth < comp.scopeDepth)
                     break;
 
-                if (declName == local.name)
+                if (declName == local.Name)
                     throw new CompilerException($"Already a variable with name '{declName}' in this scope.");
             }
 
@@ -650,11 +558,7 @@ namespace ULox
             if (comp.localCount == byte.MaxValue)
                 throw new CompilerException("Too many local variables.");
 
-            comp.locals[comp.localCount++] = new Local()
-            {
-                name = name,
-                depth = depth
-            };
+            comp.locals[comp.localCount++] = new Local(name, depth);
         }
 
         private void DefineVariable(byte global)
@@ -673,7 +577,7 @@ namespace ULox
             var comp = compilerStates.Peek();
 
             if (comp.scopeDepth == 0) return;
-            comp.locals[comp.localCount - 1].depth = comp.scopeDepth;
+            comp.locals[comp.localCount - 1].Depth = comp.scopeDepth;
         }
 
         private void BeginScope()
@@ -688,9 +592,9 @@ namespace ULox
             comp.scopeDepth--;
 
             while (comp.localCount > 0 &&
-                comp.locals[comp.localCount - 1].depth > comp.scopeDepth)
+                comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
             {
-                if(comp.locals[comp.localCount - 1].isCaptured)
+                if(comp.locals[comp.localCount - 1].IsCaptured)
                     EmitOpCode(OpCode.CLOSE_UPVALUE);
                 else
                     EmitOpCode(OpCode.POP);
@@ -706,7 +610,7 @@ namespace ULox
             int local = ResolveLocal(compilerState.enclosing, name);
             if (local != -1)
             {
-                compilerState.enclosing.locals[local].isCaptured = true;
+                compilerState.enclosing.locals[local].IsCaptured = true;
                 return AddUpvalue(compilerState, (byte)local, true);
             }
 
@@ -740,7 +644,7 @@ namespace ULox
                 throw new CompilerException("Too many closure variables in function.");
             }
 
-            compilerState.upvalues[upvalueCount] = new Upvalue() { index = index, isLocal = isLocal };
+            compilerState.upvalues[upvalueCount] = new Upvalue(index,isLocal);
             return compilerState.chunk.UpvalueCount++;
         }
 
@@ -749,9 +653,9 @@ namespace ULox
             for (int i = compilerState.localCount - 1; i >= 0; i--)
             {
                 var local = compilerState.locals[i];
-                if (name == local.name)
+                if (name == local.Name)
                 {
-                    if (local.depth == -1)
+                    if (local.Depth == -1)
                         throw new CompilerException("Cannot referenece a variable in it's own initialiser.");
                     return i;
                 }
@@ -1151,7 +1055,7 @@ namespace ULox
 
             // Compile the right operand.
             ParseRule rule = GetRule(operatorType);
-            ParsePrecedence((Precedence)(rule.precedence + 1));
+            ParsePrecedence((Precedence)(rule.Precedence + 1));
 
             switch(operatorType)
             {
@@ -1320,19 +1224,19 @@ namespace ULox
         {
             Advance();
             var rule = GetRule(previousToken.TokenType);
-            if(rule.prefix == null)
+            if(rule.Prefix == null)
             {
                 throw new CompilerException("Expected prefix handler, but got null.");
             }
 
             var canAssign = pre <= Precedence.Assignment;
-            rule.prefix(canAssign);
+            rule.Prefix(canAssign);
 
-            while (pre <= GetRule(currentToken.TokenType).precedence)
+            while (pre <= GetRule(currentToken.TokenType).Precedence)
             {
                 Advance();
                 rule = GetRule(previousToken.TokenType);
-                rule.infix(canAssign);
+                rule.Infix(canAssign);
             }
 
             if (canAssign && Match(TokenType.ASSIGN))

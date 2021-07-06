@@ -18,6 +18,7 @@ namespace ULox
         // if we have more than 1 compiler we want this to be static
         private ParseRule[] rules;
         protected Dictionary<TokenType, Compilette> declarationCompilettes = new Dictionary<TokenType, Compilette>();
+        protected Dictionary<TokenType, Compilette> statementCompilettes = new Dictionary<TokenType, Compilette>();
 
         private int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         private Chunk CurrentChunk => compilerStates.Peek().chunk;
@@ -29,10 +30,13 @@ namespace ULox
         }
 
         protected abstract void GenerateDeclarationLookup();
+        protected abstract void GenerateStatementLookup();
 
         public void Reset()
         {
             GenerateDeclarationLookup();
+            GenerateStatementLookup();
+
             compilerStates = new IndexableStack<CompilerState>();
             currentToken = default;
             previousToken = default;
@@ -66,53 +70,19 @@ namespace ULox
 
             Statement();
         }
+
         private void Statement()
         {
-            if (Match(TokenType.IF))
+            if (statementCompilettes.TryGetValue(currentToken.TokenType, out var complette))
             {
-                IfStatement();
+                Advance();
+                complette.Process(this);
+                return;
             }
-            else if (Match(TokenType.RETURN))
-            {
-                ReturnStatement();
-            }
-            else if (Match(TokenType.YIELD))
-            {
-                YieldStatement();
-            }
-            else if (Match(TokenType.BREAK))
-            {
-                BreakStatement();
-            }
-            else if (Match(TokenType.CONTINUE))
-            {
-                ContinueStatement();
-            }
-            else if (Match(TokenType.LOOP))
-            {
-                LoopStatement();
-            }
-            else if (Match(TokenType.WHILE))
-            {
-                WhileStatement();
-            }
-            else if (Match(TokenType.FOR))
-            {
-                ForStatement();
-            }
-            else if (Match(TokenType.OPEN_BRACE))
-            {
-                BlockStatement();
-            }
-            else if (Match(TokenType.THROW))
-            {
-                ThrowStatement();
-            }
-            else
-            {
-                ExpressionStatement();
-            }
+
+            ExpressionStatement();
         }
+
 
         protected static void TestDeclaration(CompilerBase compiler)
         {
@@ -253,116 +223,204 @@ namespace ULox
             compiler.Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
         }
 
-
-        private void IfStatement()
+        protected static void IfStatement(CompilerBase compiler)
         {
-            Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
-            Expression();
-            Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
+            compiler.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
+            compiler.Expression();
+            compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
 
-            int thenjump = EmitJump(OpCode.JUMP_IF_FALSE);
-            EmitOpCode(OpCode.POP);
+            int thenjump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+            compiler.EmitOpCode(OpCode.POP);
 
-            Statement();
+            compiler.Statement();
 
-            int elseJump = EmitJump(OpCode.JUMP);
+            int elseJump = compiler.EmitJump(OpCode.JUMP);
 
-            PatchJump(thenjump);
-            EmitOpCode(OpCode.POP);
+            compiler.PatchJump(thenjump);
+            compiler.EmitOpCode(OpCode.POP);
 
-            if (Match(TokenType.ELSE)) Statement();
+            if (compiler.Match(TokenType.ELSE)) compiler.Statement();
 
-            PatchJump(elseJump);
+            compiler.PatchJump(elseJump);
         }
 
-        private void ReturnStatement()
+        protected static void ReturnStatement(CompilerBase compiler)
         {
             //if (compilerStates.Count <= 1)
             //    throw new CompilerException("Cannot return from a top-level statement.");
 
-            if (Match(TokenType.END_STATEMENT))
+            if (compiler.Match(TokenType.END_STATEMENT))
             {
-                EmitReturn();
+                compiler.EmitReturn();
             }
-            else if (compilerStates.Peek().functionType == FunctionType.Init)
+            else if (compiler.compilerStates.Peek().functionType == FunctionType.Init)
             {
                 throw new CompilerException("Cannot return an expression from an 'init'.");
             }
             else
             {
-                Expression();
-                Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
-                EmitOpCode(OpCode.RETURN);
+                compiler.Expression();
+                compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
+                compiler.EmitOpCode(OpCode.RETURN);
             }
         }
 
-        private void YieldStatement()
+        protected static void YieldStatement(CompilerBase compiler)
         {
-            EmitOpCode(OpCode.YIELD);
-            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+            compiler.EmitOpCode(OpCode.YIELD);
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
         }
 
-        private void BreakStatement()
+        protected static void BreakStatement(CompilerBase compiler)
         {
-            var comp = compilerStates.Peek();
+            var comp = compiler.compilerStates.Peek();
             if (comp.loopStates.Count == 0)
                 throw new CompilerException("Cannot break when not inside a loop.");
 
-            int exitJump = EmitJump(OpCode.JUMP);
+            int exitJump = compiler.EmitJump(OpCode.JUMP);
 
-            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
 
             comp.loopStates.Peek().loopExitPatchLocations.Add(exitJump);
         }
 
-        private void ContinueStatement()
+        protected static void ContinueStatement(CompilerBase compiler)
         {
-            var comp = compilerStates.Peek();
+            var comp = compiler.compilerStates.Peek();
             if (comp.loopStates.Count == 0)
                 throw new CompilerException("Cannot continue when not inside a loop.");
 
-            EmitLoop(comp.loopStates.Peek().loopStart);
+            compiler.EmitLoop(comp.loopStates.Peek().loopStart);
 
-            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
         }
 
-        private void LoopStatement()
+        protected static void LoopStatement(CompilerBase compiler)
         {
-            var comp = compilerStates.Peek();
+            var comp = compiler.compilerStates.Peek();
             var loopState = new CompilerState.LoopState();
             comp.loopStates.Push(loopState);
-            loopState.loopStart = CurrentChunkInstructinCount;
+            loopState.loopStart = compiler.CurrentChunkInstructinCount;
 
-            Statement();
+            compiler.Statement();
 
-            EmitLoop(loopState.loopStart);
+            compiler.EmitLoop(loopState.loopStart);
 
-            PatchLoopExits(loopState);
+            compiler.PatchLoopExits(loopState);
 
-            EmitOpCode(OpCode.POP);
+            compiler.EmitOpCode(OpCode.POP);
             comp.loopStates.Pop();
         }
 
-        private void BlockStatement()
+        protected static void WhileStatement(CompilerBase compiler)
         {
-            BeginScope();
-            Block();
-            EndScope();
+            var comp = compiler.compilerStates.Peek();
+            var loopState = new CompilerState.LoopState();
+            comp.loopStates.Push(loopState);
+            loopState.loopStart = compiler.CurrentChunkInstructinCount;
+
+            compiler.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
+            compiler.Expression();
+            compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
+
+            int exitJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+            loopState.loopExitPatchLocations.Add(exitJump);
+
+            compiler.EmitOpCode(OpCode.POP);
+            compiler.Statement();
+
+            compiler.EmitLoop(loopState.loopStart);
+
+            compiler.PatchLoopExits(loopState);
+
+            compiler.EmitOpCode(OpCode.POP);
+            comp.loopStates.Pop();
         }
 
-        private void ThrowStatement()
+        protected static void ForStatement(CompilerBase compiler)
         {
-            if (!Check(TokenType.END_STATEMENT))
+            compiler.BeginScope();
+
+            compiler.Consume(TokenType.OPEN_PAREN, "Expect '(' after 'for'.");
+            if (compiler.Match(TokenType.END_STATEMENT))
             {
-                Expression();
+                // No initializer.
+            }
+            else if (compiler.Match(TokenType.VAR))
+            {
+                VarDeclaration(compiler);
             }
             else
             {
-                EmitOpCode(OpCode.NULL);
+                compiler.ExpressionStatement();
             }
 
-            Consume(TokenType.END_STATEMENT, "Expect ; after throw statement.");
-            EmitOpCode(OpCode.THROW);
+            var comp = compiler.compilerStates.Peek();
+            int loopStart = compiler.CurrentChunkInstructinCount;
+            var loopState = new CompilerState.LoopState();
+            comp.loopStates.Push(loopState);
+            loopState.loopStart = loopStart;
+
+            int exitJump = -1;
+            if (!compiler.Match(TokenType.END_STATEMENT))
+            {
+                compiler.Expression();
+                compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after loop condition.");
+
+                // Jump out of the loop if the condition is false.
+                exitJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+                loopState.loopExitPatchLocations.Add(exitJump);
+                compiler.EmitOpCode(OpCode.POP); // Condition.
+            }
+
+            if (!compiler.Match(TokenType.CLOSE_PAREN))
+            {
+                int bodyJump = compiler.EmitJump(OpCode.JUMP);
+
+                int incrementStart = compiler.CurrentChunkInstructinCount;
+                compiler.Expression();
+                compiler.EmitOpCode(OpCode.POP);
+                compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after for clauses.");
+
+                compiler.EmitLoop(loopStart);
+                loopStart = incrementStart;
+                compiler.PatchJump(bodyJump);
+            }
+
+            compiler.Statement();
+
+            compiler.EmitLoop(loopStart);
+
+            compiler.PatchLoopExits(loopState);
+
+            if (exitJump != -1)
+            {
+                compiler.EmitOpCode(OpCode.POP); // Condition.
+            }
+
+            compiler.EndScope();
+        }
+
+        protected static void BlockStatement(CompilerBase compiler)
+        {
+            compiler.BeginScope();
+            compiler.Block();
+            compiler.EndScope();
+        }
+
+        protected static void ThrowStatement(CompilerBase compiler)
+        {
+            if (!compiler.Check(TokenType.END_STATEMENT))
+            {
+                compiler.Expression();
+            }
+            else
+            {
+                compiler.EmitOpCode(OpCode.NULL);
+            }
+
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after throw statement.");
+            compiler.EmitOpCode(OpCode.THROW);
         }
 
         private void ExpressionStatement()
@@ -725,30 +783,6 @@ namespace ULox
 
        
 
-        private void WhileStatement()
-        {
-            var comp = compilerStates.Peek();
-            var loopState = new CompilerState.LoopState();
-            comp.loopStates.Push(loopState);
-            loopState.loopStart = CurrentChunkInstructinCount;
-
-            Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
-            Expression();
-            Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
-            
-            int exitJump = EmitJump(OpCode.JUMP_IF_FALSE);
-            loopState.loopExitPatchLocations.Add(exitJump);
-            
-            EmitOpCode(OpCode.POP);
-            Statement();
-
-            EmitLoop(loopState.loopStart);
-
-            PatchLoopExits(loopState);
-
-            EmitOpCode(OpCode.POP);
-            comp.loopStates.Pop();
-        }
 
         private void PatchLoopExits(CompilerState.LoopState loopState)
         {
@@ -759,70 +793,6 @@ namespace ULox
             {
                 PatchJump(loopState.loopExitPatchLocations[i]);
             }
-        }
-
-        private void ForStatement()
-        {
-            BeginScope();
-
-            Consume(TokenType.OPEN_PAREN, "Expect '(' after 'for'.");
-            if (Match(TokenType.END_STATEMENT))
-            {
-                // No initializer.
-            }
-            else if (Match(TokenType.VAR))
-            {
-                VarDeclaration(this);
-            }
-            else
-            {
-                ExpressionStatement();
-            }
-
-            var comp = compilerStates.Peek();
-            int loopStart = CurrentChunkInstructinCount;
-            var loopState = new CompilerState.LoopState();
-            comp.loopStates.Push(loopState);
-            loopState.loopStart = loopStart;
-
-            int exitJump = -1;
-            if (!Match(TokenType.END_STATEMENT))
-            {
-                Expression();
-                Consume(TokenType.END_STATEMENT, "Expect ';' after loop condition.");
-
-                // Jump out of the loop if the condition is false.
-                exitJump = EmitJump(OpCode.JUMP_IF_FALSE);
-                loopState.loopExitPatchLocations.Add(exitJump);
-                EmitOpCode(OpCode.POP); // Condition.
-            }
-
-            if (!Match(TokenType.CLOSE_PAREN))
-            {
-                int bodyJump = EmitJump(OpCode.JUMP);
-
-                int incrementStart = CurrentChunkInstructinCount;
-                Expression();
-                EmitOpCode(OpCode.POP);
-                Consume(TokenType.CLOSE_PAREN, "Expect ')' after for clauses.");
-
-                EmitLoop(loopStart);
-                loopStart = incrementStart;
-                PatchJump(bodyJump);
-            }
-
-            Statement();
-
-            EmitLoop(loopStart);
-
-            PatchLoopExits(loopState);
-
-            if (exitJump != -1)
-            {
-                EmitOpCode(OpCode.POP); // Condition.
-            }
-
-            EndScope();
         }
 
         private void PatchJump(int thenjump)

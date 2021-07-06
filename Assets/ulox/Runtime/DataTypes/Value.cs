@@ -1,6 +1,4 @@
-﻿//TODO: Too big, split and org into files
-
-namespace ULox
+﻿namespace ULox
 {
     public struct Value
     {

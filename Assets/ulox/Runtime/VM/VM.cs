@@ -28,21 +28,6 @@ namespace ULox
     //todo track and output class information from compile
     //todo add try it out demo to own repo with github pages setup
     //todo self asign needs safety to prevent their use in declarations.
-    public enum InterpreterResult
-    {
-        OK,
-        COMPILE_ERROR,
-        RUNTIME_ERROR,
-        YIELD,
-    }
-
-    public struct CallFrame
-    {
-        public int ip;
-        public int stackStart;
-        public ClosureInternal closure;
-    }
-
     public class VM
     {
         public const string InitMethodName = "init";
@@ -64,7 +49,7 @@ namespace ULox
         public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
         public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
         public void SetGlobal(string name, Value val) => _globals[name] = val;
-        public Value GetArg(int index) => _valueStack[currentCallFrame.stackStart + index];
+        public Value GetArg(int index) => _valueStack[currentCallFrame.StackStart + index];
         public Value StackTop => _valueStack.Peek();
 
         public Value GetGlobal(string name) => _globals[name];
@@ -97,13 +82,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private byte ReadByte(Chunk chunk) => chunk.Instructions[currentCallFrame.ip++];
+        private byte ReadByte(Chunk chunk) => chunk.Instructions[currentCallFrame.InstructionPointer++];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private ushort ReadUShort(Chunk chunk)
         {
-            var bhi = chunk.Instructions[currentCallFrame.ip++];
-            var blo = chunk.Instructions[currentCallFrame.ip++];
+            var bhi = chunk.Instructions[currentCallFrame.InstructionPointer++];
+            var blo = chunk.Instructions[currentCallFrame.InstructionPointer++];
             return (ushort)((bhi << 8) | blo);
         }
 
@@ -159,7 +144,7 @@ namespace ULox
         {
             while (true)
             {
-                var chunk = currentCallFrame.closure.chunk;
+                var chunk = currentCallFrame.Closure.chunk;
 
                 OpCode opCode = (OpCode)ReadByte(chunk);
 
@@ -222,37 +207,37 @@ namespace ULox
                     {
                         ushort jump = ReadUShort(chunk);
                         if (Peek().IsFalsey)
-                            currentCallFrame.ip += jump;
+                            currentCallFrame.InstructionPointer += jump;
                     }
                     break;
                 case OpCode.JUMP:
                     {
                         ushort jump = ReadUShort(chunk);
-                        currentCallFrame.ip += jump;
+                        currentCallFrame.InstructionPointer += jump;
                     }
                     break;
                 case OpCode.LOOP:
                     {
                         ushort jump = ReadUShort(chunk);
-                        currentCallFrame.ip -= jump;
+                        currentCallFrame.InstructionPointer -= jump;
                     }
                     break;
                 case OpCode.GET_LOCAL:
                     {
                         var slot = ReadByte(chunk);
-                        Push(_valueStack[currentCallFrame.stackStart + slot]);
+                        Push(_valueStack[currentCallFrame.StackStart + slot]);
                     }
                     break;
                 case OpCode.SET_LOCAL:
                     {
                         var slot = ReadByte(chunk);
-                        _valueStack[currentCallFrame.stackStart + slot] = Peek();
+                        _valueStack[currentCallFrame.StackStart + slot] = Peek();
                     }
                     break;
                 case OpCode.GET_UPVALUE:
                     {
                         var slot = ReadByte(chunk);
-                        var upval = currentCallFrame.closure.upvalues[slot].val.asUpvalue;
+                        var upval = currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
                         if (!upval.isClosed)
                             Push(_valueStack[upval.index]);
                         else
@@ -262,7 +247,7 @@ namespace ULox
                 case OpCode.SET_UPVALUE:
                     {
                         var slot = ReadByte(chunk);
-                        var upval = currentCallFrame.closure.upvalues[slot].val.asUpvalue;
+                        var upval = currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
                         if (!upval.isClosed)
                             _valueStack[upval.index] = Peek();
                         else
@@ -382,7 +367,7 @@ namespace ULox
                         var loc = ReadUShort(chunk);
                         var klass = Peek().val.asClass;
                         klass.initChainStartLocation = loc;
-                        klass.initChainStartClosure = currentCallFrame.closure;
+                        klass.initChainStartClosure = currentCallFrame.Closure;
                     }
                     break;
                 case OpCode.TEST_START:
@@ -403,11 +388,11 @@ namespace ULox
                         //chain ends in a return, running as a frame makes the inner locals match
                         PushNewCallframe(new CallFrame()
                         {
-                            closure = currentCallFrame.closure,
-                            ip = loc,
-                            stackStart = _valueStack.Count - 1,
+                            Closure = currentCallFrame.Closure,
+                            InstructionPointer = loc,
+                            StackStart = _valueStack.Count - 1,
                         });
-                        currentCallFrame.ip = loc;
+                        currentCallFrame.InstructionPointer = loc;
                     }
                     break;
                 case OpCode.INHERIT:
@@ -513,12 +498,12 @@ namespace ULox
                 var index = ReadByte(chunk);
                 if (isLocal == 1)
                 {
-                    var local = currentCallFrame.stackStart + index;
+                    var local = currentCallFrame.StackStart + index;
                     closure.upvalues[i] = CaptureUpvalue(local);
                 }
                 else
                 {
-                    closure.upvalues[i] = currentCallFrame.closure.upvalues[index];
+                    closure.upvalues[i] = currentCallFrame.Closure.upvalues[index];
                 }
             }
         }
@@ -571,9 +556,9 @@ namespace ULox
         {
             Value result = Pop();
 
-            CloseUpvalues(currentCallFrame.stackStart);
+            CloseUpvalues(currentCallFrame.StackStart);
 
-            var prevStackStart = currentCallFrame.stackStart;
+            var prevStackStart = currentCallFrame.StackStart;
 
             PopCallFrame();
 
@@ -715,9 +700,9 @@ namespace ULox
                 //Push(inst);
                 PushNewCallframe(new CallFrame()
                 {
-                    closure = asClass.initChainStartClosure,
-                    ip = asClass.initChainStartLocation,
-                    stackStart = _valueStack.Count - 1, //last thing checked
+                    Closure = asClass.initChainStartClosure,
+                    InstructionPointer = asClass.initChainStartLocation,
+                    StackStart = _valueStack.Count - 1, //last thing checked
                 });
             }
         }
@@ -731,8 +716,8 @@ namespace ULox
 
             PushNewCallframe(new CallFrame()
             {
-                stackStart = _valueStack.Count - argCount - 1,
-                closure = closureInternal
+                StackStart = _valueStack.Count - argCount - 1,
+                Closure = closureInternal
             });
         }
 
@@ -741,8 +726,8 @@ namespace ULox
         {
             PushNewCallframe(new CallFrame()
             {
-                stackStart = _valueStack.Count - argCount - 1,
-                closure = null
+                StackStart = _valueStack.Count - argCount - 1,
+                Closure = null
             });
 
             var stackPos = _valueStack.Count - argCount;

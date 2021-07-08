@@ -4,14 +4,25 @@ namespace ULox
 {
     public class Compiler : CompilerBase
     {
+        protected override void NoDeclarationFound()
+        {
+            Statement();
+        }
+
+        protected override void NoStatementFound()
+        {
+            ExpressionStatement();
+        }
+
         protected override void GenerateDeclarationLookup()
         {
-            var decl = new List<Compilette>()
+            var classcomp = new ClassCompilette();
+            var decl = new List<ICompilette>()
             {
-                new Compilette(TokenType.TEST, TestDeclaration),
-                new Compilette(TokenType.CLASS, ClassDeclaration),
-                new Compilette(TokenType.FUNCTION, FunctionDeclaration),
-                new Compilette(TokenType.VAR, VarDeclaration),
+                new TestDeclarationCompilette(classcomp),
+                classcomp,
+                new CompiletteAction(TokenType.FUNCTION, FunctionDeclaration),
+                new CompiletteAction(TokenType.VAR, VarDeclaration),
             };
 
             foreach (var item in decl)
@@ -20,24 +31,23 @@ namespace ULox
 
         protected override void GenerateStatementLookup()
         {
-            var statement = new List<Compilette>()
+            var statement = new List<CompiletteAction>()
             {
-                new Compilette(TokenType.IF, IfStatement),
-                new Compilette(TokenType.RETURN, ReturnStatement),
-                new Compilette(TokenType.YIELD, YieldStatement),
-                new Compilette(TokenType.BREAK, BreakStatement),
-                new Compilette(TokenType.CONTINUE, ContinueStatement),
-                new Compilette(TokenType.LOOP, LoopStatement),
-                new Compilette(TokenType.WHILE, WhileStatement),
-                new Compilette(TokenType.FOR, ForStatement),
-                new Compilette(TokenType.OPEN_BRACE, BlockStatement),
-                new Compilette(TokenType.THROW, ThrowStatement),
+                new CompiletteAction(TokenType.IF, IfStatement),
+                new CompiletteAction(TokenType.RETURN, ReturnStatement),
+                new CompiletteAction(TokenType.YIELD, YieldStatement),
+                new CompiletteAction(TokenType.BREAK, BreakStatement),
+                new CompiletteAction(TokenType.CONTINUE, ContinueStatement),
+                new CompiletteAction(TokenType.LOOP, LoopStatement),
+                new CompiletteAction(TokenType.WHILE, WhileStatement),
+                new CompiletteAction(TokenType.FOR, ForStatement),
+                new CompiletteAction(TokenType.OPEN_BRACE, BlockStatement),
+                new CompiletteAction(TokenType.THROW, ThrowStatement),
             };
 
             foreach (var item in statement)
                 statementCompilettes[item.Match] = item;
         }
-
 
         protected override void GenerateParseRules()
         {
@@ -53,8 +63,8 @@ namespace ULox
             rules[(int)TokenType.SLASH] = new ParseRule(null, Binary, Precedence.Factor);
             rules[(int)TokenType.STAR] = new ParseRule(null, Binary, Precedence.Factor);
             rules[(int)TokenType.BANG] = new ParseRule(Unary, null, Precedence.None);
-            rules[(int)TokenType.INT] = new ParseRule(Number, null, Precedence.None);
-            rules[(int)TokenType.FLOAT] = new ParseRule(Number, null, Precedence.None);
+            rules[(int)TokenType.INT] = new ParseRule(Literal, null, Precedence.None);
+            rules[(int)TokenType.FLOAT] = new ParseRule(Literal, null, Precedence.None);
             rules[(int)TokenType.TRUE] = new ParseRule(Literal, null, Precedence.None);
             rules[(int)TokenType.FALSE] = new ParseRule(Literal, null, Precedence.None);
             rules[(int)TokenType.NULL] = new ParseRule(Literal, null, Precedence.None);
@@ -64,7 +74,7 @@ namespace ULox
             rules[(int)TokenType.LESS_EQUAL] = new ParseRule(null, Binary, Precedence.Comparison);
             rules[(int)TokenType.GREATER] = new ParseRule(null, Binary, Precedence.Comparison);
             rules[(int)TokenType.GREATER_EQUAL] = new ParseRule(null, Binary, Precedence.Comparison);
-            rules[(int)TokenType.STRING] = new ParseRule(String, null, Precedence.None);
+            rules[(int)TokenType.STRING] = new ParseRule(Literal, null, Precedence.None);
             rules[(int)TokenType.IDENTIFIER] = new ParseRule(Variable, null, Precedence.None);
             rules[(int)TokenType.AND] = new ParseRule(null, And, Precedence.And);
             rules[(int)TokenType.OR] = new ParseRule(null, Or, Precedence.Or);
@@ -74,258 +84,8 @@ namespace ULox
             rules[(int)TokenType.SUPER] = new ParseRule(Super, null, Precedence.None);
         }
 
-        #region Declarations
-
-        private void TestDeclaration()
-        {
-            //grab name
-            var testClassName = (string)CurrentToken.Literal;
-            CurrentChunk.AddConstant(Value.New(testClassName));
-
-            //find the class by name, need to note this instruction so we can patch the argID as it doesn't exist yet
-            //var argID = ResolveLocal(compilerStates.Peek(), testClassName);
-            //create instance
-            //
-
-            //parse as class, class needs to add calls for all testcases it finds to the testFuncChunk
-            ClassDeclaration();
-
-            EmitOpCode(OpCode.NULL);
-            EmitOpAndByte(OpCode.ASSIGN_GLOBAL_UNCACHED, CurrentChunk.AddConstant(Value.New(testClassName)));
-        }
-
-        private void ClassDeclaration()
-        {
-            Consume(TokenType.IDENTIFIER, "Expect class name.");
-            var className = (string)PreviousToken.Literal;
-            var compState = CurrentCompilerState;
-            compState.classCompilerStates.Push(new ClassCompilerState(className));
-
-            byte nameConstant = AddStringConstant();
-            DeclareVariable();
-
-            EmitOpAndByte(OpCode.CLASS, nameConstant);
-            DefineVariable(nameConstant);
-
-            bool hasSuper = false;
-
-            if (Match(TokenType.LESS))
-            {
-                Consume(TokenType.IDENTIFIER, "Expect superclass name.");
-                Variable(false);
-                if (className == (string)PreviousToken.Literal)
-                    throw new CompilerException("A class cannot inhert from itself.");
-
-                BeginScope();
-                AddLocal(compState, "super");
-                DefineVariable(0);
-
-                NamedVariable(className, false);
-                EmitOpCode(OpCode.INHERIT);
-                hasSuper = true;
-            }
-
-            NamedVariable(className, false);
-            Consume(TokenType.OPEN_BRACE, "Expect '{' before class body.");
-            while (!Check(TokenType.CLOSE_BRACE) && !Check(TokenType.EOF))
-            {
-                if (Match(TokenType.STATIC))
-                {
-                    if (Match(TokenType.VAR))
-                    {
-                        Property(true);
-                    }
-                    else
-                    {
-                        Method(true);
-                    }
-                }
-                else if (Match(TokenType.VAR))
-                    Property(false);
-                else if (Match(TokenType.TESTCASE))
-                    TestCase();
-                else
-                    Method(false);
-            }
-
-            //emit return //if we are the last link in the chain this ends our call
-            var classCompState = CurrentCompilerState.classCompilerStates.Peek();
-
-            if (classCompState.initFragStartLocation != -1)
-            {
-                EmitOpCode(OpCode.INIT_CHAIN_START);
-                EmitUShort((ushort)classCompState.initFragStartLocation);
-            }
-
-            if (classCompState.testFragStartLocation != -1)
-            {
-                EmitOpCode(OpCode.TEST_CHAIN_START);
-                EmitUShort((ushort)classCompState.testFragStartLocation);
-            }
-
-            //return stub used by init and test chains
-            var classReturnEnd = EmitJump(OpCode.JUMP);
-
-            if (classCompState.previousInitFragJumpLocation != -1)
-                PatchJump(classCompState.previousInitFragJumpLocation);
-
-            if (classCompState.previousTestFragJumpLocation != -1)
-                PatchJump(classCompState.previousTestFragJumpLocation);
-
-            //EmitOpCode(OpCode.NULL);
-            EmitOpCode(OpCode.RETURN);
-
-            PatchJump(classReturnEnd);
-
-            Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
-            EmitOpCode(OpCode.POP);
-
-            if (hasSuper)
-            {
-                EndScope();
-            }
-
-            compState.classCompilerStates.Pop();
-        }
-
-        private void FunctionDeclaration()
-        {
-            var global = ParseVariable("Expect function name.");
-            MarkInitialised();
-
-            Function(CurrentChunk.ReadConstant(global).val.asString, FunctionType.Function);
-            DefineVariable(global);
-        }
-
-        private void VarDeclaration()
-        {
-            do
-            {
-                var global = ParseVariable("Expect variable name");
-
-                if (Match(TokenType.ASSIGN))
-                    Expression();
-                else
-                    EmitOpCode(OpCode.NULL);
-
-                DefineVariable(global);
-
-            } while (Match(TokenType.COMMA));
-
-            Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
-        }
-
-        #endregion Declarations
-
-        private void Method(bool isStatic)
-        {
-            Consume(TokenType.IDENTIFIER, "Expect method name.");
-            byte constant = AddStringConstant();
-
-            var name = CurrentChunk.ReadConstant(constant).val.asString;
-            var funcType = isStatic ? FunctionType.Function : FunctionType.Method;
-            if (name == "init")
-                funcType = FunctionType.Init;
-
-            Function(name, funcType);
-            EmitOpAndByte(OpCode.METHOD, constant);
-        }
-
-        private void Property(bool isStatic)
-        {
-            do
-            {
-                Consume(TokenType.IDENTIFIER, "Expect var name.");
-                byte nameConstant = AddStringConstant();
-
-                var compState = CurrentCompilerState;
-                var classCompState = compState.classCompilerStates.Peek();
-
-                int initFragmentJump = -1;
-                if (!isStatic)
-                {
-                    //emit jump // to skip this during imperative
-                    initFragmentJump = EmitJump(OpCode.JUMP);
-                    //patch jump previous init fragment if it exists
-                    if (classCompState.previousInitFragJumpLocation != -1)
-                    {
-                        PatchJump(classCompState.previousInitFragJumpLocation);
-                    }
-                    else
-                    {
-                        classCompState.initFragStartLocation = CurrentChunk.Instructions.Count;
-                    }
-                }
-
-
-                EmitOpAndByte(OpCode.GET_LOCAL, (byte)(isStatic ? 1 : 0));//get class or inst this on the stack
-
-
-                //if = consume it and then
-                //eat 1 expression or a push null
-                if (Match(TokenType.ASSIGN))
-                {
-                    Expression();
-                }
-                else
-                {
-                    EmitOpCode(OpCode.NULL);
-                }
-
-                //emit set prop
-                EmitOpAndByte(OpCode.SET_PROPERTY_UNCACHED, nameConstant);
-                EmitOpCode(OpCode.POP);
-                if (!isStatic)
-                {
-                    //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                    classCompState.previousInitFragJumpLocation = EmitJump(OpCode.JUMP);
-
-                    //patch jump from skip imperative
-                    PatchJump(initFragmentJump);
-                }
-
-            } while (Match(TokenType.COMMA));
-
-            Consume(TokenType.END_STATEMENT, "Expect ; after property declaration.");
-        }
-
-        private void TestCase()
-        {
-            Consume(TokenType.IDENTIFIER, "Expect testcase name.");
-            byte nameConstantID = AddStringConstant();
-
-            var name = CurrentChunk.ReadConstant(nameConstantID).val.asString;
-
-            var compState = CurrentCompilerState;
-            var classCompState = compState.classCompilerStates.Peek();
-
-            //emit jump // to skip this during imperative
-            int testFragmentJump = EmitJump(OpCode.JUMP);
-            //patch jump previous init fragment if it exists
-            if (classCompState.previousTestFragJumpLocation != -1)
-            {
-                PatchJump(classCompState.previousTestFragJumpLocation);
-            }
-            else
-            {
-                classCompState.testFragStartLocation = compState.chunk.Instructions.Count;
-            }
-
-            Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
-
-            // The body.
-            EmitOpAndByte(OpCode.TEST_START, nameConstantID);
-            BlockStatement();
-            EmitOpAndByte(OpCode.TEST_END, nameConstantID);
-
-            classCompState.previousTestFragJumpLocation = EmitJump(OpCode.JUMP);
-
-            //emit jump to step to next and save it
-            PatchJump(testFragmentJump);
-        }
-
         #region Statements
-        private void IfStatement()
+        private void IfStatement(CompilerBase compiler)
         {
             Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
             Expression();
@@ -346,7 +106,7 @@ namespace ULox
             PatchJump(elseJump);
         }
 
-        private void ReturnStatement()
+        private void ReturnStatement(CompilerBase compiler)
         {
             //if (compilerStates.Count <= 1)
             //    throw new CompilerException("Cannot return from a top-level statement.");
@@ -367,13 +127,13 @@ namespace ULox
             }
         }
 
-        private void YieldStatement()
+        private void YieldStatement(CompilerBase compiler)
         {
             EmitOpCode(OpCode.YIELD);
             Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
         }
 
-        private void BreakStatement()
+        private void BreakStatement(CompilerBase compiler)
         {
             var comp = CurrentCompilerState;
             if (comp.loopStates.Count == 0)
@@ -386,7 +146,7 @@ namespace ULox
             comp.loopStates.Peek().loopExitPatchLocations.Add(exitJump);
         }
 
-        private void ContinueStatement()
+        private void ContinueStatement(CompilerBase compiler)
         {
             var comp = CurrentCompilerState;
             if (comp.loopStates.Count == 0)
@@ -397,7 +157,7 @@ namespace ULox
             Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
         }
 
-        private void LoopStatement()
+        private void LoopStatement(CompilerBase compiler)
         {
             var comp = CurrentCompilerState;
             var loopState = new CompilerState.LoopState();
@@ -414,7 +174,7 @@ namespace ULox
             comp.loopStates.Pop();
         }
 
-        private void WhileStatement()
+        private void WhileStatement(CompilerBase compiler)
         {
             var comp = CurrentCompilerState;
             var loopState = new CompilerState.LoopState();
@@ -439,7 +199,7 @@ namespace ULox
             comp.loopStates.Pop();
         }
 
-        private void ForStatement()
+        private void ForStatement(CompilerBase compiler)
         {
             BeginScope();
 
@@ -450,7 +210,7 @@ namespace ULox
             }
             else if (Match(TokenType.VAR))
             {
-                VarDeclaration();
+                VarDeclaration(compiler);
             }
             else
             {
@@ -503,14 +263,14 @@ namespace ULox
             EndScope();
         }
 
-        private void BlockStatement()
+        private void BlockStatement(CompilerBase compiler)
         {
             BeginScope();
             Block();
             EndScope();
         }
 
-        private void ThrowStatement()
+        private void ThrowStatement(CompilerBase compiler)
         {
             if (!Check(TokenType.END_STATEMENT))
             {
@@ -569,18 +329,6 @@ namespace ULox
 
         }
 
-        private void Number(bool canAssign)
-        {
-            var number = (double)PreviousToken.Literal;
-
-            var isInt = number == System.Math.Truncate(number);
-
-            if (isInt && number < 255 && number >= 0)
-                EmitOpAndByte(OpCode.PUSH_BYTE, (byte)number);
-            else
-                CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), PreviousToken.Line);
-        }
-
         private void Literal(bool canAssign)
         {
             switch (PreviousToken.TokenType)
@@ -588,18 +336,32 @@ namespace ULox
             case TokenType.TRUE: EmitOpAndByte(OpCode.PUSH_BOOL, 1); break;
             case TokenType.FALSE: EmitOpAndByte(OpCode.PUSH_BOOL, 0); break;
             case TokenType.NULL: EmitOpCode(OpCode.NULL); break;
+            case TokenType.INT:
+            case TokenType.FLOAT:
+                {
+
+                    var number = (double)PreviousToken.Literal;
+
+                    var isInt = number == System.Math.Truncate(number);
+
+                    if (isInt && number < 255 && number >= 0)
+                        EmitOpAndByte(OpCode.PUSH_BYTE, (byte)number);
+                    else
+                        CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), PreviousToken.Line);
+                }
+                break;
+            case TokenType.STRING:
+                {
+                    var str = (string)PreviousToken.Literal;
+                    CurrentChunk.AddConstantAndWriteInstruction(Value.New(str), PreviousToken.Line);
+                }
+                break;
             }
         }
 
-        private void String(bool canAssign)
-        {
-            var str = (string)PreviousToken.Literal;
-            CurrentChunk.AddConstantAndWriteInstruction(Value.New(str), PreviousToken.Line);
-        }
         private void Variable(bool canAssign)
         {
-            var name = (string)PreviousToken.Literal;
-            NamedVariable(name, canAssign);
+            NamedVariableFromPreviousToken(canAssign);
         }
 
         private void And(bool canAssign)

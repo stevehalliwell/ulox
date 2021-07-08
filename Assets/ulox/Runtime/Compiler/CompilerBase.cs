@@ -15,8 +15,8 @@ namespace ULox
         private int tokenIndex;
         
         protected ParseRule[] rules;
-        protected Dictionary<TokenType, Compilette> declarationCompilettes = new Dictionary<TokenType, Compilette>();
-        protected Dictionary<TokenType, Compilette> statementCompilettes = new Dictionary<TokenType, Compilette>();
+        protected Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
+        protected Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -30,6 +30,9 @@ namespace ULox
         protected abstract void GenerateDeclarationLookup();
         protected abstract void GenerateStatementLookup();
         protected abstract void GenerateParseRules();
+        protected abstract void NoDeclarationFound();
+        protected abstract void NoStatementFound();
+
 
         public void Reset()
         {
@@ -59,226 +62,16 @@ namespace ULox
             return EndCompile();
         }
 
-        protected void PatchJump(int thenjump)
-        {
-            int jump = CurrentChunkInstructinCount - thenjump - 2;
-
-            if (jump > ushort.MaxValue)
-                throw new CompilerException($"Cannot jump '{jump}'. Max jump is '{ushort.MaxValue}'");
-
-            WriteBytesAt(thenjump, (byte)((jump >> 8) & 0xff), (byte)(jump & 0xff));
-        }
-
-
-        protected void WriteBytesAt(int at, params byte[] b)
-        {
-            for (int i = 0; i < b.Length; i++)
-            {
-                CurrentChunk.Instructions[at + i] = b[i];
-            }
-        }
-        protected int EmitJump(OpCode op)
-        {
-            EmitBytes((byte)op, 0xff, 0xff);
-            return CurrentChunk.Instructions.Count - 2;
-        }
-
-        protected void EmitByte(byte b)
-        {
-            CurrentChunk.WriteByte(b, PreviousToken.Line);
-        }
-
-        protected void EmitBytes(params byte[] b)
-        {
-            for (int i = 0; i < b.Length; i++)
-            {
-                CurrentChunk.WriteByte(b[i], PreviousToken.Line);
-            }
-        }
-
-        protected void EmitUShort(ushort us)
-        {
-            EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
-        }
-
-        protected void EndScope()
-        {
-            var comp = CurrentCompilerState;
-
-            comp.scopeDepth--;
-
-            while (comp.localCount > 0 &&
-                comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
-            {
-                if (comp.locals[comp.localCount - 1].IsCaptured)
-                    EmitOpCode(OpCode.CLOSE_UPVALUE);
-                else
-                    EmitOpCode(OpCode.POP);
-
-                CurrentCompilerState.localCount--;
-            }
-        }
-        protected byte ArgumentList()
-        {
-            byte argCount = 0;
-            if (!Check(TokenType.CLOSE_PAREN))
-            {
-                do
-                {
-                    Expression();
-                    if (argCount == 255)
-                        throw new CompilerException("Can't have more than 255 arguments.");
-
-                    argCount++;
-                } while (Match(TokenType.COMMA));
-            }
-
-            Consume(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
-            return argCount;
-        }
-
-        protected void EmitLoop(int loopStart)
-        {
-            EmitOpCode(OpCode.LOOP);
-            int offset = CurrentChunk.Instructions.Count - loopStart + 2;
-
-            if (offset > ushort.MaxValue)
-                throw new CompilerException($"Cannot loop '{offset}'. Max loop is '{ushort.MaxValue}'");
-
-            EmitBytes((byte)((offset >> 8) & 0xff), (byte)(offset & 0xff));
-        }
-        protected void PatchLoopExits(CompilerState.LoopState loopState)
-        {
-            if (loopState.loopExitPatchLocations.Count == 0)
-                throw new CompilerException("Loops must contain an termination.");
-
-            for (int i = 0; i < loopState.loopExitPatchLocations.Count; i++)
-            {
-                PatchJump(loopState.loopExitPatchLocations[i]);
-            }
-        }
-        protected byte ParseVariable(string errMsg)
-        {
-            Consume(TokenType.IDENTIFIER, errMsg);
-
-            DeclareVariable();
-            if (CurrentCompilerState.scopeDepth > 0) return 0;
-            return AddStringConstant();
-        }
-
-        protected void Function(string name, FunctionType functionType)
-        {
-            PushCompilerState(name, functionType);
-
-            BeginScope();
-
-            if (Match(TokenType.OPEN_PAREN))
-            {
-                // Compile the parameter list.
-                //Consume(TokenType.OPEN_PAREN, "Expect '(' after function name.");
-                if (!Check(TokenType.CLOSE_PAREN))
-                {
-                    do
-                    {
-                        CurrentChunk.Arity++;
-                        if (CurrentChunk.Arity > 255)
-                        {
-                            throw new CompilerException("Can't have more than 255 parameters.");
-                        }
-
-                        var paramConstant = ParseVariable("Expect parameter name.");
-                        DefineVariable(paramConstant);
-                    } while (Match(TokenType.COMMA));
-                }
-                Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
-            }
-
-            // The body.
-            Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
-            Block();
-
-            // Create the function object.
-            var comp = CurrentCompilerState;   //we need this to mark upvalues
-            var function = EndCompile();
-            EmitOpAndByte(OpCode.CLOSURE, CurrentChunk.AddConstant(Value.New(function)));
-
-            for (int i = 0; i < function.UpvalueCount; i++)
-            {
-                EmitByte(comp.upvalues[i].isLocal ? (byte)1 : (byte)0);
-                EmitByte(comp.upvalues[i].index);
-            }
-        }
-
-        protected void Block()
-        {
-            while (!Check(TokenType.CLOSE_BRACE) && !Check(TokenType.EOF))
-                Declaration();
-
-            Consume(TokenType.CLOSE_BRACE, "Expect '}' after block.");
-        }
-
-        protected void BeginScope()
-        {
-            CurrentCompilerState.scopeDepth++;
-        }
-
-        protected void DefineVariable(byte global)
-        {
-            if (CurrentCompilerState.scopeDepth > 0)
-            {
-                MarkInitialised();
-                return;
-            }
-
-            EmitOpAndByte(OpCode.DEFINE_GLOBAL, global);
-        }
-        protected void EmitOpCodePair(OpCode op1, OpCode op2)
-        {
-            CurrentChunk.WriteSimple(op1, PreviousToken.Line);
-            CurrentChunk.WriteSimple(op2, PreviousToken.Line);
-        }
-
-        protected byte AddStringConstant() => CurrentChunk.AddConstant(Value.New((string)PreviousToken.Literal));
-        protected void DeclareVariable()
-        {
-            var comp = CurrentCompilerState;
-
-            if (comp.scopeDepth == 0) return;
-
-            var declName = comp.chunk.ReadConstant(AddStringConstant()).val.asString;
-
-            for (int i = comp.localCount - 1; i >= 0; i--)
-            {
-                var local = comp.locals[i];
-                if (local.Depth != -1 && local.Depth < comp.scopeDepth)
-                    break;
-
-                if (declName == local.Name)
-                    throw new CompilerException($"Already a variable with name '{declName}' in this scope.");
-            }
-
-            AddLocal(comp, declName);
-        }
-
-
-        protected void MarkInitialised()
-        {
-            var comp = CurrentCompilerState;
-
-            if (comp.scopeDepth == 0) return;
-            comp.locals[comp.localCount - 1].Depth = comp.scopeDepth;
-        }
-
         protected void Declaration()
         {
-            if(declarationCompilettes.TryGetValue(CurrentToken.TokenType, out var complette))
+            if (declarationCompilettes.TryGetValue(CurrentToken.TokenType, out var complette))
             {
                 Advance();
-                complette.Process();
+                complette.Process(this);
                 return;
             }
 
-            Statement();
+            NoDeclarationFound();
         }
 
         protected void Statement()
@@ -286,12 +79,13 @@ namespace ULox
             if (statementCompilettes.TryGetValue(CurrentToken.TokenType, out var complette))
             {
                 Advance();
-                complette.Process();
+                complette.Process(this);
                 return;
             }
 
-            ExpressionStatement();
+            NoStatementFound();
         }
+
 
         protected void ExpressionStatement()
         {
@@ -300,7 +94,7 @@ namespace ULox
             EmitOpCode(OpCode.POP);
         }
 
-        protected void Expression()
+        public void Expression()
         {
             ParsePrecedence(Precedence.Assignment);
         }
@@ -365,7 +159,7 @@ namespace ULox
             return null;
         }
 
-        protected static void AddLocal(CompilerState comp, string name, int depth = -1)
+        public void AddLocal(CompilerState comp, string name, int depth = -1)
         {
             if (comp.localCount == byte.MaxValue)
                 throw new CompilerException("Too many local variables.");
@@ -434,7 +228,13 @@ namespace ULox
             return -1;
         }
 
-        protected void NamedVariable(string name, bool canAssign)
+        public void NamedVariableFromPreviousToken(bool canAssign)
+        {
+            var name = (string)PreviousToken.Literal;
+            NamedVariable(name, canAssign);
+        }
+
+        public void NamedVariable(string name, bool canAssign)
         {
             OpCode getOp = OpCode.FETCH_GLOBAL_UNCACHED, setOp = OpCode.ASSIGN_GLOBAL_UNCACHED;
             var argID = ResolveLocal(compilerStates.Peek(), name);
@@ -514,7 +314,7 @@ namespace ULox
             EmitOpCode(OpCode.RETURN);
         }
 
-        protected void Consume(TokenType tokenType, string msg)
+        public void Consume(TokenType tokenType, string msg)
         {
             if (CurrentToken.TokenType == tokenType)
                 Advance();
@@ -522,12 +322,12 @@ namespace ULox
                 throw new CompilerException(msg + $" at {PreviousToken.Line}:{PreviousToken.Character} '{PreviousToken.Literal}'");
         }
 
-        protected bool Check(TokenType type)
+        public bool Check(TokenType type)
         {
             return CurrentToken.TokenType == type;
         }
 
-        protected bool Match(TokenType type)
+        public bool Match(TokenType type)
         {
             if (!Check(type))
                 return false;
@@ -547,12 +347,12 @@ namespace ULox
             return false;
         }
 
-        protected void EmitOpCode(OpCode op)
+        public void EmitOpCode(OpCode op)
         {
             CurrentChunk.WriteSimple(op, PreviousToken.Line);
         }
 
-        protected void EmitOpAndByte(OpCode op, byte b)
+        public void EmitOpAndByte(OpCode op, byte b)
         {
             CurrentChunk.WriteSimple(op, PreviousToken.Line);
             CurrentChunk.WriteByte(b, PreviousToken.Line);
@@ -565,5 +365,241 @@ namespace ULox
             tokenIndex++;
         }
 
+        public void PatchJump(int thenjump)
+        {
+            int jump = CurrentChunkInstructinCount - thenjump - 2;
+
+            if (jump > ushort.MaxValue)
+                throw new CompilerException($"Cannot jump '{jump}'. Max jump is '{ushort.MaxValue}'");
+
+            WriteBytesAt(thenjump, (byte)((jump >> 8) & 0xff), (byte)(jump & 0xff));
+        }
+
+
+        protected void WriteBytesAt(int at, params byte[] b)
+        {
+            for (int i = 0; i < b.Length; i++)
+            {
+                CurrentChunk.Instructions[at + i] = b[i];
+            }
+        }
+        public int EmitJump(OpCode op)
+        {
+            EmitBytes((byte)op, 0xff, 0xff);
+            return CurrentChunk.Instructions.Count - 2;
+        }
+
+        protected void EmitByte(byte b)
+        {
+            CurrentChunk.WriteByte(b, PreviousToken.Line);
+        }
+
+        protected void EmitBytes(params byte[] b)
+        {
+            for (int i = 0; i < b.Length; i++)
+            {
+                CurrentChunk.WriteByte(b[i], PreviousToken.Line);
+            }
+        }
+
+        public void EmitUShort(ushort us)
+        {
+            EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
+        }
+
+        public void EndScope()
+        {
+            var comp = CurrentCompilerState;
+
+            comp.scopeDepth--;
+
+            while (comp.localCount > 0 &&
+                comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
+            {
+                if (comp.locals[comp.localCount - 1].IsCaptured)
+                    EmitOpCode(OpCode.CLOSE_UPVALUE);
+                else
+                    EmitOpCode(OpCode.POP);
+
+                CurrentCompilerState.localCount--;
+            }
+        }
+        protected byte ArgumentList()
+        {
+            byte argCount = 0;
+            if (!Check(TokenType.CLOSE_PAREN))
+            {
+                do
+                {
+                    Expression();
+                    if (argCount == 255)
+                        throw new CompilerException("Can't have more than 255 arguments.");
+
+                    argCount++;
+                } while (Match(TokenType.COMMA));
+            }
+
+            Consume(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
+            return argCount;
+        }
+
+        protected void EmitLoop(int loopStart)
+        {
+            EmitOpCode(OpCode.LOOP);
+            int offset = CurrentChunk.Instructions.Count - loopStart + 2;
+
+            if (offset > ushort.MaxValue)
+                throw new CompilerException($"Cannot loop '{offset}'. Max loop is '{ushort.MaxValue}'");
+
+            EmitBytes((byte)((offset >> 8) & 0xff), (byte)(offset & 0xff));
+        }
+        protected void PatchLoopExits(CompilerState.LoopState loopState)
+        {
+            if (loopState.loopExitPatchLocations.Count == 0)
+                throw new CompilerException("Loops must contain an termination.");
+
+            for (int i = 0; i < loopState.loopExitPatchLocations.Count; i++)
+            {
+                PatchJump(loopState.loopExitPatchLocations[i]);
+            }
+        }
+        protected byte ParseVariable(string errMsg)
+        {
+            Consume(TokenType.IDENTIFIER, errMsg);
+
+            DeclareVariable();
+            if (CurrentCompilerState.scopeDepth > 0) return 0;
+            return AddStringConstant();
+        }
+
+        public void Function(string name, FunctionType functionType)
+        {
+            PushCompilerState(name, functionType);
+
+            BeginScope();
+
+            if (Match(TokenType.OPEN_PAREN))
+            {
+                // Compile the parameter list.
+                //Consume(TokenType.OPEN_PAREN, "Expect '(' after function name.");
+                if (!Check(TokenType.CLOSE_PAREN))
+                {
+                    do
+                    {
+                        CurrentChunk.Arity++;
+                        if (CurrentChunk.Arity > 255)
+                        {
+                            throw new CompilerException("Can't have more than 255 parameters.");
+                        }
+
+                        var paramConstant = ParseVariable("Expect parameter name.");
+                        DefineVariable(paramConstant);
+                    } while (Match(TokenType.COMMA));
+                }
+                Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
+            }
+
+            // The body.
+            Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
+            Block();
+
+            // Create the function object.
+            var comp = CurrentCompilerState;   //we need this to mark upvalues
+            var function = EndCompile();
+            EmitOpAndByte(OpCode.CLOSURE, CurrentChunk.AddConstant(Value.New(function)));
+
+            for (int i = 0; i < function.UpvalueCount; i++)
+            {
+                EmitByte(comp.upvalues[i].isLocal ? (byte)1 : (byte)0);
+                EmitByte(comp.upvalues[i].index);
+            }
+        }
+
+        public void Block()
+        {
+            while (!Check(TokenType.CLOSE_BRACE) && !Check(TokenType.EOF))
+                Declaration();
+
+            Consume(TokenType.CLOSE_BRACE, "Expect '}' after block.");
+        }
+
+        public void BeginScope()
+        {
+            CurrentCompilerState.scopeDepth++;
+        }
+
+        public void DefineVariable(byte global)
+        {
+            if (CurrentCompilerState.scopeDepth > 0)
+            {
+                MarkInitialised();
+                return;
+            }
+
+            EmitOpAndByte(OpCode.DEFINE_GLOBAL, global);
+        }
+        protected void EmitOpCodePair(OpCode op1, OpCode op2)
+        {
+            CurrentChunk.WriteSimple(op1, PreviousToken.Line);
+            CurrentChunk.WriteSimple(op2, PreviousToken.Line);
+        }
+
+        public byte AddStringConstant() => CurrentChunk.AddConstant(Value.New((string)PreviousToken.Literal));
+        public void DeclareVariable()
+        {
+            var comp = CurrentCompilerState;
+
+            if (comp.scopeDepth == 0) return;
+
+            var declName = comp.chunk.ReadConstant(AddStringConstant()).val.asString;
+
+            for (int i = comp.localCount - 1; i >= 0; i--)
+            {
+                var local = comp.locals[i];
+                if (local.Depth != -1 && local.Depth < comp.scopeDepth)
+                    break;
+
+                if (declName == local.Name)
+                    throw new CompilerException($"Already a variable with name '{declName}' in this scope.");
+            }
+
+            AddLocal(comp, declName);
+        }
+
+
+        protected void MarkInitialised()
+        {
+            var comp = CurrentCompilerState;
+
+            if (comp.scopeDepth == 0) return;
+            comp.locals[comp.localCount - 1].Depth = comp.scopeDepth;
+        }
+
+        protected void FunctionDeclaration(CompilerBase compiler)
+        {
+            var global = ParseVariable("Expect function name.");
+            MarkInitialised();
+
+            Function(CurrentChunk.ReadConstant(global).val.asString, FunctionType.Function);
+            DefineVariable(global);
+        }
+
+        protected void VarDeclaration(CompilerBase compiler)
+        {
+            do
+            {
+                var global = ParseVariable("Expect variable name");
+
+                if (Match(TokenType.ASSIGN))
+                    Expression();
+                else
+                    EmitOpCode(OpCode.NULL);
+
+                DefineVariable(global);
+
+            } while (Match(TokenType.COMMA));
+
+            Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
+        }
     }
 }

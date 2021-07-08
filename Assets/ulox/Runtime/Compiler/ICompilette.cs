@@ -4,6 +4,6 @@
     {
         TokenType Match { get; }
 
-        void Process();
+        void Process(CompilerBase compiler);
     }
 }

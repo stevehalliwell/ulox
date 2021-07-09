@@ -1176,7 +1176,7 @@ class A{MethA(){print (1);}}");
         {
             var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
 
-            Value Func(VM vm, int args)
+            Value Func(VMBase vm, int args)
             {
                 return Value.New("Hello from native.");
             }
@@ -1193,7 +1193,7 @@ class A{MethA(){print (1);}}");
         {
             var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
 
-            Value Func(VM vm, int args)
+            Value Func(VMBase vm, int args)
             {
                 return Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native.");
             }
@@ -2030,7 +2030,7 @@ loop
         {
             _logger = logger;
 
-            Value Print(VM vm, int args)
+            Value Print(VMBase vm, int args)
             {
                 var str = vm.GetArg(1).ToString();
                 _logger(str);

@@ -415,7 +415,7 @@ namespace ULox
             if (canAssign && Match(TokenType.ASSIGN))
             {
                 Expression();
-                EmitOpAndByte(OpCode.SET_PROPERTY_UNCACHED, name);
+                EmitOpAndByte(OpCode.SET_PROPERTY, name);
             }
             else if (Match(TokenType.OPEN_PAREN))
             {
@@ -425,7 +425,7 @@ namespace ULox
             }
             else
             {
-                EmitOpAndByte(OpCode.GET_PROPERTY_UNCACHED, name);
+                EmitOpAndByte(OpCode.GET_PROPERTY, name);
             }
         }
 

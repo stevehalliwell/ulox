@@ -12,20 +12,16 @@
         POP, 
 
         DEFINE_GLOBAL,
-        FETCH_GLOBAL_UNCACHED,
-        //FETCH_GLOBAL_CACHED,
-        ASSIGN_GLOBAL_UNCACHED,
-        //ASSIGN_GLOBAL_CACHED,
+        FETCH_GLOBAL,
+        ASSIGN_GLOBAL,
         GET_LOCAL,
         SET_LOCAL,
         GET_UPVALUE,
         SET_UPVALUE,
         CLOSE_UPVALUE,
 
-        GET_PROPERTY_UNCACHED,
-        //GET_PROPERTY_CACHED,
-        SET_PROPERTY_UNCACHED,
-        //SET_PROPERTY_CACHED,
+        GET_PROPERTY,
+        SET_PROPERTY,
 
         JUMP_IF_FALSE,
         JUMP,
@@ -36,11 +32,19 @@
         GREATER,
         LESS,
 
+        NEGATE,
+        ADD,
+        SUBTRACT,
+        MULTIPLY,
+        DIVIDE,
+
         CALL,
         CLOSURE,
 
         RETURN,
         YIELD,
+
+        THROW,
 
         CLASS,
         METHOD,
@@ -49,17 +53,9 @@
         GET_SUPER,
         SUPER_INVOKE,
         INIT_CHAIN_START,
-        TEST_CHAIN_START,
-
-        NEGATE,
-        ADD,
-        SUBTRACT,
-        MULTIPLY,
-        DIVIDE,
 
         TEST_START,
         TEST_END,
-
-        THROW,
+        TEST_CHAIN_START,
     }
 }

@@ -19,14 +19,14 @@
                 this.initialiser = this.methods[VM.InitMethodName];                
             }
 
-            private Value InitInstance(VM vm, int argCount)
+            private Value InitInstance(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
                 inst.val.asInstance.fields.Add(VMFieldName, Value.Object(new VM()));
                 return inst;
             }
 
-            private Value AddGlobal(VM vm, int argCount)
+            private Value AddGlobal(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
                 var name = vm.GetArg(1).val.asString;
@@ -36,7 +36,7 @@
                 return inst;
             }
 
-            private Value GetGlobal(VM vm, int argCount)
+            private Value GetGlobal(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
                 var name = vm.GetArg(1).val.asString;
@@ -44,7 +44,7 @@
                 return ourVM.GetGlobal(name);
             }
 
-            private Value InheritFromEnclosing(VM vm, int argCount)
+            private Value InheritFromEnclosing(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
                 var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
@@ -52,7 +52,7 @@
                 return Value.Null();
             }
 
-            private Value Start(VM vm, int argCount)
+            private Value Start(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
                 var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
@@ -61,7 +61,7 @@
                 return ourVM.StackTop;
             }
 
-            private Value Resume(VM vm, int argCount)
+            private Value Resume(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
                 var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;

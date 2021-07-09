@@ -159,7 +159,7 @@
                 }
 
                 //emit set prop
-                compiler.EmitOpAndByte(OpCode.SET_PROPERTY_UNCACHED, nameConstant);
+                compiler.EmitOpAndByte(OpCode.SET_PROPERTY, nameConstant);
                 compiler.EmitOpCode(OpCode.POP);
                 if (!isStatic)
                 {

@@ -15,7 +15,7 @@
             return resTable;
         }
 
-        private static Value AreApproxEqual(VM vm, int argCount)
+        private static Value AreApproxEqual(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -30,7 +30,7 @@
             return Value.Null();
         }
 
-        private static Value AreEqual(VM vm, int argCount)
+        private static Value AreEqual(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -40,7 +40,7 @@
             return Value.Null();
         }
 
-        private static Value AreNotEqual(VM vm, int argCount)
+        private static Value AreNotEqual(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);

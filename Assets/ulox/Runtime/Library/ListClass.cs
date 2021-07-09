@@ -18,21 +18,21 @@ namespace ULox
             this.initialiser = this.methods[VM.InitMethodName];
         }
 
-        private Value InitInstance(VM vm, int argCount)
+        private Value InitInstance(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             inst.val.asInstance.fields.Add(ListFieldName, Value.Object(new InternalList()));
             return inst;
         }
 
-        private Value Count(VM vm, int argCount)
+        private Value Count(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var list = inst.val.asInstance.fields[ListFieldName].val.asObject as InternalList;
             return Value.New(list.Count);
         }
 
-        private Value Get(VM vm, int argCount)
+        private Value Get(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var list = inst.val.asInstance.fields[ListFieldName].val.asObject as InternalList;
@@ -40,7 +40,7 @@ namespace ULox
             return list[index];
         }
 
-        private Value Set(VM vm, int argCount)
+        private Value Set(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var list = inst.val.asInstance.fields[ListFieldName].val.asObject as InternalList;
@@ -50,7 +50,7 @@ namespace ULox
             return newValue;
         }
 
-        private Value Add(VM vm, int argCount)
+        private Value Add(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var list = inst.val.asInstance.fields[ListFieldName].val.asObject as InternalList;

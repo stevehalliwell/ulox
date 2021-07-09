@@ -31,7 +31,7 @@
             _classCompilette.Process(compiler);
 
             compiler.EmitOpCode(OpCode.NULL);
-            compiler.EmitOpAndByte(OpCode.ASSIGN_GLOBAL_UNCACHED, compiler.CurrentChunk.AddConstant(Value.New(testClassName)));
+            compiler.EmitOpAndByte(OpCode.ASSIGN_GLOBAL, compiler.CurrentChunk.AddConstant(Value.New(testClassName)));
         }
     }
 }

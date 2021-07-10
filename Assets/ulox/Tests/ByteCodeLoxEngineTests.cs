@@ -3,7 +3,6 @@ using UnityEngine;
 
 //TODO 
 //      vm find func with arity is unused
-//      list set
 //      
 
 namespace ULox.Tests

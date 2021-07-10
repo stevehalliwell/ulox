@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
-//TODO: Too big, split and org into files
-
 namespace ULox
 {
     //todo external code call lox function with params from external code
@@ -257,31 +255,13 @@ namespace ULox
                     }
                     break;
                 case OpCode.DEFINE_GLOBAL:
-                    {
-                        var global = ReadByte(chunk);
-                        var globalName = chunk.ReadConstant(global);
-                        _globals[globalName.val.asString] = Pop();
-                    }
+                        DoDefineGlobalOp(chunk);
                     break;
                 case OpCode.FETCH_GLOBAL:
-                    {
-                        var global = ReadByte(chunk);
-                        var globalName = chunk.ReadConstant(global);
-                        var actualName = globalName.val.asString;
-                        Push(_globals[actualName]);
-                    }
+                        DoFetchGlobalOp(chunk);
                     break;
                 case OpCode.ASSIGN_GLOBAL:
-                    {
-                        var global = ReadByte(chunk);
-                        var globalName = chunk.ReadConstant(global);
-                        var actualName = globalName.val.asString;
-                        if (!_globals.ContainsKey(actualName))
-                        {
-                            throw new VMException($"Global var of name '{actualName}' was not found.");
-                        }
-                        _globals[actualName] = Peek();
-                    }
+                        DoAssignGlobalOp(chunk);
                     break;
                 case OpCode.CALL:
                     {
@@ -290,19 +270,14 @@ namespace ULox
                     }
                     break;
                 case OpCode.CLOSURE:
-                    {
                         DoClosureOp(chunk);
-                    }
                     break;
                 case OpCode.CLOSE_UPVALUE:
                     CloseUpvalues(_valueStack.Count - 1);
                     DiscardPop();
                     break;
                 case OpCode.THROW:
-                    {
-                        var value = Pop();
-                        throw new PanicException(value.ToString());
-                    }
+                        throw new PanicException(Pop().ToString());
                 case OpCode.NONE:
                     break;
 
@@ -315,7 +290,35 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoAssignGlobalOp(Chunk chunk)
+        {
+            var global = ReadByte(chunk);
+            var globalName = chunk.ReadConstant(global);
+            var actualName = globalName.val.asString;
+            if (!_globals.ContainsKey(actualName))
+            {
+                throw new VMException($"Global var of name '{actualName}' was not found.");
+            }
+            _globals[actualName] = Peek();
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoFetchGlobalOp(Chunk chunk)
+        {
+            var global = ReadByte(chunk);
+            var globalName = chunk.ReadConstant(global);
+            var actualName = globalName.val.asString;
+            Push(_globals[actualName]);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoDefineGlobalOp(Chunk chunk)
+        {
+            var global = ReadByte(chunk);
+            var globalName = chunk.ReadConstant(global);
+            _globals[globalName.val.asString] = Pop();
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoClosureOp(Chunk chunk)

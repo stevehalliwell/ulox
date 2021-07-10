@@ -141,8 +141,6 @@ namespace ULox
                 break;
             }
 
-            //todo add inline caching of some kind
-
             var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
@@ -174,8 +172,6 @@ namespace ULox
                 instance = targetVal.val.asInstance;
                 break;
             }
-
-            //todo add inline caching of some kind
 
             var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;

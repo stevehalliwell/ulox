@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 
-//TODO: Too big, refactor and make more configurable
-
 namespace ULox
 {
     public class Scanner : ScannerBase

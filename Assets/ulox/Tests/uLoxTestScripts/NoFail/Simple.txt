@@ -1,0 +1,7 @@
+test T
+{
+    testcase A
+    {
+        Assert.AreEqual(2,2);
+    }
+}

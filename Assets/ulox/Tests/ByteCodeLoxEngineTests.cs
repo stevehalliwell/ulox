@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using UnityEngine;
 
-//TODO Test recompile of same script hits the existing stored version
+//TODO 
 //      vm find func with arity is unused
 //      list set
 //      
@@ -10,6 +10,14 @@ namespace ULox.Tests
 {
     public class ByteCodeLoxEngineTests
     {
+        private ByteCodeInterpreterTestEngine engine;
+
+        [SetUp]
+        public void Setup()
+        {
+            engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+        }
+
         public static Chunk GenerateManualChunk()
         {
             var chunk = new Chunk("main");
@@ -48,7 +56,7 @@ namespace ULox.Tests
         [Test]
         public void Engine_Cycle_Math_Expression()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run("print (1+2);");
 
@@ -58,7 +66,7 @@ namespace ULox.Tests
         [Test]
         public void Engine_Cycle_Logic_Not_Expression()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run("print (!true);");
 
@@ -68,7 +76,6 @@ namespace ULox.Tests
         [Test]
         public void Engine_Cycle_Logic_Compare_Expression()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
 
             engine.Run("print (1 < 2 == false);");
 
@@ -78,7 +85,7 @@ namespace ULox.Tests
         [Test]
         public void Engine_Cycle_String_Add_Expression()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run("print (\"hello\" + \" \" + \"world\");");
 
@@ -88,7 +95,7 @@ namespace ULox.Tests
         [Test]
         public void Engine_Cycle_Print_Math_Expression()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run("print (1 + 2 * 3);");
 
@@ -98,7 +105,7 @@ namespace ULox.Tests
         [Test]
         public void Engine_Cycle_Global_Var()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"var myVar = 10; 
 var myNull; 
@@ -113,9 +120,28 @@ print (myOtherVar);");
         }
 
         [Test]
+        public void Engine_Cycle_Global_Var_DoubleRun()
+        {
+            
+            var script = @"var myVar = 10; 
+var myNull; 
+print (myVar); 
+print (myNull);
+
+var myOtherVar = myVar * 2;
+
+print (myOtherVar);";
+
+            engine.Run(script);
+            engine.Run(script);
+
+            Assert.AreEqual("10null2010null20", engine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Cycle_Blocks_Constants()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"{print (1+2);}");
 
@@ -125,7 +151,7 @@ print (myOtherVar);");
         [Test]
         public void Engine_Cycle_Blocks_Globals()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var a = 2; 
@@ -140,7 +166,7 @@ var b = 1;
         [Test]
         public void Engine_Cycle_Blocks_Locals()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 {
@@ -159,7 +185,7 @@ var b = 1;
         [Test]
         public void Engine_Cycle_Blocks_PopCheck()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 {
@@ -174,7 +200,7 @@ var b = 1;
         [Test]
         public void Engine_Cycle_Blocks_Locals_Sets()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 {
@@ -195,7 +221,7 @@ var b = 1;
         [Test]
         public void Engine_Cycle_If_Jump_Constants()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"if(1 > 2) print (""ERROR""); print (""End"");");
 
@@ -205,7 +231,7 @@ var b = 1;
         [Test]
         public void Engine_Cycle_If_Else_Constants()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 if(1 > 2) 
@@ -220,7 +246,7 @@ print (""End"");");
         [Test]
         public void Engine_Cycle_If_Else_Logic_Constants()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 if(1 > 2 or 2 > 3) 
@@ -235,7 +261,7 @@ print (""End"");");
         [Test]
         public void Engine_Cycle_While()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var i = 0;
@@ -254,7 +280,7 @@ print (""hurray"");");
         [Test]
         public void Engine_Cycle_While_Break()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var i = 0;
@@ -278,7 +304,7 @@ print (""hurray"");");
         [Test]
         public void Engine_Cycle_While_Continue()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var i = 0;
@@ -297,7 +323,7 @@ while(i < 3)
         [Test]
         public void Engine_Cycle_While_Nested()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var i = 0;
@@ -321,7 +347,7 @@ while(i < 5)
         [Test]
         public void Engine_Cycle_While_Nested_LocalInner()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var i = 0;
@@ -344,7 +370,7 @@ while(i < 5)
         [Test]
         public void Engine_Cycle_While_Nested_LocalsAndGlobals()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var i = 0;
@@ -371,7 +397,7 @@ DoIt();");
         [Test]
         public void Engine_Cycle_While_Nested_Locals()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun DoIt(){
@@ -399,7 +425,7 @@ DoIt();");
         [Test]
         public void Engine_Cycle_For()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 for(var i = 0; i < 2; i = i + 1)
@@ -416,7 +442,7 @@ print (""hurray"");");
         [Test]
         public void Engine_Compile_Func_Do_Nothing()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun T()
@@ -432,7 +458,7 @@ print (T);");
         [Test]
         public void Engine_Compile_Func_Call()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun MyFunc()
@@ -448,7 +474,7 @@ MyFunc();");
         [Test]
         public void Engine_Compile_NativeFunc_Call()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
             engine.VM.SetGlobal("CallEmptyNative", Value.New((vm, stack) => Value.New("Native")));
 
             engine.Run(@"print (CallEmptyNative());");
@@ -459,7 +485,7 @@ MyFunc();");
         [Test]
         public void Engine_Compile_Call_Mixed_Ops()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun A(){return 2;}
@@ -474,7 +500,7 @@ print (A()+B()*C());");
         [Test]
         public void Engine_Compile_Func_Inner_Logic()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun A(v)
@@ -496,7 +522,7 @@ print (A(10)+B()*C());");
         [Test]
         public void Engine_Compile_Var_Mixed_Ops()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var a = 2;
@@ -511,7 +537,7 @@ print (a+b*c);");
         [Test]
         public void Engine_Compile_Var_Mixed_Ops_InFunc()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun Func(){
@@ -546,7 +572,7 @@ Func();");
         [Ignore("long running manual test only")]
         public void Engine_Compile_Clocked_Fib()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
             engine.VM.SetGlobal("clock", Value.New((vm, stack) =>
             {
                 return Value.New(System.DateTime.Now.Ticks);
@@ -570,7 +596,7 @@ print (clock() - start);");
         [Test]
         public void Engine_Compile_Recursive()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"fun Recur(a)
 {
@@ -589,7 +615,7 @@ Recur(5);");
         [Test]
         public void Engine_Closure_Inner_Outer()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var x = ""global"";
@@ -612,7 +638,7 @@ outer(); ");
         [Test]
         public void Engine_Closure_Tripup()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun outer() {
@@ -640,7 +666,7 @@ in();");
         [Test]
         public void Engine_Closure_StillOnStack()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun outer() {
@@ -658,7 +684,7 @@ outer();");
         [Test]
         public void Engine_NestedFunc_ExampleDissasembly()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun outer() {
@@ -672,7 +698,7 @@ fun outer() {
         [Test]
         public void Engine_Closure_ExampleDissasembly()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun outer() {
@@ -691,7 +717,7 @@ fun outer() {
         [Test]
         public void Engine_Closure_Counter()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun makeCounter() {
@@ -722,7 +748,7 @@ c2();");
         [Test]
         public void Engine_Class_Empty()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class Brioche {}
@@ -734,7 +760,7 @@ print (Brioche);");
         [Test]
         public void Engine_Class_Instance_Empty()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class Brioche {}
@@ -746,7 +772,7 @@ print (Brioche());");
         [Test]
         public void Engine_Class_Instance_Method()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class Brioche 
@@ -761,7 +787,7 @@ Brioche().Meth();");
         [Test]
         public void Engine_Class_Instance_Method_This()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class Brioche 
@@ -777,7 +803,7 @@ print (Brioche().Meth());");
         [Test]
         public void Engine_Class_Instance_Simple0()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class Toast {}
@@ -789,7 +815,7 @@ Toast().a = 3;");
         [Test]
         public void Engine_Class_Instance_Simple1()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class Toast {}
@@ -802,7 +828,7 @@ print (toast.jam = ""grape"");");
         [Test]
         public void Engine_Class_Instance_Simple2()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class Pair {}
@@ -818,7 +844,7 @@ print( pair.first + pair.second);");
         [Test]
         public void Engine_Class_Method_Simple1()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T 
@@ -835,7 +861,7 @@ t.Say();");
         [Test]
         public void Engine_Class_Method_Simple2()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T 
@@ -853,7 +879,7 @@ t.Say();");
         [Test]
         public void Engine_Class_Set_Existing_From_Const()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -875,7 +901,7 @@ print (t.a);");
         [Test]
         public void Engine_Class_Set_Existing_From_Arg()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -897,7 +923,7 @@ print (t.a);");
         [Test]
         public void Engine_Class_Set_New_From_Const()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -919,7 +945,7 @@ t.Say();");
         [Test]
         public void Engine_Class_Set_New_From_Arg()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -940,7 +966,7 @@ print (t.a);");
         [Test]
         public void Engine_Class_Manual_Init_Simple1()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class CoffeeMaker {
@@ -967,7 +993,7 @@ maker.brew();");
         [Test]
         public void Engine_Class_Init_Simple1()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class CoffeeMaker {
@@ -992,7 +1018,7 @@ maker.brew();");
         [Test]
         public void Engine_Class_BoundMethod()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class CoffeeMaker {
@@ -1018,7 +1044,7 @@ delegate();");
         [Test]
         public void Engine_Class_Field_As_Method()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class CoffeeMaker {
@@ -1042,7 +1068,7 @@ maker.brew();");
         [Test]
         public void Engine_Class_Inher_Simple1()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class A{MethA(){print (1);}}
@@ -1058,7 +1084,7 @@ b.MethB();");
         [Test]
         public void Engine_Class_Inher_Simple2()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class A{MethA(){print (1);}}
@@ -1073,7 +1099,7 @@ b.MethB();");
         [Test]
         public void Engine_Class_Inher_Poly()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class A{MethA(){print (1);}}
@@ -1088,7 +1114,7 @@ b.MethA();");
         [Test]
         public void Engine_Class_Inher_Super()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class A{MethA(){print (1);}}
@@ -1103,7 +1129,7 @@ b.MethA();");
         [Test]
         public void Engine_Class_Inher_Super_BoundReturn()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class A{MethA(){print (1);}}
@@ -1124,7 +1150,7 @@ b.MethA();");
         [Test]
         public void Engine_Multiple_Scripts1()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"var a = 10;");
             engine.Run(@"print (a);");
@@ -1135,7 +1161,7 @@ b.MethA();");
         [Test]
         public void Engine_Multiple_Scripts2()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class A{MethA(){print (1);}}");
@@ -1149,7 +1175,7 @@ class A{MethA(){print (1);}}");
         [Test]
         public void Engine_Read_External_Global()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.VM.SetGlobal("a", Value.New(1));
 
@@ -1161,7 +1187,7 @@ class A{MethA(){print (1);}}");
         [Test]
         public void Engine_Call_External_NoParams()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"fun Meth(){print (1);}");
 
@@ -1174,7 +1200,7 @@ class A{MethA(){print (1);}}");
         [Test]
         public void Engine_NativeFunc_Call_0Param_String()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             Value Func(VMBase vm, int args)
             {
@@ -1191,7 +1217,7 @@ class A{MethA(){print (1);}}");
         [Test]
         public void Engine_NativeFunc_Call_1Param_String()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             Value Func(VMBase vm, int args)
             {
@@ -1208,7 +1234,7 @@ class A{MethA(){print (1);}}");
         [Test]
         public void Engine_NestedCalls()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun A(){return 7;}
@@ -1224,7 +1250,7 @@ print (res);
         [Test]
         public void Engine_List()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new StandardClassesLibrary());
 
@@ -1250,7 +1276,7 @@ for(var i = 0; i < c; i = i + 1)
         [Test]
         public void Engine_Throw()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             Assert.Throws<PanicException>(() => engine.Run(@"throw;"),"Null");
         }
@@ -1258,7 +1284,7 @@ for(var i = 0; i < c; i = i + 1)
         [Test]
         public void Engine_Throw_Exp()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             Assert.Throws<PanicException>(() => engine.Run(@"throw 2+3;"), "5");
         }
@@ -1266,7 +1292,7 @@ for(var i = 0; i < c; i = i + 1)
         [Test]
         public void Engine_Class_Var()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -1283,7 +1309,7 @@ print(t.a);");
         [Test]
         public void Engine_Class_2Var()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -1302,7 +1328,7 @@ print(t.b);");
         [Test]
         public void Engine_Class_MultiVar()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -1320,7 +1346,7 @@ print(t.b);");
         [Test]
         public void Engine_Local_MultiVar()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var a = 1,b = 2, c;
@@ -1335,7 +1361,7 @@ print(c);");
         [Test]
         public void Engine_Assert()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1350,7 +1376,7 @@ Assert.AreEqual(1,1);");
         [Test]
         public void Engine_Approx_Assert()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1365,7 +1391,7 @@ Assert.AreApproxEqual(1,2);");
         [Test]
         public void Engine_Loop()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var i = 0;
@@ -1384,7 +1410,7 @@ loop
         [Test]
         public void Engine_Loop_NoTerminate()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var i = 0;
@@ -1400,7 +1426,7 @@ loop
         [Test]
         public void Engine_Class_VarInitChain()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var aVal = 10;
@@ -1418,7 +1444,7 @@ print(t.a);");
         [Test]
         public void Engine_Class_VarInitChain2()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -1436,7 +1462,7 @@ print(t.b);");
         [Test]
         public void Engine_Class_VarInitChain_AndInit()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var aVal = 10;
@@ -1456,7 +1482,7 @@ print(t.a);");
         [Test]
         public void Engine_Class_VarInitChainEmpty_AndInit()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -1475,7 +1501,7 @@ print(t.a);");
         [Test]
         public void Engine_DynamicType_SameFunc()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun AddPrint(obj)
@@ -1512,7 +1538,7 @@ AddPrint(t3);
         [Test]
         public void Engine_DynamicType_SameInvoke()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 fun AddPrint(obj)
@@ -1555,7 +1581,7 @@ AddPrint(t2);
         [Test]
         public void Engine_Func_Paramless()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1573,7 +1599,7 @@ print(T());");
         [Test]
         public void Engine_Method_Paramless()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1594,7 +1620,7 @@ print(T().Meth());");
         [Test]
         public void Engine_NoThis_Method_WorksAsStatic()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -1613,7 +1639,7 @@ print(T.NoMemberMethod());");
         [Test]
         public void Engine_Static_Method_OnClass()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -1632,7 +1658,7 @@ print(T.StaticMethod());");
         [Test]
         public void Engine_Static_Method_OnInstance()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 class T
@@ -1651,7 +1677,7 @@ print(T().StaticMethod());");
         [Test]
         public void Engine_TestCase_Simple1()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1670,7 +1696,7 @@ test T
         [Test]
         public void Engine_TestCase_Simple2()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1689,7 +1715,7 @@ test T
         [Test]
         public void Engine_TestCase_Simple3()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1710,7 +1736,7 @@ test T
         [Test]
         public void Engine_TestCase_Simple4()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1727,12 +1753,39 @@ test T
 }");
 
             Assert.AreEqual("", engine.InterpreterResult);
+            Assert.AreEqual("A Completed", engine.VM.TestRunner.GenerateDump());
+        }
+
+        [Test]
+        public void Engine_TestCase_Simple4_Skipped()
+        {
+            
+
+            engine.AddLibrary(new AssertLibrary());
+            engine.VM.TestRunner.Enabled = false;
+
+            engine.Run(@"
+test T
+{
+    testcase A
+    {
+        var a = 2;
+        var b = 3;
+        var c = a + b;
+        Assert.AreEqual(c,5);
+    }
+}
+
+print(T);");
+
+            Assert.AreEqual("null", engine.InterpreterResult);
+            Assert.AreEqual("", engine.VM.TestRunner.GenerateDump());
         }
 
         [Test]
         public void Engine_TestCase_Intertwinned()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1757,7 +1810,7 @@ test T
         [Test]
         public void Engine_TestCase_TestIsNullAfterRun()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1777,7 +1830,7 @@ print(T);");
         [Test]
         public void Engine_Class_Fields()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1794,7 +1847,7 @@ print(T.a);");
         [Test]
         public void Engine_Class_StaticFields()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new AssertLibrary());
 
@@ -1811,7 +1864,7 @@ print(T.a);");
         [Test]
         public void Engine_SelfAssign()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var a = 2;
@@ -1826,7 +1879,7 @@ print(a);");
         [Test]
         public void Engine_SingleProgram_MultiVMs()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             var script = @"print(2);";
 
@@ -1845,7 +1898,7 @@ print(a);");
         [Test]
         public void Engine_InternalSandbox_CanPassIn()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new VMLibrary());
 
@@ -1869,7 +1922,7 @@ innerVM.Start(InnerMain);");
         [Test]
         public void Engine_InternalSandbox_CanWriteGlobalOut()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new VMLibrary());
 
@@ -1894,7 +1947,7 @@ print(innerVM.GetGlobal(""globalOut""));");
         [Test]
         public void Engine_InternalSandbox_CanReturnOut()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new VMLibrary());
 
@@ -1916,7 +1969,7 @@ print(res);");
         [Test]
         public void Engine_InternalSandbox_YieldResume()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.Run(@"
 var a = 2;
@@ -1932,7 +1985,7 @@ print(a);");
         [Test]
         public void Engine_ChildVM_Run()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new VMLibrary());
 
@@ -1954,7 +2007,7 @@ innerVM.Start(InnerMain);");
         [Test]
         public void Engine_Sandbox_CannotAccess()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new VMLibrary());
 
@@ -1974,7 +2027,7 @@ innerVM.Start(InnerMain);");
         [Test]
         public void Engine_Sandbox_AsGenerator()
         {
-            var engine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
+            
 
             engine.AddLibrary(new VMLibrary());
 
@@ -2043,7 +2096,7 @@ loop
         protected void AppendResult(string str) => InterpreterResult += str;
         public string InterpreterResult { get; private set; } = string.Empty;
 
-        public new void Run(string testString)
+        public override void Run(string testString)
         {
             try
             {

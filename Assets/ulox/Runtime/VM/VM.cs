@@ -78,33 +78,40 @@ namespace ULox
 
             case OpCode.TEST_START:
                 {
-                    var constantIndex = ReadByte(chunk);
-                    TestRunner.StartTest(chunk.ReadConstant(constantIndex).val.asString);
+                    TestRunner.StartTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
                 }
                 break;
             case OpCode.TEST_END:
                 {
-                    var constantIndex = ReadByte(chunk);
-                    TestRunner.EndTest(chunk.ReadConstant(constantIndex).val.asString);
+                    TestRunner.EndTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
                 }
                 break;
             case OpCode.TEST_CHAIN_START:
                 {
-                    var loc = ReadUShort(chunk);
-                    //chain ends in a return, running as a frame makes the inner locals match
-                    PushNewCallframe(new CallFrame()
-                    {
-                        Closure = currentCallFrame.Closure,
-                        InstructionPointer = loc,
-                        StackStart = _valueStack.Count - 1,
-                    });
-                    currentCallFrame.InstructionPointer = loc;
+                    DoTestChainOp(chunk);
                 }
                 break;
             default:
                 return false;
             }
             return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoTestChainOp(Chunk chunk)
+        {
+            var loc = ReadUShort(chunk);
+            if (TestRunner.Enabled)
+            {
+                //chain ends in a return, running as a frame makes the inner locals match
+                PushNewCallframe(new CallFrame()
+                {
+                    Closure = currentCallFrame.Closure,
+                    InstructionPointer = loc,
+                    StackStart = _valueStack.Count - 1,
+                });
+                currentCallFrame.InstructionPointer = loc;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

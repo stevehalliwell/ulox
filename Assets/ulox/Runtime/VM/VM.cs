@@ -8,6 +8,24 @@ namespace ULox
         public const string InitMethodName = "init";
 
 
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected override bool ExtendedCall(Value callee, int argCount)
+        {
+            switch (callee.type)
+            {
+            case ValueType.Class:
+                CreateInstance(callee.val.asClass, argCount);
+                break;
+            case ValueType.BoundMethod:
+                CallMethod(callee.val.asBoundMethod, argCount);
+                break;
+            default:
+                return false;
+            }
+            return true;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool ExtendedOp(OpCode opCode, Chunk chunk)
         {
@@ -320,23 +338,6 @@ namespace ULox
                     StackStart = _valueStack.Count - 1, //last thing checked
                 });
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected override bool ExtendedCall(Value callee, int argCount)
-        {
-            switch(callee.type)
-            {
-            case ValueType.Class:
-                CreateInstance(callee.val.asClass, argCount);
-                break;
-            case ValueType.BoundMethod:
-                CallMethod(callee.val.asBoundMethod, argCount);
-                break;
-            default:
-                return false;
-            }
-            return true;
         }
     }
 }

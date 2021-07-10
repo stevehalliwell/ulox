@@ -127,7 +127,7 @@ namespace ULox
             return Run();
         }
 
-        public InterpreterResult Run(Program program)
+        public InterpreterResult Run(IProgram program)
         {
             foreach (var compiled in program.CompiledScripts)
             {

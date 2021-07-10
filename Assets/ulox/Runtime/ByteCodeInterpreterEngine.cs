@@ -2,7 +2,7 @@
 {
     public class ByteCodeInterpreterEngine
     {
-        public Program Program { get; private set; } = new Program();
+        public IProgram Program { get; private set; } = new Program();
         private readonly VM _vm = new VM();
         public VM VM => _vm;
 
@@ -14,7 +14,7 @@
             _vm.Interpret(chunk.TopLevelChunk);
         }
 
-        public virtual void Execute(Program program)
+        public virtual void Execute(IProgram program)
         {
             Program = program;
             _vm.Run(Program);

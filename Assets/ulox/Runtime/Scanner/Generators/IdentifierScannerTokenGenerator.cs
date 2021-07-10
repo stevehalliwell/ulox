@@ -7,36 +7,15 @@ namespace ULox
     {
         private StringBuilder workingSpaceStringBuilder = new StringBuilder();
 
-        private readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>()
+        private readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
+
+        public IdentifierScannerTokenGenerator((string name, TokenType tokenType)[] litteralToTokens)
         {
-            { "var",    TokenType.VAR},
-            { "string", TokenType.STRING},
-            { "int",    TokenType.INT},
-            { "float",  TokenType.FLOAT},
-            { "and",    TokenType.AND},
-            { "or",     TokenType.OR},
-            { "if",     TokenType.IF},
-            { "else",   TokenType.ELSE},
-            { "while",  TokenType.WHILE},
-            { "for",    TokenType.FOR},
-            { "loop",   TokenType.LOOP},
-            { "return", TokenType.RETURN},
-            { "break",  TokenType.BREAK},
-            { "continue", TokenType.CONTINUE},
-            { "true",   TokenType.TRUE},
-            { "false",  TokenType.FALSE},
-            { "null",   TokenType.NULL},
-            { "fun",    TokenType.FUNCTION},
-            { "class",  TokenType.CLASS},
-            { "this",  TokenType.THIS},
-            { "super",  TokenType.SUPER},
-            { ".",      TokenType.DOT},
-            { "throw",  TokenType.THROW},
-            { "test",  TokenType.TEST},
-            { "testcase",  TokenType.TESTCASE},
-            { "static",  TokenType.STATIC},
-            { "yield",  TokenType.YIELD},
-        };
+            foreach (var item in litteralToTokens)
+            {
+                keywords[item.name] = item.tokenType;
+            }
+        }
 
         public static bool IsAlpha(int c)
             => (c >= 'a' && c <= 'z') ||

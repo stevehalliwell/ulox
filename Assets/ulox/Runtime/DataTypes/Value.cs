@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
     public struct Value
     {
@@ -78,5 +80,51 @@
         public static Value Null() => new Value() { type = ValueType.Null };
 
         public static Value Object(object obj) => New( ValueType.Object, new ValueTypeDataUnion() { asObject = obj });
+
+        public override bool Equals(object obj)
+        {
+            var asValue = (Value)obj;
+            return Equals(ref asValue);
+        }
+
+        public bool Equals(ref Value rhs)
+        {
+            return Compare(ref this, ref rhs);
+        }
+
+        public static bool operator == (Value left, Value right)
+        {
+            return left.Equals(ref right);
+        }
+
+        public static bool operator !=(Value left, Value right)
+        {
+            return !(left == right);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool Compare(ref Value lhs, ref Value rhs)
+        { 
+            if (lhs.type != rhs.type)
+            {
+                return false;
+            }
+            else
+            {
+                switch (lhs.type)
+                {
+                case ValueType.Null:
+                    return true;
+                case ValueType.Double:
+                    return lhs.val.asDouble == rhs.val.asDouble;
+                case ValueType.Bool:
+                    return lhs.val.asBool == rhs.val.asBool;
+                case ValueType.String:
+                    return lhs.val.asString == rhs.val.asString;
+                default:
+                    throw new VMException($"Cannot perform compare on type '{lhs.type}'.");
+                }
+            }
+        }
     }
 }

@@ -34,7 +34,7 @@
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
-            if (!VM.VMValueCompare(ref lhs, ref rhs))
+            if (!lhs.Compare(ref lhs, ref rhs))
                 throw new AssertException($"'{lhs}' does not equal '{rhs}'.");
 
             return Value.Null();
@@ -44,7 +44,7 @@
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
-            if (VM.VMValueCompare(ref lhs, ref rhs))
+            if (lhs.Compare(ref lhs, ref rhs))
                 throw new AssertException($"'{lhs}' does not NOT equal '{rhs}'.");
 
             return Value.Null();

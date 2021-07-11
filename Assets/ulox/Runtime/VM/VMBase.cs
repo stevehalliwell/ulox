@@ -512,7 +512,7 @@ namespace ULox
             switch (opCode)
             {
             case OpCode.EQUAL:
-                Push(Value.New(VMValueCompare(ref lhs, ref rhs)));
+                Push(Value.New(lhs.Compare(ref lhs, ref rhs)));
                 break;
             case OpCode.LESS:
                 if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
@@ -524,31 +524,6 @@ namespace ULox
                     throw new VMException($"Cannot greater across on different types '{lhs.type}' and '{rhs.type}'.");
                 Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
                 break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool VMValueCompare(ref Value lhs, ref Value rhs)
-        {
-            if (lhs.type != rhs.type)
-            {
-                return false;
-            }
-            else
-            {
-                switch (lhs.type)
-                {
-                case ValueType.Null:
-                    return true;
-                case ValueType.Double:
-                    return lhs.val.asDouble == rhs.val.asDouble;
-                case ValueType.Bool:
-                    return lhs.val.asBool == rhs.val.asBool;
-                case ValueType.String:
-                    return lhs.val.asString == rhs.val.asString;
-                default:
-                    throw new VMException($"Cannot perform compare on type '{lhs.type}'.");
-                }
             }
         }
     }

@@ -477,6 +477,12 @@ namespace ULox
                 //push this, push lhs, push rhs
 
                 //call the method
+
+                // pop store
+
+                // pop discard
+
+                // push store
             }
 
             if (lhs.type != ValueType.Double)

@@ -1,0 +1,28 @@
+name: Run Tests
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    name: Checkout and Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library
+
+      # Test
+      - name: Run tests
+        uses: game-ci/unity-test-runner@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          githubToken: ${{ secrets.GITHUB_TOKEN }}

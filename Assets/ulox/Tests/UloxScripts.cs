@@ -29,9 +29,11 @@ public class UloxScripts
 
     [Test]
     [TestCaseSource(nameof(ScriptGenerator))]
-    public void NoFailTests(string file)
+    public void NoFailTests(string script)
     {
-        var script = File.ReadAllText(file);
+        if (string.IsNullOrEmpty(script))
+            return;
+
         engine.Run(script);
 
         Assert.IsTrue(engine.AllPassed);
@@ -41,10 +43,28 @@ public class UloxScripts
     public static IEnumerator ScriptGenerator()
     {
         const string FolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
-        var filesInFolder = Directory.GetFiles(FolderName, "*.txt");
+
+        string[] filesInFolder = new string[] { "" };
+
+        var path = Path.GetFullPath(FolderName);
+        if (Directory.Exists(path))
+        {
+            var foundInDir = Directory.GetFiles(path, "*.txt");
+
+            if (foundInDir.Any())
+                filesInFolder = foundInDir;
+        }
 
         return filesInFolder
-            .Select(x => new object[] { x })
+            .Select(x => MakeTestCaseData(x))
             .GetEnumerator();
+    }
+
+    private static TestCaseData MakeTestCaseData(string file)
+    {
+        if (!File.Exists(file))
+            return new TestCaseData(new object[] { "" }).SetName("Empty");
+
+        return new TestCaseData(new object[] { File.ReadAllText(file) }).SetName(Path.GetFileName(file));
     }
 }

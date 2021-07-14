@@ -1,0 +1,14 @@
+test Constants
+{
+    testcase Number
+    {
+        var expected = 2;
+        Assert.AreEqual(expected,2);
+    }
+
+    testcase String
+    {
+        var expected = "Hello";
+        Assert.AreEqual(expected,"Hello");
+    }
+}

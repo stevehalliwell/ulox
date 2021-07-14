@@ -6,7 +6,7 @@ using ULox.Tests;
 using System.Linq;
 using System.IO;
 
-public class UloxScripts
+public class UloxScriptTests
 {
     public class ScriptTestEngine : ByteCodeInterpreterTestEngine
     {

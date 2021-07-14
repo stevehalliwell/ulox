@@ -1,0 +1,50 @@
+test Math
+{
+    testcase Addition
+    {
+        var expected = 3;
+        var result = 0;
+        var a = 1;
+        var b = 2;
+
+        result = a+b;
+
+        Assert.AreEqual(expected,result);
+    }
+
+    testcase Subtraction
+    {
+        var expected = -1;
+        var result = 0;
+        var a = 1;
+        var b = 2;
+
+        result = a-b;
+
+        Assert.AreEqual(expected,result);
+    }
+
+    testcase Multiplication
+    {
+        var expected = 2;
+        var result = 0;
+        var a = 1;
+        var b = 2;
+
+        result = a*b;
+
+        Assert.AreEqual(expected,result);
+    }
+
+    testcase Division
+    {
+        var expected = 0.5;
+        var result = 0;
+        var a = 1;
+        var b = 2;
+
+        result = a/b;
+
+        Assert.AreEqual(expected,result);
+    }
+}

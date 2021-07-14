@@ -358,7 +358,7 @@ namespace ULox
             CurrentChunk.WriteByte(b, PreviousToken.Line);
         }
 
-        private void Advance()
+        public void Advance()
         {
             PreviousToken = CurrentToken;
             CurrentToken = tokens[tokenIndex];

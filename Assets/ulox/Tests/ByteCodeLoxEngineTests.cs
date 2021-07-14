@@ -554,51 +554,9 @@ Func();");
             Assert.AreEqual("32", engine.InterpreterResult);
         }
 
-        //[Test]
-        //public void Engine_Compile_NativeFunc_Args_Call()
-        //{
-        //    var engine = new ByteCodeLoxEngine();
-        //    engine.VM.DefineNativeFunction("CallNative", (vm, stack) =>
-        //    {
-        //        var lhs = vm.
-        //        return Value.New("Native");
-        //    });
-
-        //    engine.Run(@"print CalEmptylNative();");
-
-        //    Assert.AreEqual("Native");
-        //}
-
-        [Test]
-        [Ignore("long running manual test only")]
-        public void Engine_Compile_Clocked_Fib()
-        {
-            
-            engine.VM.SetGlobal("clock", Value.New((vm, stack) =>
-            {
-                return Value.New(System.DateTime.Now.Ticks);
-            }));
-
-            engine.Run(@"
-fun fib(n)
-{
-    if (n < 2) return n;
-    return fib(n - 2) + fib(n - 1);
-}
-
-var start = clock();
-print (fib(20));
-print ("" in "");
-print (clock() - start);");
-
-            //Assert.AreEqual("Native", engine.InterpreterResult);
-        }
-
         [Test]
         public void Engine_Compile_Recursive()
         {
-            
-
             engine.Run(@"fun Recur(a)
 {
     if(a > 0) 
@@ -1754,7 +1712,7 @@ test T
 }");
 
             Assert.AreEqual("", engine.InterpreterResult);
-            Assert.AreEqual("A Completed", engine.VM.TestRunner.GenerateDump());
+            Assert.AreEqual("T:A Completed", engine.VM.TestRunner.GenerateDump());
         }
 
         [Test]

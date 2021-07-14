@@ -17,9 +17,11 @@ namespace ULox
         protected override void GenerateDeclarationLookup()
         {
             var classcomp = new ClassCompilette();
+            var testdeclComp = new TestDeclarationCompilette(classcomp);
+            classcomp.AddInnerDeclarationCompilette(new TestcaseCompillette(testdeclComp));
             var decl = new List<ICompilette>()
             {
-                new TestDeclarationCompilette(classcomp),
+                testdeclComp,
                 classcomp,
                 new CompiletteAction(TokenType.FUNCTION, FunctionDeclaration),
                 new CompiletteAction(TokenType.VAR, VarDeclaration),

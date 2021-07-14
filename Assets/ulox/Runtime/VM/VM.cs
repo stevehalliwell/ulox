@@ -95,19 +95,13 @@ namespace ULox
 
 
             case OpCode.TEST_START:
-                {
                     TestRunner.StartTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
-                }
                 break;
             case OpCode.TEST_END:
-                {
                     TestRunner.EndTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
-                }
                 break;
             case OpCode.TEST_CHAIN_START:
-                {
                     DoTestChainOp(chunk);
-                }
                 break;
             default:
                 return false;

@@ -309,7 +309,11 @@ namespace ULox
             var global = ReadByte(chunk);
             var globalName = chunk.ReadConstant(global);
             var actualName = globalName.val.asString;
-            Push(_globals[actualName]);
+
+            if(_globals.TryGetValue(actualName, out var found))
+                Push(found);
+            else
+                throw new VMException($"No global of name {actualName} could be found.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

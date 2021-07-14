@@ -2,7 +2,7 @@
 {
     public class TestDeclarationCompilette : ICompilette
     {
-        private ClassCompilette _classCompilette;
+        private readonly ClassCompilette _classCompilette;
 
         public TestDeclarationCompilette(ClassCompilette classCompilette)
         {
@@ -10,6 +10,8 @@
         }
 
         public TokenType Match => TokenType.TEST;
+
+        public string CurrentTestSetName { get; internal set; }
 
         public void Process(CompilerBase compiler)
         {
@@ -20,6 +22,7 @@
         {
             //grab name
             var testClassName = (string)compiler.CurrentToken.Literal;
+            CurrentTestSetName = testClassName;
             compiler.CurrentChunk.AddConstant(Value.New(testClassName));
 
             //find the class by name, need to note this instruction so we can patch the argID as it doesn't exist yet

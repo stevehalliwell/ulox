@@ -47,4 +47,34 @@ test Math
 
         Assert.AreEqual(expected,result);
     }
+
+    testcase OrderOfOps
+    {
+        var expected = -2.5;
+        var result = 0;
+        var a = 1;
+        var b = 2;
+        var c = 3;
+        var d = 4;
+        var e = 5;
+
+        result = a+b*c/d-e;
+
+        Assert.AreEqual(expected,result);
+    }
+
+    testcase Precedence
+    {
+        var expected = 3.5;
+        var result = 0;
+        var a = 1;
+        var b = 2;
+        var c = 3;
+        var d = 4;
+        var e = 2;
+
+        result = (a+b*c)/(d-e);
+
+        Assert.AreEqual(expected,result);
+    }
 }

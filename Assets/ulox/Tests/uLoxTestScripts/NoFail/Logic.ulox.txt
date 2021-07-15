@@ -1,0 +1,138 @@
+test Comparisons
+{
+    testcase EqualityBool
+    {
+        var result = 0;
+        var a = true;
+        var b = false;
+
+        result = a == b;
+
+        Assert.IsFalse(result);
+    }
+
+    testcase InEqualityBool
+    {
+        var result = 0;
+        var a = true;
+        var b = false;
+
+        result = a != b;
+
+        Assert.IsTrue(result);
+    }
+
+    testcase EqualityNumber
+    {
+        var result = 0;
+        var a = 1;
+        var b = 2;
+
+        result = a == b;
+
+        Assert.IsFalse(result);
+    }
+
+    testcase InEqualityNumber
+    {
+        var result = 0;
+        var a = 1;
+        var b = 2;
+
+        result = a != b;
+
+        Assert.IsTrue(result);
+    }
+
+    testcase EqualityString
+    {
+        var result = 0;
+        var a = "Hello";
+        var b = "World";
+
+        result = a == b;
+
+        Assert.IsFalse(result);
+    }
+
+    testcase InEqualityString
+    {
+        var result = 0;
+        var a = "Hello";
+        var b = "World";
+
+        result = a != b;
+
+        Assert.IsTrue(result);
+    }
+}
+
+test Logic
+{
+    testcase And
+    {
+        var result = 0;
+        var a = true;
+        var b = false;
+
+        result = a and b;
+
+        Assert.IsFalse(result);
+    }
+
+    testcase Or
+    {
+        var result = 0;
+        var a = true;
+        var b = false;
+
+        result = a or b;
+
+        Assert.IsTrue(result);
+    }
+
+    testcase Not
+    {
+        var result = 0;
+        var a = true;
+
+        result = !a;
+
+        Assert.IsFalse(result);
+    }
+
+    testcase Truthy
+    {
+        var result = 0;
+        var a = "true";
+
+        result = !a;
+
+        Assert.IsFalse(result);
+    }
+
+    testcase ChainShort
+    {
+        var result = 0;
+        var a = true;
+        var b = false;
+        var c = true;
+
+        result = a and b or c;
+
+        Assert.IsTrue(result);
+    }
+
+    testcase ChainLong
+    {
+        var result = 0;
+        var a = true;
+        var b = false;
+        var c = true;
+        var d = false;
+
+        result = a and b or c and d;
+
+        Assert.IsFalse(result);
+    }
+}

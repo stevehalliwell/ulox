@@ -35,6 +35,8 @@
 
             compiler.EmitOpCode(OpCode.NULL);
             compiler.EmitOpAndByte(OpCode.ASSIGN_GLOBAL, compiler.CurrentChunk.AddConstant(Value.New(testClassName)));
+
+            CurrentTestSetName = null;
         }
     }
 }

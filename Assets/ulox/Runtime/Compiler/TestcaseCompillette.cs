@@ -15,13 +15,18 @@
         {
             compiler.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
 
+            var compState = compiler.CurrentCompilerState;
+            var classCompState = compState.classCompilerStates.Peek();
+
             var testcaseName = (string)compiler.PreviousToken.Literal;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
+            if(string.IsNullOrEmpty(testDeclName))
+            {
+                testDeclName = classCompState.currentClassName;
+            }
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New($"{testDeclName}:{testcaseName}"));
 
-            var compState = compiler.CurrentCompilerState;
-            var classCompState = compState.classCompilerStates.Peek();
 
             //emit jump // to skip this during imperative
             int testFragmentJump = compiler.EmitJump(OpCode.JUMP);
@@ -50,7 +55,6 @@
 
             //emit jump to step to next and save it
             compiler.PatchJump(testFragmentJump);
-
         }
     }
 }

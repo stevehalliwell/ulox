@@ -1,9 +1,14 @@
 name: Run Tests
 
-on: [push, pull_request]
+on: 
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize ]
+  push:
+    branches: [ main, develop ]
 
 jobs:
-  build:
+  test:
     name: Checkout and Run Tests
     runs-on: ubuntu-latest
     steps:

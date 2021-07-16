@@ -36,7 +36,8 @@
         ADD,
         SUBTRACT,
         MULTIPLY,
-        DIVIDE,
+        DIVIDE, 
+        MODULUS,
 
         CALL,
         CLOSURE,

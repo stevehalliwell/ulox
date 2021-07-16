@@ -261,7 +261,8 @@ namespace ULox
                                       TokenType.PLUS_EQUAL,
                                       TokenType.MINUS_EQUAL,
                                       TokenType.STAR_EQUAL,
-                                      TokenType.SLASH_EQUAL))
+                                      TokenType.SLASH_EQUAL,
+                                      TokenType.PERCENT_EQUAL))
             {
                 var assignTokenType = PreviousToken.TokenType;
 
@@ -285,6 +286,10 @@ namespace ULox
                 case TokenType.SLASH_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
                     EmitOpCode(OpCode.DIVIDE);
+                    break;
+                case TokenType.PERCENT_EQUAL:
+                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.MODULUS);
                     break;
                 case TokenType.ASSIGN:
                     break;

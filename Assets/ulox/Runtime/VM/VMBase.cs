@@ -175,6 +175,7 @@ namespace ULox
                 case OpCode.SUBTRACT:
                 case OpCode.MULTIPLY:
                 case OpCode.DIVIDE:
+                case OpCode.MODULUS:
                     DoMathOp(opCode);
                     break;
                 case OpCode.EQUAL:
@@ -508,6 +509,9 @@ namespace ULox
                 break;
             case OpCode.DIVIDE:
                 res.val.asDouble = lhs.val.asDouble / rhs.val.asDouble;
+                break;
+            case OpCode.MODULUS:
+                res.val.asDouble = lhs.val.asDouble % rhs.val.asDouble;
                 break;
             }
             Push(res);

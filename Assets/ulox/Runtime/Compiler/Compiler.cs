@@ -64,6 +64,7 @@ namespace ULox
             rules[(int)TokenType.PLUS] = new ParseRule(null, Binary, Precedence.Term);
             rules[(int)TokenType.SLASH] = new ParseRule(null, Binary, Precedence.Factor);
             rules[(int)TokenType.STAR] = new ParseRule(null, Binary, Precedence.Factor);
+            rules[(int)TokenType.PERCENT] = new ParseRule(null, Binary, Precedence.Factor);
             rules[(int)TokenType.BANG] = new ParseRule(Unary, null, Precedence.None);
             rules[(int)TokenType.INT] = new ParseRule(Literal, null, Precedence.None);
             rules[(int)TokenType.FLOAT] = new ParseRule(Literal, null, Precedence.None);
@@ -318,6 +319,7 @@ namespace ULox
             case TokenType.MINUS: EmitOpCode(OpCode.SUBTRACT); break;
             case TokenType.STAR: EmitOpCode(OpCode.MULTIPLY); break;
             case TokenType.SLASH: EmitOpCode(OpCode.DIVIDE); break;
+            case TokenType.PERCENT: EmitOpCode(OpCode.MODULUS); break;
             case TokenType.EQUALITY: EmitOpCode(OpCode.EQUAL); break;
             case TokenType.GREATER: EmitOpCode(OpCode.GREATER); break;
             case TokenType.LESS: EmitOpCode(OpCode.LESS); break;

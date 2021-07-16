@@ -150,6 +150,7 @@ namespace ULox
             case OpCode.SUBTRACT:
             case OpCode.MULTIPLY:
             case OpCode.DIVIDE:
+            case OpCode.MODULUS:
             case OpCode.NONE:
             case OpCode.NULL:
             case OpCode.NOT:

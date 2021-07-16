@@ -48,6 +48,30 @@ test Math
         Assert.AreEqual(expected,result);
     }
 
+    testcase ModulusInt
+    {
+        var expected = 1;
+        var result = 0;
+        var a = 1;
+        var b = 2;
+
+        result = a%b;
+
+        Assert.AreEqual(expected,result);
+    }
+
+    testcase ModulusNumber
+    {
+        var expected = 1.5;
+        var result = 0;
+        var a = 1.5;
+        var b = 2;
+
+        result = a%b;
+
+        Assert.AreEqual(expected,result);
+    }
+
     testcase OrderOfOps
     {
         var expected = -2.5;

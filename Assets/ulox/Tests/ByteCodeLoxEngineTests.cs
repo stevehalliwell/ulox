@@ -322,6 +322,24 @@ while(i < 3)
         }
 
         [Test]
+        public void Engine_Cycle_For_Continue()
+        {
+
+
+            engine.Run(@"
+for(var i = 0;i < 3; i += 1)
+{
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+
+            Assert.AreEqual("012", engine.InterpreterResult);
+        }
+
+
+        [Test]
         public void Engine_Cycle_While_Nested()
         {
             
@@ -1216,16 +1234,16 @@ print (res);
             engine.Run(@"
 var list = List();
 
-for(var i = 0; i < 5; i = i + 1)
+for(var i = 0; i < 5; i += 1)
     list.Add(i);
 
 var c = list.Count();
 print(c);
 
-for(var i = 0; i < c; i = i + 1)
+for(var i = 0; i < c; i += 1)
     print(list.Get(i));
 
-for(var i = 0; i < c; i = i + 1)
+for(var i = 0; i < c; i +=1)
     print(list.Set(i, -i));
 ");
 

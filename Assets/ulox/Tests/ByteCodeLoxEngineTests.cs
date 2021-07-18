@@ -723,6 +723,34 @@ c2();");
         }
 
         [Test]
+        public void Engine_Closure_Counter_NoPrint()
+        {
+
+
+            engine.Run(@"
+fun makeCounter() 
+{
+    var i = 0;
+    fun count() 
+    {
+        i = i + 1;
+        return i;
+    }
+
+    return count;
+}
+
+var c1 = makeCounter();
+
+c1();
+var res = c1();
+
+print(res);
+");
+
+            Assert.AreEqual("2", engine.InterpreterResult);
+        }
+        [Test]
         public void Engine_Class_Empty()
         {
             
@@ -1403,8 +1431,6 @@ loop
         [Test]
         public void Engine_Class_VarInitChain()
         {
-            
-
             engine.Run(@"
 var aVal = 10;
 class T
@@ -1459,8 +1485,6 @@ print(t.a);");
         [Test]
         public void Engine_Class_VarInitChainEmpty_AndInit()
         {
-            
-
             engine.Run(@"
 class T
 {
@@ -1473,6 +1497,43 @@ var t = T();
 print(t.a);");
 
             Assert.AreEqual("20", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_VarInitChain_AndInitPrint()
+        {
+
+
+            engine.Run(@"
+class T
+{
+    var a = 20;
+
+    init(){print(this.a);}
+}
+
+var t = T();");
+
+            Assert.AreEqual("20", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_VarWithInit()
+        {
+
+
+            engine.Run(@"
+class T
+{
+    var a;
+
+    init(_a) { this.a =_a; }
+}
+
+var t = T(1);
+print(t.a);");
+
+            Assert.AreEqual("1", engine.InterpreterResult);
         }
 
         [Test]

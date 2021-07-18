@@ -13,6 +13,8 @@
             assertInst.fields[nameof(AreApproxEqual)] = Value.New(AreApproxEqual);
             assertInst.fields[nameof(IsTrue)] = Value.New(IsTrue);
             assertInst.fields[nameof(IsFalse)] = Value.New(IsFalse);
+            assertInst.fields[nameof(IsNull)] = Value.New(IsNull);
+            assertInst.fields[nameof(IsNotNull)] = Value.New(IsNotNull);
 
             return resTable;
         }
@@ -66,6 +68,24 @@
             var lhs = vm.GetArg(1);
             if (!lhs.IsFalsey)
                 throw new AssertException($"'{lhs}' is not falsy.");
+
+            return Value.Null();
+        }
+
+        private static Value IsNull(VMBase vm, int argCount)
+        {
+            var lhs = vm.GetArg(1);
+            if (!lhs.IsNull)
+                throw new AssertException($"'{lhs}' is not null.");
+
+            return Value.Null();
+        }
+
+        private static Value IsNotNull(VMBase vm, int argCount)
+        {
+            var lhs = vm.GetArg(1);
+            if (lhs.IsNull)
+                throw new AssertException($"'{lhs}' is null.");
 
             return Value.Null();
         }

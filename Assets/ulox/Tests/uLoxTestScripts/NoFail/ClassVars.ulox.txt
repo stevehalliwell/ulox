@@ -1,0 +1,38 @@
+var ExpectedCValue = 3;
+
+class SimpleVars
+{
+    var a;
+    var b,c = ExpectedCValue;
+}
+
+class InitVars
+{
+    var a;
+    var b,c = ExpectedCValue;
+
+    init(a,b){this.a = a; this.b = b;}
+}
+
+test WithVarsTests
+{
+    testcase Default
+    {
+        var inst = SimpleVars();
+
+        Assert.IsNull(inst.a);
+        Assert.IsNull(inst.b);
+        Assert.AreEqual(ExpectedCValue, inst.c);
+    }
+    
+    testcase Inited
+    {
+        var ExpectedAValue = 1;
+        var ExpectedBValue = 2;
+        var inst = InitVars(ExpectedAValue, ExpectedBValue);
+
+        Assert.AreEqual(ExpectedAValue, inst.a);
+        Assert.AreEqual(ExpectedBValue, inst.b);
+        Assert.AreEqual(ExpectedCValue, inst.c);
+    }
+}

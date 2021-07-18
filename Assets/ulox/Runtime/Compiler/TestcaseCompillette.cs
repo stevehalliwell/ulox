@@ -11,6 +11,7 @@
             _testDeclarationCompilette = testDeclarationCompilette;
         }
 
+        //TODO during a class compiled testdeclaration there is an additional local, the class, so local lookups are incorrect
         public void Process(CompilerBase compiler)
         {
             compiler.Consume(TokenType.IDENTIFIER, "Expect testcase name.");

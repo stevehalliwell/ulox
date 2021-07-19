@@ -273,22 +273,27 @@ namespace ULox
                 {
                 case TokenType.PLUS_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.ADD);
                     break;
                 case TokenType.MINUS_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.SUBTRACT);
                     break;
                 case TokenType.STAR_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.MULTIPLY);
                     break;
                 case TokenType.SLASH_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.DIVIDE);
                     break;
                 case TokenType.PERCENT_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.MODULUS);
                     break;
                 case TokenType.ASSIGN:

@@ -205,7 +205,7 @@ namespace ULox
                         ForLoopCondtionStatement(loopState);
                     }
 
-                    if (!Match(TokenType.CLOSE_PAREN))
+                    if (!Check(TokenType.CLOSE_PAREN))
                     {
                         int bodyJump = EmitJump(OpCode.JUMP);
 

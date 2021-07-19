@@ -204,6 +204,9 @@ namespace ULox
                 case OpCode.POP:
                     DiscardPop();
                     break;
+                case OpCode.SWAP:
+                    DoSwapOp();
+                    break;
                 case OpCode.JUMP_IF_FALSE:
                     {
                         ushort jump = ReadUShort(chunk);
@@ -289,6 +292,16 @@ namespace ULox
                     break;
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSwapOp()
+        {
+            var n0 = Pop();
+            var n1 = Pop();
+
+            Push(n0);
+            Push(n1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

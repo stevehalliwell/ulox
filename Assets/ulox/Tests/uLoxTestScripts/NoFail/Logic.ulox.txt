@@ -67,6 +67,12 @@ test Comparisons
     }
 }
 
+/*
+    Storing these together as they are related and gives us
+    a reason to have a block comment in here to parse out and
+    increase our test coverage.
+*/
+
 test Logic
 {
     testcase And

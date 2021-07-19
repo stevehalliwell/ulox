@@ -101,4 +101,59 @@ test Math
 
         Assert.AreEqual(expected,result);
     }
+
+    testcase CompoundAdd
+    {
+        var expected = 3;
+        var a = 1;
+        var b = 2;
+
+        a += b;
+
+        Assert.AreEqual(expected,a);
+    }
+
+    testcase CompoundMul
+    {
+        var expected = 2;
+        var a = 1;
+        var b = 2;
+
+        a *= b;
+
+        Assert.AreEqual(expected,a);
+    }
+
+    testcase CompoundSub
+    {
+        var expected = -1;
+        var a = 1;
+        var b = 2;
+
+        a -= b;
+
+        Assert.AreEqual(expected,a);
+    }
+
+    testcase CompoundDiv
+    {
+        var expected = 0.5;
+        var a = 1;
+        var b = 2;
+
+        a /= b;
+
+        Assert.AreEqual(expected,a);
+    }
+
+    testcase CompoundModulus
+    {
+        var expected = 1;
+        var a = 3;
+        var b = 2;
+
+        a %= b;
+
+        Assert.AreEqual(expected,a);
+    }
 }

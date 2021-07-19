@@ -10,6 +10,7 @@
         PUSH_BYTE,
 
         POP, 
+        SWAP,
 
         DEFINE_GLOBAL,
         FETCH_GLOBAL,

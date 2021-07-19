@@ -65,6 +65,17 @@ namespace ULox.Tests
         }
 
         [Test]
+        public void Engine_Cycle_Minus_Equals_Expression()
+        {
+            engine.Run(@"
+var a = 1;
+a -= 2;
+print (a);");
+
+            Assert.AreEqual("-1", engine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Cycle_Logic_Not_Expression()
         {
             

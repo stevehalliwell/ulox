@@ -97,4 +97,15 @@ test Functions
 
         Assert.AreEqual(expected, result);
     }
+
+    testcase Braceless
+    {
+        var expected = 1;
+        var result = 0;
+        fun GetVal {return expected;}
+
+        result = GetVal();
+
+        Assert.AreEqual(expected, result);
+    }
 }

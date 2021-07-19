@@ -3,6 +3,7 @@ class Simple {}
 class Method
 {
     Meth(){return 1;}
+    MethBraceless{return 1;}
 }
 
 class WithInit
@@ -37,6 +38,27 @@ test Classes
         var m = Method();
 
         result = m.Meth();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase NoInstanceNeededWhenNoThisUsed
+    {
+        var expected = 1;
+        var result = 0;
+
+        result = Method.Meth();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase MethodBracelcess
+    {
+        var expected = 1;
+        var result = 0;
+        var m = Method();
+
+        result = m.MethBraceless();
 
         Assert.AreEqual(expected, result);
     }

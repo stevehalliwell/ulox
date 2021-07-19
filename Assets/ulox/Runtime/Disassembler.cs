@@ -158,6 +158,7 @@ namespace ULox
             case OpCode.LESS:
             case OpCode.EQUAL:
             case OpCode.POP:
+            case OpCode.SWAP:
             case OpCode.CLOSE_UPVALUE:
             case OpCode.INHERIT:
             case OpCode.THROW:

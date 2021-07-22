@@ -261,7 +261,8 @@ namespace ULox
                                       TokenType.PLUS_EQUAL,
                                       TokenType.MINUS_EQUAL,
                                       TokenType.STAR_EQUAL,
-                                      TokenType.SLASH_EQUAL))
+                                      TokenType.SLASH_EQUAL,
+                                      TokenType.PERCENT_EQUAL))
             {
                 var assignTokenType = PreviousToken.TokenType;
 
@@ -272,19 +273,28 @@ namespace ULox
                 {
                 case TokenType.PLUS_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.ADD);
                     break;
                 case TokenType.MINUS_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.SUBTRACT);
                     break;
                 case TokenType.STAR_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.MULTIPLY);
                     break;
                 case TokenType.SLASH_EQUAL:
                     EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.DIVIDE);
+                    break;
+                case TokenType.PERCENT_EQUAL:
+                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpCode(OpCode.SWAP);
+                    EmitOpCode(OpCode.MODULUS);
                     break;
                 case TokenType.ASSIGN:
                     break;
@@ -358,7 +368,7 @@ namespace ULox
             CurrentChunk.WriteByte(b, PreviousToken.Line);
         }
 
-        private void Advance()
+        public void Advance()
         {
             PreviousToken = CurrentToken;
             CurrentToken = tokens[tokenIndex];

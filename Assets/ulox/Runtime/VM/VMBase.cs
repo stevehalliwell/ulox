@@ -60,7 +60,7 @@ namespace ULox
 
         protected abstract bool ExtendedCall(Value callee, int argCount);
 
-        public void CopyGlobals(VM otherVM)
+        public void CopyGlobals(VMBase otherVM)
         {
             foreach (var val in _globals)
             {
@@ -175,6 +175,7 @@ namespace ULox
                 case OpCode.SUBTRACT:
                 case OpCode.MULTIPLY:
                 case OpCode.DIVIDE:
+                case OpCode.MODULUS:
                     DoMathOp(opCode);
                     break;
                 case OpCode.EQUAL:
@@ -202,6 +203,9 @@ namespace ULox
                     break;
                 case OpCode.POP:
                     DiscardPop();
+                    break;
+                case OpCode.SWAP:
+                    DoSwapOp();
                     break;
                 case OpCode.JUMP_IF_FALSE:
                     {
@@ -291,6 +295,16 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSwapOp()
+        {
+            var n0 = Pop();
+            var n1 = Pop();
+
+            Push(n0);
+            Push(n1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoAssignGlobalOp(Chunk chunk)
         {
             var global = ReadByte(chunk);
@@ -309,7 +323,11 @@ namespace ULox
             var global = ReadByte(chunk);
             var globalName = chunk.ReadConstant(global);
             var actualName = globalName.val.asString;
-            Push(_globals[actualName]);
+
+            if(_globals.TryGetValue(actualName, out var found))
+                Push(found);
+            else
+                throw new VMException($"No global of name {actualName} could be found.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -504,6 +522,9 @@ namespace ULox
                 break;
             case OpCode.DIVIDE:
                 res.val.asDouble = lhs.val.asDouble / rhs.val.asDouble;
+                break;
+            case OpCode.MODULUS:
+                res.val.asDouble = lhs.val.asDouble % rhs.val.asDouble;
                 break;
             }
             Push(res);

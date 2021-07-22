@@ -93,21 +93,15 @@ namespace ULox
                 break;
 
 
-
+                //TODO: Need to handle duplicate named tests being found
             case OpCode.TEST_START:
-                {
                     TestRunner.StartTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
-                }
                 break;
             case OpCode.TEST_END:
-                {
                     TestRunner.EndTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
-                }
                 break;
             case OpCode.TEST_CHAIN_START:
-                {
                     DoTestChainOp(chunk);
-                }
                 break;
             default:
                 return false;
@@ -150,7 +144,7 @@ namespace ULox
             switch (targetVal.type)
             {
             default:
-                throw new VMException($"Only classes and instances have properties. Got {targetVal}.");
+                throw new VMException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'.");
             case ValueType.Class:
                 instance = targetVal.val.asClass;
                 break;
@@ -182,7 +176,7 @@ namespace ULox
             switch (targetVal.type)
             {
             default:
-                throw new VMException($"Only classes and instances have properties. Got {targetVal}.");
+                throw new VMException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'.");
             case ValueType.Class:
                 instance = targetVal.val.asClass;
                 break;
@@ -328,9 +322,9 @@ namespace ULox
 
             if (asClass.initChainStartLocation != -1)
             {
-                //manually add this to stack and push a call frame directing the ip to the start of the init frag chain
-                //return should remove the null and the this
-                //Push(inst);
+                if (!asClass.initialiser.IsNull)
+                    Push(inst);
+
                 PushNewCallframe(new CallFrame()
                 {
                     Closure = asClass.initChainStartClosure,

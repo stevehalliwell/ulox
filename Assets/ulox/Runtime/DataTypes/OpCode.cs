@@ -10,6 +10,7 @@
         PUSH_BYTE,
 
         POP, 
+        SWAP,
 
         DEFINE_GLOBAL,
         FETCH_GLOBAL,
@@ -36,7 +37,8 @@
         ADD,
         SUBTRACT,
         MULTIPLY,
-        DIVIDE,
+        DIVIDE, 
+        MODULUS,
 
         CALL,
         CLOSURE,

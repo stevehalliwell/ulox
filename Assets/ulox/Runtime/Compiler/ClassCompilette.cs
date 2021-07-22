@@ -1,7 +1,14 @@
-﻿namespace ULox
+﻿using System.Collections.Generic;
+
+namespace ULox
 {
     public class ClassCompilette : ICompilette
     {
+        protected Dictionary<TokenType, ICompilette> innerDeclarationCompilettes = new Dictionary<TokenType, ICompilette>();
+
+        public void AddInnerDeclarationCompilette(ICompilette compilette)
+            => innerDeclarationCompilettes[compilette.Match] = compilette;
+
         public TokenType Match => TokenType.CLASS;
 
         public void Process(CompilerBase compiler)
@@ -56,11 +63,18 @@
                     }
                 }
                 else if (compiler.Match(TokenType.VAR))
+                {
                     Property(compiler, false);
-                else if (compiler.Match(TokenType.TESTCASE))
-                    TestCase(compiler);
+                }
+                else if (innerDeclarationCompilettes.TryGetValue(compiler.CurrentToken.TokenType, out var complette))
+                {
+                    compiler.Advance();
+                    complette.Process(compiler);
+                }
                 else
+                {
                     Method(compiler, false);
+                }
             }
 
             //emit return //if we are the last link in the chain this ends our call
@@ -173,45 +187,6 @@
             } while (compiler.Match(TokenType.COMMA));
 
             compiler.Consume(TokenType.END_STATEMENT, "Expect ; after property declaration.");
-        }
-
-        private void TestCase(CompilerBase compiler)
-        {
-            compiler.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
-            byte nameConstantID = compiler.AddStringConstant();
-
-            var name = compiler.CurrentChunk.ReadConstant(nameConstantID).val.asString;
-
-            var compState = compiler.CurrentCompilerState;
-            var classCompState = compState.classCompilerStates.Peek();
-
-            //emit jump // to skip this during imperative
-            int testFragmentJump = compiler.EmitJump(OpCode.JUMP);
-            //patch jump previous init fragment if it exists
-            if (classCompState.previousTestFragJumpLocation != -1)
-            {
-                compiler.PatchJump(classCompState.previousTestFragJumpLocation);
-            }
-            else
-            {
-                classCompState.testFragStartLocation = compState.chunk.Instructions.Count;
-            }
-
-            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
-
-            // The body.
-            compiler.EmitOpAndByte(OpCode.TEST_START, nameConstantID);
-
-            compiler.BeginScope();
-            compiler.Block();
-            compiler.EndScope();
-
-            compiler.EmitOpAndByte(OpCode.TEST_END, nameConstantID);
-
-            classCompState.previousTestFragJumpLocation = compiler.EmitJump(OpCode.JUMP);
-
-            //emit jump to step to next and save it
-            compiler.PatchJump(testFragmentJump);
         }
     }
 }

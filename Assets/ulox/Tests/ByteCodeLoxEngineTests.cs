@@ -65,6 +65,17 @@ namespace ULox.Tests
         }
 
         [Test]
+        public void Engine_Cycle_Minus_Equals_Expression()
+        {
+            engine.Run(@"
+var a = 1;
+a -= 2;
+print (a);");
+
+            Assert.AreEqual("-1", engine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Cycle_Logic_Not_Expression()
         {
             
@@ -322,6 +333,24 @@ while(i < 3)
         }
 
         [Test]
+        public void Engine_Cycle_For_Continue()
+        {
+
+
+            engine.Run(@"
+for(var i = 0;i < 3; i += 1)
+{
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+
+            Assert.AreEqual("012", engine.InterpreterResult);
+        }
+
+
+        [Test]
         public void Engine_Cycle_While_Nested()
         {
             
@@ -554,51 +583,9 @@ Func();");
             Assert.AreEqual("32", engine.InterpreterResult);
         }
 
-        //[Test]
-        //public void Engine_Compile_NativeFunc_Args_Call()
-        //{
-        //    var engine = new ByteCodeLoxEngine();
-        //    engine.VM.DefineNativeFunction("CallNative", (vm, stack) =>
-        //    {
-        //        var lhs = vm.
-        //        return Value.New("Native");
-        //    });
-
-        //    engine.Run(@"print CalEmptylNative();");
-
-        //    Assert.AreEqual("Native");
-        //}
-
-        [Test]
-        [Ignore("long running manual test only")]
-        public void Engine_Compile_Clocked_Fib()
-        {
-            
-            engine.VM.SetGlobal("clock", Value.New((vm, stack) =>
-            {
-                return Value.New(System.DateTime.Now.Ticks);
-            }));
-
-            engine.Run(@"
-fun fib(n)
-{
-    if (n < 2) return n;
-    return fib(n - 2) + fib(n - 1);
-}
-
-var start = clock();
-print (fib(20));
-print ("" in "");
-print (clock() - start);");
-
-            //Assert.AreEqual("Native", engine.InterpreterResult);
-        }
-
         [Test]
         public void Engine_Compile_Recursive()
         {
-            
-
             engine.Run(@"fun Recur(a)
 {
     if(a > 0) 
@@ -746,6 +733,34 @@ c2();");
             Assert.AreEqual("A012A012", engine.InterpreterResult);
         }
 
+        [Test]
+        public void Engine_Closure_Counter_NoPrint()
+        {
+
+
+            engine.Run(@"
+fun makeCounter() 
+{
+    var i = 0;
+    fun count() 
+    {
+        i = i + 1;
+        return i;
+    }
+
+    return count;
+}
+
+var c1 = makeCounter();
+
+c1();
+var res = c1();
+
+print(res);
+");
+
+            Assert.AreEqual("2", engine.InterpreterResult);
+        }
         [Test]
         public void Engine_Class_Empty()
         {
@@ -1258,16 +1273,16 @@ print (res);
             engine.Run(@"
 var list = List();
 
-for(var i = 0; i < 5; i = i + 1)
+for(var i = 0; i < 5; i += 1)
     list.Add(i);
 
 var c = list.Count();
 print(c);
 
-for(var i = 0; i < c; i = i + 1)
+for(var i = 0; i < c; i += 1)
     print(list.Get(i));
 
-for(var i = 0; i < c; i = i + 1)
+for(var i = 0; i < c; i +=1)
     print(list.Set(i, -i));
 ");
 
@@ -1427,8 +1442,6 @@ loop
         [Test]
         public void Engine_Class_VarInitChain()
         {
-            
-
             engine.Run(@"
 var aVal = 10;
 class T
@@ -1483,8 +1496,6 @@ print(t.a);");
         [Test]
         public void Engine_Class_VarInitChainEmpty_AndInit()
         {
-            
-
             engine.Run(@"
 class T
 {
@@ -1497,6 +1508,43 @@ var t = T();
 print(t.a);");
 
             Assert.AreEqual("20", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_VarInitChain_AndInitPrint()
+        {
+
+
+            engine.Run(@"
+class T
+{
+    var a = 20;
+
+    init(){print(this.a);}
+}
+
+var t = T();");
+
+            Assert.AreEqual("20", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_VarWithInit()
+        {
+
+
+            engine.Run(@"
+class T
+{
+    var a;
+
+    init(_a) { this.a =_a; }
+}
+
+var t = T(1);
+print(t.a);");
+
+            Assert.AreEqual("1", engine.InterpreterResult);
         }
 
         [Test]
@@ -1754,7 +1802,30 @@ test T
 }");
 
             Assert.AreEqual("", engine.InterpreterResult);
-            Assert.AreEqual("A Completed", engine.VM.TestRunner.GenerateDump());
+            Assert.AreEqual("T:A Completed", engine.VM.TestRunner.GenerateDump());
+        }
+
+        [Test]
+        public void Engine_TestCase_SimpleInClass()
+        {
+
+
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+class Klass
+{
+    testcase A
+    {
+        var a = 2;
+        var b = 3;
+        var c = a + b;
+        Assert.AreEqual(c,5);
+    }
+}");
+
+            Assert.AreEqual("", engine.InterpreterResult);
+            Assert.AreEqual("Klass:A Completed", engine.VM.TestRunner.GenerateDump());
         }
 
         [Test]

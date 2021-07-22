@@ -12,6 +12,7 @@ namespace ULox
             this.name = "List";
             this.methods.Add(VM.InitMethodName, Value.New(InitInstance));
             this.methods.Add(nameof(Count), Value.New(Count));
+            this.methods.Add(nameof(Resize), Value.New(Resize));
             this.methods.Add(nameof(Get), Value.New(Get));
             this.methods.Add(nameof(Set), Value.New(Set));
             this.methods.Add(nameof(Add), Value.New(Add));
@@ -30,6 +31,17 @@ namespace ULox
             var inst = vm.GetArg(0);
             var list = inst.val.asInstance.fields[ListFieldName].val.asObject as InternalList;
             return Value.New(list.Count);
+        }
+
+        private Value Resize(VMBase vm, int argCount)
+        {
+            var inst = vm.GetArg(0);
+            var list = inst.val.asInstance.fields[ListFieldName].val.asObject as InternalList;
+            int size = (int)vm.GetArg(1).val.asDouble;
+            while (list.Count < size)
+                list.Add(Value.Null());
+
+            return inst;
         }
 
         private Value Get(VMBase vm, int argCount)

@@ -1,0 +1,121 @@
+test DebugLibraryTests
+{
+    testcase GenerateStackDump
+    {
+        var local = 2;
+        var result = 0;
+        var contains1 = "2";
+        var contains2 = "0";
+        
+        result = GenerateStackDump();
+        
+        Assert.DoesContain(contains1,result);
+        Assert.DoesContain(contains2,result);
+    }
+
+    testcase GenerateGlobalsDump
+    {
+        var expected = "Assert";
+        var result;
+        
+        result = GenerateGlobalsDump();
+        
+        Assert.DoesContain(expected,result);
+    }
+}
+
+test StandardClassesLibraryTests
+{
+    testcase ListAsArray
+    {
+        var list = List();
+        var len = 5;
+        list.Resize(len);
+
+        for (var i = 0; i < list.Count(); i+= 1)
+        {
+            list.Set(i, i);
+        }
+
+        for (var i = 0; i < list.Count(); i+= 1)
+        {
+            Assert.AreEqual(i, list.Get(i));
+        }
+    }
+    
+    testcase ListAdd
+    {
+        var list = List();
+        var len = 5;
+
+        for (var i = 0; i < len; i+= 1)
+        {
+            list.Add(i);
+        }
+
+        for (var i = 0; i < list.Count(); i+= 1)
+        {
+            Assert.AreEqual(i, list.Get(i));
+        }
+    }
+}
+
+test VMLibraryTests
+{
+    testcase InnerVmInsertAndExtract
+    {
+        var expected = 20;
+        var startingValue = 10;
+        var result = 0;
+        var innerVM = VM();
+        fun InnerMain()
+        {
+            aGlobal *= 2;
+        }
+        
+        innerVM.AddGlobal("aGlobal", startingValue);
+        innerVM.Start(InnerMain);
+
+        result = innerVM.GetGlobal("aGlobal");
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase InnerVmAsGenerator
+    {
+        var expected = 20;
+        var result = 0;
+        var innerVM = VM();
+        fun InnerMain()
+        {
+            globalOut = 2;
+            yield;
+            globalOut = 3;
+            yield;
+            globalOut = 5;
+            yield;
+            globalOut = 10;
+            yield;
+            globalOut = null;
+        }
+
+        innerVM.AddGlobal("globalOut",0);
+
+        innerVM.Start(InnerMain);
+        loop
+        {
+            var curVal = innerVM.GetGlobal("globalOut");
+            if(curVal != null)
+            {
+                result += curVal;
+                innerVM.Resume();
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        Assert.AreEqual(expected, result);
+    }
+}

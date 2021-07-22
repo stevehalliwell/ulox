@@ -15,6 +15,8 @@
             assertInst.fields[nameof(IsFalse)] = Value.New(IsFalse);
             assertInst.fields[nameof(IsNull)] = Value.New(IsNull);
             assertInst.fields[nameof(IsNotNull)] = Value.New(IsNotNull);
+            assertInst.fields[nameof(DoesContain)] = Value.New(DoesContain);
+            assertInst.fields[nameof(DoesNotContain)] = Value.New(DoesNotContain);
 
             return resTable;
         }
@@ -86,6 +88,26 @@
             var lhs = vm.GetArg(1);
             if (lhs.IsNull)
                 throw new AssertException($"'{lhs}' is null.");
+
+            return Value.Null();
+        }
+
+        private static Value DoesContain(VMBase vm, int argCount)
+        {
+            var lhs = vm.GetArg(1);
+            var rhs = vm.GetArg(2);
+            if (!rhs.val.asString.Contains(lhs.val.asString))
+                throw new AssertException($"'{rhs}' did not contain '{lhs}'.");
+
+            return Value.Null();
+        }
+
+        private static Value DoesNotContain(VMBase vm, int argCount)
+        {
+            var lhs = vm.GetArg(1);
+            var rhs = vm.GetArg(2);
+            if (rhs.val.asString.Contains(lhs.val.asString))
+                throw new AssertException($"'{rhs}' did contain '{lhs}', should not have.");
 
             return Value.Null();
         }

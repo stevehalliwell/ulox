@@ -14,6 +14,7 @@
                 this.methods.Add(nameof(GetGlobal), Value.New(GetGlobal));
                 this.methods.Add(nameof(Start), Value.New(Start));
                 this.methods.Add(nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing));
+                this.methods.Add(nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing));
                 this.methods.Add(nameof(Resume), Value.New(Resume));
 
                 this.initialiser = this.methods[VM.InitMethodName];                
@@ -49,6 +50,14 @@
                 var inst = vm.GetArg(0);
                 var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
                 vm.CopyGlobals(ourVM);
+                return Value.Null();
+            }
+
+            private Value CopyBackToEnclosing(VMBase vm, int argCount)
+            {
+                var inst = vm.GetArg(0);
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                ourVM.CopyGlobals(vm);
                 return Value.Null();
             }
 

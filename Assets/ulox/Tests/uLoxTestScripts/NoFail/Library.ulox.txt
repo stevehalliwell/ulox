@@ -62,7 +62,7 @@ test StandardClassesLibraryTests
 
 test VMLibraryTests
 {
-    testcase InnerVMInsertAndExtract
+    testcase InnerVmInsertAndExtract
     {
         var expected = 20;
         var startingValue = 10;
@@ -81,7 +81,7 @@ test VMLibraryTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase InnerVMAsGenerator
+    testcase InnerVmAsGenerator
     {
         var expected = 20;
         var result = 0;

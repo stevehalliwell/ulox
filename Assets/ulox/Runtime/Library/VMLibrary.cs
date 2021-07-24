@@ -9,7 +9,7 @@
             public VMClass()
             {
                 this.name = "VM";
-                this.methods.Add(VM.InitMethodName, Value.New(InitInstance));
+                this.methods.Add(ClassCompilette.InitMethodName, Value.New(InitInstance));
                 this.methods.Add(nameof(AddGlobal), Value.New(AddGlobal));
                 this.methods.Add(nameof(GetGlobal), Value.New(GetGlobal));
                 this.methods.Add(nameof(Start), Value.New(Start));
@@ -17,7 +17,7 @@
                 this.methods.Add(nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing));
                 this.methods.Add(nameof(Resume), Value.New(Resume));
 
-                this.initialiser = this.methods[VM.InitMethodName];                
+                this.initialiser = this.methods[ClassCompilette.InitMethodName];                
             }
 
             private Value InitInstance(VMBase vm, int argCount)

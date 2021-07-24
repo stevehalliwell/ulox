@@ -43,10 +43,6 @@
         FLOAT,
 
         FUNCTION,
-        CLASS,
-        THIS,
-        SUPER,
-        STATIC,
 
         AND,
         OR,
@@ -66,6 +62,12 @@
         NULL,
 
         THROW,
+
+        CLASS,
+        THIS,
+        SUPER,
+        STATIC,
+        INIT,
 
         TEST,
         TESTCASE,

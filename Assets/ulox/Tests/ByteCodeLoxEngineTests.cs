@@ -1306,6 +1306,24 @@ for(var i = 0; i < c; i +=1)
         }
 
         [Test]
+        public void Engine_Class_Init()
+        {
+
+
+            engine.Run(@"
+class T
+{
+    init(){}
+}
+
+var t = T();
+t.a = null;
+print(t.a);");
+
+            Assert.AreEqual("null", engine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_Var()
         {
             
@@ -1357,6 +1375,38 @@ print(t.a);
 print(t.b);");
 
             Assert.AreEqual("nullnull", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_VarAfterInit_Throws()
+        {
+            engine.Run(@"
+class T
+{
+    init(){}
+    var a,b;
+}
+
+var t = T();
+print(t.a);
+print(t.b);");
+
+            Assert.AreEqual("Encountered unexpected var declaration in class T. Class vars must come before init or methods.", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_MethodBeforeInit_Throws()
+        {
+            engine.Run(@"
+class T
+{
+    Meth(){}
+    init(){}
+}
+
+var t = T();");
+
+            Assert.AreEqual("Encountered init in class at Method, in class T. This is not allowed.", engine.InterpreterResult);
         }
 
         [Test]

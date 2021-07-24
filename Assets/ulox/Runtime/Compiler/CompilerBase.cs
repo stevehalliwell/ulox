@@ -554,7 +554,9 @@ namespace ULox
             CurrentChunk.WriteSimple(op2, PreviousToken.Line);
         }
 
-        public byte AddStringConstant() => CurrentChunk.AddConstant(Value.New((string)PreviousToken.Literal));
+        public byte AddStringConstant() => AddCustomStringConstant((string)PreviousToken.Literal);
+        public byte AddCustomStringConstant(string str) => CurrentChunk.AddConstant(Value.New(str));
+
         public void DeclareVariable()
         {
             var comp = CurrentCompilerState;

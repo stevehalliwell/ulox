@@ -10,6 +10,8 @@ namespace ULox
         protected enum Stage { Invalid, Var, Init, Method }
         protected Stage stage = Stage.Invalid;
 
+        private List<string> classVarNames = new List<string>();
+
         public void AddInnerDeclarationCompilette(ICompilette compilette)
             => innerDeclarationCompilettes[compilette.Match] = compilette;
 
@@ -23,6 +25,7 @@ namespace ULox
         private void ClassDeclaration(CompilerBase compiler)
         {
             stage = Stage.Var;
+            classVarNames.Clear();
             compiler.Consume(TokenType.IDENTIFIER, "Expect class name.");
             var className = (string)compiler.PreviousToken.Literal;
             var compState = compiler.CurrentCompilerState;
@@ -156,7 +159,22 @@ namespace ULox
             compiler.PushCompilerState(InitMethodName, FunctionType.Init);
 
             compiler.BeginScope();
-            compiler.FunctionParamListOptional();
+
+            var initArgNames = new List<string>();
+
+            compiler.Consume(TokenType.OPEN_PAREN, $"Expect '(' after {InitMethodName}.");
+            if (!compiler.Check(TokenType.CLOSE_PAREN))
+            {
+                do
+                {
+                    compiler.IncreaseArity();
+
+                    var paramConstant = compiler.ParseVariable("Expect parameter name.");
+                    compiler.DefineVariable(paramConstant);
+                    initArgNames.Add(compiler.CurrentCompilerState.LastLocal.Name);
+                } while (compiler.Match(TokenType.COMMA));
+            }
+            compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
 
             // The body.
             compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
@@ -236,6 +254,8 @@ namespace ULox
             {
                 compiler.Consume(TokenType.IDENTIFIER, "Expect var name.");
                 byte nameConstant = compiler.AddStringConstant();
+
+                classVarNames.Add(compiler.CurrentChunk.ReadConstant(nameConstant).val.asString);
 
                 var compState = compiler.CurrentCompilerState;
                 var classCompState = compState.classCompilerStates.Peek();

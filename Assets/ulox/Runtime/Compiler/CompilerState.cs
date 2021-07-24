@@ -28,5 +28,7 @@ namespace ULox
         }
 
         public Stack<LoopState> loopStates = new Stack<LoopState>();
+
+        public Local LastLocal => locals[localCount - 1];
     }
 }

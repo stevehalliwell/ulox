@@ -473,7 +473,8 @@ namespace ULox
                 PatchJump(loopState.loopExitPatchLocations[i]);
             }
         }
-        protected byte ParseVariable(string errMsg)
+
+        public byte ParseVariable(string errMsg)
         {
             Consume(TokenType.IDENTIFIER, errMsg);
 
@@ -506,17 +507,22 @@ namespace ULox
                 {
                     do
                     {
-                        CurrentChunk.Arity++;
-                        if (CurrentChunk.Arity > 255)
-                        {
-                            throw new CompilerException("Can't have more than 255 parameters.");
-                        }
+                        IncreaseArity();
 
                         var paramConstant = ParseVariable("Expect parameter name.");
                         DefineVariable(paramConstant);
                     } while (Match(TokenType.COMMA));
                 }
                 Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
+            }
+        }
+
+        public void IncreaseArity()
+        {
+            CurrentChunk.Arity++;
+            if (CurrentChunk.Arity > 255)
+            {
+                throw new CompilerException("Can't have more than 255 parameters.");
             }
         }
 
@@ -593,7 +599,7 @@ namespace ULox
             var comp = CurrentCompilerState;
 
             if (comp.scopeDepth == 0) return;
-            comp.locals[comp.localCount - 1].Depth = comp.scopeDepth;
+            comp.LastLocal.Depth = comp.scopeDepth;
         }
 
         protected void FunctionDeclaration(CompilerBase compiler)

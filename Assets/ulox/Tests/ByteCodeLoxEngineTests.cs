@@ -1324,22 +1324,25 @@ print(t.a);");
         }
 
         [Test]
-        public void Engine_Class_InitReplacesDefaults()
+        public void Engine_Class_AutoInitReplacesDefaults()
         {
 
 
             engine.Run(@"
 class T
 {
-    var a= 10, b = 20;
-    init(a,b){}
+    var a= 10, b = 20, c = 30;
+    init(a,b)
+    {
+        print(this.a);
+        print(this.b);
+        print(this.c);
+    }
 }
 
-var t = T(1,2);
-print(t.a);
-print(t.b);");
+var t = T(1,2);");
 
-            Assert.AreEqual("12", engine.InterpreterResult);
+            Assert.AreEqual("1230", engine.InterpreterResult);
         }
 
         [Test]

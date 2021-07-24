@@ -7,6 +7,7 @@
         public int previousInitFragJumpLocation = -1;
         public int testFragStartLocation = -1;
         public int previousTestFragJumpLocation = -1;
+        //TODO track all the vars we have encountered
 
         public ClassCompilerState(string currentClassName)
         {

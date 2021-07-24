@@ -144,10 +144,25 @@ namespace ULox
             }
 
             byte constant = compiler.AddCustomStringConstant(InitMethodName);
-            compiler.Function(InitMethodName, FunctionType.Init);
+            CreateInitMethod(compiler);
             compiler.EmitOpAndByte(OpCode.METHOD, constant);
 
             stage = Stage.Method;
+        }
+
+        //Very nearly identical public void Function(string name, FunctionType functionType) but this handles auto inits
+        private void CreateInitMethod(CompilerBase compiler)
+        {
+            compiler.PushCompilerState(InitMethodName, FunctionType.Init);
+
+            compiler.BeginScope();
+            compiler.FunctionParamListOptional();
+
+            // The body.
+            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
+            compiler.Block();
+
+            compiler.EndFunction();
         }
 
         private void DoClassMethod(CompilerBase compiler, string className)

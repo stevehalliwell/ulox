@@ -1324,6 +1324,25 @@ print(t.a);");
         }
 
         [Test]
+        public void Engine_Class_InitReplacesDefaults()
+        {
+
+
+            engine.Run(@"
+class T
+{
+    var a= 10, b = 20;
+    init(a,b){}
+}
+
+var t = T(1,2);
+print(t.a);
+print(t.b);");
+
+            Assert.AreEqual("12", engine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_Var()
         {
             

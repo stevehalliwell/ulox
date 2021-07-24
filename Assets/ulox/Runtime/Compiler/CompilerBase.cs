@@ -129,7 +129,7 @@ namespace ULox
             return rules[(int)operatorType];
         }
 
-        protected void PushCompilerState(string name, FunctionType functionType)
+        public void PushCompilerState(string name, FunctionType functionType)
         {
             compilerStates.Push(new CompilerState(compilerStates.Peek(), functionType)
             {
@@ -487,7 +487,17 @@ namespace ULox
             PushCompilerState(name, functionType);
 
             BeginScope();
+            FunctionParamListOptional();
 
+            // The body.
+            Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
+            Block();
+
+            EndFunction();
+        }
+
+        public void FunctionParamListOptional()
+        {
             if (Match(TokenType.OPEN_PAREN))
             {
                 // Compile the parameter list.
@@ -508,11 +518,10 @@ namespace ULox
                 }
                 Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
             }
+        }
 
-            // The body.
-            Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
-            Block();
-
+        public void EndFunction()
+        {
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
             var function = EndCompile();

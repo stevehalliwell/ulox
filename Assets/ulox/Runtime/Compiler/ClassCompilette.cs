@@ -176,6 +176,19 @@ namespace ULox
             }
             compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
 
+            foreach (var initArg in initArgNames)
+            {
+                if(classVarNames.Contains(initArg))
+                {
+                    compiler.EmitOpAndByte(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
+                    compiler.NamedVariable(initArg, false);
+
+                    //emit set prop
+                    compiler.EmitOpAndByte(OpCode.SET_PROPERTY, compiler.AddCustomStringConstant(initArg));
+                    compiler.EmitOpCode(OpCode.POP);
+                }
+            }
+
             // The body.
             compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             compiler.Block();
@@ -203,14 +216,6 @@ namespace ULox
 
             var name = compiler.CurrentChunk.ReadConstant(constant).val.asString;
             FunctionType funcType = FunctionType.Method;
-            if (name == InitMethodName)
-            {
-                funcType = FunctionType.Init;
-                if(stage != Stage.Init)
-                {
-                    throw new CompilerException($"Encountered {InitMethodName} in class at {stage}, in class {className}. This is not allowed.");
-                }
-            }
             compiler.Function(name, funcType);
             compiler.EmitOpAndByte(OpCode.METHOD, constant);
             

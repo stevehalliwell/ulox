@@ -1324,6 +1324,26 @@ print(t.a);");
         }
 
         [Test]
+        public void Engine_Class_AutoInit()
+        {
+
+
+            engine.Run(@"
+class T
+{
+    var a;
+    init(a)
+    {
+        print(this.a);
+    }
+}
+
+var t = T(3);");
+
+            Assert.AreEqual("3", engine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_AutoInitReplacesDefaults()
         {
 

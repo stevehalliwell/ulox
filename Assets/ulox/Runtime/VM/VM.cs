@@ -5,9 +5,6 @@ namespace ULox
     public class VM : VMBase
     {
         public TestRunner TestRunner { get; private set; } = new TestRunner();
-        public const string InitMethodName = "init";
-
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool ExtendedCall(Value callee, int argCount)
@@ -244,7 +241,7 @@ namespace ULox
             Value method = Peek();
             var klass = Peek(1).val.asClass;
             klass.methods[name] = method;
-            if (name == InitMethodName)
+            if (name == ClassCompilette.InitMethodName)
             {
                 klass.initialiser = method;
             }

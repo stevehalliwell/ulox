@@ -17,6 +17,14 @@ class WithInit
     Sum() { return this.a + this.b; }
 }
 
+class AutoInitVars
+{
+    var a,b=10;
+    init(a) { }
+
+    Sum() { return this.a + this.b; }
+}
+
 test Classes
 {
     testcase SimpleClassObject
@@ -68,6 +76,17 @@ test Classes
         var expected = 3;
         var result = 0;
         var w = WithInit(1,2);
+
+        result = w.Sum();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase AutoInitialiser
+    {
+        var expected = 20;
+        var result = 0;
+        var w = AutoInitVars(10);
 
         result = w.Sum();
 

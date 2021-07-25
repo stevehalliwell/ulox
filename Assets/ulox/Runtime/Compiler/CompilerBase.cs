@@ -129,7 +129,7 @@ namespace ULox
             return rules[(int)operatorType];
         }
 
-        protected void PushCompilerState(string name, FunctionType functionType)
+        public void PushCompilerState(string name, FunctionType functionType)
         {
             compilerStates.Push(new CompilerState(compilerStates.Peek(), functionType)
             {
@@ -473,7 +473,8 @@ namespace ULox
                 PatchJump(loopState.loopExitPatchLocations[i]);
             }
         }
-        protected byte ParseVariable(string errMsg)
+
+        public byte ParseVariable(string errMsg)
         {
             Consume(TokenType.IDENTIFIER, errMsg);
 
@@ -487,7 +488,17 @@ namespace ULox
             PushCompilerState(name, functionType);
 
             BeginScope();
+            FunctionParamListOptional();
 
+            // The body.
+            Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
+            Block();
+
+            EndFunction();
+        }
+
+        public void FunctionParamListOptional()
+        {
             if (Match(TokenType.OPEN_PAREN))
             {
                 // Compile the parameter list.
@@ -496,11 +507,7 @@ namespace ULox
                 {
                     do
                     {
-                        CurrentChunk.Arity++;
-                        if (CurrentChunk.Arity > 255)
-                        {
-                            throw new CompilerException("Can't have more than 255 parameters.");
-                        }
+                        IncreaseArity();
 
                         var paramConstant = ParseVariable("Expect parameter name.");
                         DefineVariable(paramConstant);
@@ -508,11 +515,19 @@ namespace ULox
                 }
                 Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
             }
+        }
 
-            // The body.
-            Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
-            Block();
+        public void IncreaseArity()
+        {
+            CurrentChunk.Arity++;
+            if (CurrentChunk.Arity > 255)
+            {
+                throw new CompilerException("Can't have more than 255 parameters.");
+            }
+        }
 
+        public void EndFunction()
+        {
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
             var function = EndCompile();
@@ -554,7 +569,9 @@ namespace ULox
             CurrentChunk.WriteSimple(op2, PreviousToken.Line);
         }
 
-        public byte AddStringConstant() => CurrentChunk.AddConstant(Value.New((string)PreviousToken.Literal));
+        public byte AddStringConstant() => AddCustomStringConstant((string)PreviousToken.Literal);
+        public byte AddCustomStringConstant(string str) => CurrentChunk.AddConstant(Value.New(str));
+
         public void DeclareVariable()
         {
             var comp = CurrentCompilerState;
@@ -582,7 +599,7 @@ namespace ULox
             var comp = CurrentCompilerState;
 
             if (comp.scopeDepth == 0) return;
-            comp.locals[comp.localCount - 1].Depth = comp.scopeDepth;
+            comp.LastLocal.Depth = comp.scopeDepth;
         }
 
         protected void FunctionDeclaration(CompilerBase compiler)

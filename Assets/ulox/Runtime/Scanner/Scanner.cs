@@ -99,6 +99,7 @@ namespace ULox
                 ( "testcase",  TokenType.TESTCASE),
                 ( "static",  TokenType.STATIC),
                 ( "yield",  TokenType.YIELD),
+                ( "init",  TokenType.INIT),
             };
         }
     }

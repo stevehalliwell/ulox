@@ -1,0 +1,22 @@
+test DISimpleTests
+{
+    testcase RegisterAndInject
+    {
+        //[statement] register <constant string> <expression>
+        var serviceInst = 7;
+        register Service serviceInst;
+        var expected = 7;
+        var result = 0;
+
+        //[expression]<assign statement> = inject <constant string>(resolves to a lookup and push stack)
+        result = inject Service;
+
+        Assert.AreEqual(expected, result);        
+    }
+    /*
+    class InjectedThing
+    {
+        var a = inject Service;
+    }
+    */
+}

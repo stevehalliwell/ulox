@@ -15,11 +15,12 @@
             opCodeHandlers[(int)OpCode.SUPER_INVOKE] = AppendStringConstantThenByte;
             opCodeHandlers[(int)OpCode.INVOKE] = AppendStringConstantThenByte;
 
-
-
             opCodeHandlers[(int)OpCode.TEST] = HandleTestOpCode;
 
             opCodeHandlers[(int)OpCode.BUILD] = AppendByteThenSpaceThenStringConstant;
+
+            opCodeHandlers[(int)OpCode.REGISTER] = AppendStringConstant;
+            opCodeHandlers[(int)OpCode.INJECT] = AppendStringConstant;
         }
 
         private int HandleTestOpCode(Chunk chunk, int i)

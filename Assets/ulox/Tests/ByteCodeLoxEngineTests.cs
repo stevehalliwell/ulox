@@ -94,6 +94,25 @@ print (a);");
         }
 
         [Test]
+        public void Engine_Cycle_UselessDeclare()
+        {
+            testEngine.Run(@"
+var a = 7;");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Cycle_UselessExpression()
+        {
+            testEngine.Run(@"
+var a = 7;
+a;");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Cycle_Print_Math_Expression()
         {
             
@@ -2497,6 +2516,37 @@ print(cinst.b);
             Assert.AreEqual("112", testEngine.InterpreterResult);
         }
 
+        [Test]
+        public void Engine_Register_Unused()
+        {
+            testEngine.Run(@"
+register Seven 7;");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Inject_Error()
+        {
+            testEngine.Run(@"
+var s = inject Seven;");
+
+            Assert.AreEqual("Inject failure. Nothing has been registered (yet) with name 'Seven'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_RegisterAndInject()
+        {
+            testEngine.Run(@"
+register Seven 7;
+var s = inject Seven;
+print(s);");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        //todo yield should be able to multi return, use a yield stack in the vm and clear it at each use?
+        
         [Test]
         public void Engine_Class_Inher2ClassSuperInitParams()
         {

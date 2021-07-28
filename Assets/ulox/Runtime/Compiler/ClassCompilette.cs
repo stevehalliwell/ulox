@@ -33,8 +33,7 @@ namespace ULox
 
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
-
-            compiler.EmitOpAndByte(OpCode.CLASS, nameConstant);
+            EmitClassOp(compiler, nameConstant, out var initChainInstruction);
             compiler.DefineVariable(nameConstant);
 
             bool hasSuper = false;
@@ -78,12 +77,12 @@ namespace ULox
 
             if (classCompState.initFragStartLocation != -1)
             {
-                compiler.EmitOpCode(OpCode.INIT_CHAIN_START);
-                compiler.EmitUShort((ushort)classCompState.initFragStartLocation);
+                compiler.WriteUShortAt(initChainInstruction, (ushort)classCompState.initFragStartLocation);
             }
 
             if (classCompState.testFragStartLocation != -1)
             {
+                //TODO move to part of the class op code, write -1 by default and patch it here
                 compiler.EmitOpCode(OpCode.TEST_CHAIN_START);
                 compiler.EmitUShort((ushort)classCompState.testFragStartLocation);
             }
@@ -111,6 +110,16 @@ namespace ULox
             }
 
             compState.classCompilerStates.Pop();
+        }
+
+        private static void EmitClassOp(
+            CompilerBase compiler,
+            byte nameConstant,
+            out short initInstructionLoc)
+        {
+            compiler.EmitOpAndByte(OpCode.CLASS, nameConstant);
+            initInstructionLoc = (short)compiler.CurrentChunk.Instructions.Count;
+            compiler.EmitUShort(0);
         }
 
         private static bool DoClassInher(CompilerBase compiler, string className, CompilerState compState)

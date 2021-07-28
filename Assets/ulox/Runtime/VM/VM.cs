@@ -42,7 +42,15 @@ namespace ULox
                 {
                     var constantIndex = ReadByte(chunk);
                     var name = chunk.ReadConstant(constantIndex);
-                    Push(Value.New(new ClassInternal() { name = name.val.asString }));
+                    var klassValue = Value.New(new ClassInternal() { name = name.val.asString });
+                    Push(klassValue);
+                    var klass = klassValue.val.asClass;
+                    var initChain = ReadUShort(chunk);
+                    if (initChain != 0)
+                    {
+                        klass.initChainStartLocation = initChain;
+                        klass.initChainStartClosure = currentCallFrame.Closure;
+                    }
                 }
                 break;
             case OpCode.METHOD:
@@ -78,14 +86,6 @@ namespace ULox
                     var argCount = ReadByte(chunk);
                     var superClass = Pop().val.asClass;
                     InvokeFromClass(superClass, methName, argCount);
-                }
-                break;
-            case OpCode.INIT_CHAIN_START:
-                {
-                    var loc = ReadUShort(chunk);
-                    var klass = Peek().val.asClass;
-                    klass.initChainStartLocation = loc;
-                    klass.initChainStartClosure = currentCallFrame.Closure;
                 }
                 break;
 

@@ -3,6 +3,7 @@ using System.Text;
 
 namespace ULox
 {
+    //TODO create standard parsers for number of bytes and their types, map op code to disassemblette
     public class Disassembler
     {
         private readonly StringBuilder stringBuilder = new StringBuilder();
@@ -54,27 +55,21 @@ namespace ULox
 
             switch (opCode)
             {
-                case OpCode.JUMP_IF_FALSE:
-                case OpCode.JUMP:
-                case OpCode.LOOP:
-                case OpCode.INIT_CHAIN_START:
-                case OpCode.TEST_CHAIN_START:
-                    stringBuilder.Append(" ");
-                    i++;
-                    var bhi = chunk.Instructions[i];
-                    i++;
-                    var blo = chunk.Instructions[i];
-                    stringBuilder.Append((ushort)((bhi << 8) | blo));
-                    break;
+            case OpCode.JUMP_IF_FALSE:
+            case OpCode.JUMP:
+            case OpCode.LOOP:
+            case OpCode.TEST_CHAIN_START:
+                stringBuilder.Append(" ");
+                i = ReadUShort(chunk, i);
+                break;
 
-                case OpCode.CONSTANT:
+            case OpCode.CONSTANT:
                 case OpCode.DEFINE_GLOBAL:
                 case OpCode.FETCH_GLOBAL:
                 case OpCode.ASSIGN_GLOBAL:
                 case OpCode.GET_PROPERTY:
                 case OpCode.SET_PROPERTY:
                 case OpCode.GET_SUPER:
-                case OpCode.CLASS:
                 case OpCode.METHOD:
                 case OpCode.TEST_START:
                 case OpCode.TEST_END:
@@ -144,7 +139,18 @@ namespace ULox
                     }
                     break;
 
-                case OpCode.RETURN:
+            case OpCode.CLASS:
+                {
+                    stringBuilder.Append(" ");
+                    i++;
+                    var ind = chunk.Instructions[i];
+                    stringBuilder.Append($"({ind})" + chunk.ReadConstant(ind).ToString());
+                    stringBuilder.Append(" ");
+                    i = ReadUShort(chunk, i);
+                }
+                break;
+
+            case OpCode.RETURN:
             case OpCode.NEGATE:
             case OpCode.ADD:
             case OpCode.SUBTRACT:
@@ -167,6 +173,16 @@ namespace ULox
                 break;
             }
             stringBuilder.AppendLine();
+            return i;
+        }
+
+        private int ReadUShort(Chunk chunk, int i)
+        {
+            i++;
+            var bhi = chunk.Instructions[i];
+            i++;
+            var blo = chunk.Instructions[i];
+            stringBuilder.Append((ushort)((bhi << 8) | blo));
             return i;
         }
 

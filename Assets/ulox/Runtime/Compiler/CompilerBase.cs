@@ -386,6 +386,12 @@ namespace ULox
         }
 
 
+
+        public void WriteUShortAt(int at, ushort us)
+        {
+            WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
+        }
+
         protected void WriteBytesAt(int at, params byte[] b)
         {
             for (int i = 0; i < b.Length; i++)
@@ -393,6 +399,7 @@ namespace ULox
                 CurrentChunk.Instructions[at + i] = b[i];
             }
         }
+
         public int EmitJump(OpCode op)
         {
             EmitBytes((byte)op, 0xff, 0xff);

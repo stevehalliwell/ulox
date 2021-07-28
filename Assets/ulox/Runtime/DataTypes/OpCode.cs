@@ -54,7 +54,6 @@
         INHERIT,
         GET_SUPER,
         SUPER_INVOKE,
-        INIT_CHAIN_START,
 
         TEST_START,
         TEST_END,

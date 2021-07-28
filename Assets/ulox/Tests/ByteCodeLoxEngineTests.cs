@@ -3,7 +3,7 @@ using UnityEngine;
 
 //TODO 
 //      vm find func with arity is unused
-//      
+//      test init and init chain and auto var assign with inher
 
 namespace ULox.Tests
 {

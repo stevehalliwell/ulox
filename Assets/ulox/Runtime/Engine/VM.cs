@@ -2,11 +2,24 @@
 
 namespace ULox
 {
-    public class DependencyInjectionContainer : Table { }
+    public class DependencyInjectionContainer : Table
+    {
+        internal DependencyInjectionContainer ShallowCopy()
+        {
+            var ret = new DependencyInjectionContainer();
+            foreach (var pair in this)
+            {
+                ret.Add(pair.Key, pair.Value);
+            }
+            return ret;
+        }
+    }
+
     public class Vm : VMBase
     {
         public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
         public DependencyInjectionContainer DiContainer { get; private set; } = new DependencyInjectionContainer();
+        private DependencyInjectionContainer _diContainerToRestore;
 
         public override void CopyFrom(VMBase otherVMbase)
         {

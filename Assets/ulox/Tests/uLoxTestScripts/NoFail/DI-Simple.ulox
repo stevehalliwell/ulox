@@ -1,6 +1,6 @@
 test DISimpleTests
 {
-    testcase RegisterAndInject
+    testcase RegisterAndInjectInSingleScope
     {
         //[statement] register <constant string> <expression>
         var serviceInst = 7;
@@ -13,10 +13,16 @@ test DISimpleTests
 
         Assert.AreEqual(expected, result);        
     }
-    /*
-    class InjectedThing
+
+    testcase ReRegisterAndInjectInSingleScope
     {
-        var a = inject Service;
+        var serviceInst = 7;
+        register Service serviceInst;
+        register Service null;
+        var result = 0;
+
+        result = inject Service;
+
+        Assert.IsNull(result);        
     }
-    */
 }

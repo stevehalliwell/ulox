@@ -1,0 +1,25 @@
+class ConcreteService 
+{
+    Meth(){return 1;}
+}
+
+class Dependent
+{
+    var service = inject Service;
+    Get{return this.service.Meth();}
+}
+
+test DISClassesTests
+{
+    testcase RegisterAndInject
+    {
+        register Service ConcreteService();
+        var expected = 1;
+        var result = 0;
+
+        var dep = Dependent();
+        result = dep.Get();
+
+        Assert.AreEqual(expected, result);        
+    }
+}

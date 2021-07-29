@@ -25,4 +25,17 @@ test DISimpleTests
 
         Assert.IsNull(result);        
     }
+
+    testcase RegisterAndInjectIntoFunc
+    {
+        var serviceInst = 7;
+        register Service serviceInst;
+        var expected = 8;
+        var result = 0;
+        fun InjectedIsReturnedPlus1(a){return a+1;}
+
+        result = InjectedIsReturnedPlus1(inject Service);
+
+        Assert.AreEqual(expected, result);        
+    }
 }

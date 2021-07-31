@@ -15,6 +15,7 @@ namespace ULox
             if (otherVMbase is Vm otherVm)
             {
                 TestRunner = otherVm.TestRunner;
+                DiContainer = otherVm.DiContainer.ShallowCopy();
             }
         }
 

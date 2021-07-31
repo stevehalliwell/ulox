@@ -1,6 +1,17 @@
-build bind "DiLibrary";
+build bind 
+    "DiLibrary",
+    "VmLibrary";
 
 register DummyService null;
+
+fun InnerMainInjectedScale()
+{
+    var scale = inject ParentService;
+    a *= scale;
+}
+
+var a = 0;
+
 
 test DISimpleTests
 {
@@ -42,5 +53,22 @@ test DISimpleTests
         Assert.DoesContain("DummyService:null",result);
         Assert.DoesContain("Service1:7",result);
         Assert.DoesContain("Service2:null",result);
+    }
+    
+    testcase InherDiFromParentVM
+    {
+        var expected = 20;
+        var startingValue = 10;
+        var result = 0;
+        var innerVM = VM();
+        register ParentService 2;
+
+        a = startingValue;
+        innerVM.InheritFromEnclosing();
+        innerVM.Start(InnerMainInjectedScale);
+        innerVM.CopyBackToEnclosing();
+        result = a;
+
+        Assert.AreEqual(expected, result);
     }
 }

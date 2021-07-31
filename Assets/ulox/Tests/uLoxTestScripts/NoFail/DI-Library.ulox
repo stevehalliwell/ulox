@@ -1,0 +1,46 @@
+build bind "DiLibrary";
+
+register DummyService null;
+
+test DISimpleTests
+{
+    testcase ValidateDiLibraryCount
+    {
+        var serviceInst = 7;
+        register Service1 serviceInst;
+        register Service2 null;
+        fun ServiceFunction(){}
+        register Service3 ServiceFunction;
+        var expected = 4;
+        var result = 0;
+
+        result = DI.Count();
+
+        Assert.AreEqual(expected,result);        
+    }
+
+    testcase ValidateDiLibraryCountDummyOnly
+    {
+        var expected = 1;
+        var result = 0;
+
+        result = DI.Count();
+
+        Assert.AreEqual(expected,result);        
+    }
+
+    testcase ValidateDiLibraryDump
+    {
+        var serviceInst = 7;
+        register Service1 serviceInst;
+        register Service2 null;
+        fun ServiceFunction(a){return a;}
+        var result = "";
+
+        result = DI.GenerateDump();
+
+        Assert.DoesContain("DummyService:null",result);
+        Assert.DoesContain("Service1:7",result);
+        Assert.DoesContain("Service2:null",result);
+    }
+}

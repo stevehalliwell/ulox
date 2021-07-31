@@ -82,8 +82,7 @@ namespace ULox
 
             if (classCompState.testFragStartLocation != -1)
             {
-                //TODO move to part of the class op code, write -1 by default and patch it here
-                compiler.EmitOpCode(OpCode.TEST_CHAIN_START);
+                compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.InitChain);
                 compiler.EmitUShort((ushort)classCompState.testFragStartLocation);
             }
 

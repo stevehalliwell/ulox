@@ -117,7 +117,7 @@ namespace ULox
             byte nameConstant,
             out short initInstructionLoc)
         {
-            compiler.EmitOpAndByte(OpCode.CLASS, nameConstant);
+            compiler.EmitOpAndBytes(OpCode.CLASS, nameConstant);
             initInstructionLoc = (short)compiler.CurrentChunk.Instructions.Count;
             compiler.EmitUShort(0);
         }
@@ -157,7 +157,7 @@ namespace ULox
 
             byte constant = compiler.AddCustomStringConstant(InitMethodName);
             CreateInitMethod(compiler);
-            compiler.EmitOpAndByte(OpCode.METHOD, constant);
+            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
 
             stage = Stage.Method;
         }
@@ -189,11 +189,11 @@ namespace ULox
             {
                 if(classVarNames.Contains(initArg))
                 {
-                    compiler.EmitOpAndByte(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
+                    compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
                     compiler.NamedVariable(initArg, false);
 
                     //emit set prop
-                    compiler.EmitOpAndByte(OpCode.SET_PROPERTY, compiler.AddCustomStringConstant(initArg));
+                    compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, compiler.AddCustomStringConstant(initArg));
                     compiler.EmitOpCode(OpCode.POP);
                 }
             }
@@ -226,7 +226,7 @@ namespace ULox
             var name = compiler.CurrentChunk.ReadConstant(constant).val.asString;
             FunctionType funcType = FunctionType.Method;
             compiler.Function(name, funcType);
-            compiler.EmitOpAndByte(OpCode.METHOD, constant);
+            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
             
             stage = Stage.Method;
         }
@@ -259,7 +259,7 @@ namespace ULox
             var name = compiler.CurrentChunk.ReadConstant(constant).val.asString;
 
             compiler.Function(name, FunctionType.Function);
-            compiler.EmitOpAndByte(OpCode.METHOD, constant);
+            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
         }
 
         private void Property(CompilerBase compiler)
@@ -287,7 +287,7 @@ namespace ULox
                     classCompState.initFragStartLocation = compiler.CurrentChunk.Instructions.Count;
                 }
 
-                compiler.EmitOpAndByte(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
+                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
 
                 //if = consume it and then
                 //eat 1 expression or a push null
@@ -301,7 +301,7 @@ namespace ULox
                 }
 
                 //emit set prop
-                compiler.EmitOpAndByte(OpCode.SET_PROPERTY, nameConstant);
+                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
                 compiler.EmitOpCode(OpCode.POP);
                 //emit jump // to move to next prop init fragment, defaults to jump nowhere return
                 classCompState.previousInitFragJumpLocation = compiler.EmitJump(OpCode.JUMP);
@@ -321,7 +321,7 @@ namespace ULox
                 compiler.Consume(TokenType.IDENTIFIER, "Expect var name.");
                 byte nameConstant = compiler.AddStringConstant();
 
-                compiler.EmitOpAndByte(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
+                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
 
                 //if = consume it and then
                 //eat 1 expression or a push null
@@ -335,7 +335,7 @@ namespace ULox
                 }
 
                 //emit set prop
-                compiler.EmitOpAndByte(OpCode.SET_PROPERTY, nameConstant);
+                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
                 compiler.EmitOpCode(OpCode.POP);
 
             } while (compiler.Match(TokenType.COMMA));

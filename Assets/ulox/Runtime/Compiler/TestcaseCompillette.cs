@@ -44,13 +44,13 @@
             compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
 
             // The body.
-            compiler.EmitOpAndByte(OpCode.TEST_START, nameConstantID);
+            compiler.EmitOpAndBytes(OpCode.TEST_START, nameConstantID);
 
             compiler.BeginScope();
             compiler.Block();
             compiler.EndScope();
 
-            compiler.EmitOpAndByte(OpCode.TEST_END, nameConstantID);
+            compiler.EmitOpAndBytes(OpCode.TEST_END, nameConstantID);
 
             classCompState.previousTestFragJumpLocation = compiler.EmitJump(OpCode.JUMP);
 

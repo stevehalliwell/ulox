@@ -342,8 +342,8 @@ namespace ULox
         {
             switch (PreviousToken.TokenType)
             {
-            case TokenType.TRUE: EmitOpAndByte(OpCode.PUSH_BOOL, 1); break;
-            case TokenType.FALSE: EmitOpAndByte(OpCode.PUSH_BOOL, 0); break;
+            case TokenType.TRUE: EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
+            case TokenType.FALSE: EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
             case TokenType.NULL: EmitOpCode(OpCode.NULL); break;
             case TokenType.INT:
             case TokenType.FLOAT:
@@ -354,7 +354,7 @@ namespace ULox
                     var isInt = number == System.Math.Truncate(number);
 
                     if (isInt && number < 255 && number >= 0)
-                        EmitOpAndByte(OpCode.PUSH_BYTE, (byte)number);
+                        EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
                     else
                         CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), PreviousToken.Line);
                 }
@@ -405,7 +405,7 @@ namespace ULox
         private void Call(bool canAssign)
         {
             var argCount = ArgumentList();
-            EmitOpAndByte(OpCode.CALL, argCount);
+            EmitOpAndBytes(OpCode.CALL, argCount);
         }
 
         private void This(bool canAssign)
@@ -424,17 +424,17 @@ namespace ULox
             if (canAssign && Match(TokenType.ASSIGN))
             {
                 Expression();
-                EmitOpAndByte(OpCode.SET_PROPERTY, name);
+                EmitOpAndBytes(OpCode.SET_PROPERTY, name);
             }
             else if (Match(TokenType.OPEN_PAREN))
             {
                 var argCount = ArgumentList();
-                EmitOpAndByte(OpCode.INVOKE, name);
-                EmitByte(argCount);
+                EmitOpAndBytes(OpCode.INVOKE, name);
+                EmitBytes(argCount);
             }
             else
             {
-                EmitOpAndByte(OpCode.GET_PROPERTY, name);
+                EmitOpAndBytes(OpCode.GET_PROPERTY, name);
             }
         }
 
@@ -453,13 +453,13 @@ namespace ULox
             {
                 byte argCount = ArgumentList();
                 NamedVariable("super", false);
-                EmitOpAndByte(OpCode.SUPER_INVOKE, nameID);
-                EmitByte(argCount);
+                EmitOpAndBytes(OpCode.SUPER_INVOKE, nameID);
+                EmitBytes(argCount);
             }
             else
             {
                 NamedVariable("super", false);
-                EmitOpAndByte(OpCode.GET_SUPER, nameID);
+                EmitOpAndBytes(OpCode.GET_SUPER, nameID);
             }
         }
         #endregion Expressions

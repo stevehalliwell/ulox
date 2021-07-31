@@ -2,13 +2,6 @@
 {
     public class DiLibrary : IULoxLibrary
     {
-        private DiContainer _diCont;
-
-        public DiLibrary(DiContainer cont)
-        {
-            _diCont = cont;
-        }
-
         public string Name => nameof(DiLibrary);
 
         public Table GetBindings()
@@ -19,18 +12,37 @@
 
             assertInst.fields[nameof(Count)] = Value.New(Count);
             assertInst.fields[nameof(GenerateDump)] = Value.New(GenerateDump);
+            assertInst.fields[nameof(Freeze)] = Value.New(Freeze);
 
             return resTable;
         }
 
         private Value Count(VMBase vm, int argCount)
         {
-            return Value.New(_diCont.Count);
+            var di = FromVm(vm);
+            return Value.New(di.Count);
         }
 
         private Value GenerateDump(VMBase vm, int argCount)
         {
-            return Value.New(_diCont.GenerateDump());
+            var di = FromVm(vm);
+            return Value.New(di.GenerateDump());
+        }
+
+        private Value Freeze(VMBase vm, int argCount)
+        {
+            var di = FromVm(vm);
+            di.Freeze();
+            return Value.Null();
+        }
+
+        private DiContainer FromVm(VMBase vMBase)
+        {
+            if(vMBase is Vm vm)
+            {
+                return vm.DiContainer;
+            }
+            throw new LoxException($"DiLibrary action taken on incommpatible vm.");
         }
     }
 }

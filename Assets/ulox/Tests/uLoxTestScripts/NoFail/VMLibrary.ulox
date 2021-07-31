@@ -1,4 +1,6 @@
-build bind "VmLibrary";
+build bind 
+    "VmLibrary",
+    "VmLibrary";
 
 test VMLibraryTests
 {

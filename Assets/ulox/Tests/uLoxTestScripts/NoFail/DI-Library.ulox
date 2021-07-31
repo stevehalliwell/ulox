@@ -71,4 +71,19 @@ test DISimpleTests
 
         Assert.AreEqual(expected, result);
     }
+    
+
+    testcase ReRegisterAndInjectInSingleScope
+    {
+        var serviceInst = 7;
+        register Service serviceInst;
+        DI.Freeze();
+        register Service serviceInst;
+        var expected = serviceInst;
+        var result = 0;
+
+        result = inject Service;
+
+        Assert.AreEqual(expected, result);        
+    }
 }

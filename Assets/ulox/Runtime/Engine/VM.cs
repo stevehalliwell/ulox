@@ -6,7 +6,6 @@ namespace ULox
     {
         public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
         public DiContainer DiContainer { get; private set; } = new DiContainer();
-        private DiContainer _diContainerToRestore;
 
         public override void CopyFrom(VMBase otherVMbase)
         {
@@ -133,7 +132,7 @@ namespace ULox
                     var constantIndex = ReadByte(chunk);
                     var name = chunk.ReadConstant(constantIndex).val.asString;
                     var implementation = Pop();
-                    DiContainer[name] = implementation;
+                    DiContainer.Set(name,implementation);
                 }
                 break;
 

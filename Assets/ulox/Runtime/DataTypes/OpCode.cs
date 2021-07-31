@@ -55,8 +55,6 @@
         GET_SUPER,
         SUPER_INVOKE,
 
-        TEST_START,
-        TEST_END,
-        TEST_CHAIN_START,
+        TEST,
     }
 }

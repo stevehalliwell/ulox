@@ -26,7 +26,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool ExtendedOp(OpCode opCode, Chunk chunk)
         {
-            switch(opCode)
+            switch (opCode)
             {
             case OpCode.GET_PROPERTY:
                 {
@@ -90,15 +90,25 @@ namespace ULox
                 break;
 
 
-                //TODO: Need to handle duplicate named tests being found
-            case OpCode.TEST_START:
+            //TODO: Need to handle duplicate named tests being found
+            case OpCode.TEST:
+                var testOpType = (TestOpType)ReadByte(chunk);
+                switch (testOpType)
+                {
+                case TestOpType.Start:
                     TestRunner.StartTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
-                break;
-            case OpCode.TEST_END:
+                    ReadByte(chunk);//byte we don't use
+                    break;
+                case TestOpType.End:
                     TestRunner.EndTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
-                break;
-            case OpCode.TEST_CHAIN_START:
+                    ReadByte(chunk);//byte we don't use
+                    break;
+                case TestOpType.InitChain:
                     DoTestChainOp(chunk);
+                    break;
+                default:
+                    return false;
+                }
                 break;
             default:
                 return false;

@@ -272,27 +272,27 @@ namespace ULox
                 switch (assignTokenType)
                 {
                 case TokenType.PLUS_EQUAL:
-                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.ADD);
                     break;
                 case TokenType.MINUS_EQUAL:
-                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.SUBTRACT);
                     break;
                 case TokenType.STAR_EQUAL:
-                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.MULTIPLY);
                     break;
                 case TokenType.SLASH_EQUAL:
-                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.DIVIDE);
                     break;
                 case TokenType.PERCENT_EQUAL:
-                    EmitOpAndByte(getOp, (byte)argID);
+                    EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.MODULUS);
                     break;
@@ -300,11 +300,11 @@ namespace ULox
                     break;
                 }
 
-                EmitOpAndByte(setOp, (byte)argID);
+                EmitOpAndBytes(setOp, (byte)argID);
             }
             else
             {
-                EmitOpAndByte(getOp, (byte)argID);
+                EmitOpAndBytes(getOp, (byte)argID);
             }
         }
 
@@ -317,7 +317,7 @@ namespace ULox
         protected void EmitReturn()
         {
             if (compilerStates.Peek().functionType == FunctionType.Init)
-                EmitOpAndByte(OpCode.GET_LOCAL, 0);
+                EmitOpAndBytes(OpCode.GET_LOCAL, 0);
             else
                 EmitOpCode(OpCode.NULL);
             
@@ -362,10 +362,10 @@ namespace ULox
             CurrentChunk.WriteSimple(op, PreviousToken.Line);
         }
 
-        public void EmitOpAndByte(OpCode op, byte b)
+        public void EmitOpAndBytes(OpCode op, params byte[] b)
         {
-            CurrentChunk.WriteSimple(op, PreviousToken.Line);
-            CurrentChunk.WriteByte(b, PreviousToken.Line);
+            EmitOpCode(op);
+            EmitBytes(b);
         }
 
         public void Advance()
@@ -406,12 +406,7 @@ namespace ULox
             return CurrentChunk.Instructions.Count - 2;
         }
 
-        protected void EmitByte(byte b)
-        {
-            CurrentChunk.WriteByte(b, PreviousToken.Line);
-        }
-
-        protected void EmitBytes(params byte[] b)
+        public void EmitBytes(params byte[] b)
         {
             for (int i = 0; i < b.Length; i++)
             {
@@ -538,12 +533,12 @@ namespace ULox
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
             var function = EndCompile();
-            EmitOpAndByte(OpCode.CLOSURE, CurrentChunk.AddConstant(Value.New(function)));
+            EmitOpAndBytes(OpCode.CLOSURE, CurrentChunk.AddConstant(Value.New(function)));
 
             for (int i = 0; i < function.UpvalueCount; i++)
             {
-                EmitByte(comp.upvalues[i].isLocal ? (byte)1 : (byte)0);
-                EmitByte(comp.upvalues[i].index);
+                EmitBytes(comp.upvalues[i].isLocal ? (byte)1 : (byte)0);
+                EmitBytes(comp.upvalues[i].index);
             }
         }
 
@@ -568,7 +563,7 @@ namespace ULox
                 return;
             }
 
-            EmitOpAndByte(OpCode.DEFINE_GLOBAL, global);
+            EmitOpAndBytes(OpCode.DEFINE_GLOBAL, global);
         }
         protected void EmitOpCodePair(OpCode op1, OpCode op2)
         {

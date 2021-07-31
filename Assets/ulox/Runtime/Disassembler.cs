@@ -58,7 +58,6 @@ namespace ULox
             case OpCode.JUMP_IF_FALSE:
             case OpCode.JUMP:
             case OpCode.LOOP:
-            case OpCode.TEST_CHAIN_START:
                 stringBuilder.Append(" ");
                 i = ReadUShort(chunk, i);
                 break;
@@ -71,15 +70,8 @@ namespace ULox
                 case OpCode.SET_PROPERTY:
                 case OpCode.GET_SUPER:
                 case OpCode.METHOD:
-                case OpCode.TEST_START:
-                case OpCode.TEST_END:
-                    {
-                        stringBuilder.Append(" ");
-                        i++;
-                        var ind = chunk.Instructions[i];
-                        stringBuilder.Append($"({ind})" + chunk.ReadConstant(ind).ToString());
-                    }
-                    break;
+                    i = ReadStringConstant(chunk, i);
+                break;
 
                 case OpCode.SUPER_INVOKE:
                 case OpCode.INVOKE:
@@ -103,15 +95,8 @@ namespace ULox
                 case OpCode.CALL:
                 case OpCode.PUSH_BOOL:
                 case OpCode.PUSH_BYTE:
-                    //case OpCode.GET_PROPERTY_CACHED:
-                    //case OpCode.SET_PROPERTY_CACHED:
-                    {
-                        stringBuilder.Append(" ");
-                        i++;
-                        var ind = chunk.Instructions[i];
-                        stringBuilder.Append($"({ind})");
-                    }
-                    break;
+                    i = ReadByte(chunk, i);
+                break;
 
                 case OpCode.CLOSURE:
                     {
@@ -149,6 +134,29 @@ namespace ULox
                     i = ReadUShort(chunk, i);
                 }
                 break;
+            case OpCode.TEST:
+                {
+                    stringBuilder.Append(" ");
+                    i++;
+                    var testOpType = (TestOpType)chunk.Instructions[i];
+                    stringBuilder.Append(testOpType.ToString());
+                    stringBuilder.Append(" ");
+                    switch (testOpType)
+                    {
+                    case TestOpType.Start:
+                    case TestOpType.End:
+                        i = ReadStringConstant(chunk, i);
+                        i = ReadByte(chunk, i);
+                        break;
+                    case TestOpType.InitChain:
+                        i = ReadUShort(chunk, i);
+                        break;
+                    default:
+                        break;
+                    }
+                    break;
+                }
+                break;
 
             case OpCode.RETURN:
             case OpCode.NEGATE:
@@ -173,6 +181,24 @@ namespace ULox
                 break;
             }
             stringBuilder.AppendLine();
+            return i;
+        }
+
+        private int ReadByte(Chunk chunk, int i)
+        {
+            stringBuilder.Append(" ");
+            i++;
+            var ind = chunk.Instructions[i];
+            stringBuilder.Append($"({ind})");
+            return i;
+        }
+
+        private int ReadStringConstant(Chunk chunk, int i)
+        {
+            stringBuilder.Append(" ");
+            i++;
+            var ind = chunk.Instructions[i];
+            stringBuilder.Append($"({ind})" + chunk.ReadConstant(ind).ToString());
             return i;
         }
 

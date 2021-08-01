@@ -39,6 +39,7 @@
 
             //emit jump // to skip this during imperative
             int testFragmentJump = compiler.EmitJump(OpCode.JUMP);
+            //todo could save these to later build a list of tests instruction start locations
             //patch jump previous init fragment if it exists
             if (classCompState.previousTestFragJumpLocation != -1)
             {
@@ -57,6 +58,8 @@
             compiler.BeginScope();
             compiler.Block();
             compiler.EndScope();
+            
+            //todo could return rather than jump
 
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.End, nameConstantID, 0x00);
 

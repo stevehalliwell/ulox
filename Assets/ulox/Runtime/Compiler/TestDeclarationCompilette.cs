@@ -25,13 +25,11 @@
             CurrentTestSetName = testClassName;
             compiler.CurrentChunk.AddConstant(Value.New(testClassName));
 
-            //find the class by name, need to note this instruction so we can patch the argID as it doesn't exist yet
-            //var argID = ResolveLocal(compilerStates.Peek(), testClassName);
-            //create instance
-            //
-
             //parse as class, class needs to add calls for all testcases it finds to the testFuncChunk
             _classCompilette.Process(compiler);
+
+            //TODO could test set start with name and count
+            //TODO could emit list of instructions to run one for each tests
 
             compiler.EmitOpCode(OpCode.NULL);
             compiler.EmitOpAndBytes(OpCode.ASSIGN_GLOBAL, compiler.CurrentChunk.AddConstant(Value.New(testClassName)));

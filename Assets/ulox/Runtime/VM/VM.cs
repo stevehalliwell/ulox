@@ -119,6 +119,15 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoTestChainOp(Chunk chunk)
         {
+            //set test suite name
+            //for i in tests set count
+            //  new childvm
+            //  copy from us
+            //  push frame with given instruction count
+            //  childfm run
+
+            //reset test suite name
+
             var loc = ReadUShort(chunk);
             if (TestRunner.Enabled)
             {

@@ -1937,6 +1937,34 @@ test T
         }
 
         [Test]
+        public void Engine_TestCase_ReportAll()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+test T
+{
+    testcase A
+    {
+        throw;
+    }
+    testcase B
+    {
+    }
+    testcase C
+    {
+        throw;
+    }
+}");
+
+            Assert.AreEqual("", engine.InterpreterResult);
+            var completeReport = engine.VM.TestRunner.GenerateDump();
+            StringAssert.Contains("T:A Incomplete",completeReport);
+            StringAssert.Contains("T:B Completed",completeReport);
+            StringAssert.Contains("T:C Incomplete",completeReport);
+        }
+
+        [Test]
         public void Engine_TestCase_MultipleSimple()
         {
 

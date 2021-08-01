@@ -144,9 +144,16 @@ namespace ULox
                 var loc = ReadUShort(chunk);
                 if (TestRunner.Enabled)
                 {
-                    var childVM = new VM();
-                    childVM.CopyFrom(this);
-                    childVM.Interpret(chunk, loc);
+                    try
+                    {
+                        var childVM = new VM();
+                        childVM.CopyFrom(this);
+                        childVM.Interpret(chunk, loc);
+                    }
+                    catch (PanicException)
+                    {
+                        //eat it, results in incomplete test
+                    }
                 }
             }
         }

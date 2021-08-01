@@ -60,7 +60,7 @@ namespace ULox
 
         protected abstract bool ExtendedCall(Value callee, int argCount);
 
-        public void CopyGlobals(VMBase otherVM)
+        public virtual void CopyFrom(VMBase otherVM)
         {
             foreach (var val in _globals)
             {

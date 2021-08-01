@@ -6,6 +6,16 @@ namespace ULox
     {
         public TestRunner TestRunner { get; private set; } = new TestRunner();
 
+        public override void CopyFrom(VMBase otherVMbase)
+        {
+            base.CopyFrom(otherVMbase);
+
+            if(otherVMbase is VM vm)
+            {
+                vm.TestRunner = TestRunner;
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool ExtendedCall(Value callee, int argCount)
         {
@@ -311,7 +321,7 @@ namespace ULox
 
             CallValue(method, argCount);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CallMethod(BoundMethod asBoundMethod, int argCount)
         {

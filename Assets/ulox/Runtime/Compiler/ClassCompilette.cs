@@ -80,20 +80,11 @@ namespace ULox
                 compiler.WriteUShortAt(initChainInstruction, (ushort)classCompState.initFragStartLocation);
             }
 
-            if (classCompState.testFragStartLocation != -1)
-            {
-                compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.InitChain);
-                compiler.EmitUShort((ushort)classCompState.testFragStartLocation);
-            }
-
             //return stub used by init and test chains
             var classReturnEnd = compiler.EmitJump(OpCode.JUMP);
 
             if (classCompState.previousInitFragJumpLocation != -1)
                 compiler.PatchJump(classCompState.previousInitFragJumpLocation);
-
-            if (classCompState.previousTestFragJumpLocation != -1)
-                compiler.PatchJump(classCompState.previousTestFragJumpLocation);
 
             //EmitOpCode(OpCode.NULL);
             compiler.EmitOpCode(OpCode.RETURN);

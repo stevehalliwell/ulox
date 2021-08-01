@@ -10,9 +10,9 @@ namespace ULox
         {
             base.CopyFrom(otherVMbase);
 
-            if(otherVMbase is VM vm)
+            if(otherVMbase is VM otherVm)
             {
-                vm.TestRunner = TestRunner;
+                TestRunner = otherVm.TestRunner;
             }
         }
 
@@ -105,16 +105,21 @@ namespace ULox
                 var testOpType = (TestOpType)ReadByte(chunk);
                 switch (testOpType)
                 {
-                case TestOpType.Start:
+                case TestOpType.CaseStart:
                     TestRunner.StartTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
                     ReadByte(chunk);//byte we don't use
                     break;
-                case TestOpType.End:
+                case TestOpType.CaseEnd:
                     TestRunner.EndTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
                     ReadByte(chunk);//byte we don't use
                     break;
-                case TestOpType.InitChain:
-                    DoTestChainOp(chunk);
+                case TestOpType.TestSetStart:
+                    DoTestSet(chunk);
+                    break;
+                case TestOpType.TestSetEnd:
+                    TestRunner.CurrentTestSetName = string.Empty;
+                    ReadByte(chunk);//byte we don't use
+                    ReadByte(chunk);//byte we don't use
                     break;
                 default:
                     return false;
@@ -127,28 +132,22 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoTestChainOp(Chunk chunk)
+        private void DoTestSet(Chunk chunk)
         {
-            //set test suite name
-            //for i in tests set count
-            //  new childvm
-            //  copy from us
-            //  push frame with given instruction count
-            //  childfm run
+            var name = chunk.ReadConstant(ReadByte(chunk)).val.asString;
+            var testcaseCount = ReadByte(chunk);
+            
+            TestRunner.CurrentTestSetName = name;
 
-            //reset test suite name
-
-            var loc = ReadUShort(chunk);
-            if (TestRunner.Enabled)
+            for (int i = 0; i < testcaseCount; i++)
             {
-                //chain ends in a return, running as a frame makes the inner locals match
-                PushNewCallframe(new CallFrame()
+                var loc = ReadUShort(chunk);
+                if (TestRunner.Enabled)
                 {
-                    Closure = currentCallFrame.Closure,
-                    InstructionPointer = loc,
-                    StackStart = _valueStack.Count - 1,
-                });
-                currentCallFrame.InstructionPointer = loc;
+                    var childVM = new VM();
+                    childVM.CopyFrom(this);
+                    childVM.Interpret(chunk, loc);
+                }
             }
         }
 

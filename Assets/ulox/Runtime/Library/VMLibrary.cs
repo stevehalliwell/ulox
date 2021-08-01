@@ -49,7 +49,7 @@
             {
                 var inst = vm.GetArg(0);
                 var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
-                vm.CopyFrom(ourVM);
+                ourVM.CopyFrom(vm);
                 return Value.Null();
             }
 
@@ -57,7 +57,7 @@
             {
                 var inst = vm.GetArg(0);
                 var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
-                ourVM.CopyFrom(vm);
+                vm.CopyFrom(ourVM);
                 return Value.Null();
             }
 

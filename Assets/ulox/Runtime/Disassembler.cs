@@ -143,13 +143,28 @@ namespace ULox
                     stringBuilder.Append(" ");
                     switch (testOpType)
                     {
-                    case TestOpType.Start:
-                    case TestOpType.End:
+                    case TestOpType.CaseStart:
+                    case TestOpType.CaseEnd:
                         i = ReadStringConstant(chunk, i);
                         i = ReadByte(chunk, i);
                         break;
-                    case TestOpType.InitChain:
-                        i = ReadUShort(chunk, i);
+                    case TestOpType.TestSetStart:
+                        i = ReadStringConstant(chunk, i);
+                        stringBuilder.Append(" ");
+                        i++;
+                        var testCount = chunk.Instructions[i];
+                        stringBuilder.Append(" [");
+                        for (int it = 0; it < testCount; it++)
+                        {
+                            i = ReadUShort(chunk, i);
+                            if(it < testCount-1)
+                                stringBuilder.Append(", ");
+                        }
+                        stringBuilder.Append("] ");
+                        break;
+                    case TestOpType.TestSetEnd:
+                        i = ReadByte(chunk, i);
+                        i = ReadByte(chunk, i);
                         break;
                     default:
                         break;

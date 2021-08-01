@@ -1897,28 +1897,28 @@ test T
             Assert.AreEqual("T:A Completed", engine.VM.TestRunner.GenerateDump());
         }
 
-        [Test]
-        public void Engine_TestCase_SimpleInClass()
-        {
+//        [Test]
+//        public void Engine_TestCase_SimpleInClass()
+//        {
 
 
-            engine.AddLibrary(new AssertLibrary());
+//            engine.AddLibrary(new AssertLibrary());
 
-            engine.Run(@"
-class Klass
-{
-    testcase A
-    {
-        var a = 2;
-        var b = 3;
-        var c = a + b;
-        Assert.AreEqual(c,5);
-    }
-}");
+//            engine.Run(@"
+//class Klass
+//{
+//    testcase A
+//    {
+//        var a = 2;
+//        var b = 3;
+//        var c = a + b;
+//        Assert.AreEqual(c,5);
+//    }
+//}");
 
-            Assert.AreEqual("", engine.InterpreterResult);
-            Assert.AreEqual("Klass:A Completed", engine.VM.TestRunner.GenerateDump());
-        }
+//            Assert.AreEqual("", engine.InterpreterResult);
+//            Assert.AreEqual("Klass:A Completed", engine.VM.TestRunner.GenerateDump());
+//        }
 
         [Test]
         public void Engine_TestCase_Simple4_Skipped()

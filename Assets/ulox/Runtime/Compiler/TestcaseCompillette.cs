@@ -19,7 +19,6 @@
             _testDeclarationCompilette = testDeclarationCompilette;
         }
 
-        //TODO during a class compiled testdeclaration there is an additional local, the class, so local lookups are incorrect
         public void Process(CompilerBase compiler)
         {
             compiler.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
@@ -31,11 +30,10 @@
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if(string.IsNullOrEmpty(testDeclName))
             {
-                testDeclName = classCompState.currentClassName;
+                throw new VMException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
             }
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New($"{testDeclName}:{testcaseName}"));
-
 
             //emit jump // to skip this during imperative
             int testFragmentJump = compiler.EmitJump(OpCode.JUMP);

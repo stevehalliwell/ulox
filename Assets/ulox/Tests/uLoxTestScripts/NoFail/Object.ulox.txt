@@ -1,4 +1,4 @@
-class Object
+test Object
 {
     testcase DynamicField
     {

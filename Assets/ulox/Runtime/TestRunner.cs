@@ -10,9 +10,10 @@ namespace ULox
         public bool Enabled { get; set; } = true;
         public bool AllPassed => !tests.Any(x => !x.Value);
         public int TestsFound => tests.Count;
+        public string CurrentTestSetName { get; set; } = string.Empty;
 
-        public void StartTest(string name) => tests[name] = false;
-        public void EndTest(string name) => tests[name] = true;
+        public void StartTest(string name) => tests[$"{CurrentTestSetName}:{name}"] = false;
+        public void EndTest(string name) => tests[$"{CurrentTestSetName}:{name}"] = true;
 
         public string GenerateDump()
         {

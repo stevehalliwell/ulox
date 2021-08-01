@@ -60,11 +60,11 @@ namespace ULox
 
         protected abstract bool ExtendedCall(Value callee, int argCount);
 
-        public void CopyGlobals(VMBase otherVM)
+        public virtual void CopyFrom(VMBase otherVM)
         {
-            foreach (var val in _globals)
+            foreach (var val in otherVM._globals)
             {
-                otherVM.SetGlobal(val.Key, val.Value);
+                SetGlobal(val.Key, val.Value);
             }
         }
 
@@ -120,9 +120,15 @@ namespace ULox
 
         public InterpreterResult Interpret(Chunk chunk)
         {
+            return Interpret(chunk, 0);
+        }
+
+        public InterpreterResult Interpret(Chunk chunk, int ip)
+        {
             Push(Value.New(""));
             Push(Value.New(new ClosureInternal() { chunk = chunk }));
             CallValue(Peek(), 0);
+            currentCallFrame.InstructionPointer = ip;
 
             return Run();
         }

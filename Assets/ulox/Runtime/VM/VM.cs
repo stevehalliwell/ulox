@@ -6,6 +6,16 @@ namespace ULox
     {
         public TestRunner TestRunner { get; private set; } = new TestRunner();
 
+        public override void CopyFrom(VMBase otherVMbase)
+        {
+            base.CopyFrom(otherVMbase);
+
+            if(otherVMbase is VM otherVm)
+            {
+                TestRunner = otherVm.TestRunner;
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool ExtendedCall(Value callee, int argCount)
         {
@@ -95,16 +105,21 @@ namespace ULox
                 var testOpType = (TestOpType)ReadByte(chunk);
                 switch (testOpType)
                 {
-                case TestOpType.Start:
+                case TestOpType.CaseStart:
                     TestRunner.StartTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
                     ReadByte(chunk);//byte we don't use
                     break;
-                case TestOpType.End:
+                case TestOpType.CaseEnd:
                     TestRunner.EndTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
                     ReadByte(chunk);//byte we don't use
                     break;
-                case TestOpType.InitChain:
-                    DoTestChainOp(chunk);
+                case TestOpType.TestSetStart:
+                    DoTestSet(chunk);
+                    break;
+                case TestOpType.TestSetEnd:
+                    TestRunner.CurrentTestSetName = string.Empty;
+                    ReadByte(chunk);//byte we don't use
+                    ReadByte(chunk);//byte we don't use
                     break;
                 default:
                     return false;
@@ -117,19 +132,29 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoTestChainOp(Chunk chunk)
+        private void DoTestSet(Chunk chunk)
         {
-            var loc = ReadUShort(chunk);
-            if (TestRunner.Enabled)
+            var name = chunk.ReadConstant(ReadByte(chunk)).val.asString;
+            var testcaseCount = ReadByte(chunk);
+            
+            TestRunner.CurrentTestSetName = name;
+
+            for (int i = 0; i < testcaseCount; i++)
             {
-                //chain ends in a return, running as a frame makes the inner locals match
-                PushNewCallframe(new CallFrame()
+                var loc = ReadUShort(chunk);
+                if (TestRunner.Enabled)
                 {
-                    Closure = currentCallFrame.Closure,
-                    InstructionPointer = loc,
-                    StackStart = _valueStack.Count - 1,
-                });
-                currentCallFrame.InstructionPointer = loc;
+                    try
+                    {
+                        var childVM = new VM();
+                        childVM.CopyFrom(this);
+                        childVM.Interpret(chunk, loc);
+                    }
+                    catch (PanicException)
+                    {
+                        //eat it, results in incomplete test
+                    }
+                }
             }
         }
 
@@ -302,7 +327,7 @@ namespace ULox
 
             CallValue(method, argCount);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CallMethod(BoundMethod asBoundMethod, int argCount)
         {

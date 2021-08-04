@@ -29,7 +29,6 @@ namespace ULox
             opCodeHandlers[(int)OpCode.POP] = AppendNothing;
             opCodeHandlers[(int)OpCode.SWAP] = AppendNothing;
             opCodeHandlers[(int)OpCode.CLOSE_UPVALUE] = AppendNothing;
-            opCodeHandlers[(int)OpCode.INHERIT] = AppendNothing;
             opCodeHandlers[(int)OpCode.THROW] = AppendNothing;
             opCodeHandlers[(int)OpCode.YIELD] = AppendNothing;
 

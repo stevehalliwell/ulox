@@ -3,9 +3,10 @@ using System.Linq;
 
 namespace ULox
 {
-    public class ProgramBase<TScanner, TCompiler> : IProgram 
+    public class ProgramBase<TScanner, TCompiler, TDisass> : IProgram 
         where TScanner : ScannerBase, new()
         where TCompiler : CompilerBase, new()
+        where TDisass : DisassemblerBase, new()
     {
         private readonly TScanner _scanner = new TScanner();
         private readonly TCompiler _compiler = new TCompiler();
@@ -16,7 +17,7 @@ namespace ULox
         {
             get
             {
-                var dis = new Disassembler();
+                var dis = new TDisass();
                 foreach (var compiledScript in CompiledScripts)
                 {
                     dis.DoChunk(compiledScript.TopLevelChunk);

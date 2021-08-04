@@ -1,4 +1,4 @@
 ﻿namespace ULox
 {
-    public class Program : ProgramBase<Scanner, Compiler> { }
+    public class Program : ProgramBase<Scanner, Compiler, Disassembler> { }
 }

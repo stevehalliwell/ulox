@@ -1266,8 +1266,6 @@ print (res);
         [Test]
         public void Engine_List()
         {
-            
-
             engine.AddLibrary(new StandardClassesLibrary());
 
             engine.Run(@"
@@ -1287,6 +1285,28 @@ for(var i = 0; i < c; i +=1)
 ");
 
             Assert.AreEqual("5012340-1-2-3-4", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Dynamic()
+        {
+            engine.AddLibrary(new StandardClassesLibrary());
+
+            engine.Run(@"
+var obj = Dynamic();
+
+obj.a = 1;
+obj.b = 2;
+obj.c = 3;
+obj.d = -1;
+
+var d = obj.a + obj.b + obj.c;
+obj.d = d;
+
+print(obj.d);
+");
+
+            Assert.AreEqual("6", engine.InterpreterResult);
         }
 
         [Test]

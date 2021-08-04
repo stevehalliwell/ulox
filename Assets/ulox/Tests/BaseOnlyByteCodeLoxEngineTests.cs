@@ -75,7 +75,7 @@ namespace ULox.Tests
             }
         }
 
-        public class SimpleProgram : ProgramBase<SimpleScanner, SimpleCompiler>
+        public class SimpleProgram : ProgramBase<SimpleScanner, SimpleCompiler, DisassemblerBase>
         {
 
         }

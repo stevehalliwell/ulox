@@ -21,9 +21,6 @@
         SET_UPVALUE,
         CLOSE_UPVALUE,
 
-        GET_PROPERTY,
-        SET_PROPERTY,
-
         JUMP_IF_FALSE,
         JUMP,
         LOOP,   //this is just jump but negative
@@ -49,6 +46,8 @@
         THROW,
 
         CLASS,
+        GET_PROPERTY,
+        SET_PROPERTY,
         METHOD,
         INVOKE,
         INHERIT,

@@ -9,8 +9,6 @@ namespace ULox
     //todo add support for long constant, when we overflow 255 constants in 1 chunk
     //todo delay calls to end of scope
     //todo caching of instance access to local vars, use delay call to write back to instance at close of scope
-    //todo ability to ask if field or method exists at runtime?
-    //todo ability to add remove fields and methods at runtime?
     //todo introduce optimiser, pass after compile, have compile build slim ast as it goes
     //  convert labels to offsets
     //  identify and remove unused constants

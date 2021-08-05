@@ -58,6 +58,55 @@ test StandardClassesLibraryTests
             Assert.AreEqual(i, list.Get(i));
         }
     }
+    
+    testcase DynamicUsage
+    {
+        var expected = 6;
+        var result = 0;
+
+        var obj = Dynamic();
+        obj.a = 1;
+        obj.b = 2;
+        obj.c = 3;
+        obj.d = -1;
+        var d = obj.a + obj.b + obj.c;
+        obj.d = d;
+        result = obj.d;
+
+        Assert.AreEqual(expected, result);
+    }
+}
+
+test DynamicLibraryTests
+{
+    testcase DynamicHasField
+    {
+        var expectedA = true;
+        var expectedB = false;
+        var resultA = false;
+        var resultB = true;
+        var obj = Dynamic();
+        obj.a = 7;
+
+        resultA = Dynamic.HasField(obj, "a");
+        resultB = Dynamic.HasField(obj, "b");
+
+        Assert.AreEqual(expectedA, resultA);
+        Assert.AreEqual(expectedB, resultB);
+    }
+
+    testcase DynamicRemoveField
+    {
+        var expected = false;
+        var result = 0;
+        var obj = Dynamic();
+        obj.a = 7;
+
+        Dynamic.RemoveField(obj, "a");
+        result = Dynamic.HasField(obj, "a");
+
+        Assert.AreEqual(expected, result);
+    }
 }
 
 test VMLibraryTests

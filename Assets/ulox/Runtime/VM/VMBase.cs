@@ -479,6 +479,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMathOp(OpCode opCode)
         {
+            //TODO refactor this out so that there are handlers for mathops or at least the ability to handle the non double string ones
             var rhs = Pop();
             var lhs = Pop();
 

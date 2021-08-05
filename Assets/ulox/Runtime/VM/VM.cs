@@ -65,9 +65,7 @@ namespace ULox
                 break;
             case OpCode.METHOD:
                 {
-                    var constantIndex = ReadByte(chunk);
-                    var name = chunk.ReadConstant(constantIndex).val.asString;
-                    DefineMethod(name);
+                    DoMethodOp(chunk);
                 }
                 break;
             case OpCode.INVOKE:
@@ -77,7 +75,7 @@ namespace ULox
                 break;
             case OpCode.INHERIT:
                 {
-                    DoInheritOp();
+                    DoInheritOp(chunk);
                 }
                 break;
             case OpCode.GET_SUPER:
@@ -250,7 +248,7 @@ namespace ULox
                     else
                     {
                         var fromClass = inst.fromClass;
-                        if (!fromClass.methods.TryGetValue(methodName, out var method))
+                        if (!fromClass.TryGetMethod(methodName, out var method))
                         {
                             throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
                         }
@@ -262,7 +260,7 @@ namespace ULox
             case ValueType.Class:
                 {
                     var klass = receiver.val.asClass;
-                    CallValue(klass.methods[methodName], argCount);
+                    CallValue(klass.GetMethod(methodName), argCount);
                 }
                 break;
             default:
@@ -271,39 +269,30 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DefineMethod(string name)
+        private void DoMethodOp(Chunk chunk)
         {
+            var constantIndex = ReadByte(chunk);
+            var name = chunk.ReadConstant(constantIndex).val.asString;
             Value method = Peek();
             var klass = Peek(1).val.asClass;
-            klass.methods[name] = method;
-            if (name == ClassCompilette.InitMethodName)
-            {
-                klass.initialiser = method;
-            }
-            var opIndex = ClassInternal.OperatorMethodNames.IndexOf(name);
-            if (opIndex != -1)
-            {
-                klass.operators[opIndex] = method;
-            }
+            klass.AddMethod(name, method);
             DiscardPop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInheritOp()
+        private void DoInheritOp(Chunk chunk)
         {
-            var superClass = Peek(1);
-            if (superClass.type != ValueType.Class)
-                throw new VMException("Superclass must be a class.");
+            var superVal = Peek(1);
+            if (superVal.type != ValueType.Class)
+                throw new VMException("Super class must be a class.");
+            var superClass = superVal.val.asClass;
 
-            var subClass = Peek();
-            var subMethods = subClass.val.asClass.methods;
-            var superMethods = superClass.val.asClass.methods;
-            foreach (var item in superMethods)
-            {
-                var k = item.Key;
-                var v = item.Value;
-                subMethods.Add(k, v);
-            }
+            var subVal = Peek();
+            if (subVal.type != ValueType.Class)
+                throw new VMException("Child class must be a class.");
+            var subClass = subVal.val.asClass;
+
+            subClass.InheritFrom(superClass);
 
             DiscardPop();
         }
@@ -311,7 +300,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void BindMethod(ClassInternal fromClass, string methodName)
         {
-            if (!fromClass.methods.TryGetValue(methodName, out var method))
+            if (!fromClass.TryGetMethod(methodName, out var method))
             {
                 throw new VMException($"Undefined property {methodName}");
             }
@@ -325,7 +314,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InvokeFromClass(ClassInternal fromClass, string methodName, int argCount)
         {
-            if (!fromClass.methods.TryGetValue(methodName, out var method))
+            if (!fromClass.TryGetMethod(methodName, out var method))
             {
                 throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
             }

@@ -280,6 +280,11 @@ namespace ULox
             {
                 klass.initialiser = method;
             }
+            var opIndex = ClassInternal.OperatorMethodNames.IndexOf(name);
+            if (opIndex != -1)
+            {
+                klass.operators[opIndex] = method;
+            }
             DiscardPop();
         }
 

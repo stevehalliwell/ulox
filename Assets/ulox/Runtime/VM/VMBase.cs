@@ -493,12 +493,22 @@ namespace ULox
 
             if (lhs.type == ValueType.Instance)
             {
+                int opIndex = (int)opCode - ClassInternal.FirstMathOp;
+                var opClosure = lhs.val.asInstance.fromClass.operators[opIndex];
                 //identify if lhs has a matching method or field
+                if (opClosure != null)
+                {
+                    Push(lhs);
+                    Push(lhs);
+                    Push(rhs);
 
-                //push this, push lhs, push rhs
-
-                //call the method
-                //  method must take lhs, rhs and return a new result
+                    PushNewCallframe(new CallFrame()
+                    {
+                        Closure = opClosure.val.asClosure,
+                        StackStart = _valueStack.Count - 3,
+                    });
+                    return;
+                }
             }
 
             if (lhs.type != ValueType.Double)

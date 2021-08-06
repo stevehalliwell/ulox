@@ -4,9 +4,11 @@ namespace ULox
 {
     public class DynamicClass : ClassInternal
     {
+        public const string Name = "Dynamic";
+
         public DynamicClass()
         {
-            this.name = "Dynamic";
+            this.name = Name;
 
             this.AddMethod(nameof(HasField), Value.New(HasField));
             this.AddMethod(nameof(RemoveField), Value.New(RemoveField));

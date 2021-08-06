@@ -364,20 +364,45 @@ namespace ULox
         {
             if (lhs.type == ValueType.Instance)
             {
+                var lhsInst = lhs.val.asInstance;
                 int opIndex = (int)opCode - ClassInternal.FirstMathOp;
-                var opClosure = lhs.val.asInstance.fromClass.operators[opIndex];
+                var opClosure = lhsInst.fromClass.operators[opIndex];
                 //identify if lhs has a matching method or field
                 if (!opClosure.IsNull)
                 {
-                    Push(lhs);
-                    Push(lhs);
-                    Push(rhs);
+                    CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
+                    return true;
+                }
 
-                    PushNewCallframe(new CallFrame()
-                    {
-                        Closure = opClosure.val.asClosure,
-                        StackStart = _valueStack.Count - 3,
-                    });
+                if (lhsInst.fromClass.name == DynamicClass.Name)
+                {
+                    return HandleDynamicCustomMathOp(opCode, lhs, rhs);
+                }
+            }
+            return false;
+        }
+
+        private void CallOperatorOverloadedbyFunction(Value lhs, Value rhs, Value opClosure)
+        {
+            Push(lhs);
+            Push(lhs);
+            Push(rhs);
+
+            PushNewCallframe(new CallFrame()
+            {
+                Closure = opClosure.val.asClosure,
+                StackStart = _valueStack.Count - 3,
+            });
+        }
+
+        private bool HandleDynamicCustomMathOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            var targetName = ClassInternal.OperatorMethodNames[(int)opCode - ClassInternal.FirstMathOp];
+            if (lhs.val.asInstance.fields.TryGetValue(targetName, out var matchingValue))
+            {
+                if (matchingValue.type == ValueType.Closure)
+                {
+                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
                     return true;
                 }
             }

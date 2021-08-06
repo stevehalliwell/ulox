@@ -497,7 +497,7 @@ namespace ULox
                 int opIndex = (int)opCode - ClassInternal.FirstMathOp;
                 var opClosure = lhs.val.asInstance.fromClass.operators[opIndex];
                 //identify if lhs has a matching method or field
-                if (opClosure != null)
+                if (!opClosure.IsNull)
                 {
                     Push(lhs);
                     Push(lhs);

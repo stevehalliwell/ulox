@@ -1,0 +1,98 @@
+class Vec2
+{
+    var x,y;
+    init(x,y){}
+
+    _add(lhs,rhs)
+    {
+        return Vec2(lhs.x + rhs.x, lhs.y + rhs.y);
+    }
+
+    _sub(lhs,rhs)
+    {
+        return Vec2(lhs.x - rhs.x, lhs.y - rhs.y);
+    }
+
+    _mul(lhs,rhs)
+    {
+        return Vec2(lhs.x * rhs.x, lhs.y * rhs.y);
+    }
+
+    _div(lhs,rhs)
+    {
+        return Vec2(lhs.x / rhs.x, lhs.y / rhs.y);
+    }
+
+    _mod(lhs,rhs)
+    {
+        return Vec2(lhs.x % rhs.x, lhs.y % rhs.y);
+    }
+}
+
+test OperatorOverloading
+{
+    testcase Add
+    {
+        var expected = Vec2(4,6);
+        var a = Vec2(1,2);
+        var b = Vec2(3,4);
+        var result;
+
+        result = a + b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Sub
+    {
+        var expected = Vec2(-2,-2);
+        var a = Vec2(1,2);
+        var b = Vec2(3,4);
+        var result;
+
+        result = a - b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Mul
+    {
+        var expected = Vec2(3,8);
+        var a = Vec2(1,2);
+        var b = Vec2(3,4);
+        var result;
+
+        result = a * b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Div
+    {
+        var expected = Vec2(1/3,2/4);
+        var a = Vec2(1,2);
+        var b = Vec2(3,4);
+        var result;
+
+        result = a / b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Mod
+    {
+        var expected = Vec2(1,2);
+        var a = Vec2(1,2);
+        var b = Vec2(3,4);
+        var result;
+
+        result = a % b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+}

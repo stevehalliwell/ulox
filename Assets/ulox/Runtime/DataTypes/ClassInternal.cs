@@ -20,7 +20,7 @@ namespace ULox
         public Value initialiser = Value.Null();
         public ClosureInternal initChainStartClosure;
         public int initChainStartLocation = -1;
-        public Value[] operators = new Value[LastMathOp-FirstMathOp];
+        public Value[] operators = new Value[LastMathOp-FirstMathOp+1];
 
         public Value GetMethod(string name) => methods[name];
         public bool TryGetMethod(string name, out Value method) => methods.TryGetValue(name, out method);

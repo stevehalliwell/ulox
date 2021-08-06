@@ -1,0 +1,174 @@
+fun MakeVec2(x,y)
+{
+    var res = Dynamic();
+
+    fun _add(lhs,rhs)
+    {
+        return MakeVec2(lhs.x + rhs.x, lhs.y + rhs.y);
+    }
+
+    fun _sub(lhs,rhs)
+    {
+        return MakeVec2(lhs.x - rhs.x, lhs.y - rhs.y);
+    }
+
+    fun _mul(lhs,rhs)
+    {
+        return MakeVec2(lhs.x * rhs.x, lhs.y * rhs.y);
+    }
+
+    fun _div(lhs,rhs)
+    {
+        return MakeVec2(lhs.x / rhs.x, lhs.y / rhs.y);
+    }
+
+    fun _mod(lhs,rhs)
+    {
+        return MakeVec2(lhs.x % rhs.x, lhs.y % rhs.y);
+    }
+
+    fun _eq(lhs,rhs)
+    {
+        return lhs.x == rhs.x and lhs.y == rhs.y;
+    }
+
+    fun _ls(lhs,rhs)
+    {
+        return !(lhs.x > rhs.x and lhs.y > rhs.y);
+    }
+
+    fun _gr(lhs,rhs)
+    {
+        return !_ls(lhs,rhs);
+    }
+
+    res._add = _add;
+    res._sub = _sub;
+    res._mul = _mul;
+    res._div = _div;
+    res._mod = _mod;
+
+    res._eq = _eq;
+    res._ls = _ls;
+    res._gr = _gr;
+    
+    res.x = x;
+    res.y = y;
+    return res;
+}
+
+test OperatorOverloading
+{
+    testcase Add
+    {
+        var expected = MakeVec2(4,6);
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(3,4);
+        var result;
+
+        result = a + b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Sub
+    {
+        var expected = MakeVec2(-2,-2);
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(3,4);
+        var result;
+
+        result = a - b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Mul
+    {
+        var expected = MakeVec2(3,8);
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(3,4);
+        var result;
+
+        result = a * b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Div
+    {
+        var expected = MakeVec2(1/3,2/4);
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(3,4);
+        var result;
+
+        result = a / b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Mod
+    {
+        var expected = MakeVec2(1,2);
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(3,4);
+        var result;
+
+        result = a % b;
+
+        Assert.AreEqual(expected.x, result.x);
+        Assert.AreEqual(expected.y, result.y);
+    }
+
+    testcase Eq
+    {
+        var expected = true;
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(1,2);
+        var result = false;
+
+        result = a == b;
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase NotEq
+    {
+        var expected = false;
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(1,2);
+        var result = true;
+
+        result = a != b;
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase Less
+    {
+        var expected = true;
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(1,3);
+        var result = false;
+
+        result = a < b;
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase Greater
+    {
+        var expected = false;
+        var a = MakeVec2(1,2);
+        var b = MakeVec2(1,3);
+        var result = true;
+
+        result = a > b;
+
+        Assert.AreEqual(expected, result);
+    }
+}

@@ -2352,6 +2352,25 @@ loop
             Assert.AreEqual("112358", engine.InterpreterResult);
         }
 
+        [Test]
+        public void Engine_OperatorOverload_ClassAdd()
+        {
+            engine.Run(@"
+class V
+{
+    var a;
+    init(a){}
+    _add(lhs,rhs){return V(lhs.a + rhs.a);}
+}
+
+var v1 = V(1);
+var v2 = V(2);
+var res = v1 + v2;
+print(res.a);");
+
+            Assert.AreEqual("3", engine.InterpreterResult);
+        }
+
         //todo yield should be able to multi return, use a yield stack in the vm and clear it at each use?
     }
 

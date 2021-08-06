@@ -9,15 +9,13 @@
             public VMClass()
             {
                 this.name = "VM";
-                this.methods.Add(ClassCompilette.InitMethodName, Value.New(InitInstance));
-                this.methods.Add(nameof(AddGlobal), Value.New(AddGlobal));
-                this.methods.Add(nameof(GetGlobal), Value.New(GetGlobal));
-                this.methods.Add(nameof(Start), Value.New(Start));
-                this.methods.Add(nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing));
-                this.methods.Add(nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing));
-                this.methods.Add(nameof(Resume), Value.New(Resume));
-
-                this.initialiser = this.methods[ClassCompilette.InitMethodName];                
+                this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
+                this.AddMethod(nameof(AddGlobal), Value.New(AddGlobal));
+                this.AddMethod(nameof(GetGlobal), Value.New(GetGlobal));
+                this.AddMethod(nameof(Start), Value.New(Start));
+                this.AddMethod(nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing));
+                this.AddMethod(nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing));
+                this.AddMethod(nameof(Resume), Value.New(Resume));            
             }
 
             private Value InitInstance(VMBase vm, int argCount)

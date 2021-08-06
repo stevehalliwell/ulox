@@ -479,6 +479,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMathOp(OpCode opCode)
         {
+            //TODO refactor this out so that there are handlers for mathops or at least the ability to handle the non double string ones
             var rhs = Pop();
             var lhs = Pop();
 
@@ -491,15 +492,8 @@ namespace ULox
                 return;
             }
 
-            if (lhs.type == ValueType.Instance)
-            {
-                //identify if lhs has a matching method or field
-
-                //push this, push lhs, push rhs
-
-                //call the method
-                //  method must take lhs, rhs and return a new result
-            }
+            if (DoCustomMathOp(opCode, lhs, rhs))
+                return;
 
             if (lhs.type != ValueType.Double)
             {
@@ -528,11 +522,18 @@ namespace ULox
             Push(res);
         }
 
+        protected abstract bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs);
+        protected abstract bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoComparisonOp(OpCode opCode)
         {
             var rhs = Pop();
             var lhs = Pop();
+
+            if (DoCustomComparisonOp(opCode, lhs, rhs))
+                return;
+
             //todo fix handling of NaNs on either side
             switch (opCode)
             {

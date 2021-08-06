@@ -10,13 +10,12 @@ namespace ULox
         public ListClass()
         {
             this.name = "List";
-            this.methods.Add(ClassCompilette.InitMethodName, Value.New(InitInstance));
-            this.methods.Add(nameof(Count), Value.New(Count));
-            this.methods.Add(nameof(Resize), Value.New(Resize));
-            this.methods.Add(nameof(Get), Value.New(Get));
-            this.methods.Add(nameof(Set), Value.New(Set));
-            this.methods.Add(nameof(Add), Value.New(Add));
-            this.initialiser = this.methods[ClassCompilette.InitMethodName];
+            this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
+            this.AddMethod(nameof(Count), Value.New(Count));
+            this.AddMethod(nameof(Resize), Value.New(Resize));
+            this.AddMethod(nameof(Get), Value.New(Get));
+            this.AddMethod(nameof(Set), Value.New(Set));
+            this.AddMethod(nameof(Add), Value.New(Add));
         }
 
         private Value InitInstance(VMBase vm, int argCount)

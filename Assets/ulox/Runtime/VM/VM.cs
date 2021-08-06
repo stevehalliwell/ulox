@@ -10,7 +10,7 @@ namespace ULox
         {
             base.CopyFrom(otherVMbase);
 
-            if(otherVMbase is VM otherVm)
+            if (otherVMbase is VM otherVm)
             {
                 TestRunner = otherVm.TestRunner;
             }
@@ -65,9 +65,7 @@ namespace ULox
                 break;
             case OpCode.METHOD:
                 {
-                    var constantIndex = ReadByte(chunk);
-                    var name = chunk.ReadConstant(constantIndex).val.asString;
-                    DefineMethod(name);
+                    DoMethodOp(chunk);
                 }
                 break;
             case OpCode.INVOKE:
@@ -77,7 +75,7 @@ namespace ULox
                 break;
             case OpCode.INHERIT:
                 {
-                    DoInheritOp();
+                    DoInheritOp(chunk);
                 }
                 break;
             case OpCode.GET_SUPER:
@@ -136,7 +134,7 @@ namespace ULox
         {
             var name = chunk.ReadConstant(ReadByte(chunk)).val.asString;
             var testcaseCount = ReadByte(chunk);
-            
+
             TestRunner.CurrentTestSetName = name;
 
             for (int i = 0; i < testcaseCount; i++)
@@ -250,7 +248,7 @@ namespace ULox
                     else
                     {
                         var fromClass = inst.fromClass;
-                        if (!fromClass.methods.TryGetValue(methodName, out var method))
+                        if (!fromClass.TryGetMethod(methodName, out var method))
                         {
                             throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
                         }
@@ -262,7 +260,7 @@ namespace ULox
             case ValueType.Class:
                 {
                     var klass = receiver.val.asClass;
-                    CallValue(klass.methods[methodName], argCount);
+                    CallValue(klass.GetMethod(methodName), argCount);
                 }
                 break;
             default:
@@ -271,34 +269,30 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DefineMethod(string name)
+        private void DoMethodOp(Chunk chunk)
         {
+            var constantIndex = ReadByte(chunk);
+            var name = chunk.ReadConstant(constantIndex).val.asString;
             Value method = Peek();
             var klass = Peek(1).val.asClass;
-            klass.methods[name] = method;
-            if (name == ClassCompilette.InitMethodName)
-            {
-                klass.initialiser = method;
-            }
+            klass.AddMethod(name, method);
             DiscardPop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInheritOp()
+        private void DoInheritOp(Chunk chunk)
         {
-            var superClass = Peek(1);
-            if (superClass.type != ValueType.Class)
-                throw new VMException("Superclass must be a class.");
+            var superVal = Peek(1);
+            if (superVal.type != ValueType.Class)
+                throw new VMException("Super class must be a class.");
+            var superClass = superVal.val.asClass;
 
-            var subClass = Peek();
-            var subMethods = subClass.val.asClass.methods;
-            var superMethods = superClass.val.asClass.methods;
-            foreach (var item in superMethods)
-            {
-                var k = item.Key;
-                var v = item.Value;
-                subMethods.Add(k, v);
-            }
+            var subVal = Peek();
+            if (subVal.type != ValueType.Class)
+                throw new VMException("Child class must be a class.");
+            var subClass = subVal.val.asClass;
+
+            subClass.InheritFrom(superClass);
 
             DiscardPop();
         }
@@ -306,7 +300,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void BindMethod(ClassInternal fromClass, string methodName)
         {
-            if (!fromClass.methods.TryGetValue(methodName, out var method))
+            if (!fromClass.TryGetMethod(methodName, out var method))
             {
                 throw new VMException($"Undefined property {methodName}");
             }
@@ -320,7 +314,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InvokeFromClass(ClassInternal fromClass, string methodName, int argCount)
         {
-            if (!fromClass.methods.TryGetValue(methodName, out var method))
+            if (!fromClass.TryGetMethod(methodName, out var method))
             {
                 throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
             }
@@ -364,6 +358,95 @@ namespace ULox
                     StackStart = _valueStack.Count - 1, //last thing checked
                 });
             }
+        }
+
+        protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            if (lhs.type == ValueType.Instance)
+            {
+                var lhsInst = lhs.val.asInstance;
+                int opIndex = (int)opCode - ClassInternal.FirstMathOp;
+                var opClosure = lhsInst.fromClass.mathOperators[opIndex];
+                //identify if lhs has a matching method or field
+                if (!opClosure.IsNull)
+                {
+                    CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
+                    return true;
+                }
+
+                if (lhsInst.fromClass.name == DynamicClass.Name)
+                {
+                    return HandleDynamicCustomMathOp(opCode, lhs, rhs);
+                }
+            }
+            return false;
+        }
+
+        protected override bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            if (lhs.type == ValueType.Instance)
+            {
+                var lhsInst = lhs.val.asInstance;
+                int opIndex = (int)opCode - ClassInternal.FirstCompOp;
+                var opClosure = lhsInst.fromClass.compOperators[opIndex];
+                //identify if lhs has a matching method or field
+                if (!opClosure.IsNull)
+                {
+                    CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
+                    return true;
+                }
+
+                if (lhsInst.fromClass.name == DynamicClass.Name)
+                {
+                    return HandleDynamicCustomCompOp(opCode, lhs, rhs);
+                }
+            }
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void CallOperatorOverloadedbyFunction(Value lhs, Value rhs, Value opClosure)
+        {
+            Push(lhs);
+            Push(lhs);
+            Push(rhs);
+
+            PushNewCallframe(new CallFrame()
+            {
+                Closure = opClosure.val.asClosure,
+                StackStart = _valueStack.Count - 3,
+            });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool HandleDynamicCustomMathOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            var targetName = ClassInternal.MathOperatorMethodNames[(int)opCode - ClassInternal.FirstMathOp];
+            if (lhs.val.asInstance.fields.TryGetValue(targetName, out var matchingValue))
+            {
+                if (matchingValue.type == ValueType.Closure)
+                {
+                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool HandleDynamicCustomCompOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            var targetName = ClassInternal.ComparisonOperatorMethodNames[(int)opCode - ClassInternal.FirstCompOp];
+            if (lhs.val.asInstance.fields.TryGetValue(targetName, out var matchingValue))
+            {
+                if (matchingValue.type == ValueType.Closure)
+                {
+                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

@@ -4,12 +4,14 @@ namespace ULox
 {
     public class DynamicClass : ClassInternal
     {
+        public const string Name = "Dynamic";
+
         public DynamicClass()
         {
-            this.name = "Dynamic";
+            this.name = Name;
 
-            this.methods.Add(nameof(HasField), Value.New(HasField));
-            this.methods.Add(nameof(RemoveField), Value.New(RemoveField));
+            this.AddMethod(nameof(HasField), Value.New(HasField));
+            this.AddMethod(nameof(RemoveField), Value.New(RemoveField));
         }
         
         private Value HasField(VMBase vm, int argCount)

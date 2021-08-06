@@ -82,6 +82,8 @@ namespace ULox.Tests
 
         public class SimpleVM : VMBase
         {
+            protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs) => false;
+
             protected override bool ExtendedCall(Value callee, int argCount) => false;
 
             protected override bool ExtendedOp(OpCode opCode, Chunk chunk) => false;

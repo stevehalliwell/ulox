@@ -10,7 +10,7 @@ namespace ULox
         {
             base.CopyFrom(otherVMbase);
 
-            if(otherVMbase is VM otherVm)
+            if (otherVMbase is VM otherVm)
             {
                 TestRunner = otherVm.TestRunner;
             }
@@ -134,7 +134,7 @@ namespace ULox
         {
             var name = chunk.ReadConstant(ReadByte(chunk)).val.asString;
             var testcaseCount = ReadByte(chunk);
-            
+
             TestRunner.CurrentTestSetName = name;
 
             for (int i = 0; i < testcaseCount; i++)
@@ -358,6 +358,30 @@ namespace ULox
                     StackStart = _valueStack.Count - 1, //last thing checked
                 });
             }
+        }
+
+        protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            if (lhs.type == ValueType.Instance)
+            {
+                int opIndex = (int)opCode - ClassInternal.FirstMathOp;
+                var opClosure = lhs.val.asInstance.fromClass.operators[opIndex];
+                //identify if lhs has a matching method or field
+                if (!opClosure.IsNull)
+                {
+                    Push(lhs);
+                    Push(lhs);
+                    Push(rhs);
+
+                    PushNewCallframe(new CallFrame()
+                    {
+                        Closure = opClosure.val.asClosure,
+                        StackStart = _valueStack.Count - 3,
+                    });
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

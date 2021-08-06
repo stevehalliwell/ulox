@@ -492,25 +492,8 @@ namespace ULox
                 return;
             }
 
-            if (lhs.type == ValueType.Instance)
-            {
-                int opIndex = (int)opCode - ClassInternal.FirstMathOp;
-                var opClosure = lhs.val.asInstance.fromClass.operators[opIndex];
-                //identify if lhs has a matching method or field
-                if (!opClosure.IsNull)
-                {
-                    Push(lhs);
-                    Push(lhs);
-                    Push(rhs);
-
-                    PushNewCallframe(new CallFrame()
-                    {
-                        Closure = opClosure.val.asClosure,
-                        StackStart = _valueStack.Count - 3,
-                    });
-                    return;
-                }
-            }
+            if (DoCustomMathOp(opCode, lhs, rhs))
+                return;
 
             if (lhs.type != ValueType.Double)
             {
@@ -538,6 +521,8 @@ namespace ULox
             }
             Push(res);
         }
+
+        protected abstract bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoComparisonOp(OpCode opCode)

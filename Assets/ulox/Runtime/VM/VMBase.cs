@@ -523,12 +523,17 @@ namespace ULox
         }
 
         protected abstract bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs);
+        protected abstract bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoComparisonOp(OpCode opCode)
         {
             var rhs = Pop();
             var lhs = Pop();
+
+            if (DoCustomComparisonOp(opCode, lhs, rhs))
+                return;
+
             //todo fix handling of NaNs on either side
             switch (opCode)
             {

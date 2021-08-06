@@ -6,7 +6,7 @@ namespace ULox
     {
         public const int FirstMathOp = (int)OpCode.ADD;
         public const int LastMathOp = (int)OpCode.MODULUS;
-        public readonly static List<string> OperatorMethodNames = new List<string>()
+        public readonly static List<string> MathOperatorMethodNames = new List<string>()
         {
             "_add",
             "_sub",
@@ -15,12 +15,22 @@ namespace ULox
             "_mod",
         };
 
+        public const int FirstCompOp = (int)OpCode.EQUAL;
+        public const int LastCompOp = (int)OpCode.GREATER;
+        public readonly static List<string> ComparisonOperatorMethodNames = new List<string>()
+        {
+            "_eq",
+            "_ls",
+            "_gr",
+        };
+
         public string name;
         private Dictionary<string, Value> methods = new Dictionary<string, Value>();
         public Value initialiser = Value.Null();
         public ClosureInternal initChainStartClosure;
         public int initChainStartLocation = -1;
-        public Value[] operators = new Value[LastMathOp-FirstMathOp+1];
+        public Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
+        public Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
 
         public Value GetMethod(string name) => methods[name];
         public bool TryGetMethod(string name, out Value method) => methods.TryGetValue(name, out method);
@@ -31,10 +41,18 @@ namespace ULox
             {
                 initialiser = method;
             }
-            var opIndex = OperatorMethodNames.IndexOf(name);
+            var opIndex = MathOperatorMethodNames.IndexOf(name);
             if (opIndex != -1)
             {
-                operators[opIndex] = method;
+                mathOperators[opIndex] = method;
+            }
+            else
+            {
+                opIndex = ComparisonOperatorMethodNames.IndexOf(name);
+                if (opIndex != -1)
+                {
+                    compOperators[opIndex] = method;
+                }
             }
         }
 

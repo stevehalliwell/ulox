@@ -27,8 +27,8 @@
 
         NOT,
         EQUAL,
-        GREATER,
         LESS,
+        GREATER,
 
         NEGATE,
         ADD,

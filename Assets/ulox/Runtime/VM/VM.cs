@@ -366,7 +366,7 @@ namespace ULox
             {
                 var lhsInst = lhs.val.asInstance;
                 int opIndex = (int)opCode - ClassInternal.FirstMathOp;
-                var opClosure = lhsInst.fromClass.operators[opIndex];
+                var opClosure = lhsInst.fromClass.mathOperators[opIndex];
                 //identify if lhs has a matching method or field
                 if (!opClosure.IsNull)
                 {
@@ -382,6 +382,29 @@ namespace ULox
             return false;
         }
 
+        protected override bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            if (lhs.type == ValueType.Instance)
+            {
+                var lhsInst = lhs.val.asInstance;
+                int opIndex = (int)opCode - ClassInternal.FirstCompOp;
+                var opClosure = lhsInst.fromClass.compOperators[opIndex];
+                //identify if lhs has a matching method or field
+                if (!opClosure.IsNull)
+                {
+                    CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
+                    return true;
+                }
+
+                if (lhsInst.fromClass.name == DynamicClass.Name)
+                {
+                    return HandleDynamicCustomCompOp(opCode, lhs, rhs);
+                }
+            }
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CallOperatorOverloadedbyFunction(Value lhs, Value rhs, Value opClosure)
         {
             Push(lhs);
@@ -395,9 +418,26 @@ namespace ULox
             });
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HandleDynamicCustomMathOp(OpCode opCode, Value lhs, Value rhs)
         {
-            var targetName = ClassInternal.OperatorMethodNames[(int)opCode - ClassInternal.FirstMathOp];
+            var targetName = ClassInternal.MathOperatorMethodNames[(int)opCode - ClassInternal.FirstMathOp];
+            if (lhs.val.asInstance.fields.TryGetValue(targetName, out var matchingValue))
+            {
+                if (matchingValue.type == ValueType.Closure)
+                {
+                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool HandleDynamicCustomCompOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            var targetName = ClassInternal.ComparisonOperatorMethodNames[(int)opCode - ClassInternal.FirstCompOp];
             if (lhs.val.asInstance.fields.TryGetValue(targetName, out var matchingValue))
             {
                 if (matchingValue.type == ValueType.Closure)

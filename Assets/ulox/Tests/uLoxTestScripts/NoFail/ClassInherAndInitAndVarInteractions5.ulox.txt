@@ -1,0 +1,33 @@
+class Base
+{
+    var a = 1;
+    init(b)
+    {
+        this.b = b;
+    }
+}
+
+class Child < Base
+{
+    var c = 3;
+    init(b,d)
+    {
+        this.d = d;
+    }
+}
+
+test InherWithVarAndInitAndParams_NoAutoVarInit
+{
+    testcase InherWithVarAndInitAndParams_NoAutoVarInit
+    {
+        var expected = 13;
+        var result = 0;
+
+        var binst = Base(2);
+        var cinst = Child(2,4);
+
+        result = binst.a + binst.b + cinst.a + cinst.b + cinst.c + cinst.d;
+
+        Assert.AreEqual(expected, result);
+    }
+}

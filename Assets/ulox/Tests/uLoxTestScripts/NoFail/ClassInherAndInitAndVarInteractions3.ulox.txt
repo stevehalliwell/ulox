@@ -1,0 +1,25 @@
+class Base
+{
+    var a = 1;
+}
+
+class Child < Base
+{
+    var b = 2;
+}
+
+test InherWithVarNoInit
+{
+    testcase InherWithVarNoInit
+    {
+        var expected = 4;
+        var result = 0;
+
+        var binst = Base();
+        var cinst = Child();
+
+        result = binst.a + cinst.a + cinst.b;
+
+        Assert.AreEqual(expected, result);
+    }
+}

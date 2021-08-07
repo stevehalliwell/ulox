@@ -3,7 +3,6 @@ using UnityEngine;
 
 //TODO 
 //      vm find func with arity is unused
-//      test init and init chain and auto var assign with inher
 
 namespace ULox.Tests
 {
@@ -2369,6 +2368,266 @@ var res = v1 + v2;
 print(res.a);");
 
             Assert.AreEqual("3", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_InherClassSuperInitNoParams()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+class Base
+{
+    init()
+    {
+        this.a = 1;
+    }
+}
+
+var binst = Base();
+
+print(binst.a);
+
+class Child < Base
+{
+    init()
+    {
+        this.b = 2;
+    }
+}
+
+var cinst = Child();
+
+print(cinst.a);
+print(cinst.b);
+");
+
+            Assert.AreEqual("112", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_InherClassSuperInitParams()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+class Base
+{
+    init(a)
+    {
+        this.a = a;
+    }
+}
+
+var binst = Base(1);
+
+print(binst.a);
+
+class Child < Base
+{
+    init(a,b)
+    {
+        this.b = b;
+    }
+}
+
+var cinst = Child(1,2);
+
+print(cinst.a);
+print(cinst.b);
+");
+
+            Assert.AreEqual("112", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_Inher2ClassSuperInitParams()
+        {
+            engine.Run(@"
+class Base
+{
+    init(a)
+    {
+        this.a = a;
+    }
+}
+
+var binst = Base(1);
+
+print(binst.a);
+
+class Child < Base
+{
+    init(a,b)
+    {
+        this.b = b;
+    }
+}
+
+var cinst = Child(1,2);
+
+print(cinst.a);
+print(cinst.b);
+
+class Childer < Child
+{
+    init(a,b,c)
+    {
+        this.c = c;
+    }
+}
+
+var cerinst = Childer(1,2,3);
+
+print(cerinst.a);
+print(cerinst.b);
+print(cerinst.c);
+");
+
+            Assert.AreEqual("112123", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_InherWithVarNoInit()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+class Base
+{
+    var a = 1;
+}
+
+var binst = Base();
+
+print(binst.a);
+
+class Child < Base
+{
+    var b = 2;
+}
+
+var cinst = Child();
+
+print(cinst.a);
+print(cinst.b);
+");
+
+            Assert.AreEqual("112", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_InherWithVarAndInitNoParams()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+class Base
+{
+    var a = 1,b;
+    init()
+    {
+        this.b = 2;
+    }
+}
+
+var binst = Base();
+
+print(binst.a);
+print(binst.b);
+
+class Child < Base
+{
+    var c = 3,d;
+    init()
+    {
+        this.d = 4;
+    }
+}
+
+var cinst = Child();
+
+print(cinst.a);
+print(cinst.b);
+print(cinst.c);
+print(cinst.d);
+");
+
+            Assert.AreEqual("121234", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_InherWithVarAndInitAndParams_NoAutoVarInit()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+class Base
+{
+    var a = 1;
+    init(b)
+    {
+        this.b = b;
+    }
+}
+
+var binst = Base(2);
+
+print(binst.a);
+print(binst.b);
+
+class Child < Base
+{
+    var c = 3;
+    init(b,d)
+    {
+        this.d = d;
+    }
+}
+
+var cinst = Child(2,4);
+
+print(cinst.a);
+print(cinst.b);
+print(cinst.c);
+print(cinst.d);
+");
+
+            Assert.AreEqual("121234", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_InherWithVarAndInitAndAutoVarParams()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+class Base
+{
+    var a = 1,b;
+    init(b){}
+}
+
+var binst = Base(2);
+
+print(binst.a);
+print(binst.b);
+
+class Child < Base
+{
+    var c = 3,d;
+    init(b,d){}
+}
+
+var cinst = Child(2,4);
+
+print(cinst.a);
+print(cinst.b);
+print(cinst.c);
+print(cinst.d);
+");
+
+            Assert.AreEqual("121234", engine.InterpreterResult);
         }
 
         //todo yield should be able to multi return, use a yield stack in the vm and clear it at each use?

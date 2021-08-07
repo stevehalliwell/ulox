@@ -31,6 +31,7 @@ namespace ULox
         public int initChainStartLocation = -1;
         public Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
         public Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
+        public ClassInternal super;
 
         public Value GetMethod(string name) => methods[name];
         public bool TryGetMethod(string name, out Value method) => methods.TryGetValue(name, out method);
@@ -58,6 +59,7 @@ namespace ULox
 
         internal void InheritFrom(ClassInternal superClass)
         {
+            super = superClass;
             foreach (var item in superClass.methods)
             {
                 var k = item.Key;

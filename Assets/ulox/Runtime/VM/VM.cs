@@ -336,28 +336,64 @@ namespace ULox
             var inst = Value.New(instInternal);
             _valueStack[_valueStack.Count - 1 - argCount] = inst;
 
-            if (!asClass.initialiser.IsNull)
+            InitNewInstance(asClass, argCount, inst);
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void InitNewInstance(ClassInternal klass, int argCount, Value inst)
+        {
+            var stackCount = _valueStack.Count;
+            if (!klass.initialiser.IsNull)
             {
                 //with an init list we don't return this
-                CallValue(asClass.initialiser, argCount);
+                CallValue(klass.initialiser, argCount);
             }
             else if (argCount != 0)
             {
                 throw new VMException("Args given for a class that does not have an 'init' method");
             }
 
-            if (asClass.initChainStartLocation != -1)
+            if (klass.initChainStartLocation != -1)
             {
-                if (!asClass.initialiser.IsNull)
+                if (!klass.initialiser.IsNull)
                     Push(inst);
 
                 PushNewCallframe(new CallFrame()
                 {
-                    Closure = asClass.initChainStartClosure,
-                    InstructionPointer = asClass.initChainStartLocation,
+                    Closure = klass.initChainStartClosure,
+                    InstructionPointer = klass.initChainStartLocation,
                     StackStart = _valueStack.Count - 1, //last thing checked
                 });
             }
+
+            if(klass.super != null)
+            {
+                var argsToSuperInit = PrepareSuperInit(klass, argCount, inst, stackCount);
+
+                InitNewInstance(klass.super, argsToSuperInit, inst);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int PrepareSuperInit(ClassInternal klass, int argCount, Value inst, int stackCount)
+        {
+            int argsToSuperInit = 0;
+            if (!klass.super.initialiser.IsNull || klass.super.initChainStartLocation != -1)
+            {
+                //push inst and push args it expects 
+                Push(inst);
+                if (!klass.super.initialiser.IsNull)
+                {
+                    argsToSuperInit = klass.super.initialiser.val.asClosure.chunk.Arity;
+                    for (int i = 0; i < klass.super.initialiser.val.asClosure.chunk.Arity; i++)
+                    {
+                        Push(_valueStack[stackCount - argCount + i]);
+                    }
+                }
+            }
+
+            return argsToSuperInit;
         }
 
         protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs)

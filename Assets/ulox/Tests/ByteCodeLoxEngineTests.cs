@@ -2012,29 +2012,6 @@ test T
             Assert.AreEqual("", engine.InterpreterResult);
         }
 
-        //        [Test]
-        //        public void Engine_TestCase_SimpleInClass()
-        //        {
-
-
-        //            engine.AddLibrary(new AssertLibrary());
-
-        //            engine.Run(@"
-        //class Klass
-        //{
-        //    testcase A
-        //    {
-        //        var a = 2;
-        //        var b = 3;
-        //        var c = a + b;
-        //        Assert.AreEqual(c,5);
-        //    }
-        //}");
-
-        //            Assert.AreEqual("", engine.InterpreterResult);
-        //            Assert.AreEqual("Klass:A Completed", engine.VM.TestRunner.GenerateDump());
-        //        }
-
         [Test]
         public void Engine_TestCase_Simple4_Skipped()
         {
@@ -2053,57 +2030,10 @@ test T
         var c = a + b;
         Assert.AreEqual(c,5);
     }
-}
-
-print(T);");
-
-            Assert.AreEqual("null", engine.InterpreterResult);
-            Assert.AreEqual("", engine.VM.TestRunner.GenerateDump());
-        }
-
-        [Test]
-        public void Engine_TestCase_Intertwinned()
-        {
-            
-
-            engine.AddLibrary(new AssertLibrary());
-
-            engine.Run(@"
-test T
-{
-    var a = 2;
-    testcase A
-    {
-        var testInst = T();
-        Assert.AreEqual(7,testInst.Combine());
-    }
-    static var d = 3;
-    var b = 2;
-
-    Combine(){return this.a + this.b + T.d;}
 }");
 
             Assert.AreEqual("", engine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_TestCase_TestIsNullAfterRun()
-        {
-            
-
-            engine.AddLibrary(new AssertLibrary());
-
-            engine.Run(@"
-test T
-{
-    testcase A
-    {
-    }
-}
-
-print(T);");
-
-            Assert.AreEqual("null", engine.InterpreterResult);
+            Assert.AreEqual("", engine.VM.TestRunner.GenerateDump());
         }
 
         [Test]

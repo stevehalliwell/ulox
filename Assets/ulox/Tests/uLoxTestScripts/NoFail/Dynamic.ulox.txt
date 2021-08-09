@@ -1,10 +1,10 @@
-test Object
+test DynamicTests
 {
     testcase DynamicField
     {
         var expected = 3;
         var result = 0;
-        var o = Object();
+        var o = Dynamic();
         o.val = expected;
 
         result = o.val;
@@ -16,7 +16,7 @@ test Object
     {
         var expected = 3;
         var result = 0;
-        var o = Object();
+        var o = Dynamic();
         fun Method(){return expected;}
         o.Meth = Method;
 
@@ -29,7 +29,7 @@ test Object
     {
         var expected = 3;
         var result = 0;
-        var o = Object();
+        var o = Dynamic();
         o.val = expected;
         fun Method(self){return self.val;}
         o.Meth = Method;

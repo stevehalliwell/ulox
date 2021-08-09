@@ -4,12 +4,13 @@ namespace ULox
 {
     public class TestDeclarationCompilette : ICompilette
     {
-        private readonly ClassCompilette _classCompilette;
-        private readonly List<ushort> _currentTestcaseInstructions = new List<ushort>(); 
+        private readonly List<ushort> _currentTestcaseInstructions = new List<ushort>();
+        private readonly TestcaseCompillette _testcaseCompillette;
 
-        public TestDeclarationCompilette(ClassCompilette classCompilette)
+        public TestDeclarationCompilette(TestcaseCompillette testcaseCompillette)
         {
-            _classCompilette = classCompilette;
+            _testcaseCompillette = testcaseCompillette;
+            _testcaseCompillette.SetTestDeclarationCompilette(this);
         }
 
         public TokenType Match => TokenType.TEST;
@@ -27,9 +28,20 @@ namespace ULox
             var testClassName = (string)compiler.CurrentToken.Literal;
             CurrentTestSetName = testClassName;
             var testSetNameID = compiler.CurrentChunk.AddConstant(Value.New(testClassName));
+            compiler.Consume(TokenType.IDENTIFIER, "Expect test set name.");
 
-            //parse as class, class needs to add calls for all testcases it finds to the testFuncChunk
-            _classCompilette.Process(compiler);
+
+            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before test set body.");
+            while (!compiler.Check(TokenType.CLOSE_BRACE) && !compiler.Check(TokenType.EOF))
+            {
+                if (compiler.Match(TokenType.TESTCASE))
+                    _testcaseCompillette.Process(compiler);
+                else
+                    throw new CompilerException($"{nameof(TestDeclarationCompilette)} encountered unexpected token '{compiler.CurrentToken.TokenType}'");
+            }
+
+            compiler.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
+
 
             var testcaseCount = _currentTestcaseInstructions.Count;
             if (testcaseCount > byte.MaxValue)
@@ -44,8 +56,6 @@ namespace ULox
 
             _currentTestcaseInstructions.Clear();
 
-            compiler.EmitOpCode(OpCode.NULL);
-            compiler.EmitOpAndBytes(OpCode.ASSIGN_GLOBAL, compiler.CurrentChunk.AddConstant(Value.New(testClassName)));
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestSetEnd, 0, 0);
 
             CurrentTestSetName = null;

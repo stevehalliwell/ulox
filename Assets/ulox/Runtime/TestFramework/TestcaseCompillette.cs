@@ -14,7 +14,7 @@
 
         private TestDeclarationCompilette _testDeclarationCompilette;
 
-        public TestcaseCompillette(TestDeclarationCompilette testDeclarationCompilette)
+        public void SetTestDeclarationCompilette(TestDeclarationCompilette testDeclarationCompilette)
         {
             _testDeclarationCompilette = testDeclarationCompilette;
         }

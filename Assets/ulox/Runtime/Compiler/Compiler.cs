@@ -16,14 +16,16 @@ namespace ULox
 
         protected override void GenerateDeclarationLookup()
         {
-            var classcomp = new ClassCompilette();
-            var testdeclComp = new TestDeclarationCompilette(new TestcaseCompillette());
+            var testcaseCompilette = new TestcaseCompillette();
+            var testdec = new TestDeclarationCompilette();
+            testcaseCompilette.SetTestDeclarationCompilette(testdec);
             var decl = new List<ICompilette>()
             {
-                testdeclComp,
-                classcomp,
+                testdec,
+                new ClassCompilette(),
                 new CompiletteAction(TokenType.FUNCTION, FunctionDeclaration),
                 new CompiletteAction(TokenType.VAR, VarDeclaration),
+                testcaseCompilette,
             };
 
             foreach (var item in decl)
@@ -49,6 +51,8 @@ namespace ULox
             foreach (var item in statement)
                 statementCompilettes[item.Match] = item;
         }
+
+        private void BlockStatement(CompilerBase obj) => BlockStatement();
 
         protected override void GenerateParseRules()
         {
@@ -268,13 +272,6 @@ namespace ULox
             {
                 ExpressionStatement();
             }
-        }
-
-        private void BlockStatement(CompilerBase compiler)
-        {
-            BeginScope();
-            Block();
-            EndScope();
         }
 
         private void ThrowStatement(CompilerBase compiler)

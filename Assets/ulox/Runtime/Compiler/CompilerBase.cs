@@ -630,5 +630,12 @@ namespace ULox
 
             Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
         }
+
+        public void BlockStatement()
+        {
+            BeginScope();
+            Block();
+            EndScope();
+        }
     }
 }

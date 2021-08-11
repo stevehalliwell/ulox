@@ -90,16 +90,18 @@ namespace ULox
                 ( "false",  TokenType.FALSE),
                 ( "null",   TokenType.NULL),
                 ( "fun",    TokenType.FUNCTION),
+                ( "throw",  TokenType.THROW),
+                ( "yield",  TokenType.YIELD),
+                
                 ( "class",  TokenType.CLASS),
                 ( "this",  TokenType.THIS),
                 ( "super",  TokenType.SUPER),
                 ( ".",      TokenType.DOT),
-                ( "throw",  TokenType.THROW),
+                ( "static",  TokenType.STATIC),
+                ( "init",  TokenType.INIT),
+
                 ( "test",  TokenType.TEST),
                 ( "testcase",  TokenType.TESTCASE),
-                ( "static",  TokenType.STATIC),
-                ( "yield",  TokenType.YIELD),
-                ( "init",  TokenType.INIT),
             };
         }
     }

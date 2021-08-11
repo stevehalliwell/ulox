@@ -79,10 +79,10 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected byte ReadByte(Chunk chunk) => chunk.Instructions[currentCallFrame.InstructionPointer++];
+        public byte ReadByte(Chunk chunk) => chunk.Instructions[currentCallFrame.InstructionPointer++];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected ushort ReadUShort(Chunk chunk)
+        public ushort ReadUShort(Chunk chunk)
         {
             var bhi = chunk.Instructions[currentCallFrame.InstructionPointer++];
             var blo = chunk.Instructions[currentCallFrame.InstructionPointer++];

@@ -37,7 +37,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void DoTestOpCode(VMBase vm, Chunk chunk)
+        public void DoTestOpCode(VMBase vm, Chunk chunk)
         {
             var testOpType = (TestOpType)vm.ReadByte(chunk);
             switch (testOpType)

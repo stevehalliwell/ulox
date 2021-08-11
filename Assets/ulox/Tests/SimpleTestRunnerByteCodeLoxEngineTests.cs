@@ -17,6 +17,8 @@ namespace ULox.Tests
                     ('}', TokenType.CLOSE_BRACE),
                     (',', TokenType.COMMA),
                     (';', TokenType.END_STATEMENT),
+
+                    ('.', TokenType.DOT),
                 };
             }
 
@@ -58,11 +60,14 @@ namespace ULox.Tests
                     ( "null",   TokenType.NULL),
                     ( "fun",    TokenType.FUNCTION),
 
+                    ( ".",      TokenType.DOT),
+
                     ( "test",  TokenType.TEST),
                     ( "testcase",  TokenType.TESTCASE),
                 };
             }
         }
+
         public class SimpleTestrunnerCompiler : Compiler
         {
             protected override void GenerateDeclarationLookup()
@@ -83,20 +88,70 @@ namespace ULox.Tests
             }
         }
 
-        public class SimpleTestrunnerProgram : ProgramBase<SimpleTestrunnerScanner, SimpleTestrunnerCompiler, DisassemblerBase>
+        public class SimpleTestrunnerProgram : ProgramBase<SimpleTestrunnerScanner, SimpleTestrunnerCompiler, Disassembler>
         {
-
         }
 
         public class SimpleTestrunnerVM : VMBase
         {
+            public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new SimpleTestrunnerVM());
             protected override bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs) => false;
 
             protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs) => false;
 
             protected override bool ExtendedCall(Value callee, int argCount) => false;
 
-            protected override bool ExtendedOp(OpCode opCode, Chunk chunk) => false;
+            protected override bool ExtendedOp(OpCode opCode, Chunk chunk)
+            {
+                switch (opCode)
+                {
+                case OpCode.INVOKE:
+                    DoInvokeOp(chunk);
+                    break;
+                case OpCode.TEST:
+                    TestRunner.DoTestOpCode(this, chunk);
+                    break;
+                default:
+                    return false;
+                }
+                return true;
+            }
+
+            private void DoInvokeOp(Chunk chunk)
+            {
+                var constantIndex = ReadByte(chunk);
+                var methodName = chunk.ReadConstant(constantIndex).val.asString;
+                var argCount = ReadByte(chunk);
+
+                var receiver = Peek(argCount);
+                switch (receiver.type)
+                {
+                case ValueType.Instance:
+                    {
+                        var inst = receiver.val.asInstance;
+
+                        //it could be a field
+                        if (inst.fields.TryGetValue(methodName, out var fieldFunc))
+                        {
+                            _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
+                            CallValue(fieldFunc, argCount);
+                        }
+                        else
+                        {
+                            var fromClass = inst.fromClass;
+                            if (!fromClass.TryGetMethod(methodName, out var method))
+                            {
+                                throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
+                            }
+
+                            CallValue(method, argCount);
+                        }
+                    }
+                    break;
+                default:
+                    throw new VMException($"Cannot invoke on '{receiver}'.");
+                }
+            }
         }
 
         public class SimpleTestrunnerEngine
@@ -148,7 +203,9 @@ namespace ULox.Tests
 
                 VM.SetGlobal("print", Value.New(Print));
             }
+
             protected void AppendResult(string str) => InterpreterResult += str;
+
             public string InterpreterResult { get; private set; } = string.Empty;
 
             public override void Run(string testString)
@@ -170,7 +227,6 @@ namespace ULox.Tests
             }
         }
 
-
         private SimpleTestrunnerTestEngine engine;
 
         [SetUp]
@@ -179,13 +235,12 @@ namespace ULox.Tests
             engine = new SimpleTestrunnerTestEngine(UnityEngine.Debug.Log);
         }
 
-
         [Test]
         public void Engine_Cycle_Global_Var()
         {
-            engine.Run(@"var myVar = 10; 
-var myNull; 
-print (myVar); 
+            engine.Run(@"var myVar = 10;
+var myNull;
+print (myVar);
 print (myNull);
 
 var myOtherVar = myVar * 2;
@@ -193,6 +248,40 @@ var myOtherVar = myVar * 2;
 print (myOtherVar);");
 
             Assert.AreEqual("10null20", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_TestCase_Print()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+test T
+{
+    testcase A
+    {
+        print(2==2);
+    }
+}");
+
+            Assert.AreEqual("True", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_TestCase_Constants()
+        {
+            engine.AddLibrary(new AssertLibrary());
+
+            engine.Run(@"
+test T
+{
+    testcase A
+    {
+        Assert.AreEqual(2,2);
+    }
+}");
+
+            Assert.AreEqual("", engine.InterpreterResult);
         }
     }
 }

@@ -5,66 +5,18 @@ namespace ULox.Tests
 {
     public class SimpleTestRunnerByteCodeLoxEngineTests
     {
-        public class SimpleTestrunnerScanner : Scanner
+        public class SimpleTestrunnerScanner : ScannerBase
         {
-            protected override (char ch, TokenType token)[] CharToTokenTuple()
+            public SimpleTestrunnerScanner()
             {
-                return new[]
-                {
-                    ('(', TokenType.OPEN_PAREN),
-                    (')', TokenType.CLOSE_PAREN),
-                    ('{', TokenType.OPEN_BRACE),
-                    ('}', TokenType.CLOSE_BRACE),
-                    (',', TokenType.COMMA),
-                    (';', TokenType.END_STATEMENT),
-
-                    ('.', TokenType.DOT),
-                };
-            }
-
-            protected override (char ch, TokenType tokenFlat, TokenType tokenCompound)[] CharToCompoundTokenTuple()
-            {
-                return new[]
-                {
-                    ('+', TokenType.PLUS, TokenType.PLUS_EQUAL),
-                    ('-', TokenType.MINUS, TokenType.MINUS_EQUAL),
-                    ('*', TokenType.STAR, TokenType.STAR_EQUAL),
-                    ('%', TokenType.PERCENT, TokenType.PERCENT_EQUAL),
-                    ('!', TokenType.BANG, TokenType.BANG_EQUAL),
-                    ('=', TokenType.ASSIGN, TokenType.EQUALITY),
-                    ('<', TokenType.LESS, TokenType.LESS_EQUAL),
-                    ('>', TokenType.GREATER, TokenType.GREATER_EQUAL),
-                };
-            }
-
-            protected override (string, TokenType)[] IdentifierTokenTypeTuple()
-            {
-                return new[]
-                {
-                    ( "var",    TokenType.VAR),
-                    ( "string", TokenType.STRING),
-                    ( "int",    TokenType.INT),
-                    ( "float",  TokenType.FLOAT),
-                    ( "and",    TokenType.AND),
-                    ( "or",     TokenType.OR),
-                    ( "if",     TokenType.IF),
-                    ( "else",   TokenType.ELSE),
-                    ( "while",  TokenType.WHILE),
-                    ( "for",    TokenType.FOR),
-                    ( "loop",   TokenType.LOOP),
-                    ( "return", TokenType.RETURN),
-                    ( "break",  TokenType.BREAK),
-                    ( "continue", TokenType.CONTINUE),
-                    ( "true",   TokenType.TRUE),
-                    ( "false",  TokenType.FALSE),
-                    ( "null",   TokenType.NULL),
-                    ( "fun",    TokenType.FUNCTION),
-
+                this.SetupSimpleScanner();
+                this.AddIdentifierGenerators(
                     ( ".",      TokenType.DOT),
 
                     ( "test",  TokenType.TEST),
-                    ( "testcase",  TokenType.TESTCASE),
-                };
+                    ( "testcase",  TokenType.TESTCASE));
+
+                this.AddSingleCharTokenGenerators(('.', TokenType.DOT));
             }
         }
 

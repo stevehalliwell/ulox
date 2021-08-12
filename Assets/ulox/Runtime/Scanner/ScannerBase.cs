@@ -7,29 +7,37 @@ namespace ULox
     public abstract class ScannerBase
     {
         public List<Token> Tokens { get; private set; }
-        public int Line { get; set; } 
+        public int Line { get; set; }
         public int CharacterNumber { get; set; }
         public Char CurrentChar { get; private set; }
 
-        protected List<IScannerTokenGenerator> defaultGenerators;
-        protected Dictionary<char, IScannerCharMatchTokenGenerator> simpleGenerators;
+        public IdentifierScannerTokenGenerator IdentifierScannerTokenGenerator { get; private set; } = new IdentifierScannerTokenGenerator();
+
+        protected List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+        protected Dictionary<char, IScannerCharMatchTokenGenerator> simpleGenerators = new Dictionary<char, IScannerCharMatchTokenGenerator>();
 
         private StringReader _stringReader;
 
-        public ScannerBase() => Reset();
+        public ScannerBase()
+        {
+            AddDefaultGenerator(IdentifierScannerTokenGenerator);
+            Reset();
+        }
+
+        public void AddCharMatchGenerator(IScannerCharMatchTokenGenerator gen)
+            => simpleGenerators[gen.MatchingChar] = gen;
+
+        public void AddDefaultGenerator(IScannerTokenGenerator gen)
+            => defaultGenerators.Add(gen);
 
         public void Reset()
         {
-            Configure();
-
             Tokens = new List<Token>();
             Line = 1;
             CharacterNumber = 0;
             if (_stringReader != null)
                 _stringReader.Dispose();
         }
-
-        protected abstract void Configure();
 
         public List<Token> Scan(string text)
         {
@@ -39,7 +47,7 @@ namespace ULox
                 {
                     Advance();
 
-                    if(simpleGenerators.TryGetValue(CurrentChar, out var foundSimpleGenerator))
+                    if (simpleGenerators.TryGetValue(CurrentChar, out var foundSimpleGenerator))
                     {
                         foundSimpleGenerator.Consume(this);
                         continue;
@@ -48,7 +56,7 @@ namespace ULox
                     var found = false;
                     foreach (var item in defaultGenerators)
                     {
-                        if(item.DoesMatchChar(this))
+                        if (item.DoesMatchChar(this))
                         {
                             item.Consume(this);
                             found = true;
@@ -56,9 +64,8 @@ namespace ULox
                         }
                     }
 
-                    if(!found)
+                    if (!found)
                         throw new ScannerException(TokenType.IDENTIFIER, Line, CharacterNumber, $"Unexpected character '{CurrentChar}'");
-                           
                 }
 
                 AddTokenSingle(TokenType.EOF);
@@ -89,16 +96,16 @@ namespace ULox
             CharacterNumber++;
         }
 
-        public bool IsAtEnd() 
+        public bool IsAtEnd()
             => _stringReader.Peek() == -1;
 
-        public Char Peek() 
+        public Char Peek()
             => (Char)_stringReader.Peek();
 
         public void ReadLine()
             => _stringReader.ReadLine();
 
-        public void AddTokenSingle(TokenType token) 
+        public void AddTokenSingle(TokenType token)
             => AddToken(token, CurrentChar.ToString(), null);
 
         public void AddToken(TokenType simpleToken, string str, object literal)

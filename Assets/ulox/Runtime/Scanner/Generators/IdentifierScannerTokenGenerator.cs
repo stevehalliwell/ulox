@@ -5,17 +5,19 @@ namespace ULox
 {
     public class IdentifierScannerTokenGenerator : IScannerTokenGenerator
     {
-        private StringBuilder workingSpaceStringBuilder = new StringBuilder();
+        private readonly StringBuilder workingSpaceStringBuilder = new StringBuilder();
 
         private readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
 
-        public IdentifierScannerTokenGenerator((string name, TokenType tokenType)[] litteralToTokens)
+        public IdentifierScannerTokenGenerator(params (string name, TokenType tokenType)[] litteralToTokens)
         {
             foreach (var item in litteralToTokens)
             {
                 keywords[item.name] = item.tokenType;
             }
         }
+
+        public void Add(string name, TokenType tt) => keywords[name] = tt;
 
         public static bool IsAlpha(int c)
             => (c >= 'a' && c <= 'z') ||

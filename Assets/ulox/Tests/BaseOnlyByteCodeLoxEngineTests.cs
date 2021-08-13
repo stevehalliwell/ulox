@@ -12,18 +12,11 @@ namespace ULox.Tests
                 this.SetupSimpleScanner();
             }
         }
-        public class SimpleCompiler : Compiler
+        public class SimpleCompiler : CompilerBase
         {
-            protected override void GenerateDeclarationLookup()
+            public SimpleCompiler()
             {
-                var decl = new List<ICompilette>()
-                {
-                    new CompiletteAction(TokenType.FUNCTION, FunctionDeclaration),
-                    new CompiletteAction(TokenType.VAR, VarDeclaration),
-                };
-
-                foreach (var item in decl)
-                    declarationCompilettes[item.Match] = item;
+                this.SetupSimpleCompiler();
             }
         }
 

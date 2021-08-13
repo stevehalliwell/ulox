@@ -20,23 +20,19 @@ namespace ULox.Tests
             }
         }
 
-        public class SimpleTestrunnerCompiler : Compiler
+        public class SimpleTestrunnerCompiler : CompilerBase
         {
-            protected override void GenerateDeclarationLookup()
+            public SimpleTestrunnerCompiler()
             {
+                this.SetupSimpleCompiler();
                 var testcaseCompilette = new TestcaseCompillette();
                 var testdec = new TestDeclarationCompilette();
                 testcaseCompilette.SetTestDeclarationCompilette(testdec);
-                var decl = new List<ICompilette>()
-            {
-                testdec,
-                new CompiletteAction(TokenType.FUNCTION, FunctionDeclaration),
-                new CompiletteAction(TokenType.VAR, VarDeclaration),
-                testcaseCompilette,
-            };
+                this.AddDeclarationCompilettes(
+                    testdec,
+                    testcaseCompilette);
 
-                foreach (var item in decl)
-                    declarationCompilettes[item.Match] = item;
+                SetPrattRule(TokenType.DOT, new ParseRule(null, this.Dot, Precedence.Call));
             }
         }
 

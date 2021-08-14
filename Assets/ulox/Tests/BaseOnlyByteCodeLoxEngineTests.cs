@@ -12,6 +12,7 @@ namespace ULox.Tests
                 this.SetupSimpleScanner();
             }
         }
+
         public class SimpleCompiler : CompilerBase
         {
             public SimpleCompiler()
@@ -20,26 +21,12 @@ namespace ULox.Tests
             }
         }
 
-        public class SimpleProgram : ProgramBase<SimpleScanner, SimpleCompiler, DisassemblerBase>
-        {
-
-        }
-
-        public class SimpleVM : VMBase
-        {
-            protected override bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs) => false;
-
-            protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs) => false;
-
-            protected override bool ExtendedCall(Value callee, int argCount) => false;
-
-            protected override bool ExtendedOp(OpCode opCode, Chunk chunk) => false;
-        }
+        public class SimpleProgram : ProgramBase<SimpleScanner, SimpleCompiler, DisassemblerBase> { }
 
         public class SimpleEngine
         {
             public IProgram Program { get; private set; } = new SimpleProgram();
-            private readonly VMBase _vm = new SimpleVM();
+            private readonly VMBase _vm = new VMBase();
             public VMBase VM => _vm;
 
             public string Disassembly => Program.Disassembly;

@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
+using System.IO;
 
 namespace ULox.Tests
 {
@@ -43,11 +44,6 @@ namespace ULox.Tests
         public class SimpleTestrunnerVM : VMBase
         {
             public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new SimpleTestrunnerVM());
-            protected override bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs) => false;
-
-            protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs) => false;
-
-            protected override bool ExtendedCall(Value callee, int argCount) => false;
 
             protected override bool ExtendedOp(OpCode opCode, Chunk chunk)
             {
@@ -63,6 +59,12 @@ namespace ULox.Tests
                     return false;
                 }
                 return true;
+            }
+            public override void CopyFrom(VMBase otherVM)
+            {
+                base.CopyFrom(otherVM);
+                if (otherVM is SimpleTestrunnerVM matchingVM)
+                    TestRunner = matchingVM.TestRunner;
             }
 
             private void DoInvokeOp(Chunk chunk)
@@ -105,8 +107,8 @@ namespace ULox.Tests
         public class SimpleTestrunnerEngine
         {
             public IProgram Program { get; private set; } = new SimpleTestrunnerProgram();
-            private readonly VMBase _vm = new SimpleTestrunnerVM();
-            public VMBase VM => _vm;
+            private readonly SimpleTestrunnerVM _vm = new SimpleTestrunnerVM();
+            public SimpleTestrunnerVM VM => _vm;
 
             public string Disassembly => Program.Disassembly;
 
@@ -155,6 +157,8 @@ namespace ULox.Tests
             protected void AppendResult(string str) => InterpreterResult += str;
 
             public string InterpreterResult { get; private set; } = string.Empty;
+            public bool AllPassed => VM.TestRunner.AllPassed;
+            public int TestsFound => VM.TestRunner.TestsFound;
 
             public override void Run(string testString)
             {
@@ -230,6 +234,23 @@ test T
 }");
 
             Assert.AreEqual("", engine.InterpreterResult);
+        }
+
+        [Test]
+        [TestCase(@"Assets\ulox\Tests\uLoxTestScripts\NoFail\Constants.ulox.txt")]
+        [TestCase(@"Assets\ulox\Tests\uLoxTestScripts\NoFail\ControlFlow.ulox.txt")]
+        [TestCase(@"Assets\ulox\Tests\uLoxTestScripts\NoFail\Functions.ulox.txt")]
+        [TestCase(@"Assets\ulox\Tests\uLoxTestScripts\NoFail\Logic.ulox.txt")]
+        [TestCase(@"Assets\ulox\Tests\uLoxTestScripts\NoFail\Math.ulox.txt")]
+        public void RunTestScript(string file)
+        {
+            var script = File.ReadAllText(file);
+            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new DebugLibrary());
+            engine.Run(script);
+
+            Assert.IsTrue(engine.AllPassed);
+            Assert.AreNotEqual(0, engine.TestsFound, "Expect to find at least 1 test in the NoFail tests folder");
         }
     }
 }

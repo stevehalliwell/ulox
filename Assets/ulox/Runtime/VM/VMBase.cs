@@ -23,7 +23,7 @@ namespace ULox
     //todo track and output class information from compile
     //todo self asign needs safety to prevent their use in declarations.
     //tood add cname, fname, tname
-    public abstract class VMBase
+    public class VMBase
     {
         protected readonly FastStack<Value> _valueStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
@@ -53,9 +53,9 @@ namespace ULox
             return Run();
         }
 
-        protected abstract bool ExtendedOp(OpCode opCode, Chunk chunk);
+        protected virtual bool ExtendedOp(OpCode opCode, Chunk chunk) => false;
 
-        protected abstract bool ExtendedCall(Value callee, int argCount);
+        protected virtual bool ExtendedCall(Value callee, int argCount) => false;
 
         public virtual void CopyFrom(VMBase otherVM)
         {
@@ -522,8 +522,8 @@ namespace ULox
             Push(res);
         }
 
-        protected abstract bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs);
-        protected abstract bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs);
+        protected virtual bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs) => false;
+        protected virtual bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs) => false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoComparisonOp(OpCode opCode)

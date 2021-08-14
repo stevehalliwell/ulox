@@ -8,6 +8,7 @@ using System.IO;
 
 public class UloxScriptTests
 {
+    public const string NoFailFolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
     public class ScriptTestEngine : ByteCodeInterpreterTestEngine
     {
         public ScriptTestEngine(Action<string> logger) : base(logger)
@@ -45,8 +46,15 @@ public class UloxScriptTests
 
     public static IEnumerator ScriptGenerator()
     {
-        const string FolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
+        string[] filesInFolder = GetFilesInFolder(NoFailFolderName);
 
+        return filesInFolder
+            .Select(x => MakeTestCaseData(x))
+            .GetEnumerator();
+    }
+
+    public static string[] GetFilesInFolder(string FolderName)
+    {
         string[] filesInFolder = new string[] { "" };
 
         var path = Path.GetFullPath(FolderName);
@@ -58,9 +66,7 @@ public class UloxScriptTests
                 filesInFolder = foundInDir;
         }
 
-        return filesInFolder
-            .Select(x => MakeTestCaseData(x))
-            .GetEnumerator();
+        return filesInFolder;
     }
 
     private static TestCaseData MakeTestCaseData(string file)

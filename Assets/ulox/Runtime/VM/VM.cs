@@ -4,7 +4,7 @@ namespace ULox
 {
     public class VM : VMBase
     {
-        public TestRunner TestRunner { get; private set; } = new TestRunner();
+        public TestRunner TestRunner { get; protected set; } = new TestRunner(()=> new VM());
 
         public override void CopyFrom(VMBase otherVMbase)
         {
@@ -100,60 +100,12 @@ namespace ULox
 
             //TODO: Need to handle duplicate named tests being found
             case OpCode.TEST:
-                var testOpType = (TestOpType)ReadByte(chunk);
-                switch (testOpType)
-                {
-                case TestOpType.CaseStart:
-                    TestRunner.StartTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
-                    ReadByte(chunk);//byte we don't use
-                    break;
-                case TestOpType.CaseEnd:
-                    TestRunner.EndTest(chunk.ReadConstant(ReadByte(chunk)).val.asString);
-                    ReadByte(chunk);//byte we don't use
-                    break;
-                case TestOpType.TestSetStart:
-                    DoTestSet(chunk);
-                    break;
-                case TestOpType.TestSetEnd:
-                    TestRunner.CurrentTestSetName = string.Empty;
-                    ReadByte(chunk);//byte we don't use
-                    ReadByte(chunk);//byte we don't use
-                    break;
-                default:
-                    return false;
-                }
+                TestRunner.DoTestOpCode(this, chunk);
                 break;
             default:
                 return false;
             }
             return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoTestSet(Chunk chunk)
-        {
-            var name = chunk.ReadConstant(ReadByte(chunk)).val.asString;
-            var testcaseCount = ReadByte(chunk);
-
-            TestRunner.CurrentTestSetName = name;
-
-            for (int i = 0; i < testcaseCount; i++)
-            {
-                var loc = ReadUShort(chunk);
-                if (TestRunner.Enabled)
-                {
-                    try
-                    {
-                        var childVM = new VM();
-                        childVM.CopyFrom(this);
-                        childVM.Interpret(chunk, loc);
-                    }
-                    catch (PanicException)
-                    {
-                        //eat it, results in incomplete test
-                    }
-                }
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

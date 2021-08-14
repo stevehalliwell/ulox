@@ -24,22 +24,38 @@ namespace ULox
 
         protected CompilerBase()
         {
+            rules = new ParseRule[System.Enum.GetNames(typeof(TokenType)).Length];
+
+            for (int i = 0; i < rules.Length; i++)
+            {
+                rules[i] = new ParseRule(null, null, Precedence.None);
+            }
+
             Reset();
         }
 
-        protected abstract void GenerateDeclarationLookup();
-        protected abstract void GenerateStatementLookup();
-        protected abstract void GenerateParseRules();
-        protected abstract void NoDeclarationFound();
-        protected abstract void NoStatementFound();
 
+        protected virtual void NoDeclarationFound()
+        {
+            Statement();
+        }
+
+        protected virtual void NoStatementFound()
+        {
+            ExpressionStatement();
+        }
+
+        public void AddDeclarationCompilette(ICompilette compilette)
+            => declarationCompilettes[compilette.Match] = compilette;
+
+        public void AddStatementCompilette(ICompilette compilette)
+            => statementCompilettes[compilette.Match] = compilette;
+
+        public void SetPrattRule(TokenType tt, ParseRule rule)
+            => rules[(int)tt] = rule;
 
         public void Reset()
         {
-            GenerateDeclarationLookup();
-            GenerateStatementLookup();
-            GenerateParseRules();
-
             compilerStates = new IndexableStack<CompilerState>();
             CurrentToken = default;
             PreviousToken = default;
@@ -436,7 +452,7 @@ namespace ULox
                 CurrentCompilerState.localCount--;
             }
         }
-        protected byte ArgumentList()
+        public byte ArgumentList()
         {
             byte argCount = 0;
             if (!Check(TokenType.CLOSE_PAREN))
@@ -604,7 +620,7 @@ namespace ULox
             comp.LastLocal.Depth = comp.scopeDepth;
         }
 
-        protected void FunctionDeclaration(CompilerBase compiler)
+        public void FunctionDeclaration(CompilerBase compiler)
         {
             var global = ParseVariable("Expect function name.");
             MarkInitialised();
@@ -613,7 +629,7 @@ namespace ULox
             DefineVariable(global);
         }
 
-        protected void VarDeclaration(CompilerBase compiler)
+        public void VarDeclaration(CompilerBase compiler)
         {
             do
             {
@@ -630,5 +646,328 @@ namespace ULox
 
             Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
         }
+
+        public void BlockStatement()
+        {
+            BeginScope();
+            Block();
+            EndScope();
+        }
+
+        #region Statements
+        public void BlockStatement(CompilerBase obj) => BlockStatement();
+        public void IfStatement(CompilerBase compiler)
+        {
+            Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
+            Expression();
+            Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
+
+            int thenjump = EmitJump(OpCode.JUMP_IF_FALSE);
+            EmitOpCode(OpCode.POP);
+
+            Statement();
+
+            int elseJump = EmitJump(OpCode.JUMP);
+
+            PatchJump(thenjump);
+            EmitOpCode(OpCode.POP);
+
+            if (Match(TokenType.ELSE)) Statement();
+
+            PatchJump(elseJump);
+        }
+
+        public void ReturnStatement(CompilerBase compiler)
+        {
+            //if (compilerStates.Count <= 1)
+            //    throw new CompilerException("Cannot return from a top-level statement.");
+
+            if (Match(TokenType.END_STATEMENT))
+            {
+                EmitReturn();
+            }
+            else if (CurrentCompilerState.functionType == FunctionType.Init)
+            {
+                throw new CompilerException("Cannot return an expression from an 'init'.");
+            }
+            else
+            {
+                Expression();
+                Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
+                EmitOpCode(OpCode.RETURN);
+            }
+        }
+
+        public void YieldStatement(CompilerBase compiler)
+        {
+            EmitOpCode(OpCode.YIELD);
+            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+        }
+
+        public void BreakStatement(CompilerBase compiler)
+        {
+            var comp = CurrentCompilerState;
+            if (comp.loopStates.Count == 0)
+                throw new CompilerException("Cannot break when not inside a loop.");
+
+            EmitOpCode(OpCode.NULL);
+            int exitJump = EmitJump(OpCode.JUMP);
+
+            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+
+            comp.loopStates.Peek().loopExitPatchLocations.Add(exitJump);
+        }
+
+        public void ContinueStatement(CompilerBase compiler)
+        {
+            var comp = CurrentCompilerState;
+            if (comp.loopStates.Count == 0)
+                throw new CompilerException("Cannot continue when not inside a loop.");
+
+            EmitLoop(comp.loopStates.Peek().loopContinuePoint);
+
+            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+        }
+
+        public void LoopStatement(CompilerBase compiler)
+        {
+            ConfigurableLoopingStatement(compiler, false, false);
+        }
+
+        public void WhileStatement(CompilerBase compiler)
+        {
+            ConfigurableLoopingStatement(compiler, true, false);
+        }
+
+        public void ForStatement(CompilerBase compiler)
+        {
+            ConfigurableLoopingStatement(compiler, true, true);
+        }
+
+        protected void ConfigurableLoopingStatement(
+            CompilerBase compiler,
+            bool expectsLoopParethesis,
+            bool expectsPreAndPostStatements)
+        {
+            BeginScope();
+
+            var comp = CurrentCompilerState;
+            int loopStart = CurrentChunkInstructinCount;
+            var loopState = new CompilerState.LoopState();
+            comp.loopStates.Push(loopState);
+            loopState.loopContinuePoint = loopStart;
+
+            if (expectsLoopParethesis)
+            {
+                Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
+
+                if (expectsPreAndPostStatements)
+                {
+                    ForLoopInitialisationStatement(compiler);
+
+                    loopStart = CurrentChunkInstructinCount;
+                    loopState.loopContinuePoint = loopStart;
+
+                    if (!Match(TokenType.END_STATEMENT))
+                    {
+                        ForLoopCondtionStatement(loopState);
+                    }
+
+                    if (!Check(TokenType.CLOSE_PAREN))
+                    {
+                        int bodyJump = EmitJump(OpCode.JUMP);
+
+                        int incrementStart = CurrentChunkInstructinCount;
+                        loopState.loopContinuePoint = incrementStart;
+                        Expression();
+                        EmitOpCode(OpCode.POP);
+
+                        //TODO: shouldn't you be able to omit the post loop action and have it work. this seems like it breaks it.
+                        EmitLoop(loopStart);
+                        loopStart = incrementStart;
+                        PatchJump(bodyJump);
+                    }
+                }
+                else
+                {
+                    Expression();
+
+                    int exitJump = EmitJump(OpCode.JUMP_IF_FALSE);
+                    loopState.loopExitPatchLocations.Add(exitJump);
+
+                    EmitOpCode(OpCode.POP);
+                }
+
+                Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
+            }
+
+            Statement();
+
+            EmitLoop(loopStart);
+
+            PatchLoopExits(loopState);
+
+            EmitOpCode(OpCode.POP);
+
+            EndScope();
+        }
+
+        protected void ForLoopCondtionStatement(CompilerState.LoopState loopState)
+        {
+            Expression();
+            Consume(TokenType.END_STATEMENT, "Expect ';' after loop condition.");
+
+            // Jump out of the loop if the condition is false.
+            var exitJump = EmitJump(OpCode.JUMP_IF_FALSE);
+            loopState.loopExitPatchLocations.Add(exitJump);
+            EmitOpCode(OpCode.POP); // Condition.
+        }
+
+        protected void ForLoopInitialisationStatement(CompilerBase compiler)
+        {
+            if (Match(TokenType.END_STATEMENT))
+            {
+                // No initializer.
+            }
+            else if (Match(TokenType.VAR))
+            {
+                VarDeclaration(compiler);
+            }
+            else
+            {
+                ExpressionStatement();
+            }
+        }
+
+        public void ThrowStatement(CompilerBase compiler)
+        {
+            if (!Check(TokenType.END_STATEMENT))
+            {
+                Expression();
+            }
+            else
+            {
+                EmitOpCode(OpCode.NULL);
+            }
+
+            Consume(TokenType.END_STATEMENT, "Expect ; after throw statement.");
+            EmitOpCode(OpCode.THROW);
+        }
+        #endregion Statements
+
+        #region Expressions
+        public void Unary(bool canAssign)
+        {
+            var op = PreviousToken.TokenType;
+
+            ParsePrecedence(Precedence.Unary);
+
+            switch (op)
+            {
+            case TokenType.MINUS: EmitOpCode(OpCode.NEGATE); break;
+            case TokenType.BANG: EmitOpCode(OpCode.NOT); break;
+            default:
+                break;
+            }
+        }
+
+        public void Binary(bool canAssign)
+        {
+            TokenType operatorType = PreviousToken.TokenType;
+
+            // Compile the right operand.
+            ParseRule rule = GetRule(operatorType);
+            ParsePrecedence((Precedence)(rule.Precedence + 1));
+
+            switch (operatorType)
+            {
+            case TokenType.PLUS: EmitOpCode(OpCode.ADD); break;
+            case TokenType.MINUS: EmitOpCode(OpCode.SUBTRACT); break;
+            case TokenType.STAR: EmitOpCode(OpCode.MULTIPLY); break;
+            case TokenType.SLASH: EmitOpCode(OpCode.DIVIDE); break;
+            case TokenType.PERCENT: EmitOpCode(OpCode.MODULUS); break;
+            case TokenType.EQUALITY: EmitOpCode(OpCode.EQUAL); break;
+            case TokenType.GREATER: EmitOpCode(OpCode.GREATER); break;
+            case TokenType.LESS: EmitOpCode(OpCode.LESS); break;
+            case TokenType.BANG_EQUAL: EmitOpCodePair(OpCode.EQUAL, OpCode.NOT); break;
+            case TokenType.GREATER_EQUAL: EmitOpCodePair(OpCode.LESS, OpCode.NOT); break;
+            case TokenType.LESS_EQUAL: EmitOpCodePair(OpCode.GREATER, OpCode.NOT); break;
+
+            default:
+                break;
+            }
+
+        }
+
+        public void Literal(bool canAssign)
+        {
+            switch (PreviousToken.TokenType)
+            {
+            case TokenType.TRUE: EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
+            case TokenType.FALSE: EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
+            case TokenType.NULL: EmitOpCode(OpCode.NULL); break;
+            case TokenType.INT:
+            case TokenType.FLOAT:
+                {
+
+                    var number = (double)PreviousToken.Literal;
+
+                    var isInt = number == System.Math.Truncate(number);
+
+                    if (isInt && number < 255 && number >= 0)
+                        EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
+                    else
+                        CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), PreviousToken.Line);
+                }
+                break;
+            case TokenType.STRING:
+                {
+                    var str = (string)PreviousToken.Literal;
+                    CurrentChunk.AddConstantAndWriteInstruction(Value.New(str), PreviousToken.Line);
+                }
+                break;
+            }
+        }
+
+        public void Variable(bool canAssign)
+        {
+            NamedVariableFromPreviousToken(canAssign);
+        }
+
+        public void And(bool canAssign)
+        {
+            int endJump = EmitJump(OpCode.JUMP_IF_FALSE);
+
+            EmitOpCode(OpCode.POP);
+            ParsePrecedence(Precedence.And);
+
+            PatchJump(endJump);
+        }
+
+        public void Or(bool canAssign)
+        {
+            int elseJump = EmitJump(OpCode.JUMP_IF_FALSE);
+            int endJump = EmitJump(OpCode.JUMP);
+
+            PatchJump(elseJump);
+            EmitOpCode(OpCode.POP);
+
+            ParsePrecedence(Precedence.Or);
+
+            PatchJump(endJump);
+        }
+
+        public void Grouping(bool canAssign)
+        {
+            Expression();
+            Consume(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
+        }
+
+        public void Call(bool canAssign)
+        {
+            var argCount = ArgumentList();
+            EmitOpAndBytes(OpCode.CALL, argCount);
+        }
+        #endregion Expressions
     }
 }

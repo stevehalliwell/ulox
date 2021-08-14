@@ -4,13 +4,7 @@ namespace ULox
 {
     public class TestDeclarationCompilette : ICompilette
     {
-        private readonly ClassCompilette _classCompilette;
-        private readonly List<ushort> _currentTestcaseInstructions = new List<ushort>(); 
-
-        public TestDeclarationCompilette(ClassCompilette classCompilette)
-        {
-            _classCompilette = classCompilette;
-        }
+        private readonly List<ushort> _currentTestcaseInstructions = new List<ushort>();
 
         public TokenType Match => TokenType.TEST;
 
@@ -27,9 +21,11 @@ namespace ULox
             var testClassName = (string)compiler.CurrentToken.Literal;
             CurrentTestSetName = testClassName;
             var testSetNameID = compiler.CurrentChunk.AddConstant(Value.New(testClassName));
+            compiler.Consume(TokenType.IDENTIFIER, "Expect test set name.");
 
-            //parse as class, class needs to add calls for all testcases it finds to the testFuncChunk
-            _classCompilette.Process(compiler);
+            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before test set body.");
+
+            compiler.BlockStatement();
 
             var testcaseCount = _currentTestcaseInstructions.Count;
             if (testcaseCount > byte.MaxValue)
@@ -44,8 +40,6 @@ namespace ULox
 
             _currentTestcaseInstructions.Clear();
 
-            compiler.EmitOpCode(OpCode.NULL);
-            compiler.EmitOpAndBytes(OpCode.ASSIGN_GLOBAL, compiler.CurrentChunk.AddConstant(Value.New(testClassName)));
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestSetEnd, 0, 0);
 
             CurrentTestSetName = null;

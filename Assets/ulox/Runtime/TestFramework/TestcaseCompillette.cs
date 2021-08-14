@@ -14,7 +14,7 @@
 
         private TestDeclarationCompilette _testDeclarationCompilette;
 
-        public TestcaseCompillette(TestDeclarationCompilette testDeclarationCompilette)
+        public void SetTestDeclarationCompilette(TestDeclarationCompilette testDeclarationCompilette)
         {
             _testDeclarationCompilette = testDeclarationCompilette;
         }
@@ -27,7 +27,7 @@
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if(string.IsNullOrEmpty(testDeclName))
             {
-                throw new VMException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
+                throw new CompilerException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
             }
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
@@ -42,9 +42,7 @@
             // The body.
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.CaseStart, nameConstantID, 0x00);
 
-            compiler.BeginScope();
-            compiler.Block();
-            compiler.EndScope();
+            compiler.BlockStatement();
 
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.CaseEnd, nameConstantID, 0x00);
 

@@ -5,96 +5,28 @@ namespace ULox.Tests
 {
     public class BaseOnlyByteCodeLoxEngineTests
     {
-        public class SimpleScanner : Scanner
+        public class SimpleScanner : ScannerBase
         {
-            protected override (char ch, TokenType token)[] CharToTokenTuple()
+            public SimpleScanner()
             {
-                return new[]
-                {
-                    ('(', TokenType.OPEN_PAREN),
-                    (')', TokenType.CLOSE_PAREN),
-                    ('{', TokenType.OPEN_BRACE),
-                    ('}', TokenType.CLOSE_BRACE),
-                    (',', TokenType.COMMA),
-                    (';', TokenType.END_STATEMENT),
-                };
-            }
-
-            protected override (char ch, TokenType tokenFlat, TokenType tokenCompound)[] CharToCompoundTokenTuple()
-            {
-                return new[]
-                {
-                    ('+', TokenType.PLUS, TokenType.PLUS_EQUAL),
-                    ('-', TokenType.MINUS, TokenType.MINUS_EQUAL),
-                    ('*', TokenType.STAR, TokenType.STAR_EQUAL),
-                    ('%', TokenType.PERCENT, TokenType.PERCENT_EQUAL),
-                    ('!', TokenType.BANG, TokenType.BANG_EQUAL),
-                    ('=', TokenType.ASSIGN, TokenType.EQUALITY),
-                    ('<', TokenType.LESS, TokenType.LESS_EQUAL),
-                    ('>', TokenType.GREATER, TokenType.GREATER_EQUAL),
-                };
-            }
-
-            protected override (string, TokenType)[] IdentifierTokenTypeTuple()
-            {
-                return new[]
-                {
-                    ( "var",    TokenType.VAR),
-                    ( "string", TokenType.STRING),
-                    ( "int",    TokenType.INT),
-                    ( "float",  TokenType.FLOAT),
-                    ( "and",    TokenType.AND),
-                    ( "or",     TokenType.OR),
-                    ( "if",     TokenType.IF),
-                    ( "else",   TokenType.ELSE),
-                    ( "while",  TokenType.WHILE),
-                    ( "for",    TokenType.FOR),
-                    ( "loop",   TokenType.LOOP),
-                    ( "return", TokenType.RETURN),
-                    ( "break",  TokenType.BREAK),
-                    ( "continue", TokenType.CONTINUE),
-                    ( "true",   TokenType.TRUE),
-                    ( "false",  TokenType.FALSE),
-                    ( "null",   TokenType.NULL),
-                    ( "fun",    TokenType.FUNCTION),
-                };
-            }
-        }
-        public class SimpleCompiler : Compiler
-        {
-            protected override void GenerateDeclarationLookup()
-            {
-                var decl = new List<ICompilette>()
-                {
-                    new CompiletteAction(TokenType.FUNCTION, FunctionDeclaration),
-                    new CompiletteAction(TokenType.VAR, VarDeclaration),
-                };
-
-                foreach (var item in decl)
-                    declarationCompilettes[item.Match] = item;
+                this.SetupSimpleScanner();
             }
         }
 
-        public class SimpleProgram : ProgramBase<SimpleScanner, SimpleCompiler, DisassemblerBase>
+        public class SimpleCompiler : CompilerBase
         {
-
+            public SimpleCompiler()
+            {
+                this.SetupSimpleCompiler();
+            }
         }
 
-        public class SimpleVM : VMBase
-        {
-            protected override bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs) => false;
-
-            protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs) => false;
-
-            protected override bool ExtendedCall(Value callee, int argCount) => false;
-
-            protected override bool ExtendedOp(OpCode opCode, Chunk chunk) => false;
-        }
+        public class SimpleProgram : ProgramBase<SimpleScanner, SimpleCompiler, DisassemblerBase> { }
 
         public class SimpleEngine
         {
             public IProgram Program { get; private set; } = new SimpleProgram();
-            private readonly VMBase _vm = new SimpleVM();
+            private readonly VMBase _vm = new VMBase();
             public VMBase VM => _vm;
 
             public string Disassembly => Program.Disassembly;

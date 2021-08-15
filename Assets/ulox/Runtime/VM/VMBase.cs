@@ -17,12 +17,9 @@ namespace ULox
     //todo add conditional
     //todo add pods
     //todo add classof
-    //todo multiple returns?
-    //todo emit functions when no upvals are required https://github.com/munificent/craftinginterpreters/blob/master/note/answers/chapter25_closures/1.md
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
     //todo self asign needs safety to prevent their use in declarations.
-    //tood add cname, fname, tname
     public class VMBase
     {
         protected readonly FastStack<Value> _valueStack = new FastStack<Value>();

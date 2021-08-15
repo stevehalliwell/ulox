@@ -16,7 +16,9 @@
                 ("this", TokenType.THIS),
                 ("super", TokenType.SUPER),
                 ("static", TokenType.STATIC),
-                ("init", TokenType.INIT));
+                ("init", TokenType.INIT),
+                ("cname", TokenType.CONTEXT_NAME_CLASS)
+                );
 
             this.AddSingleCharTokenGenerators(
                 ('.', TokenType.DOT),

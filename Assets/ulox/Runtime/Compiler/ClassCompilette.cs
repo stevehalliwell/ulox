@@ -9,8 +9,11 @@ namespace ULox
         protected Dictionary<TokenType, ICompilette> innerDeclarationCompilettes = new Dictionary<TokenType, ICompilette>();
         protected enum Stage { Invalid, Var, Init, Method }
         protected Stage stage = Stage.Invalid;
+        public string CurrentClassName { get; private set; }
 
         private List<string> classVarNames = new List<string>();
+        private int _initFragStartLocation = -1;
+        private int _previousInitFragJumpLocation = -1;
 
         public void AddInnerDeclarationCompilette(ICompilette compilette)
             => innerDeclarationCompilettes[compilette.Match] = compilette;
@@ -24,12 +27,15 @@ namespace ULox
 
         private void ClassDeclaration(CompilerBase compiler)
         {
+            _initFragStartLocation = -1;
+            _previousInitFragJumpLocation = -1;
+
             stage = Stage.Var;
             classVarNames.Clear();
             compiler.Consume(TokenType.IDENTIFIER, "Expect class name.");
             var className = (string)compiler.PreviousToken.Literal;
             var compState = compiler.CurrentCompilerState;
-            compState.classCompilerStates.Push(new ClassCompilerState(className));
+            CurrentClassName = className;
 
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
@@ -73,18 +79,17 @@ namespace ULox
             stage = Stage.Invalid;
 
             //emit return //if we are the last link in the chain this ends our call
-            var classCompState = compiler.CurrentCompilerState.classCompilerStates.Peek();
 
-            if (classCompState.initFragStartLocation != -1)
+            if (_initFragStartLocation != -1)
             {
-                compiler.WriteUShortAt(initChainInstruction, (ushort)classCompState.initFragStartLocation);
+                compiler.WriteUShortAt(initChainInstruction, (ushort)_initFragStartLocation);
             }
 
             //return stub used by init and test chains
             var classReturnEnd = compiler.EmitJump(OpCode.JUMP);
 
-            if (classCompState.previousInitFragJumpLocation != -1)
-                compiler.PatchJump(classCompState.previousInitFragJumpLocation);
+            if (_previousInitFragJumpLocation != -1)
+                compiler.PatchJump(_previousInitFragJumpLocation);
 
             //EmitOpCode(OpCode.NULL);
             compiler.EmitOpCode(OpCode.RETURN);
@@ -99,7 +104,7 @@ namespace ULox
                 compiler.EndScope();
             }
 
-            compState.classCompilerStates.Pop();
+            CurrentClassName = null;
         }
 
         private static void EmitClassOp(
@@ -262,19 +267,18 @@ namespace ULox
                 classVarNames.Add(compiler.CurrentChunk.ReadConstant(nameConstant).val.asString);
 
                 var compState = compiler.CurrentCompilerState;
-                var classCompState = compState.classCompilerStates.Peek();
 
                 int initFragmentJump = -1;
                 //emit jump // to skip this during imperative
                 initFragmentJump = compiler.EmitJump(OpCode.JUMP);
                 //patch jump previous init fragment if it exists
-                if (classCompState.previousInitFragJumpLocation != -1)
+                if (_previousInitFragJumpLocation != -1)
                 {
-                    compiler.PatchJump(classCompState.previousInitFragJumpLocation);
+                    compiler.PatchJump(_previousInitFragJumpLocation);
                 }
                 else
                 {
-                    classCompState.initFragStartLocation = compiler.CurrentChunk.Instructions.Count;
+                    _initFragStartLocation = compiler.CurrentChunk.Instructions.Count;
                 }
 
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
@@ -294,7 +298,7 @@ namespace ULox
                 compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
                 compiler.EmitOpCode(OpCode.POP);
                 //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                classCompState.previousInitFragJumpLocation = compiler.EmitJump(OpCode.JUMP);
+                _previousInitFragJumpLocation = compiler.EmitJump(OpCode.JUMP);
 
                 //patch jump from skip imperative
                 compiler.PatchJump(initFragmentJump);

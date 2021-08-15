@@ -158,23 +158,6 @@ namespace ULox
                 AddLocal(compilerStates.Peek(), "", 0);
         }
 
-        protected string GetEnclosingClass()
-        {
-            for (int i = compilerStates.Count - 1; i >= 0; i--)
-            {
-                if (compilerStates[i].classCompilerStates.Count == 0)
-                    continue;
-
-                var cur = compilerStates[i].classCompilerStates.Peek();
-                if (string.IsNullOrEmpty(cur.currentClassName))
-                    continue;
-
-                return cur.currentClassName;
-            }
-
-            return null;
-        }
-
         public void AddLocal(CompilerState comp, string name, int depth = -1)
         {
             if (comp.localCount == byte.MaxValue)
@@ -481,6 +464,7 @@ namespace ULox
 
             EmitBytes((byte)((offset >> 8) & 0xff), (byte)(offset & 0xff));
         }
+
         protected void PatchLoopExits(CompilerState.LoopState loopState)
         {
             if (loopState.loopExitPatchLocations.Count == 0)

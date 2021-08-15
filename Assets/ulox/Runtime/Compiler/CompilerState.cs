@@ -10,8 +10,6 @@ namespace ULox
         public int scopeDepth;
         public Chunk chunk;
         public CompilerState enclosing;
-        //TODO move to class compilette
-        public Stack<ClassCompilerState> classCompilerStates = new Stack<ClassCompilerState>();
         public FunctionType functionType;
         
         public CompilerState(CompilerState enclosingState, FunctionType funcType)

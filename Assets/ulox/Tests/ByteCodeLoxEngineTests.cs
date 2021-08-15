@@ -2555,7 +2555,6 @@ print(cinst.d);
             Assert.AreEqual("121234", engine.InterpreterResult);
         }
 
-
         [Test]
         public void Engine_CNAME_Usage()
         {
@@ -2573,6 +2572,22 @@ print(f.n);
 print(f.Method());");
 
             Assert.AreEqual("FooFoo", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Test_ContextNames()
+        {
+            engine.Run(@"
+test Foo
+{
+    testcase Bar
+    {
+        print(tname);
+        print(tsname);
+    }
+}");
+
+            Assert.AreEqual("FooBar", engine.InterpreterResult);
         }
     }
 

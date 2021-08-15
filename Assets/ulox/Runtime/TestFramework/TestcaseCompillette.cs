@@ -11,6 +11,7 @@
     public class TestcaseCompillette : ICompilette
     {
         public TokenType Match => TokenType.TESTCASE;
+        public string TestCaseName { get; private set; }
 
         private TestDeclarationCompilette _testDeclarationCompilette;
 
@@ -24,6 +25,7 @@
             compiler.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
 
             var testcaseName = (string)compiler.PreviousToken.Literal;
+            TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if(string.IsNullOrEmpty(testDeclName))
             {
@@ -51,6 +53,7 @@
 
             //emit jump to step to next and save it
             compiler.PatchJump(testFragmentJump);
+            TestCaseName = null;
         }
     }
 }

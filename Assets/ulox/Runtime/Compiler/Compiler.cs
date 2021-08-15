@@ -5,25 +5,41 @@ namespace ULox
     public class Compiler : CompilerBase
     {
         private ClassCompilette _classCompiler;
+        private TestcaseCompillette _testcaseCompilette;
+        private TestDeclarationCompilette _testdec;
 
         public Compiler()
         {
             this.SetupSimpleCompiler();
-            var testcaseCompilette = new TestcaseCompillette();
-            var testdec = new TestDeclarationCompilette();
-            testcaseCompilette.SetTestDeclarationCompilette(testdec);
+            _testcaseCompilette = new TestcaseCompillette();
+            _testdec = new TestDeclarationCompilette();
+            _testcaseCompilette.SetTestDeclarationCompilette(_testdec);
             _classCompiler = new ClassCompilette();
             this.AddDeclarationCompilettes(
-                testdec,
+                _testdec,
                 _classCompiler,
-                testcaseCompilette);
+                _testcaseCompilette);
 
             this.SetPrattRules(
                 (TokenType.DOT, new ParseRule(null, this.Dot, Precedence.Call)),
                 (TokenType.THIS, new ParseRule(This, null, Precedence.None)),
                 (TokenType.SUPER, new ParseRule(Super, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_CLASS, new ParseRule(CName, null, Precedence.None))
+                (TokenType.CONTEXT_NAME_CLASS, new ParseRule(CName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TEST, new ParseRule(TName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TESTCASE, new ParseRule(TSName, null, Precedence.None))
                 );
+        }
+
+        private void TSName(bool obj)
+        {
+            var tsname = _testcaseCompilette.TestCaseName;
+            CurrentChunk.AddConstantAndWriteInstruction(Value.New(tsname), PreviousToken.Line);
+        }
+
+        private void TName(bool obj)
+        {
+            var tname = _testdec.CurrentTestSetName;
+            CurrentChunk.AddConstantAndWriteInstruction(Value.New(tname), PreviousToken.Line);
         }
 
         #region Expressions

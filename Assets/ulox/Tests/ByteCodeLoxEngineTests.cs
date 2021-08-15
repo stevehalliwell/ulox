@@ -1,13 +1,8 @@
 ﻿using NUnit.Framework;
 using UnityEngine;
 
-//TODO 
-//      vm find func with arity is unused
-
 namespace ULox.Tests
 {
-
-
     public class ByteCodeLoxEngineTests
     {
         private ByteCodeInterpreterTestEngine engine;
@@ -2560,7 +2555,40 @@ print(cinst.d);
             Assert.AreEqual("121234", engine.InterpreterResult);
         }
 
-        //todo yield should be able to multi return, use a yield stack in the vm and clear it at each use?
+        [Test]
+        public void Engine_CNAME_Usage()
+        {
+            engine.Run(@"
+class Foo
+{
+    var n = cname;
+
+    Method(){return cname;}
+}
+
+var f = Foo();
+
+print(f.n);
+print(f.Method());");
+
+            Assert.AreEqual("FooFoo", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Test_ContextNames()
+        {
+            engine.Run(@"
+test Foo
+{
+    testcase Bar
+    {
+        print(tname);
+        print(tsname);
+    }
+}");
+
+            Assert.AreEqual("FooBar", engine.InterpreterResult);
+        }
     }
 
     public class ByteCodeInterpreterTestEngine : ByteCodeInterpreterEngine

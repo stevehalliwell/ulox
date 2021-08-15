@@ -74,7 +74,9 @@
                 ( "null",   TokenType.NULL),
                 ( "fun",    TokenType.FUNCTION),
                 ( "throw",  TokenType.THROW),
-                ( "yield",  TokenType.YIELD));
+                ( "yield",  TokenType.YIELD),
+                ( "fname" , TokenType.CONTEXT_NAME_FUNC)
+                );
 
             scannerBase.AddSingleCharTokenGenerators(
                 ('(', TokenType.OPEN_PAREN),

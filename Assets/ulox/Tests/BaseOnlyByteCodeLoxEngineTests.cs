@@ -118,5 +118,40 @@ print (myOtherVar);");
 
             Assert.AreEqual("10null20", engine.InterpreterResult);
         }
+
+
+        [Test]
+        public void Engine_Var_Assign()
+        {
+            engine.Run(@"
+var myVar; 
+myVar = 1;");
+
+            Assert.AreEqual("", engine.InterpreterResult);
+        }
+
+
+        [Test]
+        public void Engine_Var_String_Assign()
+        {
+            engine.Run(@"var myVar = ""test"";");
+
+            Assert.AreEqual("", engine.InterpreterResult);
+        }
+
+
+        [Test]
+        public void Engine_FNAME_Usage()
+        {
+            engine.Run(@"
+fun Foo()
+{
+    print(fname);
+}
+
+Foo();");
+
+            Assert.AreEqual("Foo", engine.InterpreterResult);
+        }
     }
 }

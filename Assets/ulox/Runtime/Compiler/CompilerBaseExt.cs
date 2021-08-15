@@ -66,7 +66,9 @@
                 (TokenType.IDENTIFIER, new ParseRule(comp.Variable, null, Precedence.None)),
                 (TokenType.AND, new ParseRule(null, comp.And, Precedence.And)),
                 (TokenType.OR, new ParseRule(null, comp.Or, Precedence.Or)),
-                (TokenType.OPEN_PAREN, new ParseRule(comp.Grouping, comp.Call, Precedence.Call)));
+                (TokenType.OPEN_PAREN, new ParseRule(comp.Grouping, comp.Call, Precedence.Call)),
+                (TokenType.CONTEXT_NAME_FUNC, new ParseRule(comp.FName, null, Precedence.None))
+                );
         }
 
         public static void Dot(this CompilerBase comp, bool canAssign)
@@ -89,6 +91,12 @@
             {
                 comp.EmitOpAndBytes(OpCode.GET_PROPERTY, name);
             }
+        }
+
+        public static void FName(this CompilerBase comp, bool canAssign)
+        {
+            var fname = comp.CurrentChunk.Name;
+            comp.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), comp.PreviousToken.Line);
         }
     }
 }

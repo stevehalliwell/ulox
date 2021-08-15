@@ -48,7 +48,6 @@ namespace ULox
             opCodeHandlers[(int)OpCode.DEFINE_GLOBAL] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.FETCH_GLOBAL] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.ASSIGN_GLOBAL] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.CONSTANT] = AppendStringConstant;
 
             opCodeHandlers[(int)OpCode.CLOSURE] = AppendClosure;
         }

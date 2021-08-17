@@ -2,6 +2,8 @@
 {
     public class AssertException : LoxException
     {
-        public AssertException(string msg) : base(msg) { }
+        public AssertException(string msg) : base(msg)
+        {
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace ULox
         public Chunk chunk;
         public CompilerState enclosing;
         public FunctionType functionType;
-        
+
         public CompilerState(CompilerState enclosingState, FunctionType funcType)
         {
             enclosing = enclosingState;
@@ -22,7 +22,6 @@ namespace ULox
         {
             public int loopContinuePoint = -1;
             public List<int> loopExitPatchLocations = new List<int>();
-
         }
 
         public Stack<LoopState> loopStates = new Stack<LoopState>();

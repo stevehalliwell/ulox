@@ -6,6 +6,7 @@ namespace ULox
     {
         public const int FirstMathOp = (int)OpCode.ADD;
         public const int LastMathOp = (int)OpCode.MODULUS;
+
         public readonly static List<string> MathOperatorMethodNames = new List<string>()
         {
             "_add",
@@ -17,6 +18,7 @@ namespace ULox
 
         public const int FirstCompOp = (int)OpCode.EQUAL;
         public const int LastCompOp = (int)OpCode.GREATER;
+
         public readonly static List<string> ComparisonOperatorMethodNames = new List<string>()
         {
             "_eq",
@@ -34,7 +36,9 @@ namespace ULox
         public ClassInternal super;
 
         public Value GetMethod(string name) => methods[name];
+
         public bool TryGetMethod(string name, out Value method) => methods.TryGetValue(name, out method);
+
         public void AddMethod(string name, Value method)
         {
             methods[name] = method;

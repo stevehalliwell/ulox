@@ -20,57 +20,91 @@ var numBallsToSpawn = 100;
 var ballName = "BouncyBall";
 var balls = List();
 
+class Vec2
+{
+	var x, y;
+
+	static Create(x,y)
+	{
+		var ret = Vec2();
+		ret.x = x;
+		ret.y = y;
+		return ret;
+	}
+
+	_add(lhs, rhs)
+	{
+		return Vec2.Create(lhs.x + rhs.x, lhs.y + rhs.y);
+	}
+
+	_eq(lhs, rhs)
+	{
+		return lhs.x == rhs.x and lhs.y == rhs.y;
+	}
+}
+
+test Vec2Tests
+{
+	testcase Add
+	{
+		var expected = Vec2.Create(4,6);
+		var result;
+		var a = Vec2.Create(1,2);
+		var b = Vec2.Create(3,4);
+
+		result = a+b;
+
+		Assert.IsTrue(expected == result);
+	}
+}
+
+fun RandVec2()
+{
+	return Vec2.Create(RandRange(-3,3),RandRange(-3,3));
+}
+
+fun Scale(v2, scalar)
+{
+	return Vec2.Create(v2.x* scalar, v2.y*scalar);
+}
+
 class Ball
 {
-	var x = RandRange(-3,3),
-		y = RandRange(-3,3),
-		vx = RandRange(-3,3),
-		vy = RandRange(-3,3),
+	var pos = RandVec2(),
+		vel = RandVec2(),
 		go = CreateFromPrefab(ballName);
-
-	init() 
+	
+  	Tick()
+  	{
+  		this.pos = this.pos + Scale(this.vel, dt);
+		this.Contain(limit);
+		this.UpdateGoPosition();
+  	}
+	
+	Contain(lim)
 	{
+		var x = this.pos.x;
+		var y = this.pos.y;
+		var v = this.vel;
+
+  		if((x < -lim and v.x < 0) or 
+  		   (x > lim  and v.x > 0) )
+  		{
+			  v.x = v.x * -1;
+			  this.vel = v;
+		}
+  		
+  		if((y < -lim and v.y < 0) or
+  		   (y > lim  and v.y > 0) )
+  		{
+			  v.y = v.y * -1;
+			  this.vel = v;
+		}
 	}
 	
-  	TickLocals(dt, lim)
-  	{
-  		var x = this.x;
-  		var y = this.y;
-  		var vx = this.vx;
-  		var vy = this.vy;
-  
-  		x = x + vx * dt;
-  		y = y + vy * dt;
-  
-  		//bounds
-  		if(x < -lim and vx < 0)  
-  			this.vx = vx * -1; 
-  		if(x > lim  and vx > 0)  
-  			this.vx = vx * -1; 
-  		
-  		if(y < -lim and vy < 0) 
-  			this.vy = vy * -1; 
-  		if(y > lim  and vy > 0)  
-  			this.vy = vy * -1; 
-  
-  		SetGameObjectPosition(this.go, x, y, 0);
-  
-  		this.x = x;
-  		this.y = y;
-  	}
-
-	Tick()
+	UpdateGoPosition()
 	{
-		this.x = this.x + this.vx * dt;
-		this.y = this.y + this.vy * dt;
-
-		//bounds
-		if(this.x < -limit and this.vx < 0)  this.vx = this.vx * -1; 
-		if(this.x > limit  and this.vx > 0)  this.vx = this.vx * -1; 
-		if(this.y < -limit and this.vy < 0)  this.vy = this.vy * -1; 
-		if(this.y > limit  and this.vy > 0)  this.vy = this.vy * -1; 
-
-		SetGameObjectPosition(this.go, this.x, this.y, 0);
+  		SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
 	}
 }
 
@@ -78,7 +112,7 @@ fun SetupGame()
 {
 	print ("Setting Up Game");
 
-	for(var i = 0; i < numBallsToSpawn; i = i + 1)
+	for(var i = 0; i < numBallsToSpawn; i += 1)
 	{
 		balls.Add(Ball());
 	}
@@ -88,13 +122,9 @@ fun Update()
 {
 	if(GetKey("escape")){ReloadScene();}
 
-	var ldt = dt;
-	var llimit = limit;
-
 	var len = balls.Count();
 	for(var i = 0; i < len; i = i + 1)
 	{
-		balls.Get(i).TickLocals(ldt, llimit);
-		//balls.Get(i).Tick();
+		balls.Get(i).Tick();
 	}
 }

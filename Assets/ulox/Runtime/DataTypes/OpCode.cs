@@ -3,13 +3,13 @@
     public enum OpCode : byte
     {
         NONE,
-     
+
         CONSTANT,
         NULL,
         PUSH_BOOL,
         PUSH_BYTE,
 
-        POP, 
+        POP,
         SWAP,
 
         DEFINE_GLOBAL,
@@ -34,7 +34,7 @@
         ADD,
         SUBTRACT,
         MULTIPLY,
-        DIVIDE, 
+        DIVIDE,
         MODULUS,
 
         CALL,

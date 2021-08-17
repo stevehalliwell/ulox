@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class Disassembler : DisassemblerBase 
+    public class Disassembler : DisassemblerBase
     {
         public Disassembler()
         {
@@ -28,30 +28,33 @@
             AppendSpace();
             switch (testOpType)
             {
-            case TestOpType.CaseStart:
-            case TestOpType.CaseEnd:
-                i = AppendStringConstant(chunk, i);
-                i = AppendByte(chunk, i);
-                break;
-            case TestOpType.TestSetStart:
-                i = AppendStringConstant(chunk, i);
-                Append(" ");
-                i++;
-                var testCount = chunk.Instructions[i];
-                Append(" [");
-                for (int it = 0; it < testCount; it++)
-                {
-                    i = AppendUShort(chunk, i);
-                    if (it < testCount - 1)
-                        Append(", ");
-                }
-                Append("] ");
-                break;
-            case TestOpType.TestSetEnd:
-                i = AppendByte(chunk, i);
-                i = AppendByte(chunk, i);
-                break;
-            default:
+                case TestOpType.CaseStart:
+                case TestOpType.CaseEnd:
+                    i = AppendStringConstant(chunk, i);
+                    i = AppendByte(chunk, i);
+                    break;
+
+                case TestOpType.TestSetStart:
+                    i = AppendStringConstant(chunk, i);
+                    Append(" ");
+                    i++;
+                    var testCount = chunk.Instructions[i];
+                    Append(" [");
+                    for (int it = 0; it < testCount; it++)
+                    {
+                        i = AppendUShort(chunk, i);
+                        if (it < testCount - 1)
+                            Append(", ");
+                    }
+                    Append("] ");
+                    break;
+
+                case TestOpType.TestSetEnd:
+                    i = AppendByte(chunk, i);
+                    i = AppendByte(chunk, i);
+                    break;
+
+                default:
                 break;
             }
 

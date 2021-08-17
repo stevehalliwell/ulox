@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ULox
+﻿namespace ULox
 {
     public class Compiler : CompilerBase
     {
@@ -27,7 +25,7 @@ namespace ULox
                 (TokenType.CONTEXT_NAME_CLASS, new ParseRule(CName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TEST, new ParseRule(TName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTCASE, new ParseRule(TSName, null, Precedence.None))
-                );
+                              );
         }
 
         private void TSName(bool obj)
@@ -43,6 +41,7 @@ namespace ULox
         }
 
         #region Expressions
+
         protected void This(bool canAssign)
         {
             if (_classCompiler.CurrentClassName == null)
@@ -80,6 +79,7 @@ namespace ULox
             var cname = _classCompiler.CurrentClassName;
             CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), PreviousToken.Line);
         }
+
         #endregion Expressions
     }
 }

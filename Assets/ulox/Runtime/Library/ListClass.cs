@@ -5,6 +5,7 @@ namespace ULox
     public class ListClass : ClassInternal
     {
         private const string ListFieldName = "list";
+
         private class InternalList : List<Value> { }
 
         public ListClass()

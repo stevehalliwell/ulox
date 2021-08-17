@@ -27,7 +27,7 @@
             var testcaseName = (string)compiler.PreviousToken.Literal;
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
-            if(string.IsNullOrEmpty(testDeclName))
+            if (string.IsNullOrEmpty(testDeclName))
             {
                 throw new CompilerException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
             }

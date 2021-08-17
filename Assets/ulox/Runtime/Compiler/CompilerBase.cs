@@ -2,7 +2,6 @@
 
 namespace ULox
 {
-
     //todo for self assign to work, we need to route it through the assign path and
     //  then dump into a grouping, once the grouping is back, we named var ourselves and then emit the math op
     public abstract class CompilerBase
@@ -13,7 +12,7 @@ namespace ULox
         public Token PreviousToken { get; private set; }
         private List<Token> tokens;
         private int tokenIndex;
-        
+
         protected ParseRule[] rules;
         protected Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         protected Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
@@ -33,7 +32,6 @@ namespace ULox
 
             Reset();
         }
-
 
         protected virtual void NoDeclarationFound()
         {
@@ -102,7 +100,6 @@ namespace ULox
             NoStatementFound();
         }
 
-
         protected void ExpressionStatement()
         {
             Expression();
@@ -153,7 +150,7 @@ namespace ULox
             });
 
             if (functionType == FunctionType.Method || functionType == FunctionType.Init)
-                AddLocal(compilerStates.Peek(), "this",0);
+                AddLocal(compilerStates.Peek(), "this", 0);
             else
                 AddLocal(compilerStates.Peek(), "", 0);
         }
@@ -166,7 +163,7 @@ namespace ULox
             comp.locals[comp.localCount++] = new Local(name, depth);
         }
 
-        private int ResolveUpvalue (CompilerState compilerState, string name)
+        private int ResolveUpvalue(CompilerState compilerState, string name)
         {
             if (compilerState.enclosing == null) return -1;
 
@@ -185,7 +182,6 @@ namespace ULox
 
             return -1;
         }
-
 
         private int AddUpvalue(CompilerState compilerState, byte index, bool isLocal)
         {
@@ -207,7 +203,7 @@ namespace ULox
                 throw new CompilerException("Too many closure variables in function.");
             }
 
-            compilerState.upvalues[upvalueCount] = new Upvalue(index,isLocal);
+            compilerState.upvalues[upvalueCount] = new Upvalue(index, isLocal);
             return compilerState.chunk.UpvalueCount++;
         }
 
@@ -275,26 +271,31 @@ namespace ULox
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.ADD);
                     break;
+
                 case TokenType.MINUS_EQUAL:
                     EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.SUBTRACT);
                     break;
+
                 case TokenType.STAR_EQUAL:
                     EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.MULTIPLY);
                     break;
+
                 case TokenType.SLASH_EQUAL:
                     EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.DIVIDE);
                     break;
+
                 case TokenType.PERCENT_EQUAL:
                     EmitOpAndBytes(getOp, (byte)argID);
                     EmitOpCode(OpCode.SWAP);
                     EmitOpCode(OpCode.MODULUS);
                     break;
+
                 case TokenType.ASSIGN:
                     break;
                 }
@@ -319,7 +320,7 @@ namespace ULox
                 EmitOpAndBytes(OpCode.GET_LOCAL, 0);
             else
                 EmitOpCode(OpCode.NULL);
-            
+
             EmitOpCode(OpCode.RETURN);
         }
 
@@ -344,7 +345,7 @@ namespace ULox
             return true;
         }
 
-        bool MatchAny(params TokenType[] type)
+        private bool MatchAny(params TokenType[] type)
         {
             for (int i = 0; i < type.Length; i++)
             {
@@ -383,8 +384,6 @@ namespace ULox
 
             WriteBytesAt(thenjump, (byte)((jump >> 8) & 0xff), (byte)(jump & 0xff));
         }
-
-
 
         public void WriteUShortAt(int at, ushort us)
         {
@@ -435,6 +434,7 @@ namespace ULox
                 CurrentCompilerState.localCount--;
             }
         }
+
         public byte ArgumentList()
         {
             byte argCount = 0;
@@ -565,6 +565,7 @@ namespace ULox
 
             EmitOpAndBytes(OpCode.DEFINE_GLOBAL, global);
         }
+
         protected void EmitOpCodePair(OpCode op1, OpCode op2)
         {
             CurrentChunk.WriteSimple(op1, PreviousToken.Line);
@@ -572,6 +573,7 @@ namespace ULox
         }
 
         public byte AddStringConstant() => AddCustomStringConstant((string)PreviousToken.Literal);
+
         public byte AddCustomStringConstant(string str) => CurrentChunk.AddConstant(Value.New(str));
 
         public void DeclareVariable()
@@ -594,7 +596,6 @@ namespace ULox
 
             AddLocal(comp, declName);
         }
-
 
         protected void MarkInitialised()
         {
@@ -625,7 +626,6 @@ namespace ULox
                     EmitOpCode(OpCode.NULL);
 
                 DefineVariable(global);
-
             } while (Match(TokenType.COMMA));
 
             Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
@@ -639,7 +639,9 @@ namespace ULox
         }
 
         #region Statements
+
         public void BlockStatement(CompilerBase obj) => BlockStatement();
+
         public void IfStatement(CompilerBase compiler)
         {
             Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
@@ -837,9 +839,11 @@ namespace ULox
             Consume(TokenType.END_STATEMENT, "Expect ; after throw statement.");
             EmitOpCode(OpCode.THROW);
         }
+
         #endregion Statements
 
         #region Expressions
+
         public void Unary(bool canAssign)
         {
             var op = PreviousToken.TokenType;
@@ -880,7 +884,6 @@ namespace ULox
             default:
                 break;
             }
-
         }
 
         public void Literal(bool canAssign)
@@ -893,7 +896,6 @@ namespace ULox
             case TokenType.INT:
             case TokenType.FLOAT:
                 {
-
                     var number = (double)PreviousToken.Literal;
 
                     var isInt = number == System.Math.Truncate(number);
@@ -904,6 +906,7 @@ namespace ULox
                         CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), PreviousToken.Line);
                 }
                 break;
+
             case TokenType.STRING:
                 {
                     var str = (string)PreviousToken.Literal;
@@ -952,6 +955,7 @@ namespace ULox
             var argCount = ArgumentList();
             EmitOpAndBytes(OpCode.CALL, argCount);
         }
+
         #endregion Expressions
     }
 }

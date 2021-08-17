@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ULox
+﻿namespace ULox
 {
     public class DynamicClass : ClassInternal
     {
@@ -13,7 +11,7 @@ namespace ULox
             this.AddMethod(nameof(HasField), Value.New(HasField));
             this.AddMethod(nameof(RemoveField), Value.New(RemoveField));
         }
-        
+
         private Value HasField(VMBase vm, int argCount)
         {
             var obj = vm.GetArg(1);

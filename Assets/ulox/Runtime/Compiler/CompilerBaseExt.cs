@@ -68,7 +68,7 @@
                 (TokenType.OR, new ParseRule(null, comp.Or, Precedence.Or)),
                 (TokenType.OPEN_PAREN, new ParseRule(comp.Grouping, comp.Call, Precedence.Call)),
                 (TokenType.CONTEXT_NAME_FUNC, new ParseRule(comp.FName, null, Precedence.None))
-                );
+                              );
         }
 
         public static void Dot(this CompilerBase comp, bool canAssign)

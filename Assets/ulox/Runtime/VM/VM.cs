@@ -4,7 +4,7 @@ namespace ULox
 {
     public class VM : VMBase
     {
-        public TestRunner TestRunner { get; protected set; } = new TestRunner(()=> new VM());
+        public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new VM());
 
         public override void CopyFrom(VMBase otherVMbase)
         {
@@ -24,9 +24,11 @@ namespace ULox
             case ValueType.Class:
                 CreateInstance(callee.val.asClass, argCount);
                 break;
+
             case ValueType.BoundMethod:
                 CallMethod(callee.val.asBoundMethod, argCount);
                 break;
+
             default:
                 return false;
             }
@@ -43,11 +45,13 @@ namespace ULox
                     DoGetPropertyOp(chunk);
                 }
                 break;
+
             case OpCode.SET_PROPERTY:
                 {
                     DoSetPropertyOp(chunk);
                 }
                 break;
+
             case OpCode.CLASS:
                 {
                     var constantIndex = ReadByte(chunk);
@@ -63,21 +67,25 @@ namespace ULox
                     }
                 }
                 break;
+
             case OpCode.METHOD:
                 {
                     DoMethodOp(chunk);
                 }
                 break;
+
             case OpCode.INVOKE:
                 {
                     DoInvokeOp(chunk);
                 }
                 break;
+
             case OpCode.INHERIT:
                 {
                     DoInheritOp(chunk);
                 }
                 break;
+
             case OpCode.GET_SUPER:
                 {
                     var constantIndex = ReadByte(chunk);
@@ -87,6 +95,7 @@ namespace ULox
                     BindMethod(superClass, name);
                 }
                 break;
+
             case OpCode.SUPER_INVOKE:
                 {
                     var constantIndex = ReadByte(chunk);
@@ -97,11 +106,10 @@ namespace ULox
                 }
                 break;
 
-
-            //TODO: Need to handle duplicate named tests being found
             case OpCode.TEST:
                 TestRunner.DoTestOpCode(this, chunk);
                 break;
+
             default:
                 return false;
             }
@@ -117,7 +125,7 @@ namespace ULox
             //if the class has the property name then we know it MUST be there, find it's index and then rewrite
             //  problem then is that the chunk could be given different object types, we need to fall back if a
             //  different type is given or generate variants for each type
-            //the problem here is we don't know that the targetVal is of the same type that we are caching so 
+            //the problem here is we don't know that the targetVal is of the same type that we are caching so
             //  turn it off for now.
             var targetVal = Peek();
 
@@ -130,6 +138,7 @@ namespace ULox
             case ValueType.Class:
                 instance = targetVal.val.asClass;
                 break;
+
             case ValueType.Instance:
                 instance = targetVal.val.asInstance;
                 break;
@@ -162,6 +171,7 @@ namespace ULox
             case ValueType.Class:
                 instance = targetVal.val.asClass;
                 break;
+
             case ValueType.Instance:
                 instance = targetVal.val.asInstance;
                 break;
@@ -209,12 +219,14 @@ namespace ULox
                     }
                 }
                 break;
+
             case ValueType.Class:
                 {
                     var klass = receiver.val.asClass;
                     CallValue(klass.GetMethod(methodName), argCount);
                 }
                 break;
+
             default:
                 throw new VMException($"Cannot invoke on '{receiver}'.");
             }
@@ -291,7 +303,6 @@ namespace ULox
             InitNewInstance(asClass, argCount, inst);
         }
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void InitNewInstance(ClassInternal klass, int argCount, Value inst)
         {
@@ -319,7 +330,7 @@ namespace ULox
                 });
             }
 
-            if(klass.super != null)
+            if (klass.super != null)
             {
                 var argsToSuperInit = PrepareSuperInit(klass, argCount, inst, stackCount);
 
@@ -333,7 +344,7 @@ namespace ULox
             int argsToSuperInit = 0;
             if (!klass.super.initialiser.IsNull || klass.super.initChainStartLocation != -1)
             {
-                //push inst and push args it expects 
+                //push inst and push args it expects
                 Push(inst);
                 if (!klass.super.initialiser.IsNull)
                 {
@@ -420,7 +431,6 @@ namespace ULox
             }
             return false;
         }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HandleDynamicCustomCompOp(OpCode opCode, Value lhs, Value rhs)

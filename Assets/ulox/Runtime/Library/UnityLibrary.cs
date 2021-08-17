@@ -2,9 +2,9 @@
 {
     public class UnityLibrary : ILoxByteCodeLibrary
     {
-        System.Collections.Generic.List<UnityEngine.GameObject> _availablePrefabs;
+        private System.Collections.Generic.List<UnityEngine.GameObject> _availablePrefabs;
 
-        public UnityLibrary(System.Collections.Generic.List<UnityEngine.GameObject> availablePrefabs) 
+        public UnityLibrary(System.Collections.Generic.List<UnityEngine.GameObject> availablePrefabs)
         {
             _availablePrefabs = availablePrefabs;
         }
@@ -14,18 +14,18 @@
             var resTable = new Table();
 
             resTable.Add("CreateFromPrefab",
-                 Value.New(
+                Value.New(
                 (vm, args) =>
                 {
                     var targetName = vm.GetArg(1).val.asString;
                     var loc = _availablePrefabs.Find(x => x.name == targetName);
-                    if(loc != null)
+                    if (loc != null)
                         return Value.Object(UnityEngine.Object.Instantiate(loc));
                     return Value.Null();
                 }));
 
             resTable.Add("SetGameObjectPosition",
-                 Value.New(
+                Value.New(
                 (vm, args) =>
                 {
                     var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
@@ -37,7 +37,7 @@
                 }));
 
             resTable.Add("RandRange",
-                 Value.New(
+                Value.New(
                 (vm, args) =>
                 {
                     var min = vm.GetArg(1).val.asDouble;
@@ -46,7 +46,7 @@
                 }));
 
             resTable.Add("GetKey",
-                 Value.New(
+                Value.New(
                 (vm, args) =>
                 {
                     var keyName = vm.GetArg(1).val.asString;
@@ -54,14 +54,13 @@
                 }));
 
             resTable.Add("DestroyUnityObject",
-                 Value.New(
+                Value.New(
                 (vm, args) =>
                 {
                     var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
                     UnityEngine.Object.Destroy(go);
                     return Value.Null();
                 }));
-
 
             return resTable;
         }

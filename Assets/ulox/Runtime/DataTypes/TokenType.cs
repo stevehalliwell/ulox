@@ -9,7 +9,7 @@
         COMMA,
         DOT,
         END_STATEMENT,
-        
+
         //INCREMENT,
         //DECREMENT,
 
@@ -23,7 +23,7 @@
         SLASH_EQUAL,
         STAR_EQUAL,
         PERCENT_EQUAL,
-        
+
         ASSIGN,
         BANG,
         BANG_EQUAL,
@@ -32,7 +32,7 @@
         GREATER_EQUAL,
         LESS,
         LESS_EQUAL,
-        
+
         QUESTION,
         COLON,
 

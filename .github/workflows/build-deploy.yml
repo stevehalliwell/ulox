@@ -27,15 +27,17 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
           targetPlatform: WebGL
+          buildsPath: build
       
       # publish artifact
       - uses: actions/upload-artifact@v2
         with:
           name: build-tryitout
-          path: build
+          path: build/WebGL
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4
         with:
           branch: gh-pages
           target-folder: tryitout
+          folder: build/WebGL

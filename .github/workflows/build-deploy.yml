@@ -9,10 +9,6 @@ jobs:
     name: Checkout, Build, Deploy
     runs-on: ubuntu-latest
     steps:
-      - name: Install rsync 📚
-        run: |
-         apt-get update && apt-get install -y rsync
- 
       # Checkout
       - name: Checkout repository
         uses: actions/checkout@v2

@@ -1,0 +1,45 @@
+name: Build then Deloy
+
+on: 
+  push:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Checkout, Build, Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install rsync 📚
+        run: |
+         apt-get update && apt-get install -y rsync
+ 
+      # Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+          
+      # Cache
+      - uses: actions/cache@v2
+        with:
+          path: Library
+          key: Library
+
+      # Build
+      - uses: game-ci/unity-builder@v2
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: WebGL
+      
+      # publish artifact
+      - uses: actions/upload-artifact@v2
+        with:
+          name: build-tryitout
+          path: build
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          target-folder: tryitout

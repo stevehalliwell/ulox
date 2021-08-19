@@ -1,14 +1,15 @@
+using NUnit.Framework;
 using System;
 using System.Collections;
-using NUnit.Framework;
+using System.IO;
+using System.Linq;
 using ULox;
 using ULox.Tests;
-using System.Linq;
-using System.IO;
 
 public class UloxScriptTests
 {
     public const string NoFailFolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
+
     public class ScriptTestEngine : ByteCodeInterpreterTestEngine
     {
         public ScriptTestEngine(Action<string> logger) : base(logger)

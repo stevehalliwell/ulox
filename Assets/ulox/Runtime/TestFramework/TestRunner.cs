@@ -1,13 +1,33 @@
-﻿using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace ULox
 {
     public class TestRunner
     {
+        [Serializable]
+        public class TestRunnerException : Exception
+        {
+            public TestRunnerException()
+            {
+            }
+
+            public TestRunnerException(string message) : base(message)
+            {
+            }
+
+            public TestRunnerException(string message, Exception inner) : base(message, inner)
+            {
+            }
+
+            protected TestRunnerException(
+                System.Runtime.Serialization.SerializationInfo info,
+                System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+        }
+
         private readonly Dictionary<string, bool> tests = new Dictionary<string, bool>();
 
         public TestRunner(Func<VMBase> createVM)
@@ -21,7 +41,15 @@ namespace ULox
         public string CurrentTestSetName { get; set; } = string.Empty;
         public Func<VMBase> CreateVM { get; set; }
 
-        public void StartTest(string name) => tests[$"{CurrentTestSetName}:{name}"] = false;
+        public void StartTest(string name)
+        {
+            var id = $"{CurrentTestSetName}:{name}";
+            if (tests.ContainsKey(id))
+                throw new TestRunnerException($"{nameof(TestRunner)} found a duplicate test '{id}'.");
+
+            tests[id] = false;
+        }
+
         public void EndTest(string name) => tests[$"{CurrentTestSetName}:{name}"] = true;
 
         public string GenerateDump()
@@ -42,18 +70,21 @@ namespace ULox
             var testOpType = (TestOpType)vm.ReadByte(chunk);
             switch (testOpType)
             {
-            case TestOpType.CaseStart:
-                StartTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
-                vm.ReadByte(chunk);//byte we don't use
-                break;
-            case TestOpType.CaseEnd:
-                EndTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
-                vm.ReadByte(chunk);//byte we don't use
-                break;
-            case TestOpType.TestSetStart:
-                DoTestSet(vm,chunk);
-                break;
-            case TestOpType.TestSetEnd:
+                case TestOpType.CaseStart:
+                    StartTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
+                    vm.ReadByte(chunk);//byte we don't use
+                    break;
+
+                case TestOpType.CaseEnd:
+                    EndTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
+                    vm.ReadByte(chunk);//byte we don't use
+                    break;
+
+                case TestOpType.TestSetStart:
+                    DoTestSet(vm, chunk);
+                    break;
+
+                case TestOpType.TestSetEnd:
                 CurrentTestSetName = string.Empty;
                 vm.ReadByte(chunk);//byte we don't use
                 vm.ReadByte(chunk);//byte we don't use

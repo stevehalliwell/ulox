@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ULox
 {
-    public class ProgramBase<TScanner, TCompiler, TDisass> : IProgram 
+    public class ProgramBase<TScanner, TCompiler, TDisass> : IProgram
         where TScanner : ScannerBase, new()
         where TCompiler : CompilerBase, new()
         where TDisass : DisassemblerBase, new()

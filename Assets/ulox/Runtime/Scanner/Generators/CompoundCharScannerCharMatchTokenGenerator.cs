@@ -8,7 +8,7 @@
         public CompoundCharScannerCharMatchTokenGenerator(
             char matchingChar,
             TokenType regularType,
-            TokenType compoundType) 
+            TokenType compoundType)
             : base(matchingChar)
         {
             this.regularType = regularType;

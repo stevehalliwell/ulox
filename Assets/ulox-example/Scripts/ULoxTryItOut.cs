@@ -35,7 +35,8 @@ namespace ULox.Demo
         {
             if (arg0 < 1 || arg0 > sampleScripts.Length)
                 return;
-
+            Reset();
+            dropdown.SetValueWithoutNotify(arg0);
             scriptInput.text = sampleScripts[arg0-1].text;
             RunAndLog();
         }

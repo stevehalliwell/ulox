@@ -2,6 +2,8 @@
 {
     public class VMException : LoxException
     {
-        public VMException(string msg) : base(msg) { }
+        public VMException(string msg) : base(msg)
+        {
+        }
     }
 }

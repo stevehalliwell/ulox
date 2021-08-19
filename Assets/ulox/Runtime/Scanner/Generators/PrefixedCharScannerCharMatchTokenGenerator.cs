@@ -8,6 +8,7 @@
         }
 
         public char MatchingChar { get; private set; }
+
         public abstract void Consume(ScannerBase scanner);
     }
 }

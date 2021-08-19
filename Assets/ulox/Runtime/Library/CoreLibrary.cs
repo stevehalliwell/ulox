@@ -4,7 +4,10 @@
     {
         private System.Action<string> _printer;
 
-        public CoreLibrary(System.Action<string> printer) { _printer = printer; }
+        public CoreLibrary(System.Action<string> printer)
+        {
+            _printer = printer;
+        }
 
         public Table GetBindings()
         {

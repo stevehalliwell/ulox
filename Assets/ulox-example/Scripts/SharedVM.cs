@@ -21,6 +21,9 @@ namespace ULox.Demo
             Engine.AddLibrary(new CoreLibrary(Debug.Log));
             Engine.AddLibrary(new StandardClassesLibrary());
             Engine.AddLibrary(new UnityLibrary(availablePrefabs));
+            Engine.AddLibrary(new AssertLibrary());
+            Engine.AddLibrary(new DebugLibrary());
+            Engine.AddLibrary(new VMLibrary());
         }
     }
 }

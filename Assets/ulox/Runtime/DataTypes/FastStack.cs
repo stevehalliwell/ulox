@@ -11,7 +11,6 @@ namespace ULox
         private T[] _array = new T[StartingSize];
         private int _back = -1;
 
-
         public int Count
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]

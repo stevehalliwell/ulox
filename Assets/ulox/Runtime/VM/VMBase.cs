@@ -16,7 +16,6 @@ namespace ULox
     //todo better string parsing token support
     //todo add conditional
     //todo add pods
-    //todo add classof
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
     //todo self asign needs safety to prevent their use in declarations.
@@ -30,16 +29,24 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void Push(Value val) => _valueStack.Push(val);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected Value Pop() => _valueStack.Pop();
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected Value Peek(int ind = 0) => _valueStack.Peek(ind);
+
         public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
+
         public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
+
         public void SetGlobal(string name, Value val) => _globals[name] = val;
+
         public Value GetArg(int index) => _valueStack[currentCallFrame.StackStart + index];
+
         public Value StackTop => _valueStack.Peek();
 
         public Value GetGlobal(string name) => _globals[name];
@@ -156,6 +163,7 @@ namespace ULox
                         Push(chunk.ReadConstant(constantIndex));
                     }
                     break;
+
                 case OpCode.RETURN:
                     {
                         DoReturnOp();
@@ -166,11 +174,14 @@ namespace ULox
                         }
                     }
                     break;
+
                 case OpCode.YIELD:
                     return InterpreterResult.YIELD;
+
                 case OpCode.NEGATE:
                     Push(Value.New(-Pop().val.asDouble));
                     break;
+
                 case OpCode.ADD:
                 case OpCode.SUBTRACT:
                 case OpCode.MULTIPLY:
@@ -178,35 +189,43 @@ namespace ULox
                 case OpCode.MODULUS:
                     DoMathOp(opCode);
                     break;
+
                 case OpCode.EQUAL:
                 case OpCode.LESS:
                 case OpCode.GREATER:
                     DoComparisonOp(opCode);
                     break;
+
                 case OpCode.NOT:
                     Push(Value.New(Pop().IsFalsey));
                     break;
+
                 case OpCode.PUSH_BOOL:
                     {
                         var b = ReadByte(chunk);
                         Push(Value.New(b == 1));
                     }
                     break;
+
                 case OpCode.NULL:
                     Push(Value.Null());
                     break;
+
                 case OpCode.PUSH_BYTE:
                     {
                         var b = ReadByte(chunk);
                         Push(Value.New(b));
                     }
                     break;
+
                 case OpCode.POP:
                     DiscardPop();
                     break;
+
                 case OpCode.SWAP:
                     DoSwapOp();
                     break;
+
                 case OpCode.JUMP_IF_FALSE:
                     {
                         ushort jump = ReadUShort(chunk);
@@ -214,30 +233,35 @@ namespace ULox
                             currentCallFrame.InstructionPointer += jump;
                     }
                     break;
+
                 case OpCode.JUMP:
                     {
                         ushort jump = ReadUShort(chunk);
                         currentCallFrame.InstructionPointer += jump;
                     }
                     break;
+
                 case OpCode.LOOP:
                     {
                         ushort jump = ReadUShort(chunk);
                         currentCallFrame.InstructionPointer -= jump;
                     }
                     break;
+
                 case OpCode.GET_LOCAL:
                     {
                         var slot = ReadByte(chunk);
                         Push(_valueStack[currentCallFrame.StackStart + slot]);
                     }
                     break;
+
                 case OpCode.SET_LOCAL:
                     {
                         var slot = ReadByte(chunk);
                         _valueStack[currentCallFrame.StackStart + slot] = Peek();
                     }
                     break;
+
                 case OpCode.GET_UPVALUE:
                     {
                         var slot = ReadByte(chunk);
@@ -248,6 +272,7 @@ namespace ULox
                             Push(upval.value);
                     }
                     break;
+
                 case OpCode.SET_UPVALUE:
                     {
                         var slot = ReadByte(chunk);
@@ -258,36 +283,42 @@ namespace ULox
                             upval.value = Peek();
                     }
                     break;
+
                 case OpCode.DEFINE_GLOBAL:
-                        DoDefineGlobalOp(chunk);
+                    DoDefineGlobalOp(chunk);
                     break;
+
                 case OpCode.FETCH_GLOBAL:
-                        DoFetchGlobalOp(chunk);
+                    DoFetchGlobalOp(chunk);
                     break;
+
                 case OpCode.ASSIGN_GLOBAL:
-                        DoAssignGlobalOp(chunk);
+                    DoAssignGlobalOp(chunk);
                     break;
+
                 case OpCode.CALL:
                     {
                         int argCount = ReadByte(chunk);
                         CallValue(Peek(argCount), argCount);
                     }
                     break;
+
                 case OpCode.CLOSURE:
-                        DoClosureOp(chunk);
+                    DoClosureOp(chunk);
                     break;
+
                 case OpCode.CLOSE_UPVALUE:
                     CloseUpvalues(_valueStack.Count - 1);
                     DiscardPop();
                     break;
+
                 case OpCode.THROW:
-                        throw new PanicException(Pop().ToString());
+                    throw new PanicException(Pop().ToString());
                 case OpCode.NONE:
                     break;
 
-
                 default:
-                    if(!ExtendedOp(opCode, chunk))
+                    if (!ExtendedOp(opCode, chunk))
                         throw new VMException($"Unhandled OpCode '{opCode}'.");
                     break;
                 }
@@ -324,7 +355,7 @@ namespace ULox
             var globalName = chunk.ReadConstant(global);
             var actualName = globalName.val.asString;
 
-            if(_globals.TryGetValue(actualName, out var found))
+            if (_globals.TryGetValue(actualName, out var found))
                 Push(found);
             else
                 throw new VMException($"No global of name {actualName} could be found.");
@@ -430,11 +461,13 @@ namespace ULox
             case ValueType.NativeFunction:
                 CallNative(callee.val.asNativeFunc, argCount);
                 break;
+
             case ValueType.Closure:
                 Call(callee.val.asClosure, argCount);
                 break;
+
             default:
-                if(!ExtendedCall(callee, argCount))
+                if (!ExtendedCall(callee, argCount))
                     throw new VMException($"Invalid Call, value type {callee.type} is not handled.");
                 break;
             }
@@ -476,7 +509,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMathOp(OpCode opCode)
         {
-            //TODO refactor this out so that there are handlers for mathops or at least the ability to handle the non double string ones
             var rhs = Pop();
             var lhs = Pop();
 
@@ -503,15 +535,19 @@ namespace ULox
             case OpCode.ADD:
                 res.val.asDouble = lhs.val.asDouble + rhs.val.asDouble;
                 break;
+
             case OpCode.SUBTRACT:
                 res.val.asDouble = lhs.val.asDouble - rhs.val.asDouble;
                 break;
+
             case OpCode.MULTIPLY:
                 res.val.asDouble = lhs.val.asDouble * rhs.val.asDouble;
                 break;
+
             case OpCode.DIVIDE:
                 res.val.asDouble = lhs.val.asDouble / rhs.val.asDouble;
                 break;
+
             case OpCode.MODULUS:
                 res.val.asDouble = lhs.val.asDouble % rhs.val.asDouble;
                 break;
@@ -520,6 +556,7 @@ namespace ULox
         }
 
         protected virtual bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs) => false;
+
         protected virtual bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs) => false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -531,17 +568,19 @@ namespace ULox
             if (DoCustomComparisonOp(opCode, lhs, rhs))
                 return;
 
-            //todo fix handling of NaNs on either side
+            //do we need specific handling of NaNs on either side
             switch (opCode)
             {
             case OpCode.EQUAL:
                 Push(Value.New(lhs.Compare(ref lhs, ref rhs)));
                 break;
+
             case OpCode.LESS:
                 if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                     throw new VMException($"Cannot less compare on different types '{lhs.type}' and '{rhs.type}'.");
                 Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
                 break;
+
             case OpCode.GREATER:
                 if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                     throw new VMException($"Cannot greater across on different types '{lhs.type}' and '{rhs.type}'.");

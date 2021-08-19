@@ -15,7 +15,7 @@
                 this.AddMethod(nameof(Start), Value.New(Start));
                 this.AddMethod(nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing));
                 this.AddMethod(nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing));
-                this.AddMethod(nameof(Resume), Value.New(Resume));            
+                this.AddMethod(nameof(Resume), Value.New(Resume));
             }
 
             private Value InitInstance(VMBase vm, int argCount)
@@ -80,7 +80,7 @@
         public Table GetBindings()
         {
             var resTable = new Table();
-            resTable.Add("VM", Value.New(new VMClass())); 
+            resTable.Add("VM", Value.New(new VMClass()));
 
             return resTable;
         }

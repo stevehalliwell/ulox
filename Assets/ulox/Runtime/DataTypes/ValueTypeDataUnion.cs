@@ -7,14 +7,19 @@ namespace ULox
     {
         [FieldOffset(0)]
         public double asDouble;
+
         [FieldOffset(0)]
         public bool asBool;
+
         [FieldOffset(0)]
         public string asString;
+
         [FieldOffset(0)]
         public System.Func<VMBase, int, Value> asNativeFunc;
+
         [FieldOffset(0)]
         public object asObject;
+
         public ClosureInternal asClosure => asObject as ClosureInternal;
         public UpvalueInternal asUpvalue => asObject as UpvalueInternal;
         public ClassInternal asClass => asObject as ClassInternal;

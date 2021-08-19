@@ -7,7 +7,9 @@ namespace ULox
         public const string InitMethodName = "init";
 
         protected Dictionary<TokenType, ICompilette> innerDeclarationCompilettes = new Dictionary<TokenType, ICompilette>();
+
         protected enum Stage { Invalid, Var, Init, Method }
+
         protected Stage stage = Stage.Invalid;
         public string CurrentClassName { get; private set; }
 
@@ -142,8 +144,10 @@ namespace ULox
             case Stage.Var:
                 stage = Stage.Init;
                 break;
+
             case Stage.Init:
                 break;
+
             case Stage.Method:
             case Stage.Invalid:
             default:
@@ -182,7 +186,7 @@ namespace ULox
 
             foreach (var initArg in initArgNames)
             {
-                if(classVarNames.Contains(initArg))
+                if (classVarNames.Contains(initArg))
                 {
                     compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
                     compiler.NamedVariable(initArg, false);
@@ -207,9 +211,11 @@ namespace ULox
             case Stage.Var:
                 stage = Stage.Init;
                 break;
+
             case Stage.Init:
             case Stage.Method:
                 break;
+
             case Stage.Invalid:
             default:
                 throw new CompilerException($"Encountered unexpected compiler stage during method compilation in class {className}.");
@@ -222,7 +228,7 @@ namespace ULox
             FunctionType funcType = FunctionType.Method;
             compiler.Function(name, funcType);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
-            
+
             stage = Stage.Method;
         }
 
@@ -302,7 +308,6 @@ namespace ULox
 
                 //patch jump from skip imperative
                 compiler.PatchJump(initFragmentJump);
-
             } while (compiler.Match(TokenType.COMMA));
 
             compiler.Consume(TokenType.END_STATEMENT, "Expect ; after property declaration.");
@@ -331,7 +336,6 @@ namespace ULox
                 //emit set prop
                 compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
                 compiler.EmitOpCode(OpCode.POP);
-
             } while (compiler.Match(TokenType.COMMA));
 
             compiler.Consume(TokenType.END_STATEMENT, "Expect ; after property declaration.");

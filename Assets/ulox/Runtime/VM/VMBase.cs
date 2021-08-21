@@ -533,6 +533,8 @@ namespace ULox
                 throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
             }
 
+            //todo reorg this so if custom fails we report no handler rather than no math on Instance
+
             var res = Value.New(0);
             switch (opCode)
             {

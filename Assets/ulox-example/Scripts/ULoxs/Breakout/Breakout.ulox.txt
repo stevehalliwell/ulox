@@ -1,0 +1,38 @@
+SetUIText("Breakout");
+
+var bricks = List();
+var ball;
+
+fun SetupGame()
+{
+    CreateLevel();
+}
+
+fun CreateLevel()
+{
+    var generator = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
+    var posList = generator.FromRowCol(3,10);
+    CreateBricksFromPositions(posList);
+    ball = Ball(Vec2.Create(0,-20));
+    SetRigidBody2DVelocity(ball.rb, 15,15);
+}
+
+fun CreateBricksFromPositions(posList)
+{
+    for(var i = 0; i < posList.Count(); i+=1)
+    {
+        var newBrick = Brick(posList.Get(i));
+        bricks.Add(newBrick);
+    }
+}
+
+var dt;
+fun Update()
+{
+    UpdateGame(dt);
+}
+
+fun UpdateGame(dt)
+{
+	if(GetKey("escape")){ReloadScene();}
+}

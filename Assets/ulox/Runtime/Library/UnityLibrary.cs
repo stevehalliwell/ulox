@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using UnityEngine;
+
+namespace ULox
 {
     public class UnityLibrary : ILoxByteCodeLibrary
     {
@@ -62,7 +64,30 @@
                     return Value.Null();
                 }));
 
+            resTable.Add("GetRigidBody2DFromGameObject",
+                Value.New(
+                (vm, args) =>
+                {
+                    var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+                    var rb2d = go.GetComponent<Rigidbody2D>();
+                    if (rb2d != null)
+                        return Value.Object(rb2d);
+                    return Value.Null();
+                }));
+
+            resTable.Add("SetRigidBody2DVelocity",
+                Value.New(
+                (vm, args) =>
+                {
+                    var rb2d = vm.GetArg(1).val.asObject as UnityEngine.Rigidbody2D;
+                    float x = (float)vm.GetArg(2).val.asDouble;
+                    float y = (float)vm.GetArg(3).val.asDouble;
+                    rb2d.velocity = new Vector2(x, y);
+                    return Value.Null();
+                }));
+
             return resTable;
         }
     }
 }
+//TODO: need to be able to get rb, set rb vel, set rb pos.

@@ -1,0 +1,27 @@
+class Paddle < Brick
+{
+    var wallDist;
+    var moveSpeed = 15;
+
+    init(pos, wallDist)
+    {
+    }
+
+    Update(dt)
+    {
+        var p = this.pos;
+        var wall = this.wallDist;
+        if(GetKey("left"))
+            p = p + Vec2.Create(-this.moveSpeed * dt,0);
+        if(GetKey("right"))
+            p = p + Vec2.Create(this.moveSpeed * dt,0);
+
+        if(p.x < -wall)
+            p.x = -wall;
+        if(p.x > wall)
+            p.x = wall;
+
+        this.pos = p;
+        this.SyncPos();
+    }
+}

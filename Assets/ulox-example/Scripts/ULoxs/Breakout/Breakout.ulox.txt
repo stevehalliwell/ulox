@@ -2,6 +2,7 @@ SetUIText("Breakout");
 
 var bricks = List();
 var ball;
+var paddle;
 
 fun SetupGame()
 {
@@ -15,6 +16,7 @@ fun CreateLevel()
     CreateBricksFromPositions(posList);
     ball = Ball(Vec2.Create(0,-20));
     SetRigidBody2DVelocity(ball.rb, 15,15);
+    paddle = Paddle(Vec2.Create(0,-30), 30);
 }
 
 fun CreateBricksFromPositions(posList)
@@ -35,4 +37,6 @@ fun Update()
 fun UpdateGame(dt)
 {
 	if(GetKey("escape")){ReloadScene();}
+
+	paddle.Update(dt);
 }

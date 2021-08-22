@@ -86,8 +86,27 @@ namespace ULox
                     return Value.Null();
                 }));
 
+            //resTable.Add("SetGameObjectTag",
+            //    Value.New(
+            //    (vm, args) =>
+            //    {
+            //        var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+            //        var tag = vm.GetArg(2).val.asString;
+            //        go.tag = tag;
+            //        return Value.Null();
+            //    }));
+
+            //resTable.Add("GetGameObjectTag",
+            //    Value.New(
+            //    (vm, args) =>
+            //    {
+            //        var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+            //        return Value.New(go.tag);
+            //    }));
+
             return resTable;
         }
     }
 }
-//TODO: need to be able to get rb, set rb vel, set rb pos.
+
+//TODO: provide a function to be called when a collision or trigger occures

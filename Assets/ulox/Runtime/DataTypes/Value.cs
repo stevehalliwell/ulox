@@ -60,6 +60,38 @@ namespace ULox
             }
         }
 
+        public static Value Copy(Value copyFrom)
+        {
+            switch (copyFrom.type)
+            {
+            case ValueType.Instance:
+                var inst = copyFrom.val.asInstance;
+                return Value.New(new InstanceInternal()
+                {
+                    fields = new Table(inst.fields),
+                    fromClass = inst.fromClass
+                });
+                break;
+            case ValueType.Null:
+            case ValueType.Double:
+            case ValueType.Bool:
+            case ValueType.String:
+            case ValueType.Chunk:
+            case ValueType.NativeFunction:
+            case ValueType.Closure:
+            case ValueType.Upvalue:
+            case ValueType.Class:
+            case ValueType.BoundMethod:
+            case ValueType.Object:
+            default:
+                return new Value()
+                {
+                    type = copyFrom.type,
+                    val = copyFrom.val
+                };
+            }
+        }
+
         public static Value New(ValueType valueType, ValueTypeDataUnion dataUnion)
             => new Value() { type = valueType, val = dataUnion };
 

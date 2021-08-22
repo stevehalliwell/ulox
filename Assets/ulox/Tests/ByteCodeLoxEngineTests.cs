@@ -2589,15 +2589,67 @@ test Foo
 
             Assert.AreEqual("FooBar", engine.InterpreterResult);
         }
+
+        [Test]
+        public void Engine_Duplicate_Number_Matches()
+        {
+            engine.Run(@"
+var a = 1;
+var b = Duplicate(a);
+print(b);
+b = 2;
+print(b);
+print(a);");
+
+            Assert.AreEqual("121", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Duplicate_String_Matches()
+        {
+            engine.Run(@"
+var a = ""Foo"";
+var b = Duplicate(a);
+print(b);
+b = 2;
+print(b);
+print(a);");
+
+            Assert.AreEqual("Foo2Foo", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Duplicate_ClassInstance_Matches()
+        {
+            engine.Run(@"
+class Foo
+{
+    var Bar = ""Hello World!"";
+
+    Speak(){print(this.Bar);}
+}
+
+var a = Foo();
+var b = Duplicate(a);
+print(b);
+b.Speak();
+b.Bar = ""Bye"";
+b.Speak();
+a.Speak();");
+
+            Assert.AreEqual("<inst Foo>Hello World!ByeHello World!", engine.InterpreterResult);
+        }
     }
 
     public class ByteCodeInterpreterTestEngine : ByteCodeInterpreterEngine
     {
         private System.Action<string> _logger;
+        public System.Action<string> Logger => _logger;
 
         public ByteCodeInterpreterTestEngine(System.Action<string> logger)
         {
             _logger = logger;
+            AddLibrary(new CoreLibrary(null));
 
             Value Print(VMBase vm, int args)
             {

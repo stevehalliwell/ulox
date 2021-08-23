@@ -1,4 +1,4 @@
-name: Build then Deloy
+name: Build
 
 on: 
   push:

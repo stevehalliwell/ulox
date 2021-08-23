@@ -2639,6 +2639,28 @@ a.Speak();");
 
             Assert.AreEqual("<inst Foo>Hello World!ByeHello World!", engine.InterpreterResult);
         }
+
+        [Test]
+        public void Engine_StringConcat()
+        {
+            engine.Run(@"
+var a = 3;
+var b = ""Foo"";
+print(a+b);");
+
+            Assert.AreEqual("3Foo", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_StringConcat_ViaFunc()
+        {
+            engine.Run(@"
+var a = 3;
+var b = ""Foo"";
+print(str(a)+str(b));");
+
+            Assert.AreEqual("3Foo", engine.InterpreterResult);
+        }
     }
 
     public class ByteCodeInterpreterTestEngine : ByteCodeInterpreterEngine

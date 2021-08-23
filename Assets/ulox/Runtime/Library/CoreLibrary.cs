@@ -15,6 +15,7 @@
 
             resTable.Add(nameof(print), Value.New(print));
             resTable.Add(nameof(Duplicate), Value.New(Duplicate));
+            resTable.Add(nameof(str), Value.New(str));
 
             return resTable;
         }
@@ -23,6 +24,12 @@
         {
             _printer?.Invoke(vm.GetArg(1).ToString());
             return Value.Null();
+        }
+
+        public Value str(VMBase vm, int argCount)
+        {
+            var v = vm.GetArg(1);
+            return Value.New(v.str());
         }
 
         public Value Duplicate(VMBase vm, int argCount)

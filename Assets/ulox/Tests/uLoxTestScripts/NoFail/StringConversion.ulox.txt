@@ -1,0 +1,25 @@
+test StringConversion
+{
+    testcase Native
+    {
+        var expected = "3Foo";
+        var result = 0;
+        var a = 3;
+        var b = "Foo";
+
+        result = a + b;
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase Convert
+    {
+        var expected = "3";
+        var result = 0;
+        var a = 3;
+
+        result = str(a);
+
+        Assert.AreEqual(expected, result);
+    }
+}

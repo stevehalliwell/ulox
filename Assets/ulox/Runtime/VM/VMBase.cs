@@ -512,14 +512,18 @@ namespace ULox
             var rhs = Pop();
             var lhs = Pop();
 
+            if (lhs.type == ValueType.String ||
+                rhs.type == ValueType.String)
+            {
+                if (opCode == OpCode.ADD)
+                {
+                    Push(Value.New(lhs.str() + rhs.str()));
+                    return;
+                }
+            }
+
             if (lhs.type != rhs.type)
                 throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
-
-            if (opCode == OpCode.ADD && lhs.type == ValueType.String && rhs.type == lhs.type)
-            {
-                Push(Value.New(lhs.val.asString + rhs.val.asString));
-                return;
-            }
 
             if (DoCustomMathOp(opCode, lhs, rhs))
                 return;

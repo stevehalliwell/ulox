@@ -11,6 +11,8 @@ namespace ULox
 
         public bool IsNull => type == ValueType.Null;
 
+        public string str() => ToString();
+
         public override string ToString()
         {
             switch (type)
@@ -25,7 +27,7 @@ namespace ULox
                     return val.asBool.ToString();
 
                 case ValueType.String:
-                    return val.asString?.ToString() ?? "null";
+                    return val.asString ?? "null";
 
                 case ValueType.Chunk:
                     var chunk = val.asChunk;

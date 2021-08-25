@@ -39,7 +39,7 @@ namespace ULox
         public bool AllPassed => !tests.Any(x => !x.Value);
         public int TestsFound => tests.Count;
         public string CurrentTestSetName { get; set; } = string.Empty;
-        public Func<VMBase> CreateVM { get; set; }
+        public Func<VMBase> CreateVM { get; private set; }
 
         public void StartTest(string name)
         {

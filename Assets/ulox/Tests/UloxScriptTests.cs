@@ -26,10 +26,10 @@ public class UloxScriptTests
     public void Setup()
     {
         engine = new ScriptTestEngine(UnityEngine.Debug.Log);
-        engine.AddLibrary(new AssertLibrary());
+        engine.AddLibrary(new AssertLibrary(() => new VM()));
         engine.AddLibrary(new DebugLibrary());
         engine.AddLibrary(new StandardClassesLibrary());
-        engine.AddLibrary(new VMLibrary());
+        engine.AddLibrary(new VMLibrary(() => new VM()));
     }
 
     [Test]

@@ -1,7 +1,16 @@
-﻿namespace ULox
+﻿using System;
+
+namespace ULox
 {
     public class AssertLibrary : ILoxByteCodeLibrary
     {
+        public AssertLibrary(Func<VMBase> createVM)
+        {
+            CreateVM = createVM;
+        }
+
+        public Func<VMBase> CreateVM { get; private set; }
+
         public Table GetBindings()
         {
             var resTable = new Table();
@@ -17,6 +26,7 @@
             assertInst.fields[nameof(IsNotNull)] = Value.New(IsNotNull);
             assertInst.fields[nameof(DoesContain)] = Value.New(DoesContain);
             assertInst.fields[nameof(DoesNotContain)] = Value.New(DoesNotContain);
+            assertInst.fields[nameof(Throws)] = Value.New(Throws);
 
             return resTable;
         }
@@ -108,6 +118,28 @@
             var rhs = vm.GetArg(2);
             if (rhs.val.asString.Contains(lhs.val.asString))
                 throw new AssertException($"'{rhs}' did contain '{lhs}', should not have.");
+
+            return Value.Null();
+        }
+
+        private Value Throws(VMBase vm, int argCount)
+        {
+            var toRun = vm.GetArg(1).val.asClosure.chunk;
+            if(toRun == null)
+                throw new AssertException($"Requires 1 closure param to execute, but was not given one.");
+            var ourVM = CreateVM();
+            bool didThrow = false;
+            try
+            {
+                ourVM.Interpret(toRun);
+            }
+            catch (Exception e)
+            {
+                didThrow = true;
+            }
+
+            if (!didThrow)
+                throw new AssertException($"'{toRun.Name}' did not throw, but should have.");
 
             return Value.Null();
         }

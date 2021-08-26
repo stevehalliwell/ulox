@@ -1,11 +1,10 @@
 {
-    "name": "ULox.Demo",
+    "name": "ULox.Editor",
     "rootNamespace": "",
-    "references": [
-        "Unity.TextMeshPro",
-        "ULox.Runtime"
+    "references": [],
+    "includePlatforms": [
+        "Editor"
     ],
-    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,

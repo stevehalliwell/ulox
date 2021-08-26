@@ -9,6 +9,7 @@ using ULox.Tests;
 public class UloxScriptTests
 {
     public const string NoFailFolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
+    private const string ULoxScriptExtension = "*.ulox";
 
     public class ScriptTestEngine : ByteCodeInterpreterTestEngine
     {
@@ -61,7 +62,7 @@ public class UloxScriptTests
         var path = Path.GetFullPath(FolderName);
         if (Directory.Exists(path))
         {
-            var foundInDir = Directory.GetFiles(path, "*.txt");
+            var foundInDir = Directory.GetFiles(path, ULoxScriptExtension);
 
             if (foundInDir.Any())
                 filesInFolder = foundInDir;

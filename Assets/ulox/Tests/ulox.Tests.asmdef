@@ -1,11 +1,10 @@
 {
-    "name": "ulox.Tests",
+    "name": "ULox.Tests",
     "rootNamespace": "",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Unity.PerformanceTesting",
-        "ulox"
+        "ULox.Runtime"
     ],
     "includePlatforms": [
         "Editor"

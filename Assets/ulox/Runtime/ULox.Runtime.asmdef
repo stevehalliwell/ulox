@@ -1,10 +1,7 @@
 {
-    "name": "ULox.Demo",
+    "name": "ULox.Runtime",
     "rootNamespace": "",
-    "references": [
-        "Unity.TextMeshPro",
-        "ULox.Runtime"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -1485,7 +1485,7 @@ print(c);");
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 Assert.AreEqual(1,1);
@@ -1500,7 +1500,7 @@ Assert.AreEqual(1,1);");
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 Assert.AreApproxEqual(1,1);
@@ -1508,6 +1508,23 @@ Assert.AreApproxEqual(1,1.000000001);
 Assert.AreApproxEqual(1,2);");
 
             Assert.AreEqual("'1' and '2' are '-1' apart.", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Assert_Throws()
+        {
+
+
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
+
+            engine.Run(@"
+fun WillThrow()
+{
+    throw;
+}
+Assert.Throws(WillThrow);");
+
+            Assert.AreEqual("", engine.InterpreterResult);
         }
 
         [Test]
@@ -1738,7 +1755,7 @@ AddPrint(t2);
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 fun T
@@ -1756,7 +1773,7 @@ print(T());");
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class T
@@ -1834,7 +1851,7 @@ print(T().StaticMethod());");
         {
 
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 test T
@@ -1852,7 +1869,7 @@ test T
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 test T
@@ -1871,7 +1888,7 @@ test T
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 test T
@@ -1890,7 +1907,7 @@ test T
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 test T
@@ -1911,7 +1928,7 @@ test T
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 test T
@@ -1934,7 +1951,7 @@ test T
         {
 
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 test T
@@ -1953,7 +1970,7 @@ test T
         [Test]
         public void Engine_TestCase_ReportAll()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 test T
@@ -1983,7 +2000,7 @@ test T
         {
 
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 test T
@@ -2012,7 +2029,7 @@ test T
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
             engine.VM.TestRunner.Enabled = false;
 
             engine.Run(@"
@@ -2036,7 +2053,7 @@ test T
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class T{ }
@@ -2053,7 +2070,7 @@ print(T.a);");
         {
             
 
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class T
@@ -2104,7 +2121,7 @@ print(a);");
         {
             
 
-            engine.AddLibrary(new VMLibrary());
+            engine.AddLibrary(new VMLibrary(() => new VM()));
 
             engine.Run(@"
 fun InnerMain()
@@ -2128,7 +2145,7 @@ innerVM.Start(InnerMain);");
         {
             
 
-            engine.AddLibrary(new VMLibrary());
+            engine.AddLibrary(new VMLibrary(() => new VM()));
 
             engine.Run(@"
 fun InnerMain()
@@ -2153,7 +2170,7 @@ print(innerVM.GetGlobal(""globalOut""));");
         {
             
 
-            engine.AddLibrary(new VMLibrary());
+            engine.AddLibrary(new VMLibrary(() => new VM()));
 
             engine.Run(@"
 fun InnerMain()
@@ -2191,7 +2208,7 @@ print(a);");
         {
             
 
-            engine.AddLibrary(new VMLibrary());
+            engine.AddLibrary(new VMLibrary(() => new VM()));
 
             engine.Run(@"
 fun InnerMain()
@@ -2213,7 +2230,7 @@ innerVM.Start(InnerMain);");
         {
             
 
-            engine.AddLibrary(new VMLibrary());
+            engine.AddLibrary(new VMLibrary(() => new VM()));
 
             engine.Run(@"
 var a = 10;
@@ -2233,7 +2250,7 @@ innerVM.Start(InnerMain);");
         {
             
 
-            engine.AddLibrary(new VMLibrary());
+            engine.AddLibrary(new VMLibrary(() => new VM()));
 
             engine.Run(@"
 fun InnerMain()
@@ -2298,7 +2315,7 @@ print(res.a);");
         [Test]
         public void Engine_Class_InherClassSuperInitNoParams()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class Base
@@ -2333,7 +2350,7 @@ print(cinst.b);
         [Test]
         public void Engine_Class_InherClassSuperInitParams()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class Base
@@ -2415,7 +2432,7 @@ print(cerinst.c);
         [Test]
         public void Engine_Class_InherWithVarNoInit()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class Base
@@ -2444,7 +2461,7 @@ print(cinst.b);
         [Test]
         public void Engine_Class_InherWithVarAndInitNoParams()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class Base
@@ -2484,7 +2501,7 @@ print(cinst.d);
         [Test]
         public void Engine_Class_InherWithVarAndInitAndParams_NoAutoVarInit()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class Base
@@ -2524,7 +2541,7 @@ print(cinst.d);
         [Test]
         public void Engine_Class_InherWithVarAndInitAndAutoVarParams()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new VM()));
 
             engine.Run(@"
 class Base

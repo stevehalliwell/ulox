@@ -53,9 +53,6 @@
                     i = AppendByte(chunk, i);
                     i = AppendByte(chunk, i);
                     break;
-
-                default:
-                break;
             }
 
             return i;

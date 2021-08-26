@@ -206,7 +206,7 @@ print (myOtherVar);");
         [Test]
         public void Engine_TestCase_Print()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new SimpleTestrunnerVM()));
 
             engine.Run(@"
 test T
@@ -223,7 +223,7 @@ test T
         [Test]
         public void Engine_TestCase_Constants()
         {
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new SimpleTestrunnerVM()));
 
             engine.Run(@"
 test T
@@ -250,7 +250,7 @@ test T
             var file = noFailFiles.FirstOrDefault(x => x.Contains(fileNamePartial));
 
             var script = File.ReadAllText(file);
-            engine.AddLibrary(new AssertLibrary());
+            engine.AddLibrary(new AssertLibrary(() => new SimpleTestrunnerVM()));
             engine.AddLibrary(new DebugLibrary());
             engine.Run(script);
 

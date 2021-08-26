@@ -1,13 +1,24 @@
-﻿namespace ULox
+﻿using System;
+
+namespace ULox
 {
     public class VMLibrary : ILoxByteCodeLibrary
     {
+        public VMLibrary(Func<VMBase> createVM)
+        {
+            CreateVM = createVM;
+        }
+
+        public Func<VMBase> CreateVM { get; private set; }
         public class VMClass : ClassInternal
         {
             private readonly string VMFieldName = "vm";
 
-            public VMClass()
+            public Func<VMBase> CreateVM { get; private set; }
+
+            public VMClass(Func<VMBase> createVM)
             {
+                CreateVM = createVM;
                 this.name = "VM";
                 this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
                 this.AddMethod(nameof(AddGlobal), Value.New(AddGlobal));
@@ -21,7 +32,7 @@
             private Value InitInstance(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
-                inst.val.asInstance.fields.Add(VMFieldName, Value.Object(new VM()));
+                inst.val.asInstance.fields.Add(VMFieldName, Value.Object(CreateVM()));
                 return inst;
             }
 
@@ -80,7 +91,7 @@
         public Table GetBindings()
         {
             var resTable = new Table();
-            resTable.Add("VM", Value.New(new VMClass()));
+            resTable.Add("VM", Value.New(new VMClass(CreateVM)));
 
             return resTable;
         }

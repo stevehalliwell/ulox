@@ -454,7 +454,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void CallValue(Value callee, int argCount)
+        public void CallValue(Value callee, int argCount)
         {
             switch (callee.type)
             {

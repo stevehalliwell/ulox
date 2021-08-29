@@ -16,6 +16,9 @@ namespace ULox
             var resTable = new Table();
 
             resTable.Add(nameof(SetSpriteColour), Value.New(SetSpriteColour));
+            resTable.Add(nameof(SetCollisionCallback), Value.New(SetCollisionCallback));
+            resTable.Add(nameof(SetGameObjectTag), Value.New(SetGameObjectTag));
+            resTable.Add(nameof(GetGameObjectTag), Value.New(GetGameObjectTag));
 
             resTable.Add("CreateFromPrefab",
                 Value.New(
@@ -88,23 +91,6 @@ namespace ULox
                     return Value.Null();
                 }));
 
-            //resTable.Add("SetGameObjectTag",
-            //    Value.New(
-            //    (vm, args) =>
-            //    {
-            //        var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
-            //        var tag = vm.GetArg(2).val.asString;
-            //        go.tag = tag;
-            //        return Value.Null();
-            //    }));
-
-            //resTable.Add("GetGameObjectTag",
-            //    Value.New(
-            //    (vm, args) =>
-            //    {
-            //        var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
-            //        return Value.New(go.tag);
-            //    }));
 
             return resTable;
         }
@@ -119,6 +105,31 @@ namespace ULox
 
             go.GetComponent<SpriteRenderer>().color = new Color((float)r, (float)g, (float)b, (float)a);
             return Value.Null();
+        }
+
+        private Value SetCollisionCallback(VMBase vm, int argCount)
+        {
+            var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+            var tagHit = vm.GetArg(2).val.asString;
+            var closure = vm.GetArg(3);
+            //TODO: too easy to copy or mistype the index, make it a stack
+
+            go.GetOrAddComponent<ULoxCollisionFilter>().AddHandler(tagHit, () => vm.CallValue(closure,0));
+            return Value.Null();
+        }
+
+        private Value SetGameObjectTag(VMBase vm, int argCount)
+        {
+            var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+            var tag = vm.GetArg(2).val.asString;
+            go.tag = tag;
+            return Value.Null();
+        }
+
+        private Value GetGameObjectTag(VMBase vm, int argCount)
+        {
+            var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+            return Value.New(go.tag);
         }
     }
 }

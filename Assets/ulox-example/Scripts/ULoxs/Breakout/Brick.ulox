@@ -8,6 +8,8 @@ class Brick
     {
         this.SyncPos();
         this.SyncColour();
+        SetCollisionCallback(this.go, "Ball", this.OnHitByBall);
+        SetGameObjectTag(this.go, "Brick");
     }
 
     SyncPos()
@@ -25,5 +27,10 @@ class Brick
         {
             SetSpriteColour(this.go, 0,0,1,1);
         } 
+    }
+
+    OnHitByBall()
+    {
+        print("Hit");
     }
 }

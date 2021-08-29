@@ -8,6 +8,7 @@ class Paddle
     init(pos, wallDist)
     {
         this.SyncPos();
+        SetGameObjectTag(this.go, "Paddle");
     }
 
     SyncPos()

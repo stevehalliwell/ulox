@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class StandardClassesLibrary : ILoxByteCodeLibrary
+    public class StandardClassesLibrary : IULoxLibrary
     {
         public Table GetBindings()
         {

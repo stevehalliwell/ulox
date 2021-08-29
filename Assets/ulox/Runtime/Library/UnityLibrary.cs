@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public class UnityLibrary : ILoxByteCodeLibrary
+    public class UnityLibrary : IULoxLibrary
     {
         private System.Collections.Generic.List<UnityEngine.GameObject> _availablePrefabs;
 
@@ -14,6 +14,8 @@ namespace ULox
         public Table GetBindings()
         {
             var resTable = new Table();
+
+            resTable.Add(nameof(SetSpriteColour), Value.New(SetSpriteColour));
 
             resTable.Add("CreateFromPrefab",
                 Value.New(
@@ -105,6 +107,18 @@ namespace ULox
             //    }));
 
             return resTable;
+        }
+
+        private Value SetSpriteColour(VMBase vm, int argCount)
+        {
+            var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+            var r = vm.GetArg(2).val.asDouble;
+            var g = vm.GetArg(3).val.asDouble;
+            var b = vm.GetArg(4).val.asDouble;
+            var a = vm.GetArg(5).val.asDouble;
+
+            go.GetComponent<SpriteRenderer>().color = new Color((float)r, (float)g, (float)b, (float)a);
+            return Value.Null();
         }
     }
 }

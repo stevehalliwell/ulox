@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public class VMLibrary : ILoxByteCodeLibrary
+    public class VMLibrary : IULoxLibrary
     {
         public VMLibrary(Func<VMBase> createVM)
         {

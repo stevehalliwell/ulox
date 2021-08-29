@@ -125,7 +125,7 @@ namespace ULox.Tests
                 _vm.Run(Program);
             }
 
-            public virtual void AddLibrary(ILoxByteCodeLibrary lib)
+            public virtual void AddLibrary(IULoxLibrary lib)
             {
                 var toAdd = lib.GetBindings();
 

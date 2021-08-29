@@ -23,7 +23,7 @@ fun CreateBricksFromPositions(posList)
 {
     for(var i = 0; i < posList.Count(); i+=1)
     {
-        var newBrick = Brick(posList.Get(i));
+        var newBrick = Brick(posList.Get(i), i % 2);
         bricks.Add(newBrick);
     }
 }

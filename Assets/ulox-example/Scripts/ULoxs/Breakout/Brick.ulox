@@ -1,0 +1,29 @@
+class Brick
+{
+    var pos = Vec2();
+    var go = CreateFromPrefab("Brick");
+    var hitCount;
+
+    init(pos, hitCount)
+    {
+        this.SyncPos();
+        this.SyncColour();
+    }
+
+    SyncPos()
+    {
+        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
+    }
+
+    SyncColour()
+    {
+        if(this.hitCount == 0)
+        {
+            SetSpriteColour(this.go, 0,1,0,1);
+        }
+        else if(this.hitCount == 1)
+        {
+            SetSpriteColour(this.go, 0,0,1,1);
+        } 
+    }
+}

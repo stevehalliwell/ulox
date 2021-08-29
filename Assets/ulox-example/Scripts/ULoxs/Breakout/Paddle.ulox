@@ -1,10 +1,18 @@
-class Paddle < Brick
+class Paddle
 {
     var wallDist;
     var moveSpeed = 15;
+    var pos = Vec2();
+    var go = CreateFromPrefab("Brick");
 
     init(pos, wallDist)
     {
+        this.SyncPos();
+    }
+
+    SyncPos()
+    {
+        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
     }
 
     Update(dt)

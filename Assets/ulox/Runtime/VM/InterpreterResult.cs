@@ -6,5 +6,6 @@
         COMPILE_ERROR,
         RUNTIME_ERROR,
         YIELD,
+        NOTHING,
     }
 }

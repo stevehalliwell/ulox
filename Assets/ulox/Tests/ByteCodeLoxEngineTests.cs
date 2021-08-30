@@ -1301,7 +1301,7 @@ class A{MethA(){print (1);}}");
             engine.Run(@"fun Meth(){print (1);}");
 
             var meth = engine.VM.GetGlobal("Meth");
-            engine.VM.CallFunction(meth,0);
+            engine.VM.PushCallFrameAndRun(meth,0);
 
             Assert.AreEqual("1", engine.InterpreterResult);
         }

@@ -114,7 +114,7 @@ namespace ULox
             var closure = vm.GetArg(3);
             //TODO: too easy to copy or mistype the index, make it a stack
 
-            go.GetOrAddComponent<ULoxCollisionFilter>().AddHandler(tagHit, () => vm.CallValue(closure,0));
+            go.GetOrAddComponent<ULoxCollisionFilter>().AddHandler(tagHit, () => vm.PushCallFrameAndRun(closure,0));
             return Value.Null();
         }
 

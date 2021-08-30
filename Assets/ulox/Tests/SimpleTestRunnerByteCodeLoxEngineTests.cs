@@ -85,7 +85,7 @@ namespace ULox.Tests
                         if (inst.fields.TryGetValue(methodName, out var fieldFunc))
                         {
                             _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
-                            CallValue(fieldFunc, argCount);
+                            PushCallFrameFromValue(fieldFunc, argCount);
                         }
                         else
                         {
@@ -95,7 +95,7 @@ namespace ULox.Tests
                                 throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
                             }
 
-                            CallValue(method, argCount);
+                            PushCallFrameFromValue(method, argCount);
                         }
                     }
                     break;

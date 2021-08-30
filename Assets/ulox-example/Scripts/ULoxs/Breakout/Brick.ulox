@@ -31,6 +31,17 @@ class Brick
 
     OnHitByBall()
     {
-        print("Hit");
+        this.hitCount = this.hitCount - 1;
+        this.SyncColour();
+
+        if(this.hitCount < 0)
+        {
+            this.OnBrickDestroy();
+        }
+    }
+
+    OnBrickDestroy()
+    {
+        DestroyUnityObject(this.go);
     }
 }

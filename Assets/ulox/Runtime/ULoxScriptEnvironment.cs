@@ -7,7 +7,7 @@
 
         public ULoxScriptEnvironment(ByteCodeInterpreterEngine engine) => _engine = engine;
 
-        public void CallFunction(Value value, int v) => _engine.VM.CallFunction(value, v);
+        public void CallFunction(Value value, int v) => _engine.VM.PushCallFrameAndRun(value, v);
 
         public Value FindFunctionWithArity(string name, int argCount) => _engine.VM.FindFunctionWithArity(name, argCount);
 

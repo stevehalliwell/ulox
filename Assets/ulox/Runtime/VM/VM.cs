@@ -205,7 +205,7 @@ namespace ULox
                     if (inst.fields.TryGetValue(methodName, out var fieldFunc))
                     {
                         _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
-                        CallValue(fieldFunc, argCount);
+                        PushCallFrameFromValue(fieldFunc, argCount);
                     }
                     else
                     {
@@ -215,7 +215,7 @@ namespace ULox
                             throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
                         }
 
-                        CallValue(method, argCount);
+                        PushCallFrameFromValue(method, argCount);
                     }
                 }
                 break;
@@ -223,7 +223,7 @@ namespace ULox
             case ValueType.Class:
                 {
                     var klass = receiver.val.asClass;
-                    CallValue(klass.GetMethod(methodName), argCount);
+                    PushCallFrameFromValue(klass.GetMethod(methodName), argCount);
                 }
                 break;
 
@@ -283,7 +283,7 @@ namespace ULox
                 throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
             }
 
-            CallValue(method, argCount);
+            PushCallFrameFromValue(method, argCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -310,7 +310,7 @@ namespace ULox
             if (!klass.initialiser.IsNull)
             {
                 //with an init list we don't return this
-                CallValue(klass.initialiser, argCount);
+                PushCallFrameFromValue(klass.initialiser, argCount);
             }
             else if (argCount != 0)
             {

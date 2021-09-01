@@ -3,9 +3,11 @@ class Brick
     var pos = Vec2();
     var go = CreateFromPrefab("Brick");
     var hitCount;
+    var origHitCount;
 
     init(pos, hitCount)
     {
+        this.origHitCount = hitCount; 
         this.SyncPos();
         this.SyncColour();
         SetCollisionCallback(this.go, "Ball", this.OnHitByBall);
@@ -43,5 +45,6 @@ class Brick
     OnBrickDestroy()
     {
         DestroyUnityObject(this.go);
+        GivePointsForBrick(this.origHitCount);
     }
 }

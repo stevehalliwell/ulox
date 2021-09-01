@@ -3,6 +3,8 @@ SetUIText("Breakout");
 var bricks = List();
 var ball;
 var paddle;
+var points = 0;
+var lives = 3;
 
 fun SetupGame()
 {
@@ -32,6 +34,10 @@ var dt;
 fun Update()
 {
     UpdateGame(dt);
+    SetUIText(
+        "Points: " + str(points) + "\n" +
+        "Lives: " + str(lives)
+        );
 }
 
 fun UpdateGame(dt)
@@ -39,4 +45,9 @@ fun UpdateGame(dt)
 	if(GetKey("escape")){ReloadScene();}
 
 	paddle.Update(dt);
+}
+
+fun GivePointsForBrick(brickStrength)
+{
+    points += (brickStrength+1) * 10;
 }

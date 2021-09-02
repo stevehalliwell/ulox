@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -174,6 +175,30 @@ namespace ULox
                     default:
                     throw new VMException($"Cannot perform compare on type '{lhs.type}'.");
                 }
+            }
+        }
+
+        public override int GetHashCode()
+        {
+            switch (type)
+            {
+            case ValueType.Double:
+                return val.asDouble.GetHashCode();
+            case ValueType.Bool:
+                return val.asBool.GetHashCode();
+            case ValueType.String:
+                return val.asString.GetHashCode();
+            case ValueType.Null:
+            case ValueType.Chunk:
+            case ValueType.NativeFunction:
+            case ValueType.Closure:
+            case ValueType.Upvalue:
+            case ValueType.Class:
+            case ValueType.Instance:
+            case ValueType.BoundMethod:
+            case ValueType.Object:
+            default:
+                return EqualityComparer<object>.Default.GetHashCode(val);
             }
         }
     }

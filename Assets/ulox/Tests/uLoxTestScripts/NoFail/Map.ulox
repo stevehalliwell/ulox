@@ -91,4 +91,38 @@ test MapTests
 
         Assert.AreEqual(expected, result);
     }
+
+    testcase CorrectlyRetrieveString
+    {
+        var key = "key";
+        var initial = "value";
+        var expected = "value5";
+        var result = 0;
+        var m = Map(key);
+        
+        for(var i = 0; i < 10; i+= 1)
+        {
+            m.Create(key+str(i), initial+str(i));
+        }
+        result = m.Read(key+str(5));
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase ManyAddedRetrieveMissingString
+    {
+        var key = "key";
+        var initial = "value";
+        var expected = null;
+        var result = 0;
+        var m = Map(key);
+        
+        for(var i = 0; i < 10; i+= 1)
+        {
+            m.Create(key+str(i), initial+str(i));
+        }
+        result = m.Read(key+str(11));
+
+        Assert.AreEqual(expected, result);
+    }
 }

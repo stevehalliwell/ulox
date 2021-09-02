@@ -19,6 +19,8 @@ namespace ULox
             resTable.Add(nameof(SetCollisionCallback), Value.New(SetCollisionCallback));
             resTable.Add(nameof(SetGameObjectTag), Value.New(SetGameObjectTag));
             resTable.Add(nameof(GetGameObjectTag), Value.New(GetGameObjectTag));
+            resTable.Add(nameof(SetGameObjectPosition), Value.New(SetGameObjectPosition)); 
+            resTable.Add(nameof(SetGameObjectScale), Value.New(SetGameObjectScale));
 
             resTable.Add("CreateFromPrefab",
                 Value.New(
@@ -28,18 +30,6 @@ namespace ULox
                     var loc = _availablePrefabs.Find(x => x.name == targetName);
                     if (loc != null)
                         return Value.Object(UnityEngine.Object.Instantiate(loc));
-                    return Value.Null();
-                }));
-
-            resTable.Add("SetGameObjectPosition",
-                Value.New(
-                (vm, args) =>
-                {
-                    var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
-                    float x = (float)vm.GetArg(2).val.asDouble;
-                    float y = (float)vm.GetArg(3).val.asDouble;
-                    float z = (float)vm.GetArg(4).val.asDouble;
-                    go.transform.position = new UnityEngine.Vector3(x, y, z);
                     return Value.Null();
                 }));
 
@@ -130,6 +120,26 @@ namespace ULox
         {
             var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
             return Value.New(go.tag);
+        }
+
+        private Value SetGameObjectPosition(VMBase vm, int argCount)
+        {
+            var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+            float x = (float)vm.GetArg(2).val.asDouble;
+            float y = (float)vm.GetArg(3).val.asDouble;
+            float z = (float)vm.GetArg(4).val.asDouble;
+            go.transform.position = new UnityEngine.Vector3(x, y, z);
+            return Value.Null();
+        }
+
+        private Value SetGameObjectScale(VMBase vm, int argCount)
+        {
+            var go = vm.GetArg(1).val.asObject as UnityEngine.GameObject;
+            float x = (float)vm.GetArg(2).val.asDouble;
+            float y = (float)vm.GetArg(3).val.asDouble;
+            float z = (float)vm.GetArg(4).val.asDouble;
+            go.transform.localScale = new UnityEngine.Vector3(x, y, z);
+            return Value.Null();
         }
     }
 }

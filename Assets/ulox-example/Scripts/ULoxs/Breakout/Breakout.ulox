@@ -1,6 +1,5 @@
-SetUIText("Breakout");
-
 var bricks = List();
+var walls = List();
 var ball;
 var paddle;
 var points = 0;
@@ -13,6 +12,11 @@ fun SetupGame()
 
 fun CreateLevel()
 {
+    walls.Add(Wall(Vec2.Create(-40,0), Vec2.Create(10,80)));
+    walls.Add(Wall(Vec2.Create(40,0), Vec2.Create(10,80)));
+    walls.Add(Wall(Vec2.Create(0,-40), Vec2.Create(80,10)));
+    walls.Add(Wall(Vec2.Create(0,40), Vec2.Create(80,10)));
+
     var generator = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
     var posList = generator.FromRowCol(3,10);
     CreateBricksFromPositions(posList);

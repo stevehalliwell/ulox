@@ -1,0 +1,9 @@
+class Wall
+{
+    init(pos, scale)
+    {
+        var newWall = CreateFromPrefab("Wall");
+        SetGameObjectPosition(newWall, pos.x, pos.y,0);
+        SetGameObjectScale(newWall, scale.x, scale.y,1);
+    }
+}

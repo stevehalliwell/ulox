@@ -59,10 +59,13 @@ var dt;
 fun Update()
 {
     UpdateGame(dt);
-    SetUIText(
-        "Points: " + str(points) + "\n" +
-        "Lives: " + str(lives)
-        );
+    var outputText = "Points: " + str(points) + "\n" +
+        "Lives: " + str(lives);
+    if(lives <= 0)
+    {
+        outputText = outputText + "\n\nGame over.\nPress esc to restart.";
+    }
+    SetUIText(outputText);
 }
 
 fun UpdateGame(dt)

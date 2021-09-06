@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace ULox
 {
@@ -21,6 +22,7 @@ namespace ULox
             resTable.Add(nameof(GetGameObjectTag), Value.New(GetGameObjectTag));
             resTable.Add(nameof(SetGameObjectPosition), Value.New(SetGameObjectPosition)); 
             resTable.Add(nameof(SetGameObjectScale), Value.New(SetGameObjectScale));
+            resTable.Add(nameof(ReloadScene), Value.New(ReloadScene));
 
             resTable.Add("CreateFromPrefab",
                 Value.New(
@@ -139,6 +141,12 @@ namespace ULox
             float y = (float)vm.GetArg(3).val.asDouble;
             float z = (float)vm.GetArg(4).val.asDouble;
             go.transform.localScale = new UnityEngine.Vector3(x, y, z);
+            return Value.Null();
+        }
+
+        private Value ReloadScene(VMBase vm, int argCount)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             return Value.Null();
         }
     }

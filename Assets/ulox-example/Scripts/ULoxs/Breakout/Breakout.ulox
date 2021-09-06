@@ -37,7 +37,9 @@ fun CreateLevelBricks()
     var generator = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
     var posList = generator.FromRowCol(3,10);
     
-    CreateBricksFromPositions(posList);
+    //CreateBricksFromPositions(posList);
+    var newBrick = Brick(Vec2.Create(20,0),0);
+    bricks.Add(newBrick);
 }
 
 fun CreateBall(at)
@@ -65,6 +67,11 @@ fun Update()
     {
         outputText = outputText + "\n\nGame over.\nPress esc to restart.";
     }
+    else if(bricks.Empty())
+    {
+        outputText = outputText + "\n\nYou have Won!";
+    }
+
     SetUIText(outputText);
 }
 
@@ -75,9 +82,19 @@ fun UpdateGame(dt)
 	paddle.Update(dt);
 }
 
-fun GivePointsForBrick(brickStrength)
+fun GivePointsForBrick(brick, brickStrength)
 {
     points += (brickStrength+1) * 10;
+    bricks.Remove(brick);
+
+    if(bricks.Empty())
+    {
+        if(ball != null)
+        {
+            DestroyUnityObject(ball.go);
+            ball = null;
+        }
+    }
 }
 
 fun BallLost()

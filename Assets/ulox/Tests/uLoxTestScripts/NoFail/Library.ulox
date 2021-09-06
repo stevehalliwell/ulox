@@ -59,6 +59,44 @@ test StandardClassesLibraryTests
         }
     }
     
+    testcase ListRemove
+    {
+        var list = List();
+        var len = 5;
+        var target = 3;
+        var expected = len-1;
+        var result = null;
+
+        for (var i = 0; i < len; i+= 1)
+        {
+            list.Add(i);
+        }
+        list.Remove(len-1);
+        result = list.Count();
+
+        Assert.AreEqual(expected, result);
+    }
+    
+    testcase ListEmpty
+    {
+        var list = List();
+        var len = 5;
+        var expected = true;
+        var result = null;
+
+        for (var i = 0; i < len; i+= 1)
+        {
+            list.Add(i);
+        }
+        for (var i = 0; i < len; i+= 1)
+        {
+            list.Remove(i);
+        }
+        result = list.Empty();
+
+        Assert.AreEqual(expected, result);
+    }
+    
     testcase DynamicUsage
     {
         var expected = 6;

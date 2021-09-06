@@ -17,6 +17,8 @@ namespace ULox
             this.AddMethod(nameof(Get), Value.New(Get));
             this.AddMethod(nameof(Set), Value.New(Set));
             this.AddMethod(nameof(Add), Value.New(Add));
+            this.AddMethod(nameof(Remove), Value.New(Remove));
+            this.AddMethod(nameof(Empty), Value.New(Empty));
         }
 
         private Value InitInstance(VMBase vm, int argCount)
@@ -69,6 +71,21 @@ namespace ULox
             var newValue = vm.GetArg(1);
             list.Add(newValue);
             return newValue;
+        }
+
+        private Value Remove(VMBase vm, int argCount)
+        {
+            var inst = vm.GetArg(0);
+            var list = inst.val.asInstance.fields[ListFieldName].val.asObject as InternalList;
+            var toRemove = vm.GetArg(1);
+            return Value.New(list.Remove(toRemove));
+        }
+
+        private Value Empty(VMBase vm, int argCount)
+        {
+            var inst = vm.GetArg(0);
+            var list = inst.val.asInstance.fields[ListFieldName].val.asObject as InternalList;
+            return Value.New(list.Count == 0);
         }
     }
 }

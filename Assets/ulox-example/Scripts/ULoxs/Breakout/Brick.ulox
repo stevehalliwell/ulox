@@ -45,6 +45,6 @@ class Brick
     OnBrickDestroy()
     {
         DestroyUnityObject(this.go);
-        GivePointsForBrick(this.origHitCount);
+        GivePointsForBrick(this, this.origHitCount);
     }
 }

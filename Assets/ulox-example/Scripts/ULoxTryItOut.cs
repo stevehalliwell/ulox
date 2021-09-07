@@ -44,11 +44,18 @@ namespace ULox.Demo
         public void RunAndLog()
         {
             Application.logMessageReceived += Application_logMessageReceived;
-            sharedVM.Engine.Run(scriptInput.text);
+            try
+            {
+                sharedVM.Engine.Run(scriptInput.text);
+            }
+            catch (Exception)
+            {
+            }
             Application.logMessageReceived -= Application_logMessageReceived;
 
             state.text = sharedVM.Engine.VM.GenerateGlobalsDump();
             bytecode.text = sharedVM.Engine.Disassembly;
+            output.text += "\n";
         }
 
         public void Reset()

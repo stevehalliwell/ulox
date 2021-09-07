@@ -51,9 +51,9 @@ namespace ULox
 
         public Value GetGlobal(string name) => _globals[name];
 
-        public InterpreterResult CallFunction(Value func, int args)
+        public InterpreterResult PushCallFrameAndRun(Value func, int args)
         {
-            CallValue(func, args);
+            PushCallFrameFromValue(func, args);
             return Run();
         }
 
@@ -128,7 +128,7 @@ namespace ULox
         {
             Push(Value.New(""));
             Push(Value.New(new ClosureInternal() { chunk = chunk }));
-            CallValue(Peek(), 0);
+            PushCallFrameFromValue(Peek(), 0);
             currentCallFrame.InstructionPointer = ip;
 
             return Run();
@@ -149,6 +149,9 @@ namespace ULox
 
         public InterpreterResult Run()
         {
+            if (currentCallFrame.Closure == null)
+                return InterpreterResult.NOTHING;
+
             while (true)
             {
                 var chunk = currentCallFrame.Closure.chunk;
@@ -299,7 +302,7 @@ namespace ULox
                 case OpCode.CALL:
                     {
                         int argCount = ReadByte(chunk);
-                        CallValue(Peek(argCount), argCount);
+                        PushCallFrameFromValue(Peek(argCount), argCount);
                     }
                     break;
 
@@ -454,7 +457,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void CallValue(Value callee, int argCount)
+        protected void PushCallFrameFromValue(Value callee, int argCount)
         {
             switch (callee.type)
             {
@@ -532,6 +535,8 @@ namespace ULox
             {
                 throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
             }
+
+            //todo reorg this so if custom fails we report no handler rather than no math on Instance
 
             var res = Value.New(0);
             switch (opCode)

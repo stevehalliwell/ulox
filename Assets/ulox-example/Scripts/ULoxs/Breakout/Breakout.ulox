@@ -1,0 +1,115 @@
+var bricks = List();
+var walls = List();
+var gutter;
+var ball;
+var paddle;
+var points = 0;
+var lives = 3;
+
+fun SetupGame()
+{
+    CreateLevel();
+}
+
+fun CreateLevel()
+{
+    CreateWalls();
+
+    gutter = Gutter(Vec2.Create(0,-35), Vec2.Create(80,10));
+    
+    CreateBall(Vec2.Create(0,-20));
+    
+    CreateLevelBricks();
+    
+    paddle = Paddle(Vec2.Create(0,-30), 30);
+}
+
+fun CreateWalls()
+{
+    walls.Add(Wall(Vec2.Create(-40,0), Vec2.Create(10,80)));
+    walls.Add(Wall(Vec2.Create(40,0), Vec2.Create(10,80)));
+    walls.Add(Wall(Vec2.Create(0,-40), Vec2.Create(80,10)));
+    walls.Add(Wall(Vec2.Create(0,40), Vec2.Create(80,10)));
+}
+
+fun CreateLevelBricks()
+{
+    var generator = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
+    var posList = generator.FromRowCol(3,10);
+    
+    CreateBricksFromPositions(posList);
+}
+
+fun CreateBall(at)
+{
+    ball = Ball(at);
+    SetRigidBody2DVelocity(ball.rb, 15,18);
+}
+
+fun CreateBricksFromPositions(posList)
+{
+    for(var i = 0; i < posList.Count(); i+=1)
+    {
+        var newBrick = Brick(posList.Get(i), i % 2);
+        bricks.Add(newBrick);
+    }
+}
+
+var dt;
+fun Update()
+{
+    UpdateGame(dt);
+    var outputText = "Points: " + str(points) + "\n" +
+        "Lives: " + str(lives);
+    if(lives <= 0)
+    {
+        outputText = outputText + "\n\nGame over.\nPress esc to restart.";
+    }
+    else if(bricks.Empty())
+    {
+        outputText = outputText + "\n\nYou have Won!";
+    }
+
+    SetUIText(outputText);
+}
+
+fun UpdateGame(dt)
+{
+	if(GetKey("escape")){ReloadScene();}
+
+	paddle.Update(dt);
+}
+
+fun GivePointsForBrick(brick, brickStrength)
+{
+    points += (brickStrength+1) * 10;
+    bricks.Remove(brick);
+
+    if(bricks.Empty())
+    {
+        if(ball != null)
+        {
+            DestroyUnityObject(ball.go);
+            ball = null;
+        }
+    }
+}
+
+fun BallLost()
+{
+    LiveLoss();
+    if(ball != null)
+    {
+        DestroyUnityObject(ball.go);
+        ball = null;
+    }
+    if(lives > 0)
+    {
+        CreateBall(Vec2.Create(0,-20));
+    }
+}
+
+fun LiveLoss()
+{
+    lives -= 1;
+}

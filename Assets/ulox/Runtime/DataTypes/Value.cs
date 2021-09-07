@@ -172,7 +172,10 @@ namespace ULox
                     case ValueType.String:
                         return lhs.val.asString == rhs.val.asString;
 
-                    default:
+                    case ValueType.Instance:
+                        return lhs.val.asInstance == rhs.val.asInstance;
+
+                default:
                     throw new VMException($"Cannot perform compare on type '{lhs.type}'.");
                 }
             }

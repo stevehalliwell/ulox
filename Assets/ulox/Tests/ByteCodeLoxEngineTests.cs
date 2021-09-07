@@ -1028,8 +1028,6 @@ maker.brew();");
         [Test]
         public void Engine_Class_BoundMethod()
         {
-            
-
             engine.Run(@"
 class CoffeeMaker {
     init(_coffee) {
@@ -1046,6 +1044,107 @@ class CoffeeMaker {
 
 var maker = CoffeeMaker(""coffee and chicory"");
 var delegate = maker.brew;
+delegate();");
+
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_BoundMethod_ViaReturn()
+        {
+            engine.Run(@"
+class CoffeeMaker {
+    init(_coffee) {
+        this.coffee = _coffee;
+    }
+
+    brew() {
+        print (""Enjoy your cup of "" + this.coffee);
+
+        // No reusing the grounds!
+        this.coffee = null;
+    }
+}
+
+fun GetDelegate()
+{
+    var maker = CoffeeMaker(""coffee and chicory"");
+    return maker.brew;
+}
+
+var delegate = GetDelegate();
+
+delegate();");
+
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", engine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_BoundMethod_ViaReturn_InOtherObject()
+        {
+            engine.Run(@"
+class CoffeeMaker {
+    init(_coffee) {
+        this.coffee = _coffee;
+    }
+
+    brew() {
+        print (""Enjoy your cup of "" + this.coffee);
+
+        // No reusing the grounds!
+        this.coffee = null;
+    }
+}
+
+class Nothing
+{
+    RunIt(del)
+    {
+        del();
+    }
+}
+
+fun GetDelegate()
+{
+    var maker = CoffeeMaker(""coffee and chicory"");
+    return maker.brew;
+}
+
+var delegate = GetDelegate();
+var runner = Nothing();
+
+runner.RunIt(delegate);");
+
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", engine.InterpreterResult);
+        }
+
+        //TODO: add test to version with params
+        [Test]
+        public void Engine_Class_BoundMethod_InternalAndReturn()
+        {
+            engine.Run(@"
+class CoffeeMaker {
+    init(_coffee) {
+        this.coffee = _coffee;
+    }
+
+    brew() {
+        print (""Enjoy your cup of "" + this.coffee);
+
+        // No reusing the grounds!
+        this.coffee = null;
+    }
+
+    brewLater()
+    {
+        return this.brew;
+    }
+}
+
+var maker = CoffeeMaker(""coffee and chicory"");
+
+var delegate = maker.brewLater();
+
 delegate();");
 
             Assert.AreEqual("Enjoy your cup of coffee and chicory", engine.InterpreterResult);
@@ -1202,7 +1301,7 @@ class A{MethA(){print (1);}}");
             engine.Run(@"fun Meth(){print (1);}");
 
             var meth = engine.VM.GetGlobal("Meth");
-            engine.VM.CallFunction(meth,0);
+            engine.VM.PushCallFrameAndRun(meth,0);
 
             Assert.AreEqual("1", engine.InterpreterResult);
         }

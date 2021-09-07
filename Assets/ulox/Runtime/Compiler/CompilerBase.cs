@@ -215,7 +215,7 @@ namespace ULox
                 if (name == local.Name)
                 {
                     if (local.Depth == -1)
-                        throw new CompilerException("Cannot referenece a variable in it's own initialiser.");
+                        throw new CompilerException($"{name}. Cannot referenece a variable in it's own initialiser.");  //todo all of these throws need to report names and locations
                     return i;
                 }
             }

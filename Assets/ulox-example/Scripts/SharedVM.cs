@@ -8,6 +8,8 @@ namespace ULox.Demo
     {
         [SerializeField] private List<GameObject> availablePrefabs;
 
+        [SerializeField] private TextAsset[] scripts;
+
         public ByteCodeInterpreterEngine Engine { get; private set; }
 
         private void Awake()
@@ -24,6 +26,11 @@ namespace ULox.Demo
             Engine.AddLibrary(new AssertLibrary(() => new VM()));
             Engine.AddLibrary(new DebugLibrary());
             Engine.AddLibrary(new VMLibrary(() => new VM()));
+
+            foreach (var item in scripts)
+            {
+                Engine.Run(item.text);
+            }
         }
     }
 }

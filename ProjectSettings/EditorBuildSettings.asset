@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/ulox-example/Scenes/ULoxTryItOut.unity
     guid: 495ebf58329072741ae29f44e267994a
+  - enabled: 1
+    path: Assets/ulox-example/Scenes/Breakout.unity
+    guid: a0bb3fb9aa64a8d4cad61052aefc397d
   m_configObjects: {}

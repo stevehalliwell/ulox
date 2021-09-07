@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public class AssertLibrary : ILoxByteCodeLibrary
+    public class AssertLibrary : IULoxLibrary
     {
         public AssertLibrary(Func<VMBase> createVM)
         {

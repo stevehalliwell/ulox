@@ -26,14 +26,24 @@ namespace ULox.Demo
             _uLoxScriptEnvironment.Run(script.text);
 
             var setupFunc = _uLoxScriptEnvironment.GetGlobal("SetupGame");
-            _uLoxScriptEnvironment.CallFunction(setupFunc, 0);
-            gameUpdateFunction = _uLoxScriptEnvironment.GetGlobal("Update");
+            if (setupFunc.HasValue)
+            {
+                _uLoxScriptEnvironment.CallFunction(setupFunc.Value, 0);
+            }
+            var updateFunc = _uLoxScriptEnvironment.GetGlobal("Update");
+            if(updateFunc.HasValue)
+            {
+                gameUpdateFunction = updateFunc.Value;
+            }
         }
 
         private void Update()
         {
-            _uLoxScriptEnvironment.SetGlobal("dt", Value.New(Time.deltaTime));
-            _uLoxScriptEnvironment.CallFunction(gameUpdateFunction, 0);
+            if (!gameUpdateFunction.IsNull)
+            {
+                _uLoxScriptEnvironment.SetGlobal("dt", Value.New(Time.deltaTime));
+                _uLoxScriptEnvironment.CallFunction(gameUpdateFunction, 0);
+            }
         }
     }
 }

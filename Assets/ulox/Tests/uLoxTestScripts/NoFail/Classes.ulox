@@ -92,4 +92,16 @@ test Classes
 
         Assert.AreEqual(expected, result);
     }
+
+    testcase BoundMethod
+    {
+        var expected = 20;
+        var result = 0;
+        var w = AutoInitVars(10);
+
+        var bound = w.Sum;
+        result = bound();
+
+        Assert.AreEqual(expected, result);
+    }
 }

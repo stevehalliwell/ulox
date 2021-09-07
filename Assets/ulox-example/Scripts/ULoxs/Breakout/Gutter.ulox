@@ -1,0 +1,18 @@
+class Gutter
+{
+    var go = CreateFromPrefab("Wall");
+
+    init(pos, scale)
+    {
+        SetSpriteColour(this.go, 0,0,0,0);
+        SetCollisionCallback(this.go, "Ball", this.OnHitByBall);
+        SetGameObjectTag(this.go, "Gutter");
+        SetGameObjectPosition(this.go, pos.x, pos.y,0);
+        SetGameObjectScale(this.go, scale.x, scale.y,1);
+    }
+
+    OnHitByBall()
+    {
+        BallLost();
+    }
+}

@@ -1,0 +1,14 @@
+class Ball
+{
+    var pos = Vec2();
+    var go = CreateFromPrefab("Ball");
+    var rb;
+
+    init(pos)
+    {
+        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
+        this.rb = GetRigidBody2DFromGameObject(this.go);    //TODO would prefer to be able to do this during init chain 
+        SetSpriteColour(this.go, 1,0,0,1);
+        SetGameObjectTag(this.go, "Ball");
+    }
+}

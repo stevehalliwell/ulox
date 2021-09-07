@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class CoreLibrary : ILoxByteCodeLibrary
+    public class CoreLibrary : IULoxLibrary
     {
         private System.Action<string> _printer;
 

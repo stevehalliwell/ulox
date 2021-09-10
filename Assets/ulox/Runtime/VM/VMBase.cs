@@ -19,7 +19,7 @@ namespace ULox
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
     //todo self asign needs safety to prevent their use in declarations.
-    public class VMBase
+    public class VMBase : IVM
     {
         protected readonly FastStack<Value> _valueStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();

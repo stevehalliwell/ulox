@@ -4,6 +4,8 @@
     {
         private System.Action<string> _printer;
 
+        public string Name => nameof(CoreLibrary);
+
         public CoreLibrary(System.Action<string> printer)
         {
             _printer = printer;

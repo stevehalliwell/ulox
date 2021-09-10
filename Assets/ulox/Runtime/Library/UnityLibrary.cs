@@ -1,15 +1,22 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace ULox
 {
     public class UnityLibrary : IULoxLibrary
     {
-        private System.Collections.Generic.List<UnityEngine.GameObject> _availablePrefabs;
+        private List<GameObject> _availablePrefabs;
+        private System.Action<string> _outputText;
 
-        public UnityLibrary(System.Collections.Generic.List<UnityEngine.GameObject> availablePrefabs)
+        public string Name => nameof(UnityLibrary);
+
+        public UnityLibrary(
+            List<GameObject> availablePrefabs,
+            System.Action<string> uiTextOut)
         {
             _availablePrefabs = availablePrefabs;
+            _outputText = uiTextOut;
         }
 
         public Table GetBindings()
@@ -23,17 +30,8 @@ namespace ULox
             resTable.Add(nameof(SetGameObjectPosition), Value.New(SetGameObjectPosition)); 
             resTable.Add(nameof(SetGameObjectScale), Value.New(SetGameObjectScale));
             resTable.Add(nameof(ReloadScene), Value.New(ReloadScene));
-
-            resTable.Add("CreateFromPrefab",
-                Value.New(
-                (vm, args) =>
-                {
-                    var targetName = vm.GetArg(1).val.asString;
-                    var loc = _availablePrefabs.Find(x => x.name == targetName);
-                    if (loc != null)
-                        return Value.Object(UnityEngine.Object.Instantiate(loc));
-                    return Value.Null();
-                }));
+            resTable.Add(nameof(SetUIText), Value.New(SetUIText));
+            resTable.Add(nameof(CreateFromPrefab), Value.New(CreateFromPrefab));
 
             resTable.Add("RandRange",
                 Value.New(
@@ -82,9 +80,13 @@ namespace ULox
                     rb2d.velocity = new Vector2(x, y);
                     return Value.Null();
                 }));
-
-
             return resTable;
+        }
+
+        private Value SetUIText(VMBase vm, int argCount)
+        {
+            _outputText?.Invoke(vm.GetArg(1).val.asString);
+            return Value.Null();
         }
 
         private Value SetSpriteColour(VMBase vm, int argCount)
@@ -147,6 +149,17 @@ namespace ULox
         private Value ReloadScene(VMBase vm, int argCount)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            return Value.Null();
+        }
+        private Value CreateFromPrefab(VMBase vm, int argCount)
+        {
+            var targetName = vm.GetArg(1).val.asString;
+            var loc = _availablePrefabs.Find(x => x.name == targetName);
+            if (loc != null)
+                return Value.Object(UnityEngine.Object.Instantiate(loc));
+            else
+                Debug.LogError($"Unable to find prefab of name '{targetName}'.");
+
             return Value.Null();
         }
     }

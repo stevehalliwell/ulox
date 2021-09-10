@@ -4,6 +4,7 @@ namespace ULox
 {
     public class VMLibrary : IULoxLibrary
     {
+        public string Name => nameof(VMLibrary);
         public VMLibrary(Func<VMBase> createVM)
         {
             CreateVM = createVM;

@@ -482,7 +482,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   script: {fileID: 9027929339269108002, guid: 38a23263911daaa4a8312d30dce25e96, type: 3}
-  text: {fileID: 1264883865}
 --- !u!4 &1701529282
 Transform:
   m_ObjectHideFlags: 0
@@ -509,8 +508,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8fa30adad9725c468a6696730ba2f7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  availablePrefabs:
-  - {fileID: 6638345232988510349, guid: 8471a01896fdef4409275edf83d8ad2f, type: 3}
+  prefabCollectionSO: {fileID: 11400000, guid: e8615a58c59104c42bfa15bc17fc832f, type: 2}
+  textAssetCollectionSO: {fileID: 0}
+  outputText: {fileID: 1264883865}
+  bindAllLibraries: 1
 --- !u!1 &1845959160
 GameObject:
   m_ObjectHideFlags: 0

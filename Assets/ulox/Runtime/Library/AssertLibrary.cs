@@ -4,6 +4,8 @@ namespace ULox
 {
     public class AssertLibrary : IULoxLibrary
     {
+        public string Name => nameof(AssertLibrary);
+
         public AssertLibrary(Func<VMBase> createVM)
         {
             CreateVM = createVM;

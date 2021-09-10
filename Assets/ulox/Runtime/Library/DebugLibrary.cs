@@ -2,6 +2,8 @@
 {
     public class DebugLibrary : IULoxLibrary
     {
+        public string Name => nameof(DebugLibrary);
+
         public Table GetBindings()
         {
             var resTable = new Table();

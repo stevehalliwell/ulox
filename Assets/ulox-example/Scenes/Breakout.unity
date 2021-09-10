@@ -784,7 +784,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   script: {fileID: 9027929339269108002, guid: d458d97a6fbba4c4bb8df98e267a5efc, type: 3}
-  text: {fileID: 1264883865}
 --- !u!4 &1701529282
 Transform:
   m_ObjectHideFlags: 0
@@ -811,19 +810,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8fa30adad9725c468a6696730ba2f7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  availablePrefabs:
-  - {fileID: 6638345232988510349, guid: 8471a01896fdef4409275edf83d8ad2f, type: 3}
-  - {fileID: 8123680668997537465, guid: 61020e789288f7445a1cd4335d40ee99, type: 3}
-  - {fileID: 3262509741450305187, guid: f7301e8292c577242b05964520a88c89, type: 3}
-  - {fileID: 5227189200590557901, guid: fd88f4083cc02944e86933b1f39e91d1, type: 3}
-  scripts:
-  - {fileID: 9027929339269108002, guid: 77c56991eaf696c43a1e85b8dcff9ed4, type: 3}
-  - {fileID: 9027929339269108002, guid: 23eea45d325135d4ca790df8a44b6ff3, type: 3}
-  - {fileID: 9027929339269108002, guid: 2cbb78ef766d3be46bc16c65050c588f, type: 3}
-  - {fileID: 9027929339269108002, guid: 5625396a32ddf7e4aa221eb5a08e0c89, type: 3}
-  - {fileID: 9027929339269108002, guid: 750c1efbdc16b3c42a8a35ddb90f2153, type: 3}
-  - {fileID: 9027929339269108002, guid: c05261e13db19d549bbf445484e1e5f1, type: 3}
-  - {fileID: 9027929339269108002, guid: e87dfea015489594981bd5048bd95f70, type: 3}
+  prefabCollectionSO: {fileID: 11400000, guid: e8615a58c59104c42bfa15bc17fc832f, type: 2}
+  textAssetCollectionSO: {fileID: 11400000, guid: 0e54afbabbf7adf4584ff5ff0e9a136e, type: 2}
+  outputText: {fileID: 1264883865}
+  bindAllLibraries: 1
 --- !u!1 &1845959160
 GameObject:
   m_ObjectHideFlags: 0

@@ -7,7 +7,6 @@ namespace ULox.Demo
     public class BouncingBallsByteCodeSystem : MonoBehaviour
     {
         public TextAsset script;
-        public Text text;
         private Value gameUpdateFunction;
 
         private ULoxScriptEnvironment _uLoxScriptEnvironment;
@@ -16,12 +15,6 @@ namespace ULox.Demo
         {
             _uLoxScriptEnvironment = new ULoxScriptEnvironment(
                 FindObjectOfType<SharedVM>().Engine);
-
-            _uLoxScriptEnvironment.SetGlobal("SetUIText", Value.New((vm, args) =>
-            {
-                text.text = vm.GetArg(1).val.asString;
-                return Value.Null();
-            }));
 
             _uLoxScriptEnvironment.Run(script.text);
 

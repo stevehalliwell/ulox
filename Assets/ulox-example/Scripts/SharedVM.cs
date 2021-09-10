@@ -1,16 +1,21 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace ULox.Demo
 {
+    public class ScriptLocator
+    {
+
+    }
+
     public class SharedVM : MonoBehaviour
     {
-        [SerializeField] private List<GameObject> availablePrefabs;
+        [SerializeField] private PrefabCollectionSO prefabCollectionSO;
+        [SerializeField] private TextAssetCollectionSO textAssetCollectionSO;
+        [SerializeField] private Text outputText;
+        [SerializeField] private bool bindAllLibraries = false;
 
-        [SerializeField] private TextAsset[] scripts;
-
-        public ByteCodeInterpreterEngine Engine { get; private set; }
+        public Engine Engine { get; private set; }
 
         private void Awake()
         {
@@ -19,17 +24,23 @@ namespace ULox.Demo
 
         public void Reset()
         {
-            Engine = new ByteCodeInterpreterEngine();
-            Engine.AddLibrary(new CoreLibrary(Debug.Log));
-            Engine.AddLibrary(new StandardClassesLibrary());
-            Engine.AddLibrary(new UnityLibrary(availablePrefabs));
-            Engine.AddLibrary(new AssertLibrary(() => new VM()));
-            Engine.AddLibrary(new DebugLibrary());
-            Engine.AddLibrary(new VMLibrary(() => new VM()));
+            Engine = new Engine(new Context(new Program(), new VM()));
 
-            foreach (var item in scripts)
+            Engine.DeclareAllLibraries(
+                x => Debug.Log(x),
+                prefabCollectionSO.Collection,
+                x => outputText.text = x,
+                () => new VM());
+
+            if (bindAllLibraries)
+                Engine.BindAllLibraries();
+
+            if (textAssetCollectionSO != null)
             {
-                Engine.Run(item.text);
+                foreach (var item in textAssetCollectionSO.Collection)
+                {
+                    Engine.RunScript(item.text);
+                }
             }
         }
     }

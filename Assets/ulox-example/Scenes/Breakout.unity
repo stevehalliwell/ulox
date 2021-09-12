@@ -814,6 +814,14 @@ MonoBehaviour:
   textAssetCollectionSO: {fileID: 11400000, guid: 0e54afbabbf7adf4584ff5ff0e9a136e, type: 2}
   outputText: {fileID: 1264883865}
   bindAllLibraries: 1
+  scriptsNamesToLoad:
+  - Vec2
+  - GridGenerator
+  - Brick
+  - Paddle
+  - Ball
+  - Wall
+  - Gutter
 --- !u!1 &1845959160
 GameObject:
   m_ObjectHideFlags: 0

@@ -5,8 +5,14 @@ namespace ULox
 {
     public class Engine
     {
-        public Engine(IContext executionContext)
+        public IContext Context { get; private set; }
+        public IScriptLocator ScriptLocator { get; private set; }
+
+        public Engine(
+            IScriptLocator scriptLocator,
+            IContext executionContext)
         {
+            ScriptLocator = scriptLocator;
             Context = executionContext;
         }
 
@@ -25,8 +31,6 @@ namespace ULox
             Context.DeclareLibrary(new VMLibrary(createVM));
         }
 
-        public IContext Context { get; private set; }
-
         public void BindAllLibraries()
         {
             foreach (var libName in Context.LibraryNames)
@@ -39,6 +43,11 @@ namespace ULox
         {
             var s = Context.CompileScript(script);
             Context.VM.Interpret(s.TopLevelChunk);
+        }
+
+        public void LocateAndRun(string name)
+        {
+            RunScript(ScriptLocator.Find(name));
         }
     }
 }

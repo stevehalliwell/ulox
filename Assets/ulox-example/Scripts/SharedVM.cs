@@ -1,19 +1,18 @@
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace ULox.Demo
 {
-    public class ScriptLocator
-    {
-
-    }
-
     public class SharedVM : MonoBehaviour
     {
         [SerializeField] private PrefabCollectionSO prefabCollectionSO;
         [SerializeField] private TextAssetCollectionSO textAssetCollectionSO;
         [SerializeField] private Text outputText;
         [SerializeField] private bool bindAllLibraries = false;
+        [SerializeField] private List<string> scriptsNamesToLoad;
 
         public Engine Engine { get; private set; }
 
@@ -24,7 +23,9 @@ namespace ULox.Demo
 
         public void Reset()
         {
-            Engine = new Engine(new Context(new Program(), new VM()));
+            var builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name,x => x.text);
+            var scriptLocator = new ScriptLocator(builtinDict, new DirectoryInfo(Application.streamingAssetsPath));
+            Engine = new Engine(scriptLocator, new Context(new Program(), new VM()));
 
             Engine.DeclareAllLibraries(
                 x => Debug.Log(x),
@@ -35,12 +36,9 @@ namespace ULox.Demo
             if (bindAllLibraries)
                 Engine.BindAllLibraries();
 
-            if (textAssetCollectionSO != null)
+            foreach (var item in scriptsNamesToLoad)
             {
-                foreach (var item in textAssetCollectionSO.Collection)
-                {
-                    Engine.RunScript(item.text);
-                }
+                Engine.LocateAndRun(item);
             }
         }
     }

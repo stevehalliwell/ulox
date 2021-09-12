@@ -15,7 +15,7 @@ namespace ULox.Tests
         public ByteCodeInterpreterTestEngine(System.Action<string> logger)
         {
             _vm = new VM();
-            _engine = new Engine(new Context(new Program(), _vm));
+            _engine = new Engine(null, new Context(new Program(), _vm));
 
             _logger = logger;
             _engine.Context.AddLibrary(new CoreLibrary(x => 

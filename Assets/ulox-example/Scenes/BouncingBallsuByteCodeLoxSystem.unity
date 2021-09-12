@@ -509,9 +509,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabCollectionSO: {fileID: 11400000, guid: e8615a58c59104c42bfa15bc17fc832f, type: 2}
-  textAssetCollectionSO: {fileID: 0}
+  textAssetCollectionSO: {fileID: 11400000, guid: 0e54afbabbf7adf4584ff5ff0e9a136e, type: 2}
   outputText: {fileID: 1264883865}
   bindAllLibraries: 1
+  scriptsNamesToLoad:
+  - Vec2
 --- !u!1 &1845959160
 GameObject:
   m_ObjectHideFlags: 0

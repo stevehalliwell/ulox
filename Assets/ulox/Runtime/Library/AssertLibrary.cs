@@ -29,6 +29,8 @@ namespace ULox
             assertInst.fields[nameof(DoesContain)] = Value.New(DoesContain);
             assertInst.fields[nameof(DoesNotContain)] = Value.New(DoesNotContain);
             assertInst.fields[nameof(Throws)] = Value.New(Throws);
+            assertInst.fields[nameof(Pass)] = Value.New(Pass);
+            assertInst.fields[nameof(Fail)] = Value.New(Fail);
 
             return resTable;
         }
@@ -142,6 +144,19 @@ namespace ULox
 
             if (!didThrow)
                 throw new AssertException($"'{toRun.Name}' did not throw, but should have.");
+
+            return Value.Null();
+        }
+
+        private static Value Pass(VMBase vm, int argCount)
+        {
+            return Value.Null();
+        }
+
+        private static Value Fail(VMBase vm, int argCount)
+        {
+            var msg = vm.GetArg(1);
+                throw new AssertException($"Fail. '{msg}'");
 
             return Value.Null();
         }

@@ -80,5 +80,7 @@
         EOF,
 
         NONE,
+
+        BUILD,
     }
 }

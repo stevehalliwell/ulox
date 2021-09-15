@@ -16,6 +16,12 @@ namespace ULox
             _directory = directory;
         }
 
+        public ScriptLocator()
+        {
+            _builtinScripts = new Dictionary<string, string>();
+            _directory = new DirectoryInfo(System.Environment.CurrentDirectory);
+        }
+
         public string Find(string name)
         {
             if (_builtinScripts.TryGetValue(name, out var val))
@@ -26,6 +32,11 @@ namespace ULox
                 return File.ReadAllText(externalMatches[0]);
 
             return null;
+        }
+
+        public void Add(string name, string content)
+        {
+            _builtinScripts[name] = content;
         }
     }
 }

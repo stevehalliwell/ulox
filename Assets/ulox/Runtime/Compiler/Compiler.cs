@@ -5,6 +5,7 @@
         private ClassCompilette _classCompiler;
         private TestcaseCompillette _testcaseCompilette;
         private TestDeclarationCompilette _testdec;
+        private BuildCompilette _buildCompilette;
 
         public Compiler()
         {
@@ -12,11 +13,13 @@
             _testcaseCompilette = new TestcaseCompillette();
             _testdec = new TestDeclarationCompilette();
             _testcaseCompilette.SetTestDeclarationCompilette(_testdec);
+            _buildCompilette = new BuildCompilette();
             _classCompiler = new ClassCompilette();
             this.AddDeclarationCompilettes(
                 _testdec,
                 _classCompiler,
-                _testcaseCompilette);
+                _testcaseCompilette,
+                _buildCompilette);
 
             this.SetPrattRules(
                 (TokenType.DOT, new ParseRule(null, this.Dot, Precedence.Call)),

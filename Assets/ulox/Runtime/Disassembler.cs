@@ -17,6 +17,8 @@
             opCodeHandlers[(int)OpCode.CLASS] = AppendStringConstantThenSpaceThenUshort;
 
             opCodeHandlers[(int)OpCode.TEST] = HandleTestOpCode;
+
+            opCodeHandlers[(int)OpCode.BUILD] = AppendByteThenSpaceThenStringConstant;
         }
 
         private int HandleTestOpCode(Chunk chunk, int i)
@@ -63,6 +65,13 @@
             i = AppendStringConstant(chunk, i);
             AppendSpace();
             return AppendUShort(chunk, i);
+        }
+
+        private int AppendByteThenSpaceThenStringConstant(Chunk chunk, int i)
+        {
+            i = AppendByte(chunk, i);
+            AppendSpace();
+            return AppendStringConstant(chunk, i);
         }
 
         private int AppendStringConstantThenByte(Chunk chunk, int i)

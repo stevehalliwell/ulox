@@ -4,7 +4,13 @@ namespace ULox
 {
     public class VM : VMBase
     {
-        public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new VM());
+        public VM(Builder builder)
+        {
+            Builder = builder;
+        }
+
+        public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new VM(null));
+        public Builder Builder { get; protected set; }
 
         public override void CopyFrom(VMBase otherVMbase)
         {
@@ -13,6 +19,7 @@ namespace ULox
             if (otherVMbase is VM otherVm)
             {
                 TestRunner = otherVm.TestRunner;
+                Builder = otherVm.Builder;
             }
         }
 
@@ -108,6 +115,25 @@ namespace ULox
 
             case OpCode.TEST:
                 TestRunner.DoTestOpCode(this, chunk);
+                break;
+
+            case OpCode.BUILD:
+                {
+                    var buildOpType = (BuildOpType)ReadByte(chunk);
+                    var constantIndex = ReadByte(chunk);
+                    var str = chunk.ReadConstant(constantIndex).val.asString;
+                    switch (buildOpType)
+                    {
+                    case BuildOpType.Bind:
+                        Builder.BindLibrary(str);
+                        break;
+                    case BuildOpType.Queue:
+                        Builder.LocateScriptAndQueue(str);
+                        break;
+                    default:
+                        throw new VMException($"Unhanlded BuildOpType '{buildOpType}'");
+                    }
+                }
                 break;
 
             default:

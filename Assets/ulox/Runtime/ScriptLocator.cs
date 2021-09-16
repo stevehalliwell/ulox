@@ -3,7 +3,7 @@ using System.IO;
 
 namespace ULox
 {
-    public class ScriptLocator: IScriptLocator
+    public class ScriptLocator : IScriptLocator
     {
         private Dictionary<string, string> _builtinScripts;
         private DirectoryInfo _directory;
@@ -22,6 +22,11 @@ namespace ULox
             _directory = new DirectoryInfo(System.Environment.CurrentDirectory);
         }
 
+        public void Add(string name, string content)
+        {
+            _builtinScripts[name] = content;
+        }
+
         public string Find(string name)
         {
             if (_builtinScripts.TryGetValue(name, out var val))
@@ -32,11 +37,6 @@ namespace ULox
                 return File.ReadAllText(externalMatches[0]);
 
             return null;
-        }
-
-        public void Add(string name, string content)
-        {
-            _builtinScripts[name] = content;
         }
     }
 }

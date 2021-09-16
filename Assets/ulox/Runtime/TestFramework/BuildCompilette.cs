@@ -8,22 +8,27 @@
 
     public class BuildCompilette : ICompilette
     {
+        private const string BindIdentKeyword = "bind";
+        private const string QueueIdentKeyword = "queue";
+
         public TokenType Match => TokenType.BUILD;
 
         public void Process(CompilerBase compiler)
         {
-            BuildOpType buildOpType = BuildOpType.Bind;
-
             compiler.Consume(TokenType.IDENTIFIER, "Expect identifier after build command.");
+
+            BuildOpType buildOpType = BuildOpType.Bind;
 
             switch (compiler.PreviousToken.Literal)
             {
-            case "bind":
+            case BindIdentKeyword:
                 buildOpType = BuildOpType.Bind;
                 break;
-            case "queue":
+
+            case QueueIdentKeyword:
                 buildOpType = BuildOpType.Queue;
                 break;
+
             default:
                 throw new CompilerException($"'build' keyword followed by unexpected identifier '{compiler.PreviousToken.Literal}'.");
             }

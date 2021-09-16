@@ -42,16 +42,6 @@ namespace ULox.Tests
                 Program = program;
                 _vm.Run(Program);
             }
-
-            public virtual void AddLibrary(IULoxLibrary lib)
-            {
-                var toAdd = lib.GetBindings();
-
-                foreach (var item in toAdd)
-                {
-                    _vm.SetGlobal(item.Key, item.Value);
-                }
-            }
         }
 
         public class SimpleTestEngine : SimpleEngine

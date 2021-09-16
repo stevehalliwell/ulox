@@ -2,6 +2,8 @@
 {
     public class StandardClassesLibrary : IULoxLibrary
     {
+        public string Name => nameof(StandardClassesLibrary);
+
         public Table GetBindings()
         {
             var resTable = new Table();

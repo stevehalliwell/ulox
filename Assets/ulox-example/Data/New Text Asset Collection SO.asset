@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68690eab3b8545f458c097ae542f90b7, type: 3}
+  m_Name: New Text Asset Collection SO
+  m_EditorClassIdentifier: 
+  items:
+  - {fileID: 9027929339269108002, guid: 77c56991eaf696c43a1e85b8dcff9ed4, type: 3}
+  - {fileID: 9027929339269108002, guid: 23eea45d325135d4ca790df8a44b6ff3, type: 3}
+  - {fileID: 9027929339269108002, guid: 2cbb78ef766d3be46bc16c65050c588f, type: 3}
+  - {fileID: 9027929339269108002, guid: 5625396a32ddf7e4aa221eb5a08e0c89, type: 3}
+  - {fileID: 9027929339269108002, guid: 750c1efbdc16b3c42a8a35ddb90f2153, type: 3}
+  - {fileID: 9027929339269108002, guid: c05261e13db19d549bbf445484e1e5f1, type: 3}
+  - {fileID: 9027929339269108002, guid: e87dfea015489594981bd5048bd95f70, type: 3}
+  - {fileID: 9027929339269108002, guid: d458d97a6fbba4c4bb8df98e267a5efc, type: 3}

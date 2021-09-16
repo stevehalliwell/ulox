@@ -9,6 +9,8 @@
             this.AddIdentifierGenerators(
                 (".", TokenType.DOT),
 
+                ("build", TokenType.BUILD),
+
                 ("test", TokenType.TEST),
                 ("testcase", TokenType.TESTCASE),
                 ("tname", TokenType.CONTEXT_NAME_TEST),

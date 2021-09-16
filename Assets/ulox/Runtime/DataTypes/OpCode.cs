@@ -55,5 +55,7 @@
         SUPER_INVOKE,
 
         TEST,
+
+        BUILD,
     }
 }

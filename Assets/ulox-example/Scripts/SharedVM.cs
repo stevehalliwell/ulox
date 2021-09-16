@@ -1,16 +1,20 @@
-using System.Collections;
-using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace ULox.Demo
 {
     public class SharedVM : MonoBehaviour
     {
-        [SerializeField] private List<GameObject> availablePrefabs;
+        [SerializeField] private PrefabCollectionSO prefabCollectionSO;
+        [SerializeField] private TextAssetCollectionSO textAssetCollectionSO;
+        [SerializeField] private Text outputText;
+        [SerializeField] private bool bindAllLibraries = false;
+        [SerializeField] private List<string> scriptsNamesToLoad;
 
-        [SerializeField] private TextAsset[] scripts;
-
-        public ByteCodeInterpreterEngine Engine { get; private set; }
+        public Engine Engine { get; private set; }
 
         private void Awake()
         {
@@ -19,18 +23,25 @@ namespace ULox.Demo
 
         public void Reset()
         {
-            Engine = new ByteCodeInterpreterEngine();
-            Engine.AddLibrary(new CoreLibrary(Debug.Log));
-            Engine.AddLibrary(new StandardClassesLibrary());
-            Engine.AddLibrary(new UnityLibrary(availablePrefabs));
-            Engine.AddLibrary(new AssertLibrary(() => new VM()));
-            Engine.AddLibrary(new DebugLibrary());
-            Engine.AddLibrary(new VMLibrary(() => new VM()));
+            var builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name,x => x.text);
+            var scriptLocator = new ScriptLocator(builtinDict, new DirectoryInfo(Application.streamingAssetsPath));
+            Engine = new Engine(scriptLocator, new Context(new Program(), new VM()));
 
-            foreach (var item in scripts)
+            Engine.DeclareAllLibraries(
+                x => Debug.Log(x),
+                prefabCollectionSO.Collection,
+                x => outputText.text = x,
+                () => new VM());
+
+            if (bindAllLibraries)
+                Engine.BindAllLibraries();
+
+            foreach (var item in scriptsNamesToLoad)
             {
-                Engine.Run(item.text);
+                Engine.LocateAndQueue(item);
             }
+
+            Engine.BuildAndRun();
         }
     }
 }

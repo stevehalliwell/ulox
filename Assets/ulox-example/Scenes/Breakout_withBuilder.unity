@@ -783,7 +783,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 27ca08d7b59ec734aac4c51c59a3c2b5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  script: {fileID: 9027929339269108002, guid: d458d97a6fbba4c4bb8df98e267a5efc, type: 3}
+  script: {fileID: 9027929339269108002, guid: 26b99bb38db754f459aa4d9513dcb2b8, type: 3}
 --- !u!4 &1701529282
 Transform:
   m_ObjectHideFlags: 0
@@ -813,15 +813,8 @@ MonoBehaviour:
   prefabCollectionSO: {fileID: 11400000, guid: e8615a58c59104c42bfa15bc17fc832f, type: 2}
   textAssetCollectionSO: {fileID: 11400000, guid: 0e54afbabbf7adf4584ff5ff0e9a136e, type: 2}
   outputText: {fileID: 1264883865}
-  bindAllLibraries: 1
-  scriptsNamesToLoad:
-  - Vec2
-  - GridGenerator
-  - Brick
-  - Paddle
-  - Ball
-  - Wall
-  - Gutter
+  bindAllLibraries: 0
+  scriptsNamesToLoad: []
 --- !u!1 &1845959160
 GameObject:
   m_ObjectHideFlags: 0

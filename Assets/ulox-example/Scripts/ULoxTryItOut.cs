@@ -46,15 +46,15 @@ namespace ULox.Demo
             Application.logMessageReceived += Application_logMessageReceived;
             try
             {
-                sharedVM.Engine.Run(scriptInput.text);
+                sharedVM.Engine.RunScript(scriptInput.text);
             }
             catch (Exception)
             {
             }
             Application.logMessageReceived -= Application_logMessageReceived;
 
-            state.text = sharedVM.Engine.VM.GenerateGlobalsDump();
-            bytecode.text = sharedVM.Engine.Disassembly;
+            state.text = sharedVM.Engine.Context.VM.GenerateGlobalsDump();
+            bytecode.text = sharedVM.Engine.Context.Program.Disassembly;
             output.text += "\n";
         }
 

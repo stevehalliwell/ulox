@@ -1,0 +1,15 @@
+build bind 
+    "CoreLibrary",
+    "StandardClassesLibrary",
+    "UnityLibrary",
+    "AssertLibrary";
+    
+build queue 
+    "Vec2", 
+    "GridGenerator", 
+    "Brick",
+    "Paddle",
+    "Ball",
+    "Wall", 
+    "Gutter", 
+    "Breakout";

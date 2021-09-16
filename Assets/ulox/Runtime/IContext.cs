@@ -4,7 +4,7 @@ namespace ULox
 {
     public interface IContext
     {
-        IVM VM { get; }
+        IVm VM { get; }
         IEnumerable<string> LibraryNames { get; }
         IProgram Program { get; }
 

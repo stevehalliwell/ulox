@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public interface IVM
+    public interface IVm
     {
         string GenerateGlobalsDump();
         string GenerateStackDump();
@@ -9,5 +9,6 @@
         InterpreterResult PushCallFrameAndRun(Value func, int args);
         InterpreterResult Run(IProgram program);
         void SetGlobal(string name, Value val);
+        void SetEngine(IEngine engine);
     }
 }

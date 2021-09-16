@@ -25,14 +25,13 @@ namespace ULox.Demo
         {
             var builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name,x => x.text);
             var scriptLocator = new ScriptLocator(builtinDict, new DirectoryInfo(Application.streamingAssetsPath));
-            var builder = new Builder();
-            Engine = new Engine(scriptLocator, builder, new Context(new Program(), new VM(builder)));
+            Engine = new Engine(scriptLocator, new Context(new Program(), new VM()));
 
             Engine.DeclareAllLibraries(
                 x => Debug.Log(x),
                 prefabCollectionSO.Collection,
                 x => outputText.text = x,
-                () => new VM(null));
+                () => new VM());
 
             if (bindAllLibraries)
                 Engine.BindAllLibraries();

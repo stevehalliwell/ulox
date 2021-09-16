@@ -19,11 +19,13 @@ namespace ULox
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
     //todo self asign needs safety to prevent their use in declarations.
-    public class VMBase : IVM
+    public class VMBase : IVm
     {
         protected readonly FastStack<Value> _valueStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         protected CallFrame currentCallFrame;
+        private IEngine _engine;
+        public IEngine Engine => _engine;
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private readonly Table _globals = Table.Empty();
 
@@ -51,6 +53,8 @@ namespace ULox
 
         public Value GetGlobal(string name) => _globals[name];
 
+        public void SetEngine(IEngine engine) => _engine = engine;
+
         public InterpreterResult PushCallFrameAndRun(Value func, int args)
         {
             PushCallFrameFromValue(func, args);
@@ -63,6 +67,8 @@ namespace ULox
 
         public virtual void CopyFrom(VMBase otherVM)
         {
+            _engine = otherVM.Engine;
+
             foreach (var val in otherVM._globals)
             {
                 SetGlobal(val.Key, val.Value);
@@ -318,6 +324,25 @@ namespace ULox
                 case OpCode.THROW:
                     throw new PanicException(Pop().ToString());
                 case OpCode.NONE:
+                    break;
+
+                case OpCode.BUILD:
+                    {
+                        var buildOpType = (BuildOpType)ReadByte(chunk);
+                        var constantIndex = ReadByte(chunk);
+                        var str = chunk.ReadConstant(constantIndex).val.asString;
+                        switch (buildOpType)
+                        {
+                        case BuildOpType.Bind:
+                            Engine.Context.BindLibrary(str);
+                            break;
+                        case BuildOpType.Queue:
+                            Engine.LocateAndQueue(str);
+                            break;
+                        default:
+                            throw new VMException($"Unhanlded BuildOpType '{buildOpType}'");
+                        }
+                    }
                     break;
 
                 default:

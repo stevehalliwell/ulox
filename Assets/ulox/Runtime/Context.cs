@@ -9,14 +9,14 @@ namespace ULox
 
         public Context(
             IProgram program,
-            IVM vm)
+            IVm vm)
         {
             Program = program;
             VM = vm;
         }
 
         public IProgram Program { get; private set; }
-        public IVM VM { get; private set; }
+        public IVm VM { get; private set; }
         public IEnumerable<string> LibraryNames => _libraries.Keys;
 
         public void DeclareLibrary(IULoxLibrary lib)

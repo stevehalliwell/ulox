@@ -3,53 +3,19 @@ using System.Collections.Generic;
 
 namespace ULox
 {
-    public interface IEngine
-    {
-        IContext Context { get; }
-        IScriptLocator ScriptLocator { get; }
-
-        void LocateAndQueue(string name);
-    }
-
     public class Engine : IEngine
     {
         public IContext Context { get; private set; }
         public IScriptLocator ScriptLocator { get; private set; }
-        public Builder Builder { get;private set; }
-        public Queue<string> _buildQueue = new Queue<string>();
+        public readonly Queue<string> _buildQueue = new Queue<string>();
 
         public Engine(
             IScriptLocator scriptLocator,
-            Builder builder,
             IContext executionContext)
         {
             ScriptLocator = scriptLocator;
-            Builder = builder;
             Context = executionContext;
-            Builder.SetEngine(this);
-        }
-
-        public void DeclareAllLibraries(
-            Action<string> logger,
-            List<UnityEngine.GameObject> availablePrefabs,
-            Action<string> outputText,
-            Func<VMBase> createVM)
-        { 
-
-            Context.DeclareLibrary(new CoreLibrary(logger));
-            Context.DeclareLibrary(new StandardClassesLibrary());
-            Context.DeclareLibrary(new UnityLibrary(availablePrefabs, outputText));
-            Context.DeclareLibrary(new AssertLibrary(createVM));
-            Context.DeclareLibrary(new DebugLibrary());
-            Context.DeclareLibrary(new VMLibrary(createVM));
-        }
-
-        public void BindAllLibraries()
-        {
-            foreach (var libName in Context.LibraryNames)
-            {
-                Context.BindLibrary(libName);
-            }
+            Context.VM.SetEngine(this);
         }
 
         public void RunScript(string script)
@@ -72,10 +38,31 @@ namespace ULox
         {
             _buildQueue.Enqueue(ScriptLocator.Find(name));
         }
+    }
 
-        public void LocateAndRun(string name)
+    public static class EngineExt
+    {
+        public static void DeclareAllLibraries(
+            this Engine engine,
+            Action<string> logger,
+            List<UnityEngine.GameObject> availablePrefabs,
+            Action<string> outputText,
+            Func<VMBase> createVM)
         {
-            RunScript(ScriptLocator.Find(name));
+            engine.Context.DeclareLibrary(new CoreLibrary(logger));
+            engine.Context.DeclareLibrary(new StandardClassesLibrary());
+            engine.Context.DeclareLibrary(new UnityLibrary(availablePrefabs, outputText));
+            engine.Context.DeclareLibrary(new AssertLibrary(createVM));
+            engine.Context.DeclareLibrary(new DebugLibrary());
+            engine.Context.DeclareLibrary(new VMLibrary(createVM));
+        }
+
+        public static void BindAllLibraries(this Engine engine)
+        {
+            foreach (var libName in engine.Context.LibraryNames)
+            {
+                engine.Context.BindLibrary(libName);
+            }
         }
     }
 }

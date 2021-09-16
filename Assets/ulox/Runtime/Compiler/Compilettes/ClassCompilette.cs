@@ -51,6 +51,11 @@ namespace ULox
                 hasSuper = DoClassInher(compiler, className, compState);
             }
 
+            if (compiler.Match(TokenType.MIXIN))
+            {
+                DoClassMixins(compiler, className, compState);
+            }
+
             compiler.NamedVariable(className, false);
             compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before class body.");
             while (!compiler.Check(TokenType.CLOSE_BRACE) && !compiler.Check(TokenType.EOF))
@@ -135,6 +140,21 @@ namespace ULox
             compiler.EmitOpCode(OpCode.INHERIT);
             hasSuper = true;
             return hasSuper;
+        }
+
+        private static void DoClassMixins(CompilerBase compiler, string className, CompilerState compState)
+        {
+            do
+            {
+                //read ident
+                compiler.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
+
+                compiler.NamedVariableFromPreviousToken(false);
+                compiler.NamedVariable(className, false);
+
+                //emit
+                compiler.EmitOpAndBytes(OpCode.MIXIN);
+            } while (compiler.Match(TokenType.COMMA));
         }
 
         private void DoInit(CompilerBase compiler, string className)

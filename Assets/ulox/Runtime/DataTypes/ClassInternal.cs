@@ -28,9 +28,9 @@ namespace ULox
 
         public string name;
         private Dictionary<string, Value> methods = new Dictionary<string, Value>();
+        private Dictionary<string, ClassInternal> flavours = new Dictionary<string, ClassInternal>();
         public Value initialiser = Value.Null();
-        public ClosureInternal initChainStartClosure;
-        public int initChainStartLocation = -1;
+        public List<(ClosureInternal, int)> initChains = new List<(ClosureInternal, int)>();
         public Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
         public Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
         public ClassInternal super;
@@ -61,7 +61,12 @@ namespace ULox
             }
         }
 
-        internal void InheritFrom(ClassInternal superClass)
+        internal void AddInitChain(ClosureInternal closure, ushort initChainStartOp)
+        {
+            initChains.Add((closure, initChainStartOp));
+        }
+
+        public void InheritFrom(ClassInternal superClass)
         {
             super = superClass;
             foreach (var item in superClass.methods)
@@ -70,6 +75,19 @@ namespace ULox
                 var v = item.Value;
                 AddMethod(k, v);
             }
+        }
+
+        public void AddMixin(ClassInternal flavour)
+        {
+            flavours[flavour.name] = flavour;
+
+            foreach (var flavourMeth in flavour.methods)
+            {
+                AddMethod(flavourMeth.Key, flavourMeth.Value);
+            }
+
+            if (flavour.initChains.Count > 0)
+                initChains.AddRange(flavour.initChains);
         }
     }
 }

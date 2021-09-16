@@ -69,6 +69,8 @@
         STATIC,
         INIT,
 
+        MIXIN,
+
         TEST,
         TESTCASE,
 

@@ -17,6 +17,7 @@
                 ("tsname", TokenType.CONTEXT_NAME_TESTCASE),
 
                 ("class", TokenType.CLASS),
+                ("mixin", TokenType.MIXIN),
                 ("this", TokenType.THIS),
                 ("super", TokenType.SUPER),
                 ("static", TokenType.STATIC),

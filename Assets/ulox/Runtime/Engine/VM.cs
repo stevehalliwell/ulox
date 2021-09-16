@@ -62,16 +62,17 @@ namespace ULox
                     var initChain = ReadUShort(chunk);
                     if (initChain != 0)
                     {
-                        klass.initChainStartLocation = initChain;
-                        klass.initChainStartClosure = currentCallFrame.Closure;
+                        klass.AddInitChain(currentCallFrame.Closure, initChain);
                     }
                 }
                 break;
 
             case OpCode.METHOD:
-                {
-                    DoMethodOp(chunk);
-                }
+                DoMethodOp(chunk);
+                break;
+
+            case OpCode.MIXIN:
+                DoMixinOp(chunk);
                 break;
 
             case OpCode.INVOKE:
@@ -244,6 +245,15 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoMixinOp(Chunk chunk)
+        {
+            Value klass = Pop();
+            Value mixin = Pop();
+            var flavour = mixin.val.asClass;
+            klass.val.asClass.AddMixin(flavour);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoInheritOp(Chunk chunk)
         {
             var superVal = Peek(1);
@@ -317,17 +327,20 @@ namespace ULox
                 throw new VMException("Args given for a class that does not have an 'init' method");
             }
 
-            if (klass.initChainStartLocation != -1)
+            foreach (var initChain in klass.initChains)
             {
-                if (!klass.initialiser.IsNull)
-                    Push(inst);
+                if(initChain.Item2 != -1) 
+                { 
+                    if (!klass.initialiser.IsNull)
+                        Push(inst);
 
-                PushNewCallframe(new CallFrame()
-                {
-                    Closure = klass.initChainStartClosure,
-                    InstructionPointer = klass.initChainStartLocation,
-                    StackStart = _valueStack.Count - 1, //last thing checked
-                });
+                    PushNewCallframe(new CallFrame()
+                    {
+                        Closure = initChain.Item1,
+                        InstructionPointer = initChain.Item2,
+                        StackStart = _valueStack.Count - 1, //last thing checked
+                    });
+                }
             }
 
             if (klass.super != null)
@@ -342,7 +355,7 @@ namespace ULox
         private int PrepareSuperInit(ClassInternal klass, int argCount, Value inst, int stackCount)
         {
             int argsToSuperInit = 0;
-            if (!klass.super.initialiser.IsNull || klass.super.initChainStartLocation != -1)
+            if (!klass.super.initialiser.IsNull || klass.super.initChains.Count > 0)
             {
                 //push inst and push args it expects
                 Push(inst);

@@ -144,6 +144,66 @@ print(foo.d);
         }
 
         [Test]
+        public void Mixin_WhenManyCombinedAndMixinsOfMixins_ShouldHaveAll()
+        {
+            var script = @"
+class MixMe
+{
+    var a = 1;
+}
+class MixMe2
+{
+    var b = 2;
+}
+class MixMe3
+{
+    var c = 3;
+}
+
+class MixMeSub1
+{
+    var e = 5;
+}
+
+class MixMeSub2
+{
+    var f = 6;
+}
+
+class MixMe4
+{
+    mixin MixMeSub1, MixMeSub2;
+    
+    var g = 7;
+}
+
+class Foo 
+{
+    mixin 
+        MixMe,
+        MixMe2;
+    mixin MixMe3;
+    mixin MixMe4;
+
+    var d = 4;
+}
+
+var foo = Foo();
+print(foo.a);
+print(foo.b);
+print(foo.c);
+print(foo.d);
+print(foo.e);
+print(foo.f);
+print(foo.g);
+";
+
+            testEngine.Run(script);
+
+            Assert.AreEqual("1234567", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Mixin_WhenCombined_ShouldHaveOriginalVar()
         {
             var expected = "2";

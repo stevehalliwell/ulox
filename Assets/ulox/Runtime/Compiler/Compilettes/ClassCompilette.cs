@@ -8,9 +8,9 @@ namespace ULox
 
         protected Dictionary<TokenType, ICompilette> innerDeclarationCompilettes = new Dictionary<TokenType, ICompilette>();
 
-        protected enum Stage { Invalid, Var, Init, Method }
+        protected enum Stage { Invalid, Begin, Static, Mixin, Var, Init, Method, Complete }
 
-        protected Stage stage = Stage.Invalid;
+        protected Stage _stage = Stage.Invalid;
         public string CurrentClassName { get; private set; }
 
         private List<string> classVarNames = new List<string>();
@@ -32,7 +32,7 @@ namespace ULox
             _initFragStartLocation = -1;
             _previousInitFragJumpLocation = -1;
 
-            stage = Stage.Var;
+            _stage = Stage.Begin;
             classVarNames.Clear();
             compiler.Consume(TokenType.IDENTIFIER, "Expect class name.");
             var className = (string)compiler.PreviousToken.Literal;
@@ -51,39 +51,44 @@ namespace ULox
                 hasSuper = DoClassInher(compiler, className, compState);
             }
 
-            if (compiler.Match(TokenType.MIXIN))
-            {
-                DoClassMixins(compiler, className, compState);
-            }
-
             compiler.NamedVariable(className, false);
             compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before class body.");
             while (!compiler.Check(TokenType.CLOSE_BRACE) && !compiler.Check(TokenType.EOF))
             {
                 if (compiler.Match(TokenType.STATIC))
                 {
+                    ValidStage(Stage.Static);
                     DoClassStatic(compiler);
+                }
+                else if (compiler.Match(TokenType.MIXIN))
+                {
+                    ValidStage(Stage.Mixin);
+                    DoClassMixins(compiler);
                 }
                 else if (compiler.Match(TokenType.VAR))
                 {
-                    DoClassVar(compiler, className);
+                    ValidStage(Stage.Var);
+                    Property(compiler);
                 }
                 else if (compiler.Match(TokenType.INIT))
                 {
-                    DoInit(compiler, className);
+                    ValidStage(Stage.Init);
+                    DoInit(compiler);
                 }
                 else if (innerDeclarationCompilettes.TryGetValue(compiler.CurrentToken.TokenType, out var complette))
                 {
+                    ValidStage(Stage.Method);
                     compiler.Advance();
                     complette.Process(compiler);
                 }
                 else
                 {
+                    ValidStage(Stage.Method);
                     DoClassMethod(compiler, className);
                 }
             }
 
-            stage = Stage.Invalid;
+            _stage = Stage.Complete;
 
             //emit return //if we are the last link in the chain this ends our call
 
@@ -114,6 +119,15 @@ namespace ULox
             CurrentClassName = null;
         }
 
+        private void ValidStage(Stage stage)
+        {
+            if(_stage > stage)
+            {
+                throw new CompilerException($"Class '{CurrentClassName}', encountered element of stage '{stage}' too late, class is at stage '{_stage}'. This is not allowed.");
+            }
+            _stage = stage;
+        }
+
         private static void EmitClassOp(
             CompilerBase compiler,
             byte nameConstant,
@@ -142,7 +156,7 @@ namespace ULox
             return hasSuper;
         }
 
-        private static void DoClassMixins(CompilerBase compiler, string className, CompilerState compState)
+        private void DoClassMixins(CompilerBase compiler)
         {
             do
             {
@@ -150,35 +164,21 @@ namespace ULox
                 compiler.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
 
                 compiler.NamedVariableFromPreviousToken(false);
-                compiler.NamedVariable(className, false);
+                compiler.NamedVariable(CurrentClassName, false);
 
                 //emit
                 compiler.EmitOpAndBytes(OpCode.MIXIN);
             } while (compiler.Match(TokenType.COMMA));
+
+            //TODO all of these methods trail with end statement, DRY.
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after mixin declaration.");
         }
 
-        private void DoInit(CompilerBase compiler, string className)
+        private void DoInit(CompilerBase compiler)
         {
-            switch (stage)
-            {
-            case Stage.Var:
-                stage = Stage.Init;
-                break;
-
-            case Stage.Init:
-                break;
-
-            case Stage.Method:
-            case Stage.Invalid:
-            default:
-                throw new CompilerException($"Encountered {InitMethodName} in class at {stage}, in class {className}. This is not allowed.");
-            }
-
             byte constant = compiler.AddCustomStringConstant(InitMethodName);
             CreateInitMethod(compiler);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
-
-            stage = Stage.Method;
         }
 
         //Very nearly identical public void Function(string name, FunctionType functionType) but this handles auto inits
@@ -226,21 +226,6 @@ namespace ULox
 
         private void DoClassMethod(CompilerBase compiler, string className)
         {
-            switch (stage)
-            {
-            case Stage.Var:
-                stage = Stage.Init;
-                break;
-
-            case Stage.Init:
-            case Stage.Method:
-                break;
-
-            case Stage.Invalid:
-            default:
-                throw new CompilerException($"Encountered unexpected compiler stage during method compilation in class {className}.");
-            }
-
             compiler.Consume(TokenType.IDENTIFIER, "Expect method name.");
             byte constant = compiler.AddStringConstant();
 
@@ -248,16 +233,6 @@ namespace ULox
             FunctionType funcType = FunctionType.Method;
             compiler.Function(name, funcType);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
-
-            stage = Stage.Method;
-        }
-
-        private void DoClassVar(CompilerBase compiler, string className)
-        {
-            if (stage == Stage.Var)
-                Property(compiler);
-            else
-                throw new CompilerException($"Encountered unexpected var declaration in class {className}. Class vars must come before init or methods.");
         }
 
         private void DoClassStatic(CompilerBase compiler)

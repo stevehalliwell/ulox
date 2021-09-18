@@ -15,8 +15,8 @@ class MixMe
 }
 
 class Foo 
-    mixin MixMe
 {
+    mixin MixMe;
 }
 
 print(1);";
@@ -37,8 +37,8 @@ class MixMe
 }
 
 class Foo 
-    mixin MixMe
 {
+    mixin MixMe;
 }
 
 var foo = Foo();
@@ -61,8 +61,9 @@ class MixMe
 }
 
 class Foo 
-    mixin MixMe
 {
+    mixin MixMe;
+
     var e = 1,f,g;
 }
 
@@ -87,8 +88,8 @@ class MixMe
 }
 
 class Foo 
-    mixin MixMe
 {
+    mixin MixMe;
     var a = 2;
 }
 
@@ -121,12 +122,12 @@ class MixMe3
 
 
 class Foo 
+{
     mixin 
         MixMe,
-        MixMe2,
-        MixMe3
+        MixMe2;
+    mixin MixMe3;
 
-{
     var d = 4;
 }
 
@@ -153,8 +154,9 @@ class MixMe
 }
 
 class Foo 
-    mixin MixMe
 {
+    mixin MixMe;
+
     var bar = 2;
 }
 
@@ -178,8 +180,8 @@ class MixMe
 }
 
 class Foo 
-    mixin MixMe
 {
+    mixin MixMe;
     var bar = 2;
 }
 
@@ -203,8 +205,8 @@ class MixMe
 }
 
 class Foo 
-    mixin MixMe
 {
+    mixin MixMe;
     Speaketh(){print(cname);}
 }
 
@@ -233,10 +235,11 @@ class MixMe2
 }
 
 class Foo 
+{
     mixin 
         MixMe,
-        MixMe2
-{
+        MixMe2;
+
     Speaketh(){print(cname);}
 }
 
@@ -261,8 +264,9 @@ class MixMe
 }
 
 class Foo 
-    mixin MixMe
 {
+    mixin MixMe;
+
     Speak(){print(cname);}
 }
 

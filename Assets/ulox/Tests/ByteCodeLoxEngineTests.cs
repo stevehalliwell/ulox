@@ -1541,7 +1541,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Encountered unexpected var declaration in class T. Class vars must come before init or methods.", testEngine.InterpreterResult);
+            Assert.AreEqual("Class 'T', encountered element of stage 'Var' too late, class is at stage 'Init'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1556,7 +1556,7 @@ class T
 
 var t = T();");
 
-            Assert.AreEqual("Encountered init in class at Method, in class T. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Class 'T', encountered element of stage 'Init' too late, class is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]

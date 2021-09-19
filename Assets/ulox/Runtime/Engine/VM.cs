@@ -29,6 +29,17 @@ namespace ULox
                 CallMethod(callee.val.asBoundMethod, argCount);
                 break;
 
+            case ValueType.CombinedClosures:
+                {
+                    var combinedClosures = callee.val.asCombined;
+                    for (int i = 0; i < combinedClosures.Count; i++)
+                    {
+                        var closure = combinedClosures[i];
+                        Call(closure, argCount);
+                    }
+                }
+                break;
+
             default:
                 return false;
             }

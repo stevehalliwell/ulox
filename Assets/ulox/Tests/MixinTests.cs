@@ -255,7 +255,7 @@ foo.Speak();
         }
 
         [Test]
-        public void Mixin_WhenCombined_ShouldHaveSelfMethod()
+        public void Mixin_WhenCombined_ShouldHaveBoth()
         {
             var expected = "Foo";
             var script = @"
@@ -280,7 +280,7 @@ foo.Speaketh();
         }
 
         [Test]
-        public void Mixin_WhenMultipleCombined_ShouldHaveSelfMethod()
+        public void Mixin_WhenMultipleCombined_ShouldHaveAll()
         {
             var expected = "Foo";
             var script = @"
@@ -314,18 +314,29 @@ foo.Speaketh();
 
 
         [Test]
-        public void Mixin_WhenCombinedAndNamesClash_ShouldHaveSelfMethod()
+        public void Mixin_WhenCombinedAndNamesClash_ShouldHaveAllPrint()
         {
-            var expected = "Foo";
             var script = @"
+
 class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class MixMe2
+{
+    Speak(){print(cname);}
+}
+
+
+class MixMe3
 {
     Speak(){print(cname);}
 }
 
 class Foo 
 {
-    mixin MixMe;
+    mixin MixMe, MixMe2, MixMe3;
 
     Speak(){print(cname);}
 }
@@ -336,7 +347,7 @@ foo.Speak();
 
             testEngine.Run(script);
 
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
         }
     }
 }

@@ -39,21 +39,21 @@ namespace ULox
 
         public bool TryGetMethod(string name, out Value method) => methods.TryGetValue(name, out method);
 
-        public void AddMethod(string name, Value method)
+        public void AddMethod(string key, Value method)
         {
-            methods[name] = method;
-            if (name == ClassCompilette.InitMethodName)
+            methods[key] = method;
+            if (key == ClassCompilette.InitMethodName)
             {
                 initialiser = method;
             }
-            var opIndex = MathOperatorMethodNames.IndexOf(name);
+            var opIndex = MathOperatorMethodNames.IndexOf(key);
             if (opIndex != -1)
             {
                 mathOperators[opIndex] = method;
             }
             else
             {
-                opIndex = ComparisonOperatorMethodNames.IndexOf(name);
+                opIndex = ComparisonOperatorMethodNames.IndexOf(key);
                 if (opIndex != -1)
                 {
                     compOperators[opIndex] = method;
@@ -83,11 +83,35 @@ namespace ULox
 
             foreach (var flavourMeth in flavour.methods)
             {
-                AddMethod(flavourMeth.Key, flavourMeth.Value);
+                MixinMethod(flavourMeth.Key, flavourMeth.Value);
             }
 
             if (flavour.initChains.Count > 0)
                 initChains.AddRange(flavour.initChains);
+        }
+
+        public void MixinMethod(string key, Value value)
+        {
+            if(methods.TryGetValue(key, out var existing))
+            {
+                //combine
+                if (existing.type == ValueType.Closure)
+                {
+                    //make a combine
+                    var temp = Value.Combined();
+                    temp.val.asCombined.Add(existing.val.asClosure);
+                    temp.val.asCombined.Add(value.val.asClosure);
+                    existing = temp;
+                }
+                else
+                {
+                    existing.val.asCombined.Add(value.val.asClosure);
+                }
+
+                value = existing;
+            }
+
+            AddMethod(key, value);
         }
     }
 }

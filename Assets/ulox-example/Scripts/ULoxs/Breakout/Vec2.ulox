@@ -1,7 +1,5 @@
 class Vec2
 {
-	var x, y;
-
 	static Create(x,y)
 	{
 		var ret = Vec2();
@@ -14,6 +12,8 @@ class Vec2
     {
         return Vec2.Create(v2.x* scalar, v2.y*scalar);
     }
+
+	var x, y;
 
 	_add(lhs, rhs)
 	{

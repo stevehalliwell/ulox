@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace ULox
 {
@@ -21,6 +22,7 @@ namespace ULox
         public object asObject;
 
         public ClosureInternal asClosure => asObject as ClosureInternal;
+        public List<ClosureInternal> asCombined => asObject as List<ClosureInternal>;
         public UpvalueInternal asUpvalue => asObject as UpvalueInternal;
         public ClassInternal asClass => asObject as ClassInternal;
         public InstanceInternal asInstance => asObject as InstanceInternal;

@@ -14,6 +14,7 @@ namespace ULox
         public string CurrentClassName { get; private set; }
 
         private List<string> classVarNames = new List<string>();
+        private Stack<string> mixinNames = new Stack<string>();
         private int _initFragStartLocation = -1;
         private int _previousInitFragJumpLocation = -1;
 
@@ -34,6 +35,7 @@ namespace ULox
 
             _stage = Stage.Begin;
             classVarNames.Clear();
+            mixinNames.Clear();
             compiler.Consume(TokenType.IDENTIFIER, "Expect class name.");
             var className = (string)compiler.PreviousToken.Literal;
             var compState = compiler.CurrentCompilerState;
@@ -84,11 +86,21 @@ namespace ULox
                 else
                 {
                     ValidStage(Stage.Method);
-                    DoClassMethod(compiler, className);
+                    DoClassMethod(compiler);
                 }
             }
 
             _stage = Stage.Complete;
+
+            //dump all mixins after everything else so we don't have to fight regular class setup process in vm
+            while(mixinNames.Count > 0)
+            {
+                var mixinName = mixinNames.Pop();
+                compiler.NamedVariable(mixinName, false);
+                compiler.NamedVariable(CurrentClassName, false);
+                compiler.EmitOpAndBytes(OpCode.MIXIN);
+            }
+
 
             //emit return //if we are the last link in the chain this ends our call
 
@@ -160,14 +172,8 @@ namespace ULox
         {
             do
             {
-                //read ident
                 compiler.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
-
-                compiler.NamedVariableFromPreviousToken(false);
-                compiler.NamedVariable(CurrentClassName, false);
-
-                //emit
-                compiler.EmitOpAndBytes(OpCode.MIXIN);
+                mixinNames.Push(compiler.PreviousToken.Literal as string);
             } while (compiler.Match(TokenType.COMMA));
 
             //TODO all of these methods trail with end statement, DRY.
@@ -224,7 +230,7 @@ namespace ULox
             compiler.EndFunction();
         }
 
-        private void DoClassMethod(CompilerBase compiler, string className)
+        private void DoClassMethod(CompilerBase compiler)
         {
             compiler.Consume(TokenType.IDENTIFIER, "Expect method name.");
             byte constant = compiler.AddStringConstant();

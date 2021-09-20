@@ -1,0 +1,38 @@
+var dt;
+var walls = List();
+var ball;
+
+fun SetupGame()
+{
+    CreateLevel();
+}
+
+fun CreateLevel()
+{
+    CreateWalls();
+    
+    CreateBall(Vec2.Create(0,-20), Vec2.Create(15,18));
+}
+
+fun CreateWalls()
+{
+    walls.Add(PongWall(Vec2.Create(-40,0), Vec2.Create(10,80)));
+    walls.Add(PongWall(Vec2.Create(40,0), Vec2.Create(10,80)));
+    walls.Add(PongWall(Vec2.Create(0,-40), Vec2.Create(80,10)));
+    walls.Add(PongWall(Vec2.Create(0,40), Vec2.Create(80,10)));
+}
+
+fun CreateBall(at, vel)
+{
+    ball = PongBall(at, vel);
+}
+
+fun Update()
+{
+    UpdateGame(dt);
+}
+
+fun UpdateGame(dt)
+{
+	if(GetKey("escape")){ReloadScene();}
+}

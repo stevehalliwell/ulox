@@ -622,5 +622,13 @@ namespace ULox
                 break;
             }
         }
+
+        protected void DuplicateStackValues(int v)
+        {
+            for (int i = 0; i < v; i++)
+            {
+                Push(Peek(v-1));
+            }
+        }
     }
 }

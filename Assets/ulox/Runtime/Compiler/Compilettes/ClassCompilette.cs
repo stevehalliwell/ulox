@@ -212,6 +212,7 @@ namespace ULox
 
             foreach (var initArg in initArgNames)
             {
+                //todo move to runtime as this does not take into account mixin vars
                 if (classVarNames.Contains(initArg))
                 {
                     compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack

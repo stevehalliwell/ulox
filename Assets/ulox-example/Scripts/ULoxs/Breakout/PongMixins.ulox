@@ -1,0 +1,70 @@
+class Position
+{
+    var pos = Vec2();
+}
+
+class Scale
+{
+    var scale = Vec2.Create(1,1);
+}
+
+class GameObject
+{
+    mixin Position, Scale;
+    var go;
+
+    FromPrefab(name)
+    {
+        this.go = CreateFromPrefab(name);
+    }
+
+    Sync()
+    {
+        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
+        SetGameObjectScale(this.go, this.scale.x, this.scale.y,1);
+    }
+}
+
+class Dynamic
+{
+    mixin Position;
+    var rb;
+    var vel = Vec2();
+
+    Sync()
+    {
+        //TODO would prefer to be able to do this during init chain 
+        if(this.rb == null)
+            this.rb = GetRigidBody2DFromGameObject(this.go);    
+        
+        SetRigidBody2DVelocity(this.rb, this.vel.x, this.vel.y);
+    }
+}
+
+class PongBall
+{
+    mixin GameObject, Dynamic;
+
+    init(pos, vel)
+    {
+        this.pos = pos;
+        this.vel = vel;
+        this.FromPrefab("Ball");
+        this.Sync();
+        SetSpriteColour(this.go, 1,0,0,1);
+        SetGameObjectTag(this.go, "Ball");
+    }
+}
+
+class PongWall
+{
+    mixin GameObject;
+    
+    init(pos, scale)
+    {
+        this.pos = pos;
+        this.scale = scale;
+        this.FromPrefab("Wall");
+        this.Sync();
+    }
+}

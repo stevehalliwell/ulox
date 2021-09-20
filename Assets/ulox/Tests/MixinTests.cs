@@ -349,5 +349,47 @@ foo.Speak();
 
             Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
         }
+
+
+        [Test]
+        public void Mixin_WhenInstanceMethodsCombinedAndNamesClash_ShouldHaveAllPrint()
+        {
+            var script = @"
+
+class MixMe
+{
+    var MixMeName = cname;
+
+    Speak(){print(this.MixMeName);}
+}
+
+class MixMe2
+{
+    var MixMeName2 = cname;
+
+    Speak(){print(this.MixMeName2);}
+}
+
+
+class MixMe3
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe, MixMe2, MixMe3;
+
+    Speak(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speak();
+";
+
+            testEngine.Run(script);
+
+            Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
+        }
     }
 }

@@ -34,6 +34,8 @@ namespace ULox
                     var combinedClosures = callee.val.asCombined;
                     for (int i = 0; i < combinedClosures.Count; i++)
                     {
+                        DuplicateStackValues(argCount + 1);
+
                         var closure = combinedClosures[i];
                         Call(closure, argCount);
                     }

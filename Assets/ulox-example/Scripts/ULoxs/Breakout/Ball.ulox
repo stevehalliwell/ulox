@@ -10,5 +10,6 @@ class Ball
         this.rb = GetRigidBody2DFromGameObject(this.go);    //TODO would prefer to be able to do this during init chain 
         SetSpriteColour(this.go, 1,0,0,1);
         SetGameObjectTag(this.go, "Ball");
+        SetRigidBody2DVelocity(this.rb, 0,0);
     }
 }

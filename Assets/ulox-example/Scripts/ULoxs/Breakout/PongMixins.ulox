@@ -47,8 +47,6 @@ class PongBall
 
     init(pos, vel)
     {
-        this.pos = pos;
-        this.vel = vel;
         this.FromPrefab("Ball");
         this.Sync();
         SetSpriteColour(this.go, 1,0,0,1);
@@ -62,8 +60,6 @@ class PongWall
     
     init(pos, scale)
     {
-        this.pos = pos;
-        this.scale = scale;
         this.FromPrefab("Wall");
         this.Sync();
     }

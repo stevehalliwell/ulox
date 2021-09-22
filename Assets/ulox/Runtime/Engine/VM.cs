@@ -334,11 +334,20 @@ namespace ULox
             {
                 //with an init list we don't return this
                 PushCallFrameFromValue(klass.initialiser, argCount);
+
+                //push a native call here so we can bind the fiels to init param names
+                if (klass.initialiser.type == ValueType.Closure &&
+                    klass.initialiser.val.asClosure.chunk.Arity > 0)
+                {
+                    DuplicateStackValues(argCount + 1);
+                    PushFrameCallNative(CopyMatchingParamsToFields, argCount);
+                }
             }
             else if (argCount != 0)
             {
                 throw new VMException("Args given for a class that does not have an 'init' method");
             }
+
 
             foreach (var initChain in klass.initChains)
             {
@@ -362,6 +371,33 @@ namespace ULox
 
                 InitNewInstance(klass.super, argsToSuperInit, inst);
             }
+        }
+
+        private Value CopyMatchingParamsToFields(VMBase vm, int argCount)
+        {
+            var instVal = vm.GetArg(0);
+            var inst = instVal.val.asInstance;
+
+            var initChunk = inst.fromClass.initialiser.val.asClosure.chunk;
+            var argConstantIds = initChunk.ArgumentConstantIds;
+
+            const int argOffset = 1;
+
+            for (int i = 0; i < argConstantIds.Count; i++)
+            {
+                var arg = initChunk.Constants[i];
+                if (arg.type == ValueType.String)
+                {
+                    var paramName = arg.val.asString;
+                    if (inst.fields.ContainsKey(paramName))
+                    {
+                        var value = vm.GetArg(i+ argOffset);
+                        inst.fields[paramName] = value;
+                    }
+                }
+            }
+
+            return instVal;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

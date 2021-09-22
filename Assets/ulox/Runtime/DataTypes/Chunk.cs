@@ -8,10 +8,11 @@ namespace ULox
         private int instructionCount = -1;
 
         public List<byte> Instructions { get; private set; } = new List<byte>();
+        public List<byte> ArgumentConstantIds { get; private set; } = new List<byte>();
         public IReadOnlyList<Value> Constants => constants.AsReadOnly();
         public List<RunLengthLineNumber> RunLengthLineNumbers { get; private set; } = new List<RunLengthLineNumber>();
         public string Name { get; set; }
-        public int Arity { get; set; }
+        public int Arity => ArgumentConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 
         public Chunk(string name)

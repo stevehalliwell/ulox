@@ -1452,6 +1452,27 @@ var t = T(3);");
         }
 
         [Test]
+        public void Engine_Class_AutoInit2()
+        {
+
+
+            testEngine.Run(@"
+class T
+{
+    var a,b;
+    init(a,b)
+    {
+        print(this.a);
+        print(this.b);
+    }
+}
+
+var t = T(1,2);");
+
+            Assert.AreEqual("12", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_AutoInitReplacesDefaults()
         {
 

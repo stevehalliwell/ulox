@@ -187,48 +187,9 @@ namespace ULox
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
         }
 
-        //Very nearly identical public void Function(string name, FunctionType functionType) but this handles auto inits
         private void CreateInitMethod(CompilerBase compiler)
         {
-            compiler.PushCompilerState(InitMethodName, FunctionType.Init);
-
-            compiler.BeginScope();
-
-            var initArgNames = new List<string>();
-
-            compiler.Consume(TokenType.OPEN_PAREN, $"Expect '(' after {InitMethodName}.");
-            if (!compiler.Check(TokenType.CLOSE_PAREN))
-            {
-                do
-                {
-                    compiler.IncreaseArity();
-
-                    var paramConstant = compiler.ParseVariable("Expect parameter name.");
-                    compiler.DefineVariable(paramConstant);
-                    initArgNames.Add(compiler.CurrentCompilerState.LastLocal.Name);
-                } while (compiler.Match(TokenType.COMMA));
-            }
-            compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
-
-            foreach (var initArg in initArgNames)
-            {
-                //todo move to runtime as this does not take into account mixin vars
-                if (classVarNames.Contains(initArg))
-                {
-                    compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
-                    compiler.NamedVariable(initArg, false);
-
-                    //emit set prop
-                    compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, compiler.AddCustomStringConstant(initArg));
-                    compiler.EmitOpCode(OpCode.POP);
-                }
-            }
-
-            // The body.
-            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
-            compiler.Block();
-
-            compiler.EndFunction();
+            compiler.Function(InitMethodName, FunctionType.Init);
         }
 
         private void DoClassMethod(CompilerBase compiler)

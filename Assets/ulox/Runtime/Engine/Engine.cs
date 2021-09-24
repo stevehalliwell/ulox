@@ -40,21 +40,18 @@ namespace ULox
         }
     }
 
-    public static class EngineExt
+    public static partial class EngineExt
     {
         public static void DeclareAllLibraries(
             this Engine engine,
             Action<string> logger,
-            List<UnityEngine.GameObject> availablePrefabs,
-            Action<string> outputText,
             Func<VMBase> createVM)
         {
             engine.Context.DeclareLibrary(new CoreLibrary(logger));
             engine.Context.DeclareLibrary(new StandardClassesLibrary());
-            engine.Context.DeclareLibrary(new UnityLibrary(availablePrefabs, outputText));
             engine.Context.DeclareLibrary(new AssertLibrary(createVM));
             engine.Context.DeclareLibrary(new DebugLibrary());
-            engine.Context.DeclareLibrary(new VMLibrary(createVM));
+            engine.Context.DeclareLibrary(new VmLibrary(createVM));
         }
 
         public static void BindAllLibraries(this Engine engine)

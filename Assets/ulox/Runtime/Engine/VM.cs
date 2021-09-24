@@ -2,15 +2,15 @@
 
 namespace ULox
 {
-    public class VM : VMBase
+    public class Vm : VMBase
     {
-        public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new VM());
+        public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
 
         public override void CopyFrom(VMBase otherVMbase)
         {
             base.CopyFrom(otherVMbase);
 
-            if (otherVMbase is VM otherVm)
+            if (otherVMbase is Vm otherVm)
             {
                 TestRunner = otherVm.TestRunner;
             }

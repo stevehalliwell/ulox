@@ -1,3 +1,5 @@
+build bind "StandardClassesLibrary";
+
 test DynamicTests
 {
     testcase DynamicField

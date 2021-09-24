@@ -1,0 +1,27 @@
+build bind "CoreLibrary";
+
+test CoreLibraryTests
+{
+    // testcase Print
+    // {
+    //     Assert.Fail();
+    // }
+
+    testcase DuplicateMatches
+    {
+        var a = 1;
+        var b = Duplicate(a);
+        
+        Assert.AreEqual(a,b);
+    }
+
+    testcase DuplicatAfterChangeDoesNoteMatch
+    {
+        var a = 1;
+        var b = Duplicate(a);
+        
+        b = 2;
+        
+        Assert.AreNotEqual(a,b);
+    }
+}

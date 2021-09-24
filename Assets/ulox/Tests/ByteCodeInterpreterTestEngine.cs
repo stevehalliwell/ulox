@@ -3,16 +3,16 @@
     public class ByteCodeInterpreterTestEngine
     {
         private readonly System.Action<string> _logger;
-        private readonly VM _vm;
+        private readonly Vm _vm;
         private readonly Engine _engine;
 
-        public VM VM => _vm;
+        public Vm Vm => _vm;
         public IProgram Program => _engine.Context.Program;
         public Engine Engine => _engine;
 
         public ByteCodeInterpreterTestEngine(System.Action<string> logger)
         {
-            _vm = new VM();
+            _vm = new Vm();
             _engine = new Engine(new ScriptLocator(),new Context(new Program(),_vm));
 
             _logger = logger;

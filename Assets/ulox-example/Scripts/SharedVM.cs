@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
 using System.Collections.Generic;
+using System;
 
 namespace ULox.Demo
 {
@@ -25,13 +26,15 @@ namespace ULox.Demo
         {
             var builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name,x => x.text);
             var scriptLocator = new ScriptLocator(builtinDict, new DirectoryInfo(Application.streamingAssetsPath));
-            Engine = new Engine(scriptLocator, new Context(new Program(), new VM()));
+            Engine = new Engine(scriptLocator, new Context(new Program(), new Vm()));
 
             Engine.DeclareAllLibraries(
                 x => Debug.Log(x),
+                () => new Vm());
+
+            Engine.DeclareUnityLibraries(
                 prefabCollectionSO.Collection,
-                x => outputText.text = x,
-                () => new VM());
+                x => outputText.text = x);
 
             if (bindAllLibraries)
                 Engine.BindAllLibraries();
@@ -42,6 +45,16 @@ namespace ULox.Demo
             }
 
             Engine.BuildAndRun();
+        }
+    }
+    public static partial class EngineExt
+    {
+        public static void DeclareUnityLibraries(
+            this Engine engine,
+            List<UnityEngine.GameObject> availablePrefabs,
+            Action<string> outputText)
+        {
+            engine.Context.DeclareLibrary(new UnityLibrary(availablePrefabs, outputText));
         }
     }
 }

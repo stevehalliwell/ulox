@@ -38,7 +38,48 @@ class BirthdayBowl
         Syrup;
 }
 
-test Mixins
+class MixMe
+{
+    var a = 1;
+}
+class MixMe2
+{
+    var b = 2;
+}
+class MixMe3
+{
+    var c = 3;
+}
+
+class MixMeSub1
+{
+    var e = 5;
+}
+
+class MixMeSub2
+{
+    var f = 6;
+}
+
+class MixMe4
+{
+    mixin MixMeSub1, MixMeSub2;
+    
+    var g = 7;
+}
+
+class AllTheMixMes 
+{
+    mixin 
+        MixMe,
+        MixMe2;
+    mixin MixMe3;
+    mixin MixMe4;
+
+    var d = 4;
+}
+
+test MixinsSimple
 {
     testcase ClassWithMixinHasBoth
     {
@@ -77,5 +118,16 @@ test Mixins
         Assert.AreEqual("Bowl", b.container);
         Assert.AreEqual("Flavour", b.flav);
         Assert.AreEqual("Syrup", b.topping);
+    }
+
+    testcase ManyCombinedMixins
+    {
+        var foo = AllTheMixMes();
+        var expected = 28;
+        var result = -1;
+
+        result = foo.a + foo.b + foo.c + foo.d + foo.e + foo.f + foo.g;
+
+        Assert.AreEqual(expected, result);
     }
 }

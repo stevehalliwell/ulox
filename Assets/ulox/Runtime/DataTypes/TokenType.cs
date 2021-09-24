@@ -76,8 +76,8 @@
 
         CONTEXT_NAME_CLASS,
         CONTEXT_NAME_FUNC,
-        CONTEXT_NAME_TEST,
         CONTEXT_NAME_TESTCASE,
+        CONTEXT_NAME_TESTSET,
 
         EOF,
 

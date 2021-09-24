@@ -17,8 +17,8 @@ public class UloxScriptTests
         {
         }
 
-        public bool AllPassed => VM.TestRunner.AllPassed;
-        public int TestsFound => VM.TestRunner.TestsFound;
+        public bool AllPassed => Vm.TestRunner.AllPassed;
+        public int TestsFound => Vm.TestRunner.TestsFound;
     }
 
     private ScriptTestEngine engine;
@@ -27,10 +27,10 @@ public class UloxScriptTests
     public void Setup()
     {
         engine = new ScriptTestEngine(UnityEngine.Debug.Log);
-        engine.AddLibrary(new AssertLibrary(() => new VM()));
-        engine.AddLibrary(new DebugLibrary());
-        engine.AddLibrary(new StandardClassesLibrary());
-        engine.AddLibrary(new VMLibrary(() => new VM()));
+        engine.AddLibrary(new AssertLibrary(() => new Vm()));
+        engine.Engine.Context.DeclareLibrary(new DebugLibrary());
+        engine.Engine.Context.DeclareLibrary(new StandardClassesLibrary());
+        engine.Engine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
     }
 
     [Test]

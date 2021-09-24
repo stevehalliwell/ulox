@@ -26,7 +26,9 @@ namespace ULox
 
         public void BindLibrary(string name)
         {
-            var lib = _libraries[name];
+            if (!_libraries.TryGetValue(name, out var lib))
+                throw new VMException($"No library of name '{name}' found.");
+            
             var toAdd = lib.GetBindings();
 
             foreach (var item in toAdd)

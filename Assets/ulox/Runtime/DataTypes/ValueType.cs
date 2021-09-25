@@ -9,6 +9,7 @@
         Chunk,
         NativeFunction,
         Closure,
+        CombinedClosures,
         Upvalue,
         Class,
         Instance,

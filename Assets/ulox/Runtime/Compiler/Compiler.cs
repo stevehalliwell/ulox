@@ -26,21 +26,21 @@
                 (TokenType.THIS, new ParseRule(This, null, Precedence.None)),
                 (TokenType.SUPER, new ParseRule(Super, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_CLASS, new ParseRule(CName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TEST, new ParseRule(TName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTCASE, new ParseRule(TSName, null, Precedence.None))
+                (TokenType.CONTEXT_NAME_TESTCASE, new ParseRule(TCName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TESTSET, new ParseRule(TSName, null, Precedence.None))
                               );
+        }
+
+        private void TCName(bool obj)
+        {
+            var tcname = _testcaseCompilette.TestCaseName;
+            CurrentChunk.AddConstantAndWriteInstruction(Value.New(tcname), PreviousToken.Line);
         }
 
         private void TSName(bool obj)
         {
-            var tsname = _testcaseCompilette.TestCaseName;
+            var tsname = _testdec.CurrentTestSetName;
             CurrentChunk.AddConstantAndWriteInstruction(Value.New(tsname), PreviousToken.Line);
-        }
-
-        private void TName(bool obj)
-        {
-            var tname = _testdec.CurrentTestSetName;
-            CurrentChunk.AddConstantAndWriteInstruction(Value.New(tname), PreviousToken.Line);
         }
 
         #region Expressions

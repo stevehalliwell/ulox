@@ -1,0 +1,33 @@
+class Foo
+{
+    var fizz = 1, negative = -1;
+}
+
+class Bar
+{
+    var buzz = 2, bitcount;
+}
+
+class FooBar
+{
+    mixin Foo, Bar;
+
+    init(fizz, buzz, bitcount){}
+}
+
+test MixinsLeafInitsOfMixedVars
+{
+    testcase ClassWithMixinHasBoth
+    {
+        var expectedFizz = 10;
+        var expectedBuzz = 20;
+        var expectedBitcount = 30;
+        var result = -1;
+        var expected = 59;
+
+        var fooBar = FooBar(expectedFizz, expectedBuzz, expectedBitcount);
+        result = fooBar.fizz + fooBar.negative + fooBar.buzz + fooBar.bitcount;
+
+        Assert.AreEqual(expected, result);
+    }
+}

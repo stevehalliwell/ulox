@@ -100,6 +100,9 @@ namespace ULox
 
         public static Value New(double val) => New(ValueType.Double, new ValueTypeDataUnion() { asDouble = val });
 
+        public static Value Combined()
+            => New( ValueType.CombinedClosures, new ValueTypeDataUnion() { asObject = new List<ClosureInternal>()});
+
         public static Value New(bool val) => New(ValueType.Bool, new ValueTypeDataUnion() { asBool = val });
 
         public static Value New(string val) => New(ValueType.String, new ValueTypeDataUnion() { asString = val });

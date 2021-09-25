@@ -13,10 +13,11 @@
 
                 ("test", TokenType.TEST),
                 ("testcase", TokenType.TESTCASE),
-                ("tname", TokenType.CONTEXT_NAME_TEST),
-                ("tsname", TokenType.CONTEXT_NAME_TESTCASE),
+                ("tcname", TokenType.CONTEXT_NAME_TESTCASE),
+                ("tsname", TokenType.CONTEXT_NAME_TESTSET),
 
                 ("class", TokenType.CLASS),
+                ("mixin", TokenType.MIXIN),
                 ("this", TokenType.THIS),
                 ("super", TokenType.SUPER),
                 ("static", TokenType.STATIC),

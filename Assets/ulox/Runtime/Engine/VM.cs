@@ -2,15 +2,15 @@
 
 namespace ULox
 {
-    public class VM : VMBase
+    public class Vm : VMBase
     {
-        public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new VM());
+        public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
 
         public override void CopyFrom(VMBase otherVMbase)
         {
             base.CopyFrom(otherVMbase);
 
-            if (otherVMbase is VM otherVm)
+            if (otherVMbase is Vm otherVm)
             {
                 TestRunner = otherVm.TestRunner;
             }
@@ -27,6 +27,19 @@ namespace ULox
 
             case ValueType.BoundMethod:
                 CallMethod(callee.val.asBoundMethod, argCount);
+                break;
+
+            case ValueType.CombinedClosures:
+                {
+                    var combinedClosures = callee.val.asCombined;
+                    for (int i = 0; i < combinedClosures.Count; i++)
+                    {
+                        DuplicateStackValues(argCount + 1);
+
+                        var closure = combinedClosures[i];
+                        Call(closure, argCount);
+                    }
+                }
                 break;
 
             default:
@@ -62,16 +75,17 @@ namespace ULox
                     var initChain = ReadUShort(chunk);
                     if (initChain != 0)
                     {
-                        klass.initChainStartLocation = initChain;
-                        klass.initChainStartClosure = currentCallFrame.Closure;
+                        klass.AddInitChain(currentCallFrame.Closure, initChain);
                     }
                 }
                 break;
 
             case OpCode.METHOD:
-                {
-                    DoMethodOp(chunk);
-                }
+                DoMethodOp(chunk);
+                break;
+
+            case OpCode.MIXIN:
+                DoMixinOp(chunk);
                 break;
 
             case OpCode.INVOKE:
@@ -244,6 +258,15 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoMixinOp(Chunk chunk)
+        {
+            Value klass = Pop();
+            Value mixin = Pop();
+            var flavour = mixin.val.asClass;
+            klass.val.asClass.AddMixin(flavour);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoInheritOp(Chunk chunk)
         {
             var superVal = Peek(1);
@@ -311,23 +334,35 @@ namespace ULox
             {
                 //with an init list we don't return this
                 PushCallFrameFromValue(klass.initialiser, argCount);
+
+                //push a native call here so we can bind the fiels to init param names
+                if (klass.initialiser.type == ValueType.Closure &&
+                    klass.initialiser.val.asClosure.chunk.Arity > 0)
+                {
+                    DuplicateStackValues(argCount + 1);
+                    PushFrameCallNative(CopyMatchingParamsToFields, argCount);
+                }
             }
             else if (argCount != 0)
             {
                 throw new VMException("Args given for a class that does not have an 'init' method");
             }
 
-            if (klass.initChainStartLocation != -1)
-            {
-                if (!klass.initialiser.IsNull)
-                    Push(inst);
 
-                PushNewCallframe(new CallFrame()
-                {
-                    Closure = klass.initChainStartClosure,
-                    InstructionPointer = klass.initChainStartLocation,
-                    StackStart = _valueStack.Count - 1, //last thing checked
-                });
+            foreach (var initChain in klass.initChains)
+            {
+                if(initChain.Item2 != -1) 
+                { 
+                    if (!klass.initialiser.IsNull)
+                        Push(inst);
+
+                    PushNewCallframe(new CallFrame()
+                    {
+                        Closure = initChain.Item1,
+                        InstructionPointer = initChain.Item2,
+                        StackStart = _valueStack.Count - 1, //last thing checked
+                    });
+                }
             }
 
             if (klass.super != null)
@@ -338,11 +373,38 @@ namespace ULox
             }
         }
 
+        private Value CopyMatchingParamsToFields(VMBase vm, int argCount)
+        {
+            var instVal = vm.GetArg(0);
+            var inst = instVal.val.asInstance;
+
+            var initChunk = inst.fromClass.initialiser.val.asClosure.chunk;
+            var argConstantIds = initChunk.ArgumentConstantIds;
+
+            const int argOffset = 1;
+
+            for (int i = 0; i < argConstantIds.Count; i++)
+            {
+                var arg = initChunk.Constants[i];
+                if (arg.type == ValueType.String)
+                {
+                    var paramName = arg.val.asString;
+                    if (inst.fields.ContainsKey(paramName))
+                    {
+                        var value = vm.GetArg(i+ argOffset);
+                        inst.fields[paramName] = value;
+                    }
+                }
+            }
+
+            return instVal;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int PrepareSuperInit(ClassInternal klass, int argCount, Value inst, int stackCount)
         {
             int argsToSuperInit = 0;
-            if (!klass.super.initialiser.IsNull || klass.super.initChainStartLocation != -1)
+            if (!klass.super.initialiser.IsNull || klass.super.initChains.Count > 0)
             {
                 //push inst and push args it expects
                 Push(inst);

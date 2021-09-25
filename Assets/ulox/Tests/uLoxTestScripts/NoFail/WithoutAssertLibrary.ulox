@@ -1,0 +1,13 @@
+fun WillThrow()
+{
+    throw;
+}
+
+
+test BuildTests
+{
+    testcase Fail
+    {
+        Assert.Throws(WillThrow);
+    }
+}

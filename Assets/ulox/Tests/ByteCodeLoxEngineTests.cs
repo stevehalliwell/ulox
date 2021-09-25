@@ -3,71 +3,10 @@ using UnityEngine;
 
 namespace ULox.Tests
 {
-    public class ByteCodeInterpreterTestEngine
-    {
-        private readonly System.Action<string> _logger;
-        private readonly VM _vm;
-        private readonly Engine _engine;
 
-        public VM VM => _vm;
-        public IProgram Program => _engine.Context.Program;
-        public Engine Engine => _engine;
-
-        public ByteCodeInterpreterTestEngine(System.Action<string> logger)
-        {
-            _vm = new VM();
-            _engine = new Engine(new ScriptLocator(),new Context(new Program(),_vm));
-
-            _logger = logger;
-            _engine.Context.AddLibrary(new CoreLibrary(x => 
-            {
-                _logger(x);
-                AppendResult(x);
-            }));
-        }
-
-        public void AddLibrary(IULoxLibrary lib)
-        {
-            _engine.Context.AddLibrary(lib);
-        }
-
-        protected void AppendResult(string str) => InterpreterResult += str;
-        public string InterpreterResult { get; private set; } = string.Empty;
-
-        public void Run(string testString)
-        {
-            try
-            {
-                _engine.RunScript(testString);
-            }
-            catch (LoxException e)
-            {
-                AppendResult(e.Message);
-            }
-            finally
-            {
-                _logger(_vm.TestRunner.GenerateDump());
-                _logger(InterpreterResult);
-                _logger(_engine.Context.Program.Disassembly);
-                _logger(_engine.Context.VM.GenerateGlobalsDump());
-            }
-        }
-
-        internal void Execute(IProgram program)
-        {
-            _engine.Context.VM.Run(program);
-        }
-    }
-
-    public class ByteCodeLoxEngineTests
-    {
-        private ByteCodeInterpreterTestEngine testEngine;
-
-        [SetUp]
-        public void Setup()
-        {
-            testEngine = new ByteCodeInterpreterTestEngine(UnityEngine.Debug.Log);
-        }
+    [TestFixture]
+    public class ByteCodeLoxEngineTests : EngineTestBase
+    { 
 
         public static Chunk GenerateManualChunk()
         {
@@ -99,7 +38,7 @@ namespace ULox.Tests
         public void Manual_Chunk_VM()
         {
             var chunk = GenerateManualChunk();
-            VM vm = new VM();
+            Vm vm = new Vm();
 
             Assert.AreEqual(InterpreterResult.OK, vm.Interpret(chunk));
         }
@@ -555,7 +494,7 @@ MyFunc();");
         public void Engine_Compile_NativeFunc_Call()
         {
             
-            testEngine.VM.SetGlobal("CallEmptyNative", Value.New((vm, stack) => Value.New("Native")));
+            testEngine.Vm.SetGlobal("CallEmptyNative", Value.New((vm, stack) => Value.New("Native")));
 
             testEngine.Run(@"print (CallEmptyNative());");
 
@@ -1342,7 +1281,7 @@ class A{MethA(){print (1);}}");
         {
             
 
-            testEngine.VM.SetGlobal("a", Value.New(1));
+            testEngine.Vm.SetGlobal("a", Value.New(1));
 
             testEngine.Run(@"print (a);");
 
@@ -1356,8 +1295,8 @@ class A{MethA(){print (1);}}");
 
             testEngine.Run(@"fun Meth(){print (1);}");
 
-            var meth = testEngine.VM.GetGlobal("Meth");
-            testEngine.VM.PushCallFrameAndRun(meth,0);
+            var meth = testEngine.Vm.GetGlobal("Meth");
+            testEngine.Vm.PushCallFrameAndRun(meth,0);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
@@ -1372,7 +1311,7 @@ class A{MethA(){print (1);}}");
                 return Value.New("Hello from native.");
             }
 
-            testEngine.VM.SetGlobal("Meth", Value.New(Func));
+            testEngine.Vm.SetGlobal("Meth", Value.New(Func));
 
             testEngine.Run(@"print (Meth());");
 
@@ -1389,7 +1328,7 @@ class A{MethA(){print (1);}}");
                 return Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native.");
             }
 
-            testEngine.VM.SetGlobal("Meth", Value.New(Func));
+            testEngine.Vm.SetGlobal("Meth", Value.New(Func));
 
             testEngine.Run(@"print (Meth(""Dad""));");
 
@@ -1513,6 +1452,27 @@ var t = T(3);");
         }
 
         [Test]
+        public void Engine_Class_AutoInit2()
+        {
+
+
+            testEngine.Run(@"
+class T
+{
+    var a,b;
+    init(a,b)
+    {
+        print(this.a);
+        print(this.b);
+    }
+}
+
+var t = T(1,2);");
+
+            Assert.AreEqual("12", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_AutoInitReplacesDefaults()
         {
 
@@ -1602,7 +1562,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Encountered unexpected var declaration in class T. Class vars must come before init or methods.", testEngine.InterpreterResult);
+            Assert.AreEqual("Class 'T', encountered element of stage 'Var' too late, class is at stage 'Init'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1617,7 +1577,7 @@ class T
 
 var t = T();");
 
-            Assert.AreEqual("Encountered init in class at Method, in class T. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Class 'T', encountered element of stage 'Init' too late, class is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1640,7 +1600,7 @@ print(c);");
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 Assert.AreEqual(1,1);
@@ -1655,7 +1615,7 @@ Assert.AreEqual(1,1);");
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 Assert.AreApproxEqual(1,1);
@@ -1670,7 +1630,7 @@ Assert.AreApproxEqual(1,2);");
         {
 
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 fun WillThrow()
@@ -1910,7 +1870,7 @@ AddPrint(t2);
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 fun T
@@ -1928,7 +1888,7 @@ print(T());");
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class T
@@ -2006,7 +1966,7 @@ print(T().StaticMethod());");
         {
 
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 test T
@@ -2024,7 +1984,7 @@ test T
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 test T
@@ -2043,7 +2003,7 @@ test T
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 test T
@@ -2062,7 +2022,7 @@ test T
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 test T
@@ -2083,7 +2043,7 @@ test T
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 test T
@@ -2098,7 +2058,7 @@ test T
 }");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-            Assert.AreEqual("T:A Completed", testEngine.VM.TestRunner.GenerateDump());
+            Assert.AreEqual("T:A Completed", testEngine.Vm.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -2106,7 +2066,7 @@ test T
         {
 
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 test T
@@ -2125,7 +2085,7 @@ test T
         [Test]
         public void Engine_TestCase_ReportAll()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 test T
@@ -2144,7 +2104,7 @@ test T
 }");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-            var completeReport = testEngine.VM.TestRunner.GenerateDump();
+            var completeReport = testEngine.Vm.TestRunner.GenerateDump();
             StringAssert.Contains("T:A Incomplete",completeReport);
             StringAssert.Contains("T:B Completed",completeReport);
             StringAssert.Contains("T:C Incomplete",completeReport);
@@ -2155,7 +2115,7 @@ test T
         {
 
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 test T
@@ -2184,8 +2144,8 @@ test T
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
-            testEngine.VM.TestRunner.Enabled = false;
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.Vm.TestRunner.Enabled = false;
 
             testEngine.Run(@"
 test T
@@ -2200,7 +2160,7 @@ test T
 }");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-            Assert.AreEqual("", testEngine.VM.TestRunner.GenerateDump());
+            Assert.AreEqual("", testEngine.Vm.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -2208,7 +2168,7 @@ test T
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class T{ }
@@ -2225,7 +2185,7 @@ print(T.a);");
         {
             
 
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class T
@@ -2276,7 +2236,7 @@ print(a);");
         {
             
 
-            testEngine.AddLibrary(new VMLibrary(() => new VM()));
+            testEngine.AddLibrary(new VmLibrary(() => new Vm()));
 
             testEngine.Run(@"
 fun InnerMain()
@@ -2300,7 +2260,7 @@ innerVM.Start(InnerMain);");
         {
             
 
-            testEngine.AddLibrary(new VMLibrary(() => new VM()));
+            testEngine.AddLibrary(new VmLibrary(() => new Vm()));
 
             testEngine.Run(@"
 fun InnerMain()
@@ -2325,7 +2285,7 @@ print(innerVM.GetGlobal(""globalOut""));");
         {
             
 
-            testEngine.AddLibrary(new VMLibrary(() => new VM()));
+            testEngine.AddLibrary(new VmLibrary(() => new Vm()));
 
             testEngine.Run(@"
 fun InnerMain()
@@ -2353,7 +2313,7 @@ a = a + 2;
 yield;
 print(a);");
 
-            testEngine.VM.Run();
+            testEngine.Vm.Run();
 
             Assert.AreEqual("4", testEngine.InterpreterResult);
         }
@@ -2363,7 +2323,7 @@ print(a);");
         {
             
 
-            testEngine.AddLibrary(new VMLibrary(() => new VM()));
+            testEngine.AddLibrary(new VmLibrary(() => new Vm()));
 
             testEngine.Run(@"
 fun InnerMain()
@@ -2385,7 +2345,7 @@ innerVM.Start(InnerMain);");
         {
             
 
-            testEngine.AddLibrary(new VMLibrary(() => new VM()));
+            testEngine.AddLibrary(new VmLibrary(() => new Vm()));
 
             testEngine.Run(@"
 var a = 10;
@@ -2405,7 +2365,7 @@ innerVM.Start(InnerMain);");
         {
             
 
-            testEngine.AddLibrary(new VMLibrary(() => new VM()));
+            testEngine.AddLibrary(new VmLibrary(() => new Vm()));
 
             testEngine.Run(@"
 fun InnerMain()
@@ -2470,7 +2430,7 @@ print(res.a);");
         [Test]
         public void Engine_Class_InherClassSuperInitNoParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -2505,7 +2465,7 @@ print(cinst.b);
         [Test]
         public void Engine_Class_InherClassSuperInitParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -2587,7 +2547,7 @@ print(cerinst.c);
         [Test]
         public void Engine_Class_InherWithVarNoInit()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -2616,7 +2576,7 @@ print(cinst.b);
         [Test]
         public void Engine_Class_InherWithVarAndInitNoParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -2656,7 +2616,7 @@ print(cinst.d);
         [Test]
         public void Engine_Class_InherWithVarAndInitAndParams_NoAutoVarInit()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -2696,7 +2656,7 @@ print(cinst.d);
         [Test]
         public void Engine_Class_InherWithVarAndInitAndAutoVarParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new VM()));
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -2754,8 +2714,8 @@ test Foo
 {
     testcase Bar
     {
-        print(tname);
         print(tsname);
+        print(tcname);
     }
 }");
 
@@ -2837,7 +2797,7 @@ print(str(a)+str(b));");
         [Test]
         public void Engine_ContextAssertLibrary_IsFound()
         {
-            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new VM()));
+            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
             testEngine.Engine.Context.BindLibrary(nameof(AssertLibrary));
 
             testEngine.Run(@"
@@ -2849,7 +2809,7 @@ Assert.AreNotEqual(1,2);");
         [Test]
         public void Engine_ManualLibraryBindViaFunc_IsFound()
         {
-            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new VM()));
+            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
             testEngine.Engine.Context.VM.SetGlobal("bind", Value.New((vm, argc) =>
             {
                 var libName = vm.GetArg(1).val.asString;
@@ -2869,7 +2829,7 @@ Assert.AreNotEqual(1,2);");
         [Test]
         public void Engine_ManualLibraryBindAndBuildViaFunc_IsFound()
         {
-            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new VM()));
+            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
             testEngine.Engine.Context.VM.SetGlobal("bind", Value.New((vm, argc) =>
             {
                 var libName = vm.GetArg(1).val.asString;
@@ -2897,7 +2857,7 @@ compile(""assertbody"");");
         [Test]
         public void Engine_BuildRequestAssertLibrary_IsFound()
         {
-            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new VM()));
+            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 build bind ""AssertLibrary"";
@@ -2910,7 +2870,7 @@ Assert.AreNotEqual(1,2);");
         [Test]
         public void Engine_BuildLibraryBindAndBuild_IsFound()
         {
-            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new VM()));
+            testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
             testEngine.Engine.ScriptLocator.Add("assertbody", "Assert.AreNotEqual(1, 2); print(1);");
 
             testEngine.Run(@"

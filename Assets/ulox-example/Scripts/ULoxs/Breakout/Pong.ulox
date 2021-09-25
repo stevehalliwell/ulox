@@ -1,0 +1,61 @@
+var dt;
+var walls = List();
+var ball;
+var leftPaddle;
+var rightPaddle;
+var paddleMoveSpeed = 50;
+
+fun SetupGame()
+{
+    CreateLevel();
+}
+
+fun CreateLevel()
+{
+    CreateWalls();
+    
+    CreateBall(Vec2.Create(0,-20), Vec2.Create(15,18));
+
+    CreatePaddles();
+}
+
+fun CreateWalls()
+{
+    walls.Add(PongWall(Vec2.Create(-40,0), Vec2.Create(10,80)));
+    walls.Add(PongWall(Vec2.Create(40,0), Vec2.Create(10,80)));
+    walls.Add(PongWall(Vec2.Create(0,-40), Vec2.Create(80,10)));
+    walls.Add(PongWall(Vec2.Create(0,40), Vec2.Create(80,10)));
+}
+
+fun CreateBall(at, vel)
+{
+    ball = PongBall(at, vel);
+}
+
+fun CreatePaddles()
+{
+    leftPaddle = PongPaddle(
+        Vec2.Create(-25,0),
+        paddleMoveSpeed,
+        "w",
+        "s"
+    );
+    rightPaddle = PongPaddle(
+        Vec2.Create(25,0),
+        paddleMoveSpeed,
+        "up",
+        "down"
+    );
+}
+
+fun Update()
+{
+    UpdateGame(dt);
+}
+
+fun UpdateGame(dt)
+{
+	if(GetKey("escape")){ReloadScene();}
+    leftPaddle.Update();
+    rightPaddle.Update();
+}

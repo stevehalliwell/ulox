@@ -48,7 +48,7 @@ namespace ULox
         public void SetGlobal(string name, Value val) => _globals[name] = val;
 
         public Value GetArg(int index) => _valueStack[currentCallFrame.StackStart + index];
-
+        public int CurrentFrameStackValues => _valueStack.Count - currentCallFrame.StackStart;
         public Value StackTop => _valueStack.Peek();
 
         public Value GetGlobal(string name) => _globals[name];
@@ -155,11 +155,20 @@ namespace ULox
 
         public InterpreterResult Run()
         {
-            if (currentCallFrame.Closure == null)
+            if (currentCallFrame.Closure == null && currentCallFrame.nativeFunc == null)
                 return InterpreterResult.NOTHING;
 
             while (true)
             {
+                if (currentCallFrame.nativeFunc != null)
+                {
+                    var argCount = CurrentFrameStackValues;
+                    var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
+
+                    ReturnAndPopFrame(res);
+                    continue;
+                }
+
                 var chunk = currentCallFrame.Closure.chunk;
 
                 OpCode opCode = (OpCode)ReadByte(chunk);
@@ -429,7 +438,11 @@ namespace ULox
             Value result = Pop();
 
             CloseUpvalues(currentCallFrame.StackStart);
+            ReturnAndPopFrame(result);
+        }
 
+        private void ReturnAndPopFrame(Value result)
+        {
             var prevStackStart = currentCallFrame.StackStart;
 
             PopCallFrame();
@@ -487,7 +500,7 @@ namespace ULox
             switch (callee.type)
             {
             case ValueType.NativeFunction:
-                CallNative(callee.val.asNativeFunc, argCount);
+                PushFrameCallNative(callee.val.asNativeFunc, argCount);
                 break;
 
             case ValueType.Closure:
@@ -516,22 +529,15 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallNative(System.Func<VMBase, int, Value> asNativeFunc, int argCount)
+        protected void PushFrameCallNative(System.Func<VMBase, int, Value> asNativeFunc, int argCount)
         {
             PushNewCallframe(new CallFrame()
             {
                 StackStart = _valueStack.Count - argCount - 1,
-                Closure = null
+                Closure = null,
+                nativeFunc = asNativeFunc,
+                InstructionPointer = -1
             });
-
-            var stackPos = _valueStack.Count - argCount;
-            var res = asNativeFunc.Invoke(this, argCount);
-
-            DiscardPop(_valueStack.Count - (stackPos - 1));
-
-            PopCallFrame();
-
-            Push(res);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -620,6 +626,14 @@ namespace ULox
                     throw new VMException($"Cannot greater across on different types '{lhs.type}' and '{rhs.type}'.");
                 Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
                 break;
+            }
+        }
+
+        protected void DuplicateStackValues(int v)
+        {
+            for (int i = 0; i < v; i++)
+            {
+                Push(Peek(v-1));
             }
         }
     }

@@ -443,10 +443,10 @@ namespace ULox
                 do
                 {
                     Expression();
+                    argCount++;
                     if (argCount == 255)
                         throw new CompilerException("Can't have more than 255 arguments.");
 
-                    argCount++;
                 } while (Match(TokenType.COMMA));
             }
 
@@ -509,23 +509,25 @@ namespace ULox
                 {
                     do
                     {
-                        IncreaseArity();
-
                         var paramConstant = ParseVariable("Expect parameter name.");
                         DefineVariable(paramConstant);
+
+                        //if it isn't already a constant we want one
+                        IncreaseArity(AddStringConstant());
                     } while (Match(TokenType.COMMA));
                 }
                 Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
             }
         }
 
-        public void IncreaseArity()
+        public void IncreaseArity(byte argNameConstant)
         {
-            CurrentChunk.Arity++;
+            CurrentChunk.ArgumentConstantIds.Add(argNameConstant);
             if (CurrentChunk.Arity > 255)
             {
                 throw new CompilerException("Can't have more than 255 parameters.");
             }
+
         }
 
         public void EndFunction()

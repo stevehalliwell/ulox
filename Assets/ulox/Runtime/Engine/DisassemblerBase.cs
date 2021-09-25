@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace ULox
 {
@@ -60,9 +61,11 @@ namespace ULox
             var instructionCount = 0;
             var prevLine = -1;
 
+            DoArgs(chunk);
+
             for (int i = 0; i < chunk.Instructions.Count; i++, instructionCount++)
             {
-                stringBuilder.Append(i.ToString("0000"));
+                stringBuilder.Append(i.ToString("00000"));
 
                 var opCode = (OpCode)chunk.Instructions[i];
                 prevLine = DoLineNumber(chunk, instructionCount, prevLine);
@@ -74,6 +77,23 @@ namespace ULox
 
             DoConstants(chunk, subChunks);
             DoSubChunks(subChunks);
+        }
+
+        private void DoArgs(Chunk chunk)
+        {
+            if (chunk.Arity == 0)
+                return;
+
+            stringBuilder.AppendLine();
+            stringBuilder.Append("arguments: ");
+
+            var argsConstants = chunk.ArgumentConstantIds;
+
+            var constantStrings = argsConstants.Select(x => chunk.Constants[x].val.asString);
+            var joinedArgStringConstants = string.Join(", ", constantStrings);
+
+            stringBuilder.AppendLine(joinedArgStringConstants);
+            stringBuilder.AppendLine();
         }
 
         private int DoLineNumber(Chunk chunk, int instructionCount, int prevLine)

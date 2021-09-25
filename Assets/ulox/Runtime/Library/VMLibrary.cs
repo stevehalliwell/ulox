@@ -2,10 +2,10 @@
 
 namespace ULox
 {
-    public class VMLibrary : IULoxLibrary
+    public class VmLibrary : IULoxLibrary
     {
-        public string Name => nameof(VMLibrary);
-        public VMLibrary(Func<VMBase> createVM)
+        public string Name => nameof(VmLibrary);
+        public VmLibrary(Func<VMBase> createVM)
         {
             CreateVM = createVM;
         }
@@ -42,7 +42,7 @@ namespace ULox
                 var inst = vm.GetArg(0);
                 var name = vm.GetArg(1).val.asString;
                 var val = vm.GetArg(2);
-                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as Vm;
                 ourVM.SetGlobal(name, val);
                 return inst;
             }
@@ -51,14 +51,14 @@ namespace ULox
             {
                 var inst = vm.GetArg(0);
                 var name = vm.GetArg(1).val.asString;
-                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as Vm;
                 return ourVM.GetGlobal(name);
             }
 
             private Value InheritFromEnclosing(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
-                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as Vm;
                 ourVM.CopyFrom(vm);
                 return Value.Null();
             }
@@ -66,7 +66,7 @@ namespace ULox
             private Value CopyBackToEnclosing(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
-                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as Vm;
                 vm.CopyFrom(ourVM);
                 return Value.Null();
             }
@@ -74,7 +74,7 @@ namespace ULox
             private Value Start(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
-                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as Vm;
                 var chunk = vm.GetArg(1).val.asClosure.chunk;
                 ourVM.Interpret(chunk);
                 return ourVM.StackTop;
@@ -83,7 +83,7 @@ namespace ULox
             private Value Resume(VMBase vm, int argCount)
             {
                 var inst = vm.GetArg(0);
-                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as VM;
+                var ourVM = inst.val.asInstance.fields[VMFieldName].val.asObject as Vm;
                 ourVM.Run();
                 return ourVM.StackTop;
             }

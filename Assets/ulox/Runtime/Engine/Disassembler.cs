@@ -4,17 +4,18 @@
     {
         public Disassembler()
         {
-            opCodeHandlers[(int)OpCode.INHERIT] = AppendNothing;
-
+            opCodeHandlers[(int)OpCode.CLASS] = AppendStringConstantThenSpaceThenUshort;
             opCodeHandlers[(int)OpCode.GET_PROPERTY] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.SET_PROPERTY] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.GET_SUPER] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.METHOD] = AppendStringConstant;
+            opCodeHandlers[(int)OpCode.INHERIT] = AppendNothing;
+            opCodeHandlers[(int)OpCode.MIXIN] = AppendNothing;
 
             opCodeHandlers[(int)OpCode.SUPER_INVOKE] = AppendStringConstantThenByte;
             opCodeHandlers[(int)OpCode.INVOKE] = AppendStringConstantThenByte;
 
-            opCodeHandlers[(int)OpCode.CLASS] = AppendStringConstantThenSpaceThenUshort;
+
 
             opCodeHandlers[(int)OpCode.TEST] = HandleTestOpCode;
 

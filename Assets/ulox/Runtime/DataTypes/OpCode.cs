@@ -54,6 +54,8 @@
         GET_SUPER,
         SUPER_INVOKE,
 
+        MIXIN,
+
         TEST,
 
         BUILD,

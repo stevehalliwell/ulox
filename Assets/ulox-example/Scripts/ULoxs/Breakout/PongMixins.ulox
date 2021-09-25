@@ -64,3 +64,29 @@ class PongWall
         this.Sync();
     }
 }
+
+class PongPaddle
+{
+    mixin GameObject, Dynamic;
+    var speed;
+    var upKey, downKey;
+    
+    init(pos, speed, upKey, downKey)
+    {
+        this.FromPrefab("VerticalPaddle");
+        this.Sync();
+    }
+
+    Update()
+    {
+        var curSpeed = 0;
+        if(GetKey(this.upKey))
+            curSpeed = this.speed;
+        if(GetKey(this.downKey))
+            curSpeed = -this.speed;
+
+        this.vel = Vec2.Create(0,curSpeed);
+
+        SetRigidBody2DVelocity(this.rb, this.vel.x, this.vel.y);
+    }
+}

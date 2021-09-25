@@ -1,6 +1,9 @@
 var dt;
 var walls = List();
 var ball;
+var leftPaddle;
+var rightPaddle;
+var paddleMoveSpeed = 50;
 
 fun SetupGame()
 {
@@ -12,6 +15,8 @@ fun CreateLevel()
     CreateWalls();
     
     CreateBall(Vec2.Create(0,-20), Vec2.Create(15,18));
+
+    CreatePaddles();
 }
 
 fun CreateWalls()
@@ -27,6 +32,22 @@ fun CreateBall(at, vel)
     ball = PongBall(at, vel);
 }
 
+fun CreatePaddles()
+{
+    leftPaddle = PongPaddle(
+        Vec2.Create(-25,0),
+        paddleMoveSpeed,
+        "w",
+        "s"
+    );
+    rightPaddle = PongPaddle(
+        Vec2.Create(25,0),
+        paddleMoveSpeed,
+        "up",
+        "down"
+    );
+}
+
 fun Update()
 {
     UpdateGame(dt);
@@ -35,4 +56,6 @@ fun Update()
 fun UpdateGame(dt)
 {
 	if(GetKey("escape")){ReloadScene();}
+    leftPaddle.Update();
+    rightPaddle.Update();
 }

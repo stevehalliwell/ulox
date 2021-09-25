@@ -350,7 +350,6 @@ foo.Speak();
             Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
         }
 
-
         [Test]
         public void Mixin_WhenInstanceMethodsCombinedAndNamesClash_ShouldHaveAllPrint()
         {
@@ -390,6 +389,43 @@ foo.Speak();
             testEngine.Run(script);
 
             Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
+        }
+
+
+        [Test]
+        public void Mixin_WhenDuplicateFlavours_ShouldHaveOnlyOnePresent()
+        {
+            var script = @"
+
+var globalCounter = 0;
+
+class MixMe
+{
+    var a = (globalCounter += 1);
+}
+
+class Combo1
+{
+    mixin MixMe;
+}
+
+class Combo2
+{
+    mixin MixMe;
+}
+
+class Foo 
+{
+    mixin Combo1, Combo2;
+}
+
+var foo = Foo();
+print(foo.a);
+";
+
+            testEngine.Run(script);
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
     }
 }

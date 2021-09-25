@@ -27,12 +27,12 @@ namespace ULox
         };
 
         public string name;
-        private Dictionary<string, Value> methods = new Dictionary<string, Value>();
-        private Dictionary<string, ClassInternal> flavours = new Dictionary<string, ClassInternal>();
+        private readonly Dictionary<string, Value> methods = new Dictionary<string, Value>();
+        private readonly Dictionary<string, ClassInternal> flavours = new Dictionary<string, ClassInternal>();
         public Value initialiser = Value.Null();
-        public List<(ClosureInternal, int)> initChains = new List<(ClosureInternal, int)>();
-        public Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
-        public Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
+        public readonly List<(ClosureInternal, int)> initChains = new List<(ClosureInternal, int)>();
+        public readonly Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
+        public readonly Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
         public ClassInternal super;
 
         public Value GetMethod(string name) => methods[name];
@@ -86,8 +86,13 @@ namespace ULox
                 MixinMethod(flavourMeth.Key, flavourMeth.Value);
             }
 
-            if (flavour.initChains.Count > 0)
-                initChains.AddRange(flavour.initChains);
+            foreach (var flavourInitChain in flavour.initChains)
+            {
+                if(!initChains.Contains(flavourInitChain))
+                {
+                    initChains.Add(flavourInitChain);
+                }
+            }
         }
 
         public void MixinMethod(string key, Value value)

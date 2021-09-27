@@ -1,0 +1,41 @@
+test DISimpleTests
+{
+    testcase RegisterAndInjectInSingleScope
+    {
+        //[statement] register <constant string> <expression>
+        var serviceInst = 7;
+        register Service serviceInst;
+        var expected = 7;
+        var result = 0;
+
+        //[expression]<assign statement> = inject <constant string>(resolves to a lookup and push stack)
+        result = inject Service;
+
+        Assert.AreEqual(expected, result);        
+    }
+
+    testcase ReRegisterAndInjectInSingleScope
+    {
+        var serviceInst = 7;
+        register Service serviceInst;
+        register Service null;
+        var result = 0;
+
+        result = inject Service;
+
+        Assert.IsNull(result);        
+    }
+
+    testcase RegisterAndInjectIntoFunc
+    {
+        var serviceInst = 7;
+        register Service serviceInst;
+        var expected = 8;
+        var result = 0;
+        fun InjectedIsReturnedPlus1(a){return a+1;}
+
+        result = InjectedIsReturnedPlus1(inject Service);
+
+        Assert.AreEqual(expected, result);        
+    }
+}

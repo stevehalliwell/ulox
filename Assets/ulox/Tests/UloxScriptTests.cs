@@ -31,6 +31,7 @@ public class UloxScriptTests
         engine.Engine.Context.DeclareLibrary(new DebugLibrary());
         engine.Engine.Context.DeclareLibrary(new StandardClassesLibrary());
         engine.Engine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
+        engine.Engine.Context.DeclareLibrary(new DiLibrary());
     }
 
     [Test]

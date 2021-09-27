@@ -2,6 +2,10 @@
 {
     public enum TokenType
     {
+        EOF,
+
+        NONE,
+        
         OPEN_PAREN,
         CLOSE_PAREN,
         OPEN_BRACE,
@@ -9,10 +13,7 @@
         COMMA,
         DOT,
         END_STATEMENT,
-
-        //INCREMENT,
-        //DECREMENT,
-
+     
         MINUS,
         PLUS,
         SLASH,
@@ -79,10 +80,9 @@
         CONTEXT_NAME_TESTCASE,
         CONTEXT_NAME_TESTSET,
 
-        EOF,
-
-        NONE,
-
         BUILD,
+        
+        REGISTER,
+        INJECT,
     }
 }

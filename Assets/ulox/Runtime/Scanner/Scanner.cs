@@ -22,7 +22,10 @@
                 ("super", TokenType.SUPER),
                 ("static", TokenType.STATIC),
                 ("init", TokenType.INIT),
-                ("cname", TokenType.CONTEXT_NAME_CLASS)
+                ("cname", TokenType.CONTEXT_NAME_CLASS),
+
+                ("inject", TokenType.INJECT),
+                ("register", TokenType.REGISTER)
                 );
 
             this.AddSingleCharTokenGenerators(

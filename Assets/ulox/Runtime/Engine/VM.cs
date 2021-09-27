@@ -5,6 +5,7 @@ namespace ULox
     public class Vm : VMBase
     {
         public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
+        public DiContainer DiContainer { get; private set; } = new DiContainer();
 
         public override void CopyFrom(VMBase otherVMbase)
         {
@@ -13,6 +14,7 @@ namespace ULox
             if (otherVMbase is Vm otherVm)
             {
                 TestRunner = otherVm.TestRunner;
+                DiContainer = otherVm.DiContainer.ShallowCopy();
             }
         }
 
@@ -124,6 +126,26 @@ namespace ULox
                 TestRunner.DoTestOpCode(this, chunk);
                 break;
 
+
+            case OpCode.REGISTER:
+                {
+                    var constantIndex = ReadByte(chunk);
+                    var name = chunk.ReadConstant(constantIndex).val.asString;
+                    var implementation = Pop();
+                    DiContainer.Set(name,implementation);
+                }
+                break;
+
+            case OpCode.INJECT:
+                {
+                    var constantIndex = ReadByte(chunk);
+                    var name = chunk.ReadConstant(constantIndex).val.asString;
+                    if (DiContainer.TryGetValue(name, out var found))
+                        Push(found);
+                    else
+                        throw new VMException($"Inject failure. Nothing has been registered (yet) with name '{name}'.");
+                }
+                break;
             default:
                 return false;
             }

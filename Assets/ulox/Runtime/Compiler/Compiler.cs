@@ -19,7 +19,12 @@
                 _testdec,
                 _classCompiler,
                 _testcaseCompilette,
-                _buildCompilette);
+                _buildCompilette
+                );
+
+            this.AddStatementCompilettes(
+                new CompiletteAction(TokenType.REGISTER, RegisterStatement)
+                );
 
             this.SetPrattRules(
                 (TokenType.DOT, new ParseRule(null, this.Dot, Precedence.Call)),
@@ -27,8 +32,20 @@
                 (TokenType.SUPER, new ParseRule(Super, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_CLASS, new ParseRule(CName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTCASE, new ParseRule(TCName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTSET, new ParseRule(TSName, null, Precedence.None))
-                              );
+                (TokenType.CONTEXT_NAME_TESTSET, new ParseRule(TSName, null, Precedence.None)),
+                (TokenType.INJECT, new ParseRule(Inject, null, Precedence.Term))
+                );
+        }
+
+
+
+        private void RegisterStatement(CompilerBase compiler)
+        {
+            Consume(TokenType.IDENTIFIER, "Must provide name after a register statement.");
+            var stringConst = compiler.AddStringConstant();
+            Expression();
+            EmitOpAndBytes(OpCode.REGISTER, stringConst);
+            Consume(TokenType.END_STATEMENT, "Expect ';' after resgister.");
         }
 
         private void TCName(bool obj)
@@ -83,6 +100,12 @@
             CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), PreviousToken.Line);
         }
 
+        protected void Inject(bool canAssign)
+        {
+            Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
+            byte name = AddStringConstant();
+            EmitOpAndBytes(OpCode.INJECT, name);
+        }
         #endregion Expressions
     }
 }

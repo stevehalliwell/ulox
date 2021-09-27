@@ -59,5 +59,8 @@
         TEST,
 
         BUILD,
+        
+        REGISTER,
+        INJECT,
     }
 }

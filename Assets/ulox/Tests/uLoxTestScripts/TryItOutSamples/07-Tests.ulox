@@ -1,0 +1,30 @@
+fun Add(a,b) {return a+b;}
+fun Sub(a,b) {return a-b;}
+
+// built in testing, test defines a set of tests
+test SimpleTest
+{
+	// testcase defines a single testmethod in the set
+	testcase Test1
+	{
+		var lhs = 1;
+		var rhs = 2;
+
+		var res = Add(lhs,rhs);
+
+		// an Assert library is provided but you can also just manually throw; to fail a test
+		if(res != 3)
+			throw "1 + 2 Should be 3.";
+	}
+	
+	testcase Test2
+	{
+		var lhs = 1;
+		var rhs = 2;
+
+		var res = Sub(lhs,rhs);
+
+		Assert.AreEqual(-1, res);
+	}
+}
+// The complier emits code to run the tests at the end of their block

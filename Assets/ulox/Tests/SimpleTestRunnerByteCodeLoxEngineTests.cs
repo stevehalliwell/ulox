@@ -246,7 +246,7 @@ test T
         [Ignore("Runner is mad about these paths, can resolve later.")]
         public void RunTestScript_NoFail(string fileNamePartial)
         {
-            var noFailFiles = UloxScriptTests.GetFilesInFolder(UloxScriptTests.NoFailFolderName);
+            var noFailFiles = UloxScriptTestBase.GetFilesInFolder(NoFailUloxTests.NoFailFolderName);
             var file = noFailFiles.FirstOrDefault(x => x.Contains(fileNamePartial));
 
             var script = File.ReadAllText(file);

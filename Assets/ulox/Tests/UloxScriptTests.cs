@@ -6,9 +6,8 @@ using System.Linq;
 using ULox;
 using ULox.Tests;
 
-public class UloxScriptTests
+public class UloxScriptTestBase
 {
-    public const string NoFailFolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
     private const string ULoxScriptExtension = "*.ulox";
 
     public class ScriptTestEngine : ByteCodeInterpreterTestEngine
@@ -21,7 +20,31 @@ public class UloxScriptTests
         public int TestsFound => Vm.TestRunner.TestsFound;
     }
 
-    private ScriptTestEngine engine;
+    public static string[] GetFilesInFolder(string FolderName)
+    {
+        string[] filesInFolder = new string[] { "" };
+
+        var path = Path.GetFullPath(FolderName);
+        if (Directory.Exists(path))
+        {
+            var foundInDir = Directory.GetFiles(path, ULoxScriptExtension);
+
+            if (foundInDir.Any())
+                filesInFolder = foundInDir;
+        }
+
+        return filesInFolder;
+    }
+
+    protected static TestCaseData MakeTestCaseData(string file)
+    {
+        if (!File.Exists(file))
+            return new TestCaseData(new object[] { "" }).SetName("Empty");
+
+        return new TestCaseData(new object[] { File.ReadAllText(file) }).SetName(Path.GetFileName(file));
+    }
+
+    protected ScriptTestEngine engine;
 
     [SetUp]
     public void Setup()
@@ -33,6 +56,12 @@ public class UloxScriptTests
         engine.Engine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
         engine.Engine.Context.DeclareLibrary(new DiLibrary());
     }
+
+}
+
+public class NoFailUloxTests : UloxScriptTestBase
+{
+    public const string NoFailFolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
 
     [Test]
     [TestCaseSource(nameof(ScriptGenerator))]
@@ -55,28 +84,29 @@ public class UloxScriptTests
             .Select(x => MakeTestCaseData(x))
             .GetEnumerator();
     }
+}
 
-    public static string[] GetFilesInFolder(string FolderName)
+
+public class TryItOutTests : UloxScriptTestBase
+{
+    public const string TryItOutFolderName = @"Assets\ulox\Tests\uLoxTestScripts\TryItOutSamples";
+
+    [Test]
+    [TestCaseSource(nameof(ScriptGenerator))]
+    public void NoFailTests(string script)
     {
-        string[] filesInFolder = new string[] { "" };
+        if (string.IsNullOrEmpty(script))
+            return;
 
-        var path = Path.GetFullPath(FolderName);
-        if (Directory.Exists(path))
-        {
-            var foundInDir = Directory.GetFiles(path, ULoxScriptExtension);
-
-            if (foundInDir.Any())
-                filesInFolder = foundInDir;
-        }
-
-        return filesInFolder;
+        engine.Run(script);
     }
 
-    private static TestCaseData MakeTestCaseData(string file)
+    public static IEnumerator ScriptGenerator()
     {
-        if (!File.Exists(file))
-            return new TestCaseData(new object[] { "" }).SetName("Empty");
+        string[] filesInFolder = GetFilesInFolder(TryItOutFolderName);
 
-        return new TestCaseData(new object[] { File.ReadAllText(file) }).SetName(Path.GetFileName(file));
+        return filesInFolder
+            .Select(x => MakeTestCaseData(x))
+            .GetEnumerator();
     }
 }

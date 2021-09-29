@@ -3445,8 +3445,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8fa30adad9725c468a6696730ba2f7a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  availablePrefabs: []
-  scripts: []
+  prefabCollectionSO: {fileID: 0}
+  textAssetCollectionSO: {fileID: 0}
+  outputText: {fileID: 0}
+  bindAllLibraries: 1
+  scriptsNamesToLoad: []
 --- !u!4 &2096495510
 Transform:
   m_ObjectHideFlags: 0

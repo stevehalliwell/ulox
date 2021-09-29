@@ -24,7 +24,10 @@ namespace ULox.Demo
 
         public void Reset()
         {
-            var builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name,x => x.text);
+            Dictionary<string, string> builtinDict = null;
+            if (textAssetCollectionSO != null)
+                builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name,x => x.text);
+
             var scriptLocator = new ScriptLocator(builtinDict, new DirectoryInfo(Application.streamingAssetsPath));
             Engine = new Engine(scriptLocator, new Context(new Program(), new Vm()));
 
@@ -32,8 +35,12 @@ namespace ULox.Demo
                 x => Debug.Log(x),
                 () => new Vm());
 
+            List<GameObject> prefabs = null; 
+            if(prefabCollectionSO != null)
+                prefabs = prefabCollectionSO.Collection;
+
             Engine.DeclareUnityLibraries(
-                prefabCollectionSO.Collection,
+                prefabs,
                 x => outputText.text = x);
 
             if (bindAllLibraries)

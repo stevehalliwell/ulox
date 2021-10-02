@@ -1,11 +1,11 @@
 ﻿using NUnit.Framework;
 using System.Collections;
-using System.Linq;
+using System.IO;
 
 [TestFixture]
 public class TryItOutTests : UloxScriptTestBase
 {
-    public const string TryItOutFolderName = @"Assets\ulox\Tests\uLoxTestScripts\TryItOutSamples";
+    public const string TryItOutFolderName = "uLoxTestScripts/TryItOutSamples";
 
     [SetUp]
     public override void Setup()

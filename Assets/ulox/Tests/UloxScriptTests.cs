@@ -1,9 +1,10 @@
 using NUnit.Framework;
 using System.Collections;
+using System.IO;
 
 public class NoFailUloxTests : UloxScriptTestBase
 {
-    public const string NoFailFolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
+    public const string NoFailFolderName = "uLoxTestScripts/NoFail";
 
     [Test]
     [TestCaseSource(nameof(ScriptGenerator))]

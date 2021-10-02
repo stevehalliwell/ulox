@@ -5,6 +5,7 @@ using System.Linq;
 using ULox;
 using ULox.Tests;
 using System.Collections;
+using UnityEditor;
 
 public class UloxScriptTestBase
 {
@@ -20,11 +21,12 @@ public class UloxScriptTestBase
         public int TestsFound => Vm.TestRunner.TestsFound;
     }
 
-    public static string[] GetFilesInFolder(string FolderName)
+    public static string[] GetFilesInSubFolder(string subFolderName)
     {
-        string[] filesInFolder = new string[] { "" };
+        var folderName = Path.Combine(UloxTestFolder(), subFolderName);
+        string[] filesInFolder = new string[] { folderName };
 
-        var path = Path.GetFullPath(FolderName);
+        var path = Path.GetFullPath(folderName);
         if (Directory.Exists(path))
         {
             var foundInDir = Directory.GetFiles(path, ULoxScriptExtension);
@@ -57,17 +59,20 @@ public class UloxScriptTestBase
         engine.Engine.Context.DeclareLibrary(new DiLibrary());
     }
 
-    protected static IEnumerator ScriptGeneratorHelper(string folderName)
+    protected static IEnumerator ScriptGeneratorHelper(string subfolderName)
     {
-        string[] filesInFolder = GetFilesInFolder(folderName);
-
-        if (filesInFolder == null ||
-            filesInFolder.Length == 0)
-            filesInFolder = new string[] { folderName };
+        string[] filesInFolder = GetFilesInSubFolder(subfolderName);
 
         return filesInFolder
             .Select(x => MakeTestCaseData(x))
             .GetEnumerator();
     }
 
+    public static string UloxTestFolder()
+    {
+        var res = AssetDatabase.FindAssets("ulox.Tests");
+        if (res.Length > 0)
+            return Path.GetDirectoryName(AssetDatabase.GUIDToAssetPath(res[0]));
+        return "";
+    }
 }

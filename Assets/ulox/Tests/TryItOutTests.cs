@@ -1,10 +1,18 @@
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.Collections;
 using System.Linq;
 
-public class NoFailUloxTests : UloxScriptTestBase
+[TestFixture]
+public class TryItOutTests : UloxScriptTestBase
 {
-    public const string NoFailFolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
+    public const string TryItOutFolderName = @"Assets\ulox\Tests\uLoxTestScripts\TryItOutSamples";
+
+    [SetUp]
+    public override void Setup()
+    {
+        base.Setup();
+        engine.ReThrow = true;
+    }
 
     [Test]
     [TestCaseSource(nameof(ScriptGenerator))]
@@ -14,14 +22,11 @@ public class NoFailUloxTests : UloxScriptTestBase
             return;
 
         engine.Run(script);
-
-        Assert.IsTrue(engine.AllPassed);
-        Assert.AreNotEqual(0, engine.TestsFound, "Expect to find at least 1 test in the NoFail tests folder");
     }
 
     public static IEnumerator ScriptGenerator()
     {
-        string[] filesInFolder = GetFilesInFolder(NoFailFolderName);
+        string[] filesInFolder = GetFilesInFolder(TryItOutFolderName);
 
         return filesInFolder
             .Select(x => MakeTestCaseData(x))

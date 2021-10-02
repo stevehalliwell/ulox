@@ -1,0 +1,26 @@
+// Dependency Injection via keywords is native to the language
+// inject locates the registered service of the same name
+
+var serviceInst = 7;
+register SimpleService serviceInst;
+var expected = 7;
+var result = 0;
+
+result = inject SimpleService;
+
+class ConcreteService 
+{
+    Meth(){return 1;}
+}
+
+register Service ConcreteService();
+
+class Dependent
+{
+    var service = inject Service;
+    Get{return this.service.Meth();}
+}
+
+var dep = Dependent();
+
+print(dep.Get());

@@ -1,0 +1,22 @@
+// standard classes library provides a dynamic type, 
+//  while all objects can do this, using Dynamic makes your intent clear
+//  and protects you from any future changes around
+build bind "StandardClassesLibrary";
+
+var obj = Dynamic();
+
+obj.a = 1;
+obj.b = 2;
+obj.c = 3;
+obj.d = -1;
+
+var d = obj.a + obj.b + obj.c;
+obj.d = d;
+
+print(obj.d);
+
+obj.val = "expected";
+fun Method(self){return self.val;}
+obj.Meth = Method;
+
+print(obj.Meth(obj));

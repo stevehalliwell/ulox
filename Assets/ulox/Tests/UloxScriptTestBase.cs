@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using ULox;
 using ULox.Tests;
+using System.Collections;
 
 public class UloxScriptTestBase
 {
@@ -38,7 +39,7 @@ public class UloxScriptTestBase
     protected static TestCaseData MakeTestCaseData(string file)
     {
         if (!File.Exists(file))
-            return new TestCaseData(new object[] { "" }).SetName("Empty");
+            return new TestCaseData(new object[] { "" }).SetName($"NoFile: {file}");
 
         return new TestCaseData(new object[] { File.ReadAllText(file) }).SetName(Path.GetFileName(file));
     }
@@ -54,6 +55,19 @@ public class UloxScriptTestBase
         engine.Engine.Context.DeclareLibrary(new StandardClassesLibrary());
         engine.Engine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
         engine.Engine.Context.DeclareLibrary(new DiLibrary());
+    }
+
+    protected static IEnumerator ScriptGeneratorHelper(string folderName)
+    {
+        string[] filesInFolder = GetFilesInFolder(folderName);
+
+        if (filesInFolder == null ||
+            filesInFolder.Length == 0)
+            filesInFolder = new string[] { folderName };
+
+        return filesInFolder
+            .Select(x => MakeTestCaseData(x))
+            .GetEnumerator();
     }
 
 }

@@ -1,6 +1,5 @@
 using NUnit.Framework;
 using System.Collections;
-using System.Linq;
 
 public class NoFailUloxTests : UloxScriptTestBase
 {
@@ -21,10 +20,6 @@ public class NoFailUloxTests : UloxScriptTestBase
 
     public static IEnumerator ScriptGenerator()
     {
-        string[] filesInFolder = GetFilesInFolder(NoFailFolderName);
-
-        return filesInFolder
-            .Select(x => MakeTestCaseData(x))
-            .GetEnumerator();
+        return ScriptGeneratorHelper(NoFailFolderName);
     }
 }

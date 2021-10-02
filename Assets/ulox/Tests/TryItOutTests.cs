@@ -26,10 +26,6 @@ public class TryItOutTests : UloxScriptTestBase
 
     public static IEnumerator ScriptGenerator()
     {
-        string[] filesInFolder = GetFilesInFolder(TryItOutFolderName);
-
-        return filesInFolder
-            .Select(x => MakeTestCaseData(x))
-            .GetEnumerator();
+        return ScriptGeneratorHelper(TryItOutFolderName);
     }
 }

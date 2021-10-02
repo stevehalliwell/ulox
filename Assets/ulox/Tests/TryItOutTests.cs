@@ -16,7 +16,7 @@ public class TryItOutTests : UloxScriptTestBase
 
     [Test]
     [TestCaseSource(nameof(ScriptGenerator))]
-    public void NoFailTests(string script)
+    public void Tests(string script)
     {
         if (string.IsNullOrEmpty(script))
             return;

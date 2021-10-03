@@ -1,42 +1,14 @@
 using NUnit.Framework;
-using System;
 using System.Collections;
 using System.IO;
-using System.Linq;
-using ULox;
-using ULox.Tests;
 
-public class UloxScriptTests
+public class NoFailUloxTests : UloxScriptTestBase
 {
-    public const string NoFailFolderName = @"Assets\ulox\Tests\uLoxTestScripts\NoFail";
-    private const string ULoxScriptExtension = "*.ulox";
-
-    public class ScriptTestEngine : ByteCodeInterpreterTestEngine
-    {
-        public ScriptTestEngine(Action<string> logger) : base(logger)
-        {
-        }
-
-        public bool AllPassed => Vm.TestRunner.AllPassed;
-        public int TestsFound => Vm.TestRunner.TestsFound;
-    }
-
-    private ScriptTestEngine engine;
-
-    [SetUp]
-    public void Setup()
-    {
-        engine = new ScriptTestEngine(UnityEngine.Debug.Log);
-        engine.AddLibrary(new AssertLibrary(() => new Vm()));
-        engine.Engine.Context.DeclareLibrary(new DebugLibrary());
-        engine.Engine.Context.DeclareLibrary(new StandardClassesLibrary());
-        engine.Engine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
-        engine.Engine.Context.DeclareLibrary(new DiLibrary());
-    }
+    public const string NoFailFolderName = "uLoxTestScripts/NoFail";
 
     [Test]
     [TestCaseSource(nameof(ScriptGenerator))]
-    public void NoFailTests(string script)
+    public void Tests(string script)
     {
         if (string.IsNullOrEmpty(script))
             return;
@@ -49,34 +21,6 @@ public class UloxScriptTests
 
     public static IEnumerator ScriptGenerator()
     {
-        string[] filesInFolder = GetFilesInFolder(NoFailFolderName);
-
-        return filesInFolder
-            .Select(x => MakeTestCaseData(x))
-            .GetEnumerator();
-    }
-
-    public static string[] GetFilesInFolder(string FolderName)
-    {
-        string[] filesInFolder = new string[] { "" };
-
-        var path = Path.GetFullPath(FolderName);
-        if (Directory.Exists(path))
-        {
-            var foundInDir = Directory.GetFiles(path, ULoxScriptExtension);
-
-            if (foundInDir.Any())
-                filesInFolder = foundInDir;
-        }
-
-        return filesInFolder;
-    }
-
-    private static TestCaseData MakeTestCaseData(string file)
-    {
-        if (!File.Exists(file))
-            return new TestCaseData(new object[] { "" }).SetName("Empty");
-
-        return new TestCaseData(new object[] { File.ReadAllText(file) }).SetName(Path.GetFileName(file));
+        return ScriptGeneratorHelper(NoFailFolderName);
     }
 }

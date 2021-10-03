@@ -6,6 +6,8 @@
         private readonly Vm _vm;
         private readonly Engine _engine;
 
+        public bool ReThrow { get; set; }
+
         public Vm Vm => _vm;
         public IProgram Program => _engine.Context.Program;
         public Engine Engine => _engine;
@@ -40,6 +42,8 @@
             catch (LoxException e)
             {
                 AppendResult(e.Message);
+                if (ReThrow)
+                    throw;
             }
             finally
             {

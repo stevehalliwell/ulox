@@ -1,0 +1,15 @@
+// classes are defined and then instances can be created.
+class Animal
+{
+	// Classes have methods
+	Speak(){throw;}
+}
+
+// classes can inherit from 1 other class.
+class Cat < Animal
+{
+	Speak(){print("Meow");}
+}
+
+var myCat = Cat();
+myCat.Speak();

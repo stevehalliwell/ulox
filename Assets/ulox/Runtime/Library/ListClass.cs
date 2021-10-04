@@ -8,9 +8,8 @@ namespace ULox
 
         private class InternalList : List<Value> { }
 
-        public ListClass()
+        public ListClass(): base("List")
         {
-            this.name = "List";
             this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
             this.AddMethod(nameof(Count), Value.New(Count));
             this.AddMethod(nameof(Resize), Value.New(Resize));

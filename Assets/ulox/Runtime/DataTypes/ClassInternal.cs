@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -26,25 +27,34 @@ namespace ULox
             "_gr",
         };
 
-        public string name;
         private readonly Dictionary<string, Value> methods = new Dictionary<string, Value>();
         private readonly Dictionary<string, ClassInternal> flavours = new Dictionary<string, ClassInternal>();
-        public Value initialiser = Value.Null();
-        public readonly List<(ClosureInternal, int)> initChains = new List<(ClosureInternal, int)>();
-        public readonly Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
-        public readonly Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
-        public ClassInternal super;
+        private readonly Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
+        private readonly Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
 
+        //TODO these props also need to be write protected by the freeze
+        public string Name { get; protected set; }
+        public Value Initialiser { get; protected set; } = Value.Null();
+        public ClassInternal Super { get; protected set; }
+        public List<(ClosureInternal, int)> InitChains { get; protected set; } = new List<(ClosureInternal, int)>();
+
+        public ClassInternal(string name)
+        {
+            Name = name;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value GetMethod(string name) => methods[name];
 
         public bool TryGetMethod(string name, out Value method) => methods.TryGetValue(name, out method);
 
         public void AddMethod(string key, Value method)
         {
+            CanWrite();
             methods[key] = method;
             if (key == ClassCompilette.InitMethodName)
             {
-                initialiser = method;
+                Initialiser = method;
             }
             var opIndex = MathOperatorMethodNames.IndexOf(key);
             if (opIndex != -1)
@@ -61,14 +71,22 @@ namespace ULox
             }
         }
 
-        internal void AddInitChain(ClosureInternal closure, ushort initChainStartOp)
+        public void CanWrite()
         {
-            initChains.Add((closure, initChainStartOp));
+            if (IsFrozen)
+                throw new FreezeException($"Attempted to modify frozen class '{Name}'.");
+        }
+
+        public void AddInitChain(ClosureInternal closure, ushort initChainStartOp)
+        {
+            CanWrite();
+            InitChains.Add((closure, initChainStartOp));
         }
 
         public void InheritFrom(ClassInternal superClass)
         {
-            super = superClass;
+            CanWrite();
+            Super = superClass;
             foreach (var item in superClass.methods)
             {
                 var k = item.Key;
@@ -79,23 +97,24 @@ namespace ULox
 
         public void AddMixin(ClassInternal flavour)
         {
-            flavours[flavour.name] = flavour;
+            CanWrite();
+            flavours[flavour.Name] = flavour;
 
             foreach (var flavourMeth in flavour.methods)
             {
                 MixinMethod(flavourMeth.Key, flavourMeth.Value);
             }
 
-            foreach (var flavourInitChain in flavour.initChains)
+            foreach (var flavourInitChain in flavour.InitChains)
             {
-                if(!initChains.Contains(flavourInitChain))
+                if(!InitChains.Contains(flavourInitChain))
                 {
-                    initChains.Add(flavourInitChain);
+                    InitChains.Add(flavourInitChain);
                 }
             }
         }
 
-        public void MixinMethod(string key, Value value)
+        private void MixinMethod(string key, Value value)
         {
             if(methods.TryGetValue(key, out var existing))
             {
@@ -117,6 +136,20 @@ namespace ULox
             }
 
             AddMethod(key, value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Value GetMathOpClosure(OpCode opCode)
+        {
+            int opIndex = (int)opCode - ClassInternal.FirstMathOp;
+            return mathOperators[opIndex];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Value GetCompareOpClosure(OpCode opCode)
+        {
+            int opIndex = (int)opCode - ClassInternal.FirstCompOp;
+            return compOperators[opIndex];
         }
     }
 }

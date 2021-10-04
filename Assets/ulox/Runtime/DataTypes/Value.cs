@@ -47,10 +47,10 @@ namespace ULox
                     return $"<upvalue {val.asUpvalue.index}>";
 
                 case ValueType.Class:
-                    return $"<class {val.asClass.name}>";
+                    return $"<class {val.asClass.Name}>";
 
                 case ValueType.Instance:
-                    return $"<inst {val.asInstance.FromClass?.name}>";
+                    return $"<inst {val.asInstance.FromClass?.Name}>";
 
                 case ValueType.BoundMethod:
                     return $"<boundMeth {val.asBoundMethod.method.chunk.Name}>";

@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System;
+
+namespace ULox
 {
     public class InstanceInternal
     {

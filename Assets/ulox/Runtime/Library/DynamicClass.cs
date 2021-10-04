@@ -4,10 +4,8 @@
     {
         public const string Name = "Dynamic";
 
-        public DynamicClass()
+        public DynamicClass() : base(Name)
         {
-            this.name = Name;
-
             this.AddMethod(nameof(HasField), Value.New(HasField));
             this.AddMethod(nameof(RemoveField), Value.New(RemoveField));
         }

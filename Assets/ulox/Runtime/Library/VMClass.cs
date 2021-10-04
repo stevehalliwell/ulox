@@ -10,10 +10,9 @@ namespace ULox
 
             public Func<VMBase> CreateVM { get; private set; }
 
-            public VMClass(Func<VMBase> createVM)
+            public VMClass(Func<VMBase> createVM):base("VM")
             {
                 CreateVM = createVM;
-                this.name = "VM";
                 this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
                 this.AddMethod(nameof(AddGlobal), Value.New(AddGlobal));
                 this.AddMethod(nameof(GetGlobal), Value.New(GetGlobal));

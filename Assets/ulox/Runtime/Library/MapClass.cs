@@ -8,9 +8,8 @@ namespace ULox
 
         private class InternalMap : Dictionary<Value, Value> { }
 
-        public MapClass()
+        public MapClass() : base("Map")
         {
-            this.name = "Map";
             this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
             this.AddMethod(nameof(Count), Value.New(Count));
             this.AddMethod(nameof(Create), Value.New(Create));

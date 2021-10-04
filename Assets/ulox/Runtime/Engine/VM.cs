@@ -146,6 +146,18 @@ namespace ULox
                         throw new VMException($"Inject failure. Nothing has been registered (yet) with name '{name}'.");
                 }
                 break;
+
+            case OpCode.FREEZE:
+                {
+                    var instVal = Pop();
+                    if (instVal.type == ValueType.Instance)
+                    {
+                        instVal.val.asInstance.Freeze();
+                    }
+                    else
+                        throw new VMException($"Freeze attempted on unsupported type '{instVal.type}'.");
+                }
+                break;
             default:
                 return false;
             }
@@ -183,14 +195,14 @@ namespace ULox
             var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
-            if (instance.fields.TryGetValue(name, out var val))
+            if (instance.TryGetField(name, out var val))
             {
                 DiscardPop();
                 Push(val);
                 return;
             }
 
-            BindMethod(instance.fromClass, name);
+            BindMethod(instance.FromClass, name);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -216,7 +228,7 @@ namespace ULox
             var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
-            instance.fields[name] = Peek();
+            instance.SetField(name, Peek());
 
             var value = Pop();
             DiscardPop();
@@ -238,14 +250,14 @@ namespace ULox
                     var inst = receiver.val.asInstance;
 
                     //it could be a field
-                    if (inst.fields.TryGetValue(methodName, out var fieldFunc))
+                    if (inst.TryGetField(methodName, out var fieldFunc))
                     {
                         _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
                         PushCallFrameFromValue(fieldFunc, argCount);
                     }
                     else
                     {
-                        var fromClass = inst.fromClass;
+                        var fromClass = inst.FromClass;
                         if (!fromClass.TryGetMethod(methodName, out var method))
                         {
                             throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
@@ -341,7 +353,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateInstance(ClassInternal asClass, int argCount)
         {
-            var instInternal = new InstanceInternal() { fromClass = asClass };
+            var instInternal = new InstanceInternal(asClass);
             var inst = Value.New(instInternal);
             _valueStack[_valueStack.Count - 1 - argCount] = inst;
 
@@ -352,6 +364,10 @@ namespace ULox
         private void InitNewInstance(ClassInternal klass, int argCount, Value inst)
         {
             var stackCount = _valueStack.Count;
+
+            //DuplicateStackValues(argCount + 1);
+            //PushFrameCallNative(FreezeInstance, argCount);
+
             if (!klass.initialiser.IsNull)
             {
                 //with an init list we don't return this
@@ -393,6 +409,8 @@ namespace ULox
 
                 InitNewInstance(klass.super, argsToSuperInit, inst);
             }
+
+            //inst.val.asInstance.Freeze();
         }
 
         private Value CopyMatchingParamsToFields(VMBase vm, int argCount)
@@ -400,7 +418,7 @@ namespace ULox
             var instVal = vm.GetArg(0);
             var inst = instVal.val.asInstance;
 
-            var initChunk = inst.fromClass.initialiser.val.asClosure.chunk;
+            var initChunk = inst.FromClass.initialiser.val.asClosure.chunk;
             var argConstantIds = initChunk.ArgumentConstantIds;
 
             const int argOffset = 1;
@@ -411,18 +429,26 @@ namespace ULox
                 if (arg.type == ValueType.String)
                 {
                     var paramName = arg.val.asString;
-                    if (inst.fields.ContainsKey(paramName))
+                    if (inst.HasField(paramName))
                     {
                         var value = vm.GetArg(i+ argOffset);
-                        inst.fields[paramName] = value;
+                        inst.SetField(paramName, value);
                     }
                 }
             }
 
             return instVal;
         }
+        
+        private Value FreezeInstance(VMBase vm, int argCount)
+        {
+            var instVal = vm.GetArg(0);
+            var inst = instVal.val.asInstance;
+            inst.Freeze();
+            return instVal;
+        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+       [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int PrepareSuperInit(ClassInternal klass, int argCount, Value inst, int stackCount)
         {
             int argsToSuperInit = 0;
@@ -449,7 +475,7 @@ namespace ULox
             {
                 var lhsInst = lhs.val.asInstance;
                 int opIndex = (int)opCode - ClassInternal.FirstMathOp;
-                var opClosure = lhsInst.fromClass.mathOperators[opIndex];
+                var opClosure = lhsInst.FromClass.mathOperators[opIndex];
                 //identify if lhs has a matching method or field
                 if (!opClosure.IsNull)
                 {
@@ -457,7 +483,7 @@ namespace ULox
                     return true;
                 }
 
-                if (lhsInst.fromClass.name == DynamicClass.Name)
+                if (lhsInst.FromClass.name == DynamicClass.Name)
                 {
                     return HandleDynamicCustomMathOp(opCode, lhs, rhs);
                 }
@@ -471,7 +497,7 @@ namespace ULox
             {
                 var lhsInst = lhs.val.asInstance;
                 int opIndex = (int)opCode - ClassInternal.FirstCompOp;
-                var opClosure = lhsInst.fromClass.compOperators[opIndex];
+                var opClosure = lhsInst.FromClass.compOperators[opIndex];
                 //identify if lhs has a matching method or field
                 if (!opClosure.IsNull)
                 {
@@ -479,7 +505,7 @@ namespace ULox
                     return true;
                 }
 
-                if (lhsInst.fromClass.name == DynamicClass.Name)
+                if (lhsInst.FromClass.name == DynamicClass.Name)
                 {
                     return HandleDynamicCustomCompOp(opCode, lhs, rhs);
                 }
@@ -505,7 +531,7 @@ namespace ULox
         private bool HandleDynamicCustomMathOp(OpCode opCode, Value lhs, Value rhs)
         {
             var targetName = ClassInternal.MathOperatorMethodNames[(int)opCode - ClassInternal.FirstMathOp];
-            if (lhs.val.asInstance.fields.TryGetValue(targetName, out var matchingValue))
+            if (lhs.val.asInstance.TryGetField(targetName, out var matchingValue))
             {
                 if (matchingValue.type == ValueType.Closure)
                 {
@@ -520,7 +546,7 @@ namespace ULox
         private bool HandleDynamicCustomCompOp(OpCode opCode, Value lhs, Value rhs)
         {
             var targetName = ClassInternal.ComparisonOperatorMethodNames[(int)opCode - ClassInternal.FirstCompOp];
-            if (lhs.val.asInstance.fields.TryGetValue(targetName, out var matchingValue))
+            if (lhs.val.asInstance.TryGetField(targetName, out var matchingValue))
             {
                 if (matchingValue.type == ValueType.Closure)
                 {

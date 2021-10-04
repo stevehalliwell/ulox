@@ -50,7 +50,7 @@ namespace ULox
                     return $"<class {val.asClass.name}>";
 
                 case ValueType.Instance:
-                    return $"<inst {val.asInstance.fromClass?.name}>";
+                    return $"<inst {val.asInstance.FromClass?.name}>";
 
                 case ValueType.BoundMethod:
                     return $"<boundMeth {val.asBoundMethod.method.chunk.Name}>";
@@ -69,11 +69,7 @@ namespace ULox
             {
             case ValueType.Instance:
                 var inst = copyFrom.val.asInstance;
-                return Value.New(new InstanceInternal()
-                {
-                    fields = new Table(inst.fields),
-                    fromClass = inst.fromClass
-                });
+                return Value.New(new InstanceInternal(inst.FromClass, new Table(inst.Fields), inst.IsFrozen));
                 break;
             case ValueType.Null:
             case ValueType.Double:
@@ -99,9 +95,6 @@ namespace ULox
             => new Value() { type = valueType, val = dataUnion };
 
         public static Value New(double val) => New(ValueType.Double, new ValueTypeDataUnion() { asDouble = val });
-
-        public static Value Combined()
-            => New( ValueType.CombinedClosures, new ValueTypeDataUnion() { asObject = new List<ClosureInternal>()});
 
         public static Value New(bool val) => New(ValueType.Bool, new ValueTypeDataUnion() { asBool = val });
 
@@ -130,6 +123,9 @@ namespace ULox
         public static Value Null() => new Value() { type = ValueType.Null };
 
         public static Value Object(object obj) => New(ValueType.Object, new ValueTypeDataUnion() { asObject = obj });
+
+        public static Value Combined()
+            => New(ValueType.CombinedClosures, new ValueTypeDataUnion() { asObject = new List<ClosureInternal>() });
 
         public override bool Equals(object obj)
         {

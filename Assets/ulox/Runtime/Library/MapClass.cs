@@ -22,21 +22,21 @@ namespace ULox
         private Value InitInstance(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
-            inst.val.asInstance.fields.Add(MapFieldName, Value.Object(new InternalMap()));
+            inst.val.asInstance.SetField(MapFieldName, Value.Object(new InternalMap()));
             return inst;
         }
 
         private Value Count(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.fields[MapFieldName].val.asObject as InternalMap;
+            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
             return Value.New(map.Count);
         }
 
         private Value Create(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.fields[MapFieldName].val.asObject as InternalMap;
+            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
             var key = vm.GetArg(1);
             var val = vm.GetArg(2);
 
@@ -52,7 +52,7 @@ namespace ULox
         private Value Read(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.fields[MapFieldName].val.asObject as InternalMap;
+            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
             var key = vm.GetArg(1);
 
             if (map.TryGetValue(key, out var val))
@@ -65,7 +65,7 @@ namespace ULox
         private Value Update(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.fields[MapFieldName].val.asObject as InternalMap;
+            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
             var key = vm.GetArg(1);
             var val = vm.GetArg(2);
 
@@ -81,7 +81,7 @@ namespace ULox
         private Value Delete(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.fields[MapFieldName].val.asObject as InternalMap;
+            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
             var key = vm.GetArg(1);
 
             return Value.New(map.Remove(key));

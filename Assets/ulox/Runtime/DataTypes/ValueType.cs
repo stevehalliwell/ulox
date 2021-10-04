@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public enum ValueType
+    public enum ValueType : byte
     {
         Null,
         Double,

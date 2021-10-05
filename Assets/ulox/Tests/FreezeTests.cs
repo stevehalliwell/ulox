@@ -9,25 +9,43 @@ namespace ULox.Tests
         {
             var expected = "Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.";
             var script = @"
-class Foo 
+class Foo
 {
 }
 
-
 var inst = Foo();
-freeze inst;
 inst.a = 10;";
 
             testEngine.Run(script);
 
             Assert.AreEqual(expected, testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void InstanceFromClass_WhenHasInitAndInitChainAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
+        {
+            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.";
+            var script = @"
+class Foo
+{
+    var b = 2;
+    init(){this.c = 3;}
+}
+
+var inst = Foo();
+inst.a = 10;";
+
+            testEngine.Run(script);
+
+            Assert.AreEqual(expected, testEngine.InterpreterResult);
+        }
+
         [Test]
         public void Class_WhenFrozenAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
         {
             var expected = "Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.";
             var script = @"
-class Foo 
+class Foo
 {
 }
 

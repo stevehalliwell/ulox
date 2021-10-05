@@ -37,5 +37,11 @@
 
             return currentValue;
         }
+
+        public override void FinishCreation(InstanceInternal inst)
+        {
+            base.FinishCreation(inst);
+            inst.Unfreeze();
+        }
     }
 }

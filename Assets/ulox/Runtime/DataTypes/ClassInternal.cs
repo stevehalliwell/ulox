@@ -151,5 +151,11 @@ namespace ULox
             int opIndex = (int)opCode - ClassInternal.FirstCompOp;
             return compOperators[opIndex];
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual void FinishCreation(InstanceInternal inst)
+        {
+            inst.Freeze();
+        }
     }
 }

@@ -473,6 +473,34 @@ print (A()+B()*C());");
         }
 
         [Test]
+        public void Function_WhenCalledWithDifferentTypesButCompatibleLogic_ShouldSucceed()
+        {
+            testEngine.Run(@"
+fun AddPrint(obj)
+{
+    print(obj.a + obj.b);
+}
+
+class T1
+{
+    var z,a=1,b=2;
+}
+class T2
+{
+    var x,y,z,a=""Hello "",b=""World"";
+}
+
+var t1 = T1();
+var t2 = T2();
+
+AddPrint(t1);
+AddPrint(t2);
+");
+
+            Assert.AreEqual("3Hello World", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Compile_Func_Inner_Logic()
         {
             testEngine.Run(@"

@@ -5,7 +5,7 @@ namespace ULox.Tests
     public class DynamicTests : EngineTestBase
     {
         [Test]
-        public void Engine_Dynamic()
+        public void Fields_WhenAddedToDynamic_ShouldSucceed()
         {
             testEngine.AddLibrary(new StandardClassesLibrary());
 
@@ -26,80 +26,29 @@ print(obj.d);
             Assert.AreEqual("6", testEngine.InterpreterResult);
         }
 
-        [Test]
-        public void Engine_DynamicType_SameFunc()
-        {
-            testEngine.Run(@"
-fun AddPrint(obj)
-{
-    print(obj.a + obj.b);
-}
+//        [Test]
+//        public void DynamicAsClass_WhenSetupAndCalled_ShouldPrintExepctedResult()
+//        {
+//            testEngine.Run(@"
+//class CoffeeMaker {
+//    Set(_coffee) {
+//        this.coffee = _coffee;
+//        return this;
+//    }
 
-class T1
-{
-    var z,a=1,b=2;
-}
-class T2
-{
-    var x,y,z,a=""Hello "",b=""World"";
-}
-class T3
-{
-}
+//    brew() {
+//        print (""Enjoy your cup of "" + this.coffee);
 
-var t1 = T1();
-var t2 = T2();
-var t3 = T3();
-t3.a = 1;
-t3.b = 1;
+//        // No reusing the grounds!
+//        this.coffee = null;
+//    }
+//}
 
-AddPrint(t1);
-AddPrint(t2);
-AddPrint(t3);
-");
+//var maker = CoffeeMaker();
+//maker.Set(""coffee and chicory"");
+//maker.brew();");
 
-            Assert.AreEqual("3Hello World2", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_DynamicType_SameInvoke()
-        {
-            testEngine.Run(@"
-fun AddPrint(obj)
-{
-    obj.DoTheThing();
-}
-
-class T1
-{
-    var z,a=1,b=2;
-    DoTheThing()
-    {
-        print (this.a + this.b);
-    }
-}
-class T2
-{
-    var z,a=1,b=2;
-    DoSomeOtherThing()
-    {
-        throw;
-    }
-
-    DoTheThing()
-    {
-        print (this.a + this.b);
-    }
-}
-
-var t1 = T1();
-var t2 = T2();
-
-AddPrint(t1);
-AddPrint(t2);
-");
-
-            Assert.AreEqual("33", testEngine.InterpreterResult);
-        }
+//            Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
+//        }
     }
 }

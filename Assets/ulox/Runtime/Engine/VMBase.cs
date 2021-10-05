@@ -160,6 +160,8 @@ namespace ULox
 
             while (true)
             {
+                // TODO: Perf impact here is intollerable, suggest creating an op for native calls
+                //  and then using a known native call closure that has 1 op in it native call and return
                 if (currentCallFrame.nativeFunc != null)
                 {
                     var argCount = CurrentFrameStackValues;

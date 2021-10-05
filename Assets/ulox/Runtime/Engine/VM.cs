@@ -381,7 +381,7 @@ namespace ULox
                 {
                     StackStart = instLocOnStack,
                     Closure = null,
-                    nativeFunc = FreezeInstance,
+                    nativeFunc = ClassFinishCreation,
                     InstructionPointer = -1
                 });
             }
@@ -455,11 +455,11 @@ namespace ULox
             return instVal;
         }
         
-        private Value FreezeInstance(VMBase vm, int argCount)
+        private Value ClassFinishCreation(VMBase vm, int argCount)
         {
             var instVal = vm.GetArg(0);
             var inst = instVal.val.asInstance;
-            inst.Freeze();
+            inst.FromClass.FinishCreation(inst);
             return instVal;
         }
 

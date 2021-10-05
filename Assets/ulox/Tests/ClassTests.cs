@@ -5,7 +5,7 @@ namespace ULox.Tests
     public class ClassTests : EngineTestBase
     {
         [Test]
-        public void Engine_Class_Empty()
+        public void Delcared_WhenAccessed_ShouldHaveClassObject()
         {
             testEngine.Run(@"
 class Brioche {}
@@ -15,233 +15,76 @@ print (Brioche);");
         }
 
         [Test]
-        public void Engine_Class_Instance_Empty()
+        public void Engine_Class_2Var()
         {
             testEngine.Run(@"
-class Brioche {}
-print (Brioche());");
-
-            Assert.AreEqual("<inst Brioche>", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Instance_Method()
-        {
-            testEngine.Run(@"
-class Brioche
+class T
 {
-    Meth(){print (""Method Called"");}
-}
-Brioche().Meth();");
-
-            Assert.AreEqual("Method Called", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Instance_Method_This()
-        {
-            testEngine.Run(@"
-class Brioche
-{
-    Meth(){return this;}
+    var a;
+    var b;
 }
 
-print (Brioche().Meth());");
+var t = T();
+print(t.a);
+print(t.b);");
 
-            Assert.AreEqual("<inst Brioche>", testEngine.InterpreterResult);
+            Assert.AreEqual("nullnull", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Engine_Class_Instance_Simple0()
+        public void AutoInit_WhenSingleMatchingVarAndInitArgName_ShouldAssignThrough()
         {
             testEngine.Run(@"
-class Toast {}
-Toast().a = 3;");
+class T
+{
+    var a;
+    init(a)
+    {
+        print(this.a);
+    }
+}
 
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Instance_Simple1()
-        {
-            testEngine.Run(@"
-class Toast {}
-var toast = Toast();
-print (toast.jam = ""grape"");");
-
-            Assert.AreEqual("grape", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Instance_Simple2()
-        {
-            testEngine.Run(@"
-class Pair {}
-
-var pair = Pair();
-pair.first = 1;
-pair.second = 2;
-print( pair.first + pair.second);");
+var t = T(3);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Engine_Class_Method_Simple1()
+        public void AutoInit_WhenTwoMatchingVarAndInitArgNames_ShouldAssignThrough()
         {
             testEngine.Run(@"
 class T
 {
-    Say(){print (7);}
-}
-
-var t = T();
-t.Say();");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Method_Simple2()
-        {
-            testEngine.Run(@"
-class T
-{
-    Say(){print (this.name);}
-}
-
-var t = T();
-t.name = ""name"";
-t.Say();");
-
-            Assert.AreEqual("name", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Set_Existing_From_Const()
-        {
-            testEngine.Run(@"
-class T
-{
-    Set()
-{
-this.a = 7;
-}
-}
-
-var t = T();
-t.a = 1;
-t.Set();
-print (t.a);");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Set_Existing_From_Arg()
-        {
-            testEngine.Run(@"
-class T
-{
-    Set(v)
-{
-this.a = v;
-}
-}
-
-var t = T();
-t.a = 1;
-t.Set(7);
-print (t.a);");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Set_New_From_Const()
-        {
-            testEngine.Run(@"
-class T
-{
-    Set()
-{
-this.name = 7;
-}
-    Say(){print (this.name);}
-}
-
-var t = T();
-t.Set();
-t.Say();");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Set_New_From_Arg()
-        {
-            testEngine.Run(@"
-class T
-{
-    Set(v)
-{
-this.a = v;
-}
-}
-
-var t = T();
-t.Set(7);
-print (t.a);");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Manual_Init_Simple1()
-        {
-            testEngine.Run(@"
-class CoffeeMaker {
-    Set(_coffee) {
-        this.coffee = _coffee;
-        return this;
-    }
-
-    brew() {
-        print (""Enjoy your cup of "" + this.coffee);
-
-        // No reusing the grounds!
-        this.coffee = null;
+    var a,b;
+    init(a,b)
+    {
+        print(this.a + this.b);
     }
 }
 
-var maker = CoffeeMaker();
-maker.Set(""coffee and chicory"");
-maker.brew();");
+var t = T(1,2);");
 
-            Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
+            Assert.AreEqual("3", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Engine_Class_Init_Simple1()
+        public void AutoInit_WhenSubSetMatchVarAndInitArgNames_ShouldAssignThroughAndLeaveOthersDefault()
         {
             testEngine.Run(@"
-class CoffeeMaker {
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
-
-    brew() {
-        print (""Enjoy your cup of "" + this.coffee);
-
-        // No reusing the grounds!
-        this.coffee = null;
+class T
+{
+    var a= 10, b = 20, c = 30;
+    init(a,b)
+    {
+        print(this.a);
+        print(this.b);
+        print(this.c);
     }
 }
 
-var maker = CoffeeMaker(""coffee and chicory"");
-maker.brew();");
+var t = T(1,2);");
 
-            Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
+            Assert.AreEqual("1230", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -263,6 +106,38 @@ class CoffeeMaker {
 
 var maker = CoffeeMaker(""coffee and chicory"");
 var delegate = maker.brew;
+delegate();");
+
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
+        }
+
+        //TODO: add test to version with params
+        [Test]
+        public void Engine_Class_BoundMethod_InternalAndReturn()
+        {
+            testEngine.Run(@"
+class CoffeeMaker {
+    init(_coffee) {
+        this.coffee = _coffee;
+    }
+
+    brew() {
+        print (""Enjoy your cup of "" + this.coffee);
+
+        // No reusing the grounds!
+        this.coffee = null;
+    }
+
+    brewLater()
+    {
+        return this.brew;
+    }
+}
+
+var maker = CoffeeMaker(""coffee and chicory"");
+
+var delegate = maker.brewLater();
+
 delegate();");
 
             Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
@@ -337,9 +212,46 @@ runner.RunIt(delegate);");
             Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
         }
 
-        //TODO: add test to version with params
         [Test]
-        public void Engine_Class_BoundMethod_InternalAndReturn()
+        public void FunctionInField_WhenAssignedAndCalled_ShouldReturnExpected()
+        {
+            testEngine.Run(@"
+class CoffeeMaker {
+var brew;
+    init(_coffee) {
+        this.coffee = _coffee;
+    }
+}
+
+var maker = CoffeeMaker(""coffee and chicory"");
+
+fun b() {
+    print (""Enjoy your cup of coffee"");
+}
+
+maker.brew = b;
+maker.brew();");
+
+            Assert.AreEqual("Enjoy your cup of coffee", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_Fields()
+        {
+            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+
+            testEngine.Run(@"
+class T{ }
+
+T.a = 2;
+
+print(T.a);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_Init_Simple1()
         {
             testEngine.Run(@"
 class CoffeeMaker {
@@ -353,219 +265,42 @@ class CoffeeMaker {
         // No reusing the grounds!
         this.coffee = null;
     }
-
-    brewLater()
-    {
-        return this.brew;
-    }
 }
 
 var maker = CoffeeMaker(""coffee and chicory"");
-
-var delegate = maker.brewLater();
-
-delegate();");
+maker.brew();");
 
             Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Engine_Class_Field_As_Method()
-        {
-            testEngine.Run(@"
-class CoffeeMaker {
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
-}
-
-var maker = CoffeeMaker(""coffee and chicory"");
-
-    fun b() {
-        print (""Enjoy your cup of coffee"");
-    }
-
-maker.brew = b;
-maker.brew();");
-
-            Assert.AreEqual("Enjoy your cup of coffee", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Inher_Simple1()
-        {
-            testEngine.Run(@"
-class A{MethA(){print (1);}}
-class B < A {MethB(){print (2);}}
-
-var b = B();
-b.MethA();
-b.MethB();");
-
-            Assert.AreEqual("12", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Inher_Simple2()
-        {
-            testEngine.Run(@"
-class A{MethA(){print (1);}}
-class B < A {MethB(){this.MethA();print (2);}}
-
-var b = B();
-b.MethB();");
-
-            Assert.AreEqual("12", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Inher_Poly()
-        {
-            testEngine.Run(@"
-class A{MethA(){print (1);}}
-class B < A {MethA(){print (2);}}
-
-var b = B();
-b.MethA();");
-
-            Assert.AreEqual("2", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Inher_Super()
-        {
-            testEngine.Run(@"
-class A{MethA(){print (1);}}
-class B < A {MethA(){super.MethA(); print (2);}}
-
-var b = B();
-b.MethA();");
-
-            Assert.AreEqual("12", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Inher_Super_BoundReturn()
-        {
-            testEngine.Run(@"
-class A{MethA(){print (1);}}
-class B < A { MethA()
-{
-var bound = super.MethA;
-print (2);
-bound();
-}
-}
-
-var b = B();
-b.MethA();");
-
-            Assert.AreEqual("21", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Init()
+        public void Engine_Class_Method_Simple1()
         {
             testEngine.Run(@"
 class T
 {
+    Say(){print (7);}
+}
+
+var t = T();
+t.Say();");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_MethodBeforeInit_Throws()
+        {
+            testEngine.Run(@"
+class T
+{
+    Meth(){}
     init(){}
 }
 
-var t = T();
-t.a = null;
-print(t.a);");
+var t = T();");
 
-            Assert.AreEqual("null", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_AutoInit()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a;
-    init(a)
-    {
-        print(this.a);
-    }
-}
-
-var t = T(3);");
-
-            Assert.AreEqual("3", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_AutoInit2()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a,b;
-    init(a,b)
-    {
-        print(this.a);
-        print(this.b);
-    }
-}
-
-var t = T(1,2);");
-
-            Assert.AreEqual("12", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_AutoInitReplacesDefaults()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a= 10, b = 20, c = 30;
-    init(a,b)
-    {
-        print(this.a);
-        print(this.b);
-        print(this.c);
-    }
-}
-
-var t = T(1,2);");
-
-            Assert.AreEqual("1230", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Var()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a;
-}
-
-var t = T();
-print(t.a);");
-
-            Assert.AreEqual("null", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_2Var()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a;
-    var b;
-}
-
-var t = T();
-print(t.a);
-print(t.b);");
-
-            Assert.AreEqual("nullnull", testEngine.InterpreterResult);
+            Assert.AreEqual("Class 'T', encountered element of stage 'Init' too late, class is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -582,6 +317,21 @@ print(t.a);
 print(t.b);");
 
             Assert.AreEqual("nullnull", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_Var()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a;
+}
+
+var t = T();
+print(t.a);");
+
+            Assert.AreEqual("null", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -602,21 +352,6 @@ print(t.b);");
         }
 
         [Test]
-        public void Engine_Class_MethodBeforeInit_Throws()
-        {
-            testEngine.Run(@"
-class T
-{
-    Meth(){}
-    init(){}
-}
-
-var t = T();");
-
-            Assert.AreEqual("Class 'T', encountered element of stage 'Init' too late, class is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Class_VarInitChain()
         {
             testEngine.Run(@"
@@ -633,22 +368,6 @@ print(t.a);");
         }
 
         [Test]
-        public void Engine_Class_VarInitChain2()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a = 1, b = 2;
-}
-
-var t = T();
-print(t.a);
-print(t.b);");
-
-            Assert.AreEqual("12", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Class_VarInitChain_AndInit()
         {
             testEngine.Run(@"
@@ -658,23 +377,6 @@ class T
     var a = aVal;
 
     init(){this.a = this.a * 2;}
-}
-
-var t = T();
-print(t.a);");
-
-            Assert.AreEqual("20", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_VarInitChainEmpty_AndInit()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a;
-
-    init(){this.a = 20;}
 }
 
 var t = T();
@@ -700,6 +402,39 @@ var t = T();");
         }
 
         [Test]
+        public void Engine_Class_VarInitChain2()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a = 1, b = 2;
+}
+
+var t = T();
+print(t.a);
+print(t.b);");
+
+            Assert.AreEqual("12", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_VarInitChainEmpty_AndInit()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a;
+
+    init(){this.a = 20;}
+}
+
+var t = T();
+print(t.a);");
+
+            Assert.AreEqual("20", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_VarWithInit()
         {
             testEngine.Run(@"
@@ -714,296 +449,6 @@ var t = T(1);
 print(t.a);");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Fields()
-        {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-class T{ }
-
-T.a = 2;
-
-print(T.a);");
-
-            Assert.AreEqual("2", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_StaticFields()
-        {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-class T
-{
-    static var a = 2;
-}
-print(T.a);");
-
-            Assert.AreEqual("2", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_InherClassSuperInitNoParams()
-        {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-class Base
-{
-    init()
-    {
-        this.a = 1;
-    }
-}
-
-var binst = Base();
-
-print(binst.a);
-
-class Child < Base
-{
-    init()
-    {
-        this.b = 2;
-    }
-}
-
-var cinst = Child();
-
-print(cinst.a);
-print(cinst.b);
-");
-
-            Assert.AreEqual("112", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_InherClassSuperInitParams()
-        {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-class Base
-{
-    init(a)
-    {
-        this.a = a;
-    }
-}
-
-var binst = Base(1);
-
-print(binst.a);
-
-class Child < Base
-{
-    init(a,b)
-    {
-        this.b = b;
-    }
-}
-
-var cinst = Child(1,2);
-
-print(cinst.a);
-print(cinst.b);
-");
-
-            Assert.AreEqual("112", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_Inher2ClassSuperInitParams()
-        {
-            testEngine.Run(@"
-class Base
-{
-    init(a)
-    {
-        this.a = a;
-    }
-}
-
-var binst = Base(1);
-
-print(binst.a);
-
-class Child < Base
-{
-    init(a,b)
-    {
-        this.b = b;
-    }
-}
-
-var cinst = Child(1,2);
-
-print(cinst.a);
-print(cinst.b);
-
-class Childer < Child
-{
-    init(a,b,c)
-    {
-        this.c = c;
-    }
-}
-
-var cerinst = Childer(1,2,3);
-
-print(cerinst.a);
-print(cerinst.b);
-print(cerinst.c);
-");
-
-            Assert.AreEqual("112123", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_InherWithVarNoInit()
-        {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-class Base
-{
-    var a = 1;
-}
-
-var binst = Base();
-
-print(binst.a);
-
-class Child < Base
-{
-    var b = 2;
-}
-
-var cinst = Child();
-
-print(cinst.a);
-print(cinst.b);
-");
-
-            Assert.AreEqual("112", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_InherWithVarAndInitNoParams()
-        {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-class Base
-{
-    var a = 1,b;
-    init()
-    {
-        this.b = 2;
-    }
-}
-
-var binst = Base();
-
-print(binst.a);
-print(binst.b);
-
-class Child < Base
-{
-    var c = 3,d;
-    init()
-    {
-        this.d = 4;
-    }
-}
-
-var cinst = Child();
-
-print(cinst.a);
-print(cinst.b);
-print(cinst.c);
-print(cinst.d);
-");
-
-            Assert.AreEqual("121234", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_InherWithVarAndInitAndParams_NoAutoVarInit()
-        {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-class Base
-{
-    var a = 1;
-    init(b)
-    {
-        this.b = b;
-    }
-}
-
-var binst = Base(2);
-
-print(binst.a);
-print(binst.b);
-
-class Child < Base
-{
-    var c = 3;
-    init(b,d)
-    {
-        this.d = d;
-    }
-}
-
-var cinst = Child(2,4);
-
-print(cinst.a);
-print(cinst.b);
-print(cinst.c);
-print(cinst.d);
-");
-
-            Assert.AreEqual("121234", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_InherWithVarAndInitAndAutoVarParams()
-        {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-class Base
-{
-    var a = 1,b;
-    init(b){}
-}
-
-var binst = Base(2);
-
-print(binst.a);
-print(binst.b);
-
-class Child < Base
-{
-    var c = 3,d;
-    init(b,d){}
-}
-
-var cinst = Child(2,4);
-
-print(cinst.a);
-print(cinst.b);
-print(cinst.c);
-print(cinst.d);
-");
-
-            Assert.AreEqual("121234", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1048,18 +493,6 @@ a.Speak();");
         }
 
         [Test]
-        public void Engine_Multiple_Scripts2()
-        {
-            testEngine.Run(@"
-class A{MethA(){print (1);}}");
-
-            testEngine.Run(@"var a = A();");
-            testEngine.Run(@"a.MethA();");
-
-            Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Method_Paramless()
         {
             testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
@@ -1079,54 +512,15 @@ print(T().Meth());");
         }
 
         [Test]
-        public void Engine_NoThis_Method_WorksAsStatic()
+        public void Engine_Multiple_Scripts2()
         {
             testEngine.Run(@"
-class T
-{
-    NoMemberMethod()
-    {
-        return 7;
-    }
-}
+class A{MethA(){print (1);}}");
 
-print(T.NoMemberMethod());");
+            testEngine.Run(@"var a = A();");
+            testEngine.Run(@"a.MethA();");
 
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Static_Method_OnClass()
-        {
-            testEngine.Run(@"
-class T
-{
-    static StaticMethod()
-    {
-        return 7;
-    }
-}
-
-print(T.StaticMethod());");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Static_Method_OnInstance()
-        {
-            testEngine.Run(@"
-class T
-{
-    static StaticMethod()
-    {
-        return 7;
-    }
-}
-
-print(T().StaticMethod());");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
+            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1146,6 +540,216 @@ var res = v1 + v2;
 print(res.a);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        //[Test]
+        //public void Field_WhenAddedToExistingInstance_ShouldSucceed()
+        //{
+        //    testEngine.Run(@"
+        //class Toast {}
+        //var toast = Toast();
+        //print (toast.jam = ""grape"");");
+
+        //    Assert.AreEqual("grape", testEngine.InterpreterResult);
+        //}
+
+        //[Test]
+        //public void Field_WhenAddedToNewInstance_ShouldSucceed()
+        //{
+        //    testEngine.Run(@"
+        //class Toast {}
+        //Toast().a = 3;");
+
+        //    Assert.AreEqual("", testEngine.InterpreterResult);
+        //}
+
+        [Test]
+        public void Init_WhenCreatingField_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(){this.a = 1;}
+}
+
+var t = T();
+print(t.a);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Instance_WhenCreated_ShouldHaveInstanceObject()
+        {
+            testEngine.Run(@"
+class Brioche {}
+print (Brioche());");
+
+            Assert.AreEqual("<inst Brioche>", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Method_WhenAccessingSelfField_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(){this.name = ""name"";}
+    Say(){print (this.name);}
+}
+var t = T();
+t.Say();");
+
+            Assert.AreEqual("name", testEngine.InterpreterResult);
+        }
+
+//        [Test]
+//        public void Method_WhenAddingFieldToSelf_ShouldSucceed()
+//        {
+//            testEngine.Run(@"
+//class T
+//{
+//    Set(v)
+//    {
+//    this.a = v;
+//    }
+//}
+
+//var t = T();
+//t.Set(7);
+//print (t.a);");
+
+//            Assert.AreEqual("7", testEngine.InterpreterResult);
+//        }
+
+        [Test]
+        public void Method_WhenAssigningExistingFieldFromArg_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(){this.a = 1;}
+    Set(v)
+    {
+        this.a = v;
+    }
+}
+
+var t = T();
+t.Set(7);
+print (t.a);");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Method_WhenAssigningExistingFieldFromConst_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(){this.a = 1;}
+    Set()
+    {
+     this.a = 7;
+    }
+}
+
+var t = T();
+t.Set();
+print (t.a);");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Method_WhenAssigningExistingFieldFromConstAndInternalPrint_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(){this.a = 1;}
+    Set()
+    {
+        this.a = 7;
+    }
+    Say(){print (this.a);}
+}
+
+var t = T();
+t.Set();
+t.Say();");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Method_WhenCalledAndReturningThis_ShouldMatchSelf()
+        {
+            testEngine.Run(@"
+class Brioche
+{
+    Meth(){return this;}
+}
+
+var b = Brioche();
+print (b.Meth() == b);");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Method_WhenCalledOnNewInstance_ShouldReturnExpectedValue()
+        {
+            testEngine.Run(@"
+class Brioche
+{
+    Meth(){print (""Method Called"");}
+}
+Brioche().Meth();");
+
+            Assert.AreEqual("Method Called", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void FuncCallMethod_WhenGivenDiffernTypesWithCompatLogic_ShouldSucceed()
+        {
+            testEngine.Run(@"
+fun AddPrint(obj)
+{
+    obj.DoTheThing();
+}
+
+class T1
+{
+    var z,a=1,b=2;
+    DoTheThing()
+    {
+        print (this.a + this.b);
+    }
+}
+class T2
+{
+    var z,a=1,b=2;
+    DoSomeOtherThing()
+    {
+        throw;
+    }
+
+    DoTheThing()
+    {
+        print (this.a + this.b);
+    }
+}
+
+var t1 = T1();
+var t2 = T2();
+
+AddPrint(t1);
+AddPrint(t2);
+");
+
+            Assert.AreEqual("33", testEngine.InterpreterResult);
         }
     }
 }

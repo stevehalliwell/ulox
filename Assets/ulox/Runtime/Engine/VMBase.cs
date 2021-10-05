@@ -629,11 +629,11 @@ namespace ULox
             }
         }
 
-        protected void DuplicateStackValues(int v)
+        protected void DuplicateStackValuesNew(int startAt, int count)
         {
-            for (int i = 0; i < v; i++)
+            for (int i = 0; i <= count; i++)
             {
-                Push(Peek(v-1));
+                Push(_valueStack[startAt+i]);
             }
         }
     }

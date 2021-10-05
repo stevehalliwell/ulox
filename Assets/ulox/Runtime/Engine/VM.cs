@@ -34,9 +34,10 @@ namespace ULox
             case ValueType.CombinedClosures:
                 {
                     var combinedClosures = callee.val.asCombined;
+                    var stackCopyStartIndex = _valueStack.Count - argCount - 1;
                     for (int i = 0; i < combinedClosures.Count; i++)
                     {
-                        DuplicateStackValues(argCount + 1);
+                        DuplicateStackValuesNew(stackCopyStartIndex, argCount);
 
                         var closure = combinedClosures[i];
                         Call(closure, argCount);
@@ -369,20 +370,21 @@ namespace ULox
         private void InitNewInstance(ClassInternal klass, int argCount, Value inst)
         {
             var stackCount = _valueStack.Count;
+            var instLocOnStack = stackCount - argCount-1;
 
-            //DuplicateStackValues(argCount + 1);
-            //PushFrameCallNative(FreezeInstance, argCount);
+            // Freeze is then called on the inst left behindby the 
+            //PushFrameCallNative(FreezeInstance, 0);
 
             if (!klass.Initialiser.IsNull)
             {
                 //with an init list we don't return this
                 PushCallFrameFromValue(klass.Initialiser, argCount);
 
-                //push a native call here so we can bind the fiels to init param names
+                //push a native call here so we can bind the fields to init param names
                 if (klass.Initialiser.type == ValueType.Closure &&
                     klass.Initialiser.val.asClosure.chunk.Arity > 0)
                 {
-                    DuplicateStackValues(argCount + 1);
+                    DuplicateStackValuesNew(instLocOnStack, argCount);
                     PushFrameCallNative(CopyMatchingParamsToFields, argCount);
                 }
             }
@@ -413,8 +415,6 @@ namespace ULox
 
                 InitNewInstance(klass.Super, argsToSuperInit, inst);
             }
-
-            //inst.val.asInstance.Freeze();
         }
 
         private Value CopyMatchingParamsToFields(VMBase vm, int argCount)

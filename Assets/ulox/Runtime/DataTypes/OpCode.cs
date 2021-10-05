@@ -40,6 +40,8 @@
         CALL,
         CLOSURE,
 
+        NATIVE_CALL,
+
         RETURN,
         YIELD,
 

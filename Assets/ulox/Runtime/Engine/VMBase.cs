@@ -21,6 +21,8 @@ namespace ULox
     //todo self asign needs safety to prevent their use in declarations.
     public class VMBase : IVm
     {
+        private readonly ClosureInternal NativeCallClosure;
+
         protected readonly FastStack<Value> _valueStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         protected CallFrame currentCallFrame;
@@ -28,6 +30,13 @@ namespace ULox
         public IEngine Engine => _engine;
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private readonly Table _globals = Table.Empty();
+
+        public VMBase()
+        {
+            var nativeChunk = new Chunk("NativeCallChunkWrapper");
+            nativeChunk.WriteByte((byte)OpCode.NATIVE_CALL,0);
+            NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void Push(Value val) => _valueStack.Push(val);
@@ -160,17 +169,6 @@ namespace ULox
 
             while (true)
             {
-                // TODO: Perf impact here is intollerable, suggest creating an op for native calls
-                //  and then using a known native call closure that has 1 op in it native call and return
-                if (currentCallFrame.nativeFunc != null)
-                {
-                    var argCount = CurrentFrameStackValues;
-                    var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
-
-                    ReturnAndPopFrame(res);
-                    continue;
-                }
-
                 var chunk = currentCallFrame.Closure.chunk;
 
                 OpCode opCode = (OpCode)ReadByte(chunk);
@@ -338,22 +336,11 @@ namespace ULox
                     break;
 
                 case OpCode.BUILD:
-                    {
-                        var buildOpType = (BuildOpType)ReadByte(chunk);
-                        var constantIndex = ReadByte(chunk);
-                        var str = chunk.ReadConstant(constantIndex).val.asString;
-                        switch (buildOpType)
-                        {
-                        case BuildOpType.Bind:
-                            Engine.Context.BindLibrary(str);
-                            break;
-                        case BuildOpType.Queue:
-                            Engine.LocateAndQueue(str);
-                            break;
-                        default:
-                            throw new VMException($"Unhanlded BuildOpType '{buildOpType}'");
-                        }
-                    }
+                        DoBuildOp(chunk);
+                    break;
+
+                case OpCode.NATIVE_CALL:
+                        DoNativeCall(opCode);
                     break;
 
                 default:
@@ -361,6 +348,41 @@ namespace ULox
                         throw new VMException($"Unhandled OpCode '{opCode}'.");
                     break;
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoBuildOp(Chunk chunk)
+        {
+            var buildOpType = (BuildOpType)ReadByte(chunk);
+            var constantIndex = ReadByte(chunk);
+            var str = chunk.ReadConstant(constantIndex).val.asString;
+            switch (buildOpType)
+            {
+            case BuildOpType.Bind:
+                Engine.Context.BindLibrary(str);
+                break;
+            case BuildOpType.Queue:
+                Engine.LocateAndQueue(str);
+                break;
+            default:
+                throw new VMException($"Unhanlded BuildOpType '{buildOpType}'");
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoNativeCall(OpCode opCode)
+        {
+            if (currentCallFrame.nativeFunc != null)
+            {
+                var argCount = CurrentFrameStackValues;
+                var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
+
+                ReturnAndPopFrame(res);
+            }
+            else
+            {
+                throw new VMException($"{opCode} without nativeFunc encountered. This is not allowed.");
             }
         }
 
@@ -533,12 +555,18 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void PushFrameCallNative(System.Func<VMBase, int, Value> asNativeFunc, int argCount)
         {
+            PushFrameCallNativeWithFixedStackStart(asNativeFunc, _valueStack.Count - argCount - 1);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected void PushFrameCallNativeWithFixedStackStart(System.Func<VMBase, int, Value> asNativeFunc, int stackStart)
+        {
             PushNewCallframe(new CallFrame()
             {
-                StackStart = _valueStack.Count - argCount - 1,
-                Closure = null,
+                StackStart = stackStart,
+                Closure = NativeCallClosure,
                 nativeFunc = asNativeFunc,
-                InstructionPointer = -1
+                InstructionPointer = 0
             });
         }
 

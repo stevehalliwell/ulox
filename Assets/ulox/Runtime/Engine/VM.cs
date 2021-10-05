@@ -377,13 +377,7 @@ namespace ULox
                 // Freeze is then called on the inst left behindby the 
                 //  using custom callframe as we need the location of the inst but no params, as they will all be gone
                 //  by the time we get to execute.
-                PushNewCallframe(new CallFrame()
-                {
-                    StackStart = instLocOnStack,
-                    Closure = null,
-                    nativeFunc = ClassFinishCreation,
-                    InstructionPointer = -1
-                });
+                PushFrameCallNativeWithFixedStackStart(ClassFinishCreation, instLocOnStack);
             }
 
             if (!klass.Initialiser.IsNull)

@@ -363,17 +363,28 @@ namespace ULox
             var inst = Value.New(instInternal);
             _valueStack[_valueStack.Count - 1 - argCount] = inst;
 
-            InitNewInstance(asClass, argCount, inst);
+            InitNewInstance(asClass, argCount, inst, true);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InitNewInstance(ClassInternal klass, int argCount, Value inst)
+        private void InitNewInstance(ClassInternal klass, int argCount, Value inst, bool isleaf)
         {
             var stackCount = _valueStack.Count;
             var instLocOnStack = stackCount - argCount-1;
 
-            // Freeze is then called on the inst left behindby the 
-            //PushFrameCallNative(FreezeInstance, 0);
+            if (isleaf)
+            {
+                // Freeze is then called on the inst left behindby the 
+                //  using custom callframe as we need the location of the inst but no params, as they will all be gone
+                //  by the time we get to execute.
+                PushNewCallframe(new CallFrame()
+                {
+                    StackStart = instLocOnStack,
+                    Closure = null,
+                    nativeFunc = FreezeInstance,
+                    InstructionPointer = -1
+                });
+            }
 
             if (!klass.Initialiser.IsNull)
             {
@@ -413,7 +424,7 @@ namespace ULox
             {
                 var argsToSuperInit = PrepareSuperInit(klass, argCount, inst, stackCount);
 
-                InitNewInstance(klass.Super, argsToSuperInit, inst);
+                InitNewInstance(klass.Super, argsToSuperInit, inst, false);
             }
         }
 

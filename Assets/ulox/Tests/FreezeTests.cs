@@ -72,20 +72,22 @@ Foo.a = 10;";
             Assert.AreEqual(expected, testEngine.InterpreterResult);
         }
 
-//        [Test]
-//        public void Instance_WhenUnfrozen_ShouldActAsDynamic()
-//        {
-//            testEngine.Run(@"
-//class Pair {}
+        [Test]
+        public void Instance_WhenUnfrozen_ShouldActAsDynamic()
+        {
+            testEngine.AddLibrary(new FreezeLibrary());
 
-//var pair = Pair();
-//unfreeze pair;
-//pair.first = 1;
-//pair.second = 2;
-//print( pair.first + pair.second);");
+            testEngine.Run(@"
+class Pair {}
 
-//            Assert.AreEqual("3", testEngine.InterpreterResult);
-//        }
+var pair = Pair();
+Unfreeze(pair);
+pair.first = 1;
+pair.second = 2;
+print( pair.first + pair.second);");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
 
 
     }

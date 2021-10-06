@@ -8,18 +8,20 @@
         {
             var resTable = new Table();
 
-            resTable.Add("GenerateStackDump", Value.New(
-                (vm, args) =>
-                {
-                    return Value.New(vm.GenerateStackDump());
-                }));
-            resTable.Add("GenerateGlobalsDump", Value.New(
-                (vm, args) =>
-                {
-                    return Value.New(vm.GenerateGlobalsDump());
-                }));
+            resTable.Add(nameof(GenerateStackDump), Value.New(GenerateStackDump));
+            resTable.Add(nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump));
 
             return resTable;
+        }
+
+        public Value GenerateStackDump(VMBase vm, int argCount)
+        {
+            return Value.New(vm.GenerateStackDump());
+        }
+
+        public Value GenerateGlobalsDump(VMBase vm, int argCount)
+        {
+            return Value.New(vm.GenerateGlobalsDump());
         }
     }
 }

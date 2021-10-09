@@ -861,7 +861,7 @@ Assert.AreApproxEqual(1,1);
 Assert.AreApproxEqual(1,1.000000001);
 Assert.AreApproxEqual(1,2);");
 
-            Assert.AreEqual("'1' and '2' are '-1' apart.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("'1' and '2' are '-1' apart.", testEngine.InterpreterResult);
         }
 
         [Test]

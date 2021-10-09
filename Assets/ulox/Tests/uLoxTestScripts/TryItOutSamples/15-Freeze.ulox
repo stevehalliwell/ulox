@@ -1,0 +1,28 @@
+// Classes and instances are frozen by default, meaning new fields cannot be added to them
+//  Dynamic instances are not frozen by default but can be frozen via keyword
+
+build bind
+    "StandardClassesLibrary",
+    "FreezeLibrary";
+
+class Foo
+{
+}
+
+var inst = Foo();
+
+var dynInst = Dynamic();
+
+print(IsFrozen(Foo));
+print(IsFrozen(inst));
+print(IsFrozen(dynInst));
+
+dynInst.a = 10;
+
+freeze dynInst;
+print(IsFrozen(dynInst));
+
+
+Unfreeze(inst);
+inst.a = 10;
+print(IsFrozen(inst));

@@ -11,7 +11,7 @@ namespace ULox
 
         public void Freeze() => _isFrozen = true;
 
-        internal DiContainer ShallowCopy()
+        public DiContainer ShallowCopy()
         {
             var ret = new DiContainer();
             foreach (var pair in _diTable)
@@ -25,17 +25,7 @@ namespace ULox
             return ret;
         }
 
-        internal void ReplaceWith(DiContainer diContainerToRestore)
-        {
-            if (_isFrozen) return;
-            _diTable.Clear(); 
-            foreach (var pair in diContainerToRestore._diTable)
-            {
-                _diTable.Add(pair.Key, pair.Value);
-            }
-        }
-
-        internal string GenerateDump()
+        public string GenerateDump()
         {
             var sb = new StringBuilder();
             sb.AppendLine($"Registered in DI{(_isFrozen?"(frozen)":"")}:");
@@ -48,10 +38,10 @@ namespace ULox
             return sb.ToString().Trim();
         }
 
-        internal void Set(string name, Value implementation)
+        public void Set(string name, Value implementation)
             => _diTable[name] = implementation;
 
-        internal bool TryGetValue(string name, out Value found)
+        public bool TryGetValue(string name, out Value found)
             => _diTable.TryGetValue(name, out found);
     }
 }

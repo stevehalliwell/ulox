@@ -15,14 +15,6 @@ namespace ULox
 
         public InstanceInternal(
             ClassInternal fromClass,
-            Table fields)
-        {
-            FromClass = fromClass;
-            Fields = fields;
-        }
-
-        public InstanceInternal(
-            ClassInternal fromClass,
             Table fields,
             bool freeze)
         {

@@ -57,6 +57,7 @@ public class UloxScriptTestBase
         engine.Engine.Context.DeclareLibrary(new StandardClassesLibrary());
         engine.Engine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
         engine.Engine.Context.DeclareLibrary(new DiLibrary());
+        engine.Engine.Context.DeclareLibrary(new FreezeLibrary());
     }
 
     protected static IEnumerator ScriptGeneratorHelper(string subfolderName)

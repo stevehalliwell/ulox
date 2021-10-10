@@ -70,6 +70,8 @@
         STATIC,
         INIT,
 
+        FREEZE,
+
         MIXIN,
 
         TEST,

@@ -82,14 +82,14 @@ namespace ULox.Tests
                         var inst = receiver.val.asInstance;
 
                         //it could be a field
-                        if (inst.fields.TryGetValue(methodName, out var fieldFunc))
+                        if (inst.Fields.TryGetValue(methodName, out var fieldFunc))
                         {
                             _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
                             PushCallFrameFromValue(fieldFunc, argCount);
                         }
                         else
                         {
-                            var fromClass = inst.fromClass;
+                            var fromClass = inst.FromClass;
                             if (!fromClass.TryGetMethod(methodName, out var method))
                             {
                                 throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");

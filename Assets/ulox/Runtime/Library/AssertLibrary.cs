@@ -4,6 +4,8 @@ namespace ULox
 {
     public class AssertLibrary : IULoxLibrary
     {
+        private const double SquareDividedTolerance = 0.01d;
+
         public string Name => nameof(AssertLibrary);
 
         public AssertLibrary(Func<VMBase> createVM)
@@ -19,18 +21,20 @@ namespace ULox
             var assertInst = new InstanceInternal();
             resTable.Add("Assert", Value.New(assertInst));
 
-            assertInst.fields[nameof(AreEqual)] = Value.New(AreEqual);
-            assertInst.fields[nameof(AreNotEqual)] = Value.New(AreNotEqual);
-            assertInst.fields[nameof(AreApproxEqual)] = Value.New(AreApproxEqual);
-            assertInst.fields[nameof(IsTrue)] = Value.New(IsTrue);
-            assertInst.fields[nameof(IsFalse)] = Value.New(IsFalse);
-            assertInst.fields[nameof(IsNull)] = Value.New(IsNull);
-            assertInst.fields[nameof(IsNotNull)] = Value.New(IsNotNull);
-            assertInst.fields[nameof(DoesContain)] = Value.New(DoesContain);
-            assertInst.fields[nameof(DoesNotContain)] = Value.New(DoesNotContain);
-            assertInst.fields[nameof(Throws)] = Value.New(Throws);
-            assertInst.fields[nameof(Pass)] = Value.New(Pass);
-            assertInst.fields[nameof(Fail)] = Value.New(Fail);
+            //todo more to an assert class object?
+            assertInst.SetField(nameof(AreEqual), Value.New(AreEqual));
+            assertInst.SetField(nameof(AreNotEqual), Value.New(AreNotEqual));
+            assertInst.SetField(nameof(AreApproxEqual), Value.New(AreApproxEqual));
+            assertInst.SetField(nameof(IsTrue), Value.New(IsTrue));
+            assertInst.SetField(nameof(IsFalse), Value.New(IsFalse));
+            assertInst.SetField(nameof(IsNull), Value.New(IsNull));
+            assertInst.SetField(nameof(IsNotNull), Value.New(IsNotNull));
+            assertInst.SetField(nameof(DoesContain), Value.New(DoesContain));
+            assertInst.SetField(nameof(DoesNotContain), Value.New(DoesNotContain));
+            assertInst.SetField(nameof(Throws), Value.New(Throws));
+            assertInst.SetField(nameof(Pass), Value.New(Pass));
+            assertInst.SetField(nameof(Fail), Value.New(Fail));
+            assertInst.Freeze();
 
             return resTable;
         }
@@ -42,10 +46,16 @@ namespace ULox
             if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                 throw new AssertException($"Cannot perform AreApproxEqual on non-double types, '{lhs}', '{rhs}'.");
 
-            var dif = lhs.val.asDouble - rhs.val.asDouble;
+            var lhsd = lhs.val.asDouble;
+            var rhsd = rhs.val.asDouble;
+            var dif = lhsd - rhsd;
             var squareDif = dif * dif;
-            if (squareDif > 1e-16)
-                throw new AssertException($"'{lhs}' and '{rhs}' are '{dif}' apart.");
+            var largerSquare = Math.Max(lhsd * lhsd, rhsd * rhsd);
+            var difsqOverLargersq = squareDif / largerSquare;
+            if (difsqOverLargersq > SquareDividedTolerance)
+                throw new AssertException($"'{lhs}' and '{rhs}' are '{dif}' apart. " +
+                    $"Expect diff of squres to be less than '{SquareDividedTolerance}' " +
+                    $"but '{squareDif}' and '{largerSquare}' are greater '{difsqOverLargersq}'.");
 
             return Value.Null();
         }
@@ -129,7 +139,7 @@ namespace ULox
         private Value Throws(VMBase vm, int argCount)
         {
             var toRun = vm.GetArg(1).val.asClosure.chunk;
-            if(toRun == null)
+            if (toRun == null)
                 throw new AssertException($"Requires 1 closure param to execute, but was not given one.");
             var ourVM = CreateVM();
             bool didThrow = false;
@@ -156,8 +166,7 @@ namespace ULox
         private static Value Fail(VMBase vm, int argCount)
         {
             var msg = vm.GetArg(1);
-                throw new AssertException($"Fail. '{msg}'");
-
+            throw new AssertException($"Fail. '{msg}'");
             return Value.Null();
         }
     }

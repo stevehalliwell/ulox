@@ -23,6 +23,7 @@
                 ("static", TokenType.STATIC),
                 ("init", TokenType.INIT),
                 ("cname", TokenType.CONTEXT_NAME_CLASS),
+                ("freeze", TokenType.FREEZE),
 
                 ("inject", TokenType.INJECT),
                 ("register", TokenType.REGISTER)

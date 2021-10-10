@@ -7,12 +7,13 @@
         public Table GetBindings()
         {
             var resTable = new Table();
-            var assertInst = new InstanceInternal();
-            resTable.Add("DI", Value.New(assertInst));
+            var diLibInst = new InstanceInternal();
+            resTable.Add("DI", Value.New(diLibInst));
 
-            assertInst.fields[nameof(Count)] = Value.New(Count);
-            assertInst.fields[nameof(GenerateDump)] = Value.New(GenerateDump);
-            assertInst.fields[nameof(Freeze)] = Value.New(Freeze);
+            diLibInst.SetField(nameof(Count), Value.New(Count));
+            diLibInst.SetField(nameof(GenerateDump), Value.New(GenerateDump));
+            diLibInst.SetField(nameof(Freeze), Value.New(Freeze));
+            diLibInst.Freeze();
 
             return resTable;
         }
@@ -29,6 +30,7 @@
             return Value.New(di.GenerateDump());
         }
 
+        //TODO rename this is confusing now that objects can freeze
         private Value Freeze(VMBase vm, int argCount)
         {
             var di = FromVm(vm);

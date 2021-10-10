@@ -40,6 +40,8 @@
         CALL,
         CLOSURE,
 
+        NATIVE_CALL,
+
         RETURN,
         YIELD,
 
@@ -53,6 +55,8 @@
         INHERIT,
         GET_SUPER,
         SUPER_INVOKE,
+
+        FREEZE,
 
         MIXIN,
 

@@ -23,7 +23,8 @@
                 );
 
             this.AddStatementCompilettes(
-                new CompiletteAction(TokenType.REGISTER, RegisterStatement)
+                new CompiletteAction(TokenType.REGISTER, RegisterStatement),
+                new CompiletteAction(TokenType.FREEZE, FreezeStatement)
                 );
 
             this.SetPrattRules(
@@ -46,6 +47,13 @@
             Expression();
             EmitOpAndBytes(OpCode.REGISTER, stringConst);
             Consume(TokenType.END_STATEMENT, "Expect ';' after resgister.");
+        }
+
+        private void FreezeStatement(CompilerBase compiler)
+        {
+            Expression();
+            EmitOpCode(OpCode.FREEZE);
+            Consume(TokenType.END_STATEMENT, "Expect ';' after freeze.");
         }
 
         private void TCName(bool obj)

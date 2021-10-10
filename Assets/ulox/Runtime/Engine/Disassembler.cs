@@ -12,6 +12,8 @@
             opCodeHandlers[(int)OpCode.INHERIT] = AppendNothing;
             opCodeHandlers[(int)OpCode.MIXIN] = AppendNothing;
 
+            opCodeHandlers[(int)OpCode.FREEZE] = AppendNothing;
+
             opCodeHandlers[(int)OpCode.SUPER_INVOKE] = AppendStringConstantThenByte;
             opCodeHandlers[(int)OpCode.INVOKE] = AppendStringConstantThenByte;
 

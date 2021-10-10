@@ -4,10 +4,8 @@
     {
         public const string Name = "Dynamic";
 
-        public DynamicClass()
+        public DynamicClass() : base(Name)
         {
-            this.name = Name;
-
             this.AddMethod(nameof(HasField), Value.New(HasField));
             this.AddMethod(nameof(RemoveField), Value.New(RemoveField));
         }
@@ -20,7 +18,7 @@
                 throw new AssertException($"Cannot perform {nameof(HasField)} on given types, '{obj}', '{fieldName}'.");
 
             var inst = obj.val.asInstance;
-            var b = inst.fields.ContainsKey(fieldName.val.asString);
+            var b = inst.HasField(fieldName.val.asString);
 
             return Value.New(b);
         }
@@ -34,10 +32,16 @@
 
             var inst = obj.val.asInstance;
             var fieldNameStr = fieldName.val.asString;
-            var currentValue = inst.fields[fieldNameStr];
-            inst.fields.Remove(fieldNameStr);
+            var currentValue = inst.GetField(fieldNameStr);
+            inst.RemoveField(fieldNameStr);
 
             return currentValue;
+        }
+
+        public override void FinishCreation(InstanceInternal inst)
+        {
+            base.FinishCreation(inst);
+            inst.Unfreeze();
         }
     }
 }

@@ -38,10 +38,10 @@ namespace ULox
             return sb.ToString().Trim();
         }
 
-        public void Set(string name, Value implementation)
+        public void Set(HashedString name, Value implementation)
             => _diTable[name] = implementation;
 
-        public bool TryGetValue(string name, out Value found)
+        public bool TryGetValue(HashedString name, out Value found)
             => _diTable.TryGetValue(name, out found);
     }
 }

@@ -19,22 +19,23 @@ namespace ULox
         {
             var resTable = new Table();
             var assertInst = new InstanceInternal();
-            resTable.Add("Assert", Value.New(assertInst));
+            resTable.Add(new HashedString("Assert"), Value.New(assertInst));
 
             //todo more to an assert class object?
-            assertInst.SetField(nameof(AreEqual), Value.New(AreEqual));
-            assertInst.SetField(nameof(AreNotEqual), Value.New(AreNotEqual));
-            assertInst.SetField(nameof(AreApproxEqual), Value.New(AreApproxEqual));
-            assertInst.SetField(nameof(IsTrue), Value.New(IsTrue));
-            assertInst.SetField(nameof(IsFalse), Value.New(IsFalse));
-            assertInst.SetField(nameof(IsNull), Value.New(IsNull));
-            assertInst.SetField(nameof(IsNotNull), Value.New(IsNotNull));
-            assertInst.SetField(nameof(DoesContain), Value.New(DoesContain));
-            assertInst.SetField(nameof(DoesNotContain), Value.New(DoesNotContain));
-            assertInst.SetField(nameof(Throws), Value.New(Throws));
-            assertInst.SetField(nameof(Pass), Value.New(Pass));
-            assertInst.SetField(nameof(Fail), Value.New(Fail));
-            assertInst.Freeze();
+            assertInst.AddFieldsToInstance(
+                (nameof(AreEqual), Value.New(AreEqual)),
+                (nameof(AreNotEqual), Value.New(AreNotEqual)),
+                (nameof(AreApproxEqual), Value.New(AreApproxEqual)),
+                (nameof(IsTrue), Value.New(IsTrue)),
+                (nameof(IsFalse), Value.New(IsFalse)),
+                (nameof(IsNull), Value.New(IsNull)),
+                (nameof(IsNotNull), Value.New(IsNotNull)),
+                (nameof(DoesContain), Value.New(DoesContain)),
+                (nameof(DoesNotContain), Value.New(DoesNotContain)),
+                (nameof(Throws), Value.New(Throws)),
+                (nameof(Pass), Value.New(Pass)),
+                (nameof(Fail), Value.New(Fail))
+                );
 
             return resTable;
         }
@@ -120,7 +121,7 @@ namespace ULox
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
-            if (!rhs.val.asString.Contains(lhs.val.asString))
+            if (!rhs.val.asString.String.Contains(lhs.val.asString.String))
                 throw new AssertException($"'{rhs}' did not contain '{lhs}'.");
 
             return Value.Null();
@@ -130,7 +131,7 @@ namespace ULox
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
-            if (rhs.val.asString.Contains(lhs.val.asString))
+            if (rhs.val.asString.String.Contains(lhs.val.asString.String))
                 throw new AssertException($"'{rhs}' did contain '{lhs}', should not have.");
 
             return Value.Null();

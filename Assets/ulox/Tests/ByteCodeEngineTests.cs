@@ -452,7 +452,7 @@ MyFunc();");
         [Test]
         public void Engine_Compile_NativeFunc_Call()
         {
-            testEngine.Vm.SetGlobal("CallEmptyNative", Value.New((vm, stack) => Value.New("Native")));
+            testEngine.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) => Value.New("Native")));
 
             testEngine.Run(@"print (CallEmptyNative());");
 
@@ -727,7 +727,7 @@ print(res);
         [Test]
         public void Engine_Read_External_Global()
         {
-            testEngine.Vm.SetGlobal("a", Value.New(1));
+            testEngine.Vm.SetGlobal(new HashedString("a"), Value.New(1));
 
             testEngine.Run(@"print (a);");
 
@@ -739,7 +739,7 @@ print(res);
         {
             testEngine.Run(@"fun Meth(){print (1);}");
 
-            var meth = testEngine.Vm.GetGlobal("Meth");
+            var meth = testEngine.Vm.GetGlobal(new HashedString("Meth"));
             testEngine.Vm.PushCallFrameAndRun(meth, 0);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
@@ -753,7 +753,7 @@ print(res);
                 return Value.New("Hello from native.");
             }
 
-            testEngine.Vm.SetGlobal("Meth", Value.New(Func));
+            testEngine.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
 
             testEngine.Run(@"print (Meth());");
 
@@ -768,7 +768,7 @@ print(res);
                 return Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native.");
             }
 
-            testEngine.Vm.SetGlobal("Meth", Value.New(Func));
+            testEngine.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
 
             testEngine.Run(@"print (Meth(""Dad""));");
 
@@ -1417,9 +1417,9 @@ Assert.AreNotEqual(1,2);");
         public void Engine_ManualLibraryBindViaFunc_IsFound()
         {
             testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
-            testEngine.Engine.Context.VM.SetGlobal("bind", Value.New((vm, argc) =>
+            testEngine.Engine.Context.VM.SetGlobal(new HashedString("bind"), Value.New((vm, argc) =>
             {
-                var libName = vm.GetArg(1).val.asString;
+                var libName = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.Context.BindLibrary(libName);
 
                 return Value.Null();
@@ -1437,18 +1437,18 @@ Assert.AreNotEqual(1,2);");
         public void Engine_ManualLibraryBindAndBuildViaFunc_IsFound()
         {
             testEngine.Engine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
-            testEngine.Engine.Context.VM.SetGlobal("bind", Value.New((vm, argc) =>
+            testEngine.Engine.Context.VM.SetGlobal(new HashedString("bind"), Value.New((vm, argc) =>
             {
-                var libName = vm.GetArg(1).val.asString;
+                var libName = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.Context.BindLibrary(libName);
 
                 return Value.Null();
             }));
 
             testEngine.Engine.ScriptLocator.Add("assertbody", "Assert.AreNotEqual(1, 2); print(1);");
-            testEngine.Engine.Context.VM.SetGlobal("compile", Value.New((vm, argc) =>
+            testEngine.Engine.Context.VM.SetGlobal(new HashedString("compile"), Value.New((vm, argc) =>
             {
-                var name = vm.GetArg(1).val.asString;
+                var name = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.LocateAndQueue(name);
 
                 return Value.Null();

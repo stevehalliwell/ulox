@@ -4,6 +4,12 @@ namespace ULox.Demo
 {
     public class ULoxBehaviour : MonoBehaviour
     {
+        private static readonly HashedString UpdateName = new HashedString("Update");
+        private static readonly HashedString SetupGameName = new HashedString("SetupGame");
+        private static readonly HashedString dtName = new HashedString("dt");
+        private static readonly HashedString thisGameObjectName = new HashedString("thisGameObject");
+        private static readonly HashedString OnCollisionName = new HashedString("OnCollision");
+
         [SerializeField] private TextAsset script;
         [SerializeField] private bool useInstanceVm = true;
         private Value _anonymousOnCollision = Value.Null();
@@ -16,8 +22,8 @@ namespace ULox.Demo
             _engine = FindObjectOfType<SharedEngine>().Engine;
 
             BindToScript();
-            
-            var setupFunc = _ourVM.FindFunctionWithArity("SetupGame",0);
+
+            var setupFunc = _ourVM.FindFunctionWithArity(SetupGameName, 0);
             if (!setupFunc.IsNull)
             {
                 _ourVM.PushCallFrameAndRun(setupFunc, 0);
@@ -34,7 +40,7 @@ namespace ULox.Demo
         {
             if (!_gameUpdateFunction.IsNull)
             {
-                _ourVM.SetGlobal("dt", Value.New(Time.deltaTime));
+                _ourVM.SetGlobal(dtName, Value.New(Time.deltaTime));
                 _ourVM.PushCallFrameAndRun(_gameUpdateFunction, 0);
             }
         }
@@ -48,10 +54,11 @@ namespace ULox.Demo
                 _ourVM = new Vm();
                 _ourVM.CopyFrom(_engine.Context.VM);
             }
-            _ourVM.SetGlobal("thisGameObject", Value.Object(gameObject));
 
-            _anonymousOnCollision = _ourVM.FindFunctionWithArity("OnCollision", 0);
-            _gameUpdateFunction = _ourVM.FindFunctionWithArity("Update", 0);
+            _ourVM.SetGlobal(thisGameObjectName, Value.Object(gameObject));
+
+            _anonymousOnCollision = _ourVM.FindFunctionWithArity(OnCollisionName, 0);
+            _gameUpdateFunction = _ourVM.FindFunctionWithArity(UpdateName, 0);
         }
     }
 }

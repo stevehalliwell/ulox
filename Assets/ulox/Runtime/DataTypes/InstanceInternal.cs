@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -13,25 +14,15 @@ namespace ULox
             FromClass = fromClass;
         }
 
-        public InstanceInternal(
-            ClassInternal fromClass,
-            Table fields,
-            bool freeze)
-        {
-            FromClass = fromClass;
-            Fields = fields;
-            IsFrozen = freeze;
-        }
-
         public ClassInternal FromClass { get; protected set; }
         public bool IsFrozen { get; private set; } = false;
-        public Table Fields { get; protected set; } = Table.Empty();
+        public Table Fields { get; protected set; } = new Table();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool HasField(string key) => Fields.ContainsKey(key);
+        public bool HasField(HashedString key) => Fields.ContainsKey(key);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetField(string key, Value val)
+        public void SetField(HashedString key, Value val)
         {
             if (!IsFrozen || Fields.ContainsKey(key))
                 Fields[key] = val;
@@ -40,7 +31,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetField(string key)
+        public Value GetField(HashedString key)
         {
             if (Fields.TryGetValue(key, out var ret))
                 return ret;
@@ -49,10 +40,10 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetField(string key, out Value val) => Fields.TryGetValue(key, out val);
+        public bool TryGetField(HashedString key, out Value val) => Fields.TryGetValue(key, out val);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool RemoveField(string fieldNameStr) => Fields.Remove(fieldNameStr);
+        public bool RemoveField(HashedString fieldNameStr) => Fields.Remove(fieldNameStr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Freeze()
@@ -64,6 +55,17 @@ namespace ULox
         public void Unfreeze()
         {
             IsFrozen = false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void CopyFrom(InstanceInternal inst)
+        {
+            FromClass = inst.FromClass;
+            foreach (var keyPair in inst.Fields)
+            {
+                Fields[keyPair.Key] = keyPair.Value;
+            }
+            IsFrozen = inst.IsFrozen;
         }
     }
 }

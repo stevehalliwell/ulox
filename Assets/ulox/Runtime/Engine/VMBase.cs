@@ -29,7 +29,7 @@ namespace ULox
         private IEngine _engine;
         public IEngine Engine => _engine;
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
-        private readonly Table _globals = Table.Empty();
+        private readonly Table _globals = new Table();
 
         public VMBase()
         {
@@ -54,13 +54,13 @@ namespace ULox
 
         public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
 
-        public void SetGlobal(string name, Value val) => _globals[name] = val;
+        public Value GetGlobal(HashedString name) => _globals[name];
+        public void SetGlobal(HashedString name, Value val) => _globals[name] = val;
 
         public Value GetArg(int index) => _valueStack[currentCallFrame.StackStart + index];
         public int CurrentFrameStackValues => _valueStack.Count - currentCallFrame.StackStart;
         public Value StackTop => _valueStack.Peek();
 
-        public Value GetGlobal(string name) => _globals[name];
 
         public void SetEngine(IEngine engine) => _engine = engine;
 
@@ -87,7 +87,7 @@ namespace ULox
             }
         }
 
-        public Value FindFunctionWithArity(string name, int arity)
+        public Value FindFunctionWithArity(HashedString name, int arity)
         {
             try
             {
@@ -369,10 +369,10 @@ namespace ULox
             switch (buildOpType)
             {
             case BuildOpType.Bind:
-                Engine.Context.BindLibrary(str);
+                Engine.Context.BindLibrary(str.String);
                 break;
             case BuildOpType.Queue:
-                Engine.LocateAndQueue(str);
+                Engine.LocateAndQueue(str.String);
                 break;
             default:
                 throw new VMException($"Unhanlded BuildOpType '{buildOpType}'");

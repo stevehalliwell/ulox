@@ -4,20 +4,22 @@ namespace ULox
 {
     public class ListClass : ClassInternal
     {
-        private const string ListFieldName = "list";
+        private static readonly HashedString ListFieldName = new HashedString("list");
 
         private class InternalList : List<Value> { }
 
-        public ListClass(): base("List")
+        public ListClass(): base(new HashedString("List"))
         {
             this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
-            this.AddMethod(nameof(Count), Value.New(Count));
-            this.AddMethod(nameof(Resize), Value.New(Resize));
-            this.AddMethod(nameof(Get), Value.New(Get));
-            this.AddMethod(nameof(Set), Value.New(Set));
-            this.AddMethod(nameof(Add), Value.New(Add));
-            this.AddMethod(nameof(Remove), Value.New(Remove));
-            this.AddMethod(nameof(Empty), Value.New(Empty));
+            this.AddMethodsToClass(
+                (nameof(Count), Value.New(Count)),
+                (nameof(Resize), Value.New(Resize)),
+                (nameof(Get), Value.New(Get)),
+                (nameof(Set), Value.New(Set)),
+                (nameof(Add), Value.New(Add)),
+                (nameof(Remove), Value.New(Remove)),
+                (nameof(Empty), Value.New(Empty))
+                );
         }
 
         private Value InitInstance(VMBase vm, int argCount)

@@ -12,15 +12,11 @@
         }
 
         public Table GetBindings()
-        {
-            var resTable = new Table();
-
-            resTable.Add(nameof(print), Value.New(print));
-            resTable.Add(nameof(Duplicate), Value.New(Duplicate));
-            resTable.Add(nameof(str), Value.New(str));
-
-            return resTable;
-        }
+            => this.GenerateBindingTable(
+                (nameof(print), Value.New(print)),
+                (nameof(Duplicate), Value.New(Duplicate)),
+                (nameof(str), Value.New(str))
+                );
 
         public Value print(VMBase vm, int argCount)
         {

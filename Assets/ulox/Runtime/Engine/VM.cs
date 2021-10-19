@@ -302,8 +302,7 @@ namespace ULox
         {
             Value klass = Pop();
             Value mixin = Pop();
-            var flavour = mixin.val.asClass;
-            klass.val.asClass.AddMixin(flavour);
+            klass.val.asClass.AddMixin(mixin);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -325,7 +324,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void BindMethod(ClassInternal fromClass, string methodName)
+        private void BindMethod(ClassInternal fromClass, HashedString methodName)
         {
             if (!fromClass.TryGetMethod(methodName, out var method))
             {
@@ -339,7 +338,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InvokeFromClass(ClassInternal fromClass, string methodName, int argCount)
+        private void InvokeFromClass(ClassInternal fromClass, HashedString methodName, int argCount)
         {
             if (!fromClass.TryGetMethod(methodName, out var method))
             {

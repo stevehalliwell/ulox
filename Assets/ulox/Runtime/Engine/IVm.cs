@@ -2,6 +2,8 @@
 {
     public interface IVm
     {
+        IEngine Engine { get; }
+
         string GenerateGlobalsDump();
         string GenerateStackDump();
         Value GetGlobal(string name);

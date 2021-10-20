@@ -7,6 +7,7 @@ using System;
 
 namespace ULox.Demo
 {
+    //TODO rename, shared engine, vms are not required to be shared
     public class SharedVM : MonoBehaviour
     {
         [SerializeField] private PrefabCollectionSO prefabCollectionSO;

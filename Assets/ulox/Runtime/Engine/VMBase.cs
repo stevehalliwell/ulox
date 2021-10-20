@@ -74,13 +74,16 @@ namespace ULox
 
         protected virtual bool ExtendedCall(Value callee, int argCount) => false;
 
-        public virtual void CopyFrom(VMBase otherVM)
+        public virtual void CopyFrom(IVm otherVM)
         {
             _engine = otherVM.Engine;
 
-            foreach (var val in otherVM._globals)
+            if (otherVM is VMBase asVmBase)
             {
-                SetGlobal(val.Key, val.Value);
+                foreach (var val in asVmBase._globals)
+                {
+                    SetGlobal(val.Key, val.Value);
+                }
             }
         }
 

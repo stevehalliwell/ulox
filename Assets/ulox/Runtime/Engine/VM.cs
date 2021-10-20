@@ -7,7 +7,7 @@ namespace ULox
         public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
         public DiContainer DiContainer { get; private set; } = new DiContainer();
 
-        public override void CopyFrom(VMBase otherVMbase)
+        public override void CopyFrom(IVm otherVMbase)
         {
             base.CopyFrom(otherVMbase);
 

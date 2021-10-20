@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 namespace ULox.Demo
 {
@@ -9,33 +7,28 @@ namespace ULox.Demo
         public TextAsset script;
         private Value gameUpdateFunction;
 
-        private ULoxScriptEnvironment _uLoxScriptEnvironment;
+        private Engine _uLoxEngine;
 
         private void Start()
         {
-            _uLoxScriptEnvironment = new ULoxScriptEnvironment(
-                FindObjectOfType<SharedVM>().Engine);
+            _uLoxEngine = FindObjectOfType<SharedVM>().Engine;
 
-            _uLoxScriptEnvironment.Run(script.text);
+            _uLoxEngine.RunScript(script.text);
 
-            var setupFunc = _uLoxScriptEnvironment.GetGlobal("SetupGame");
-            if (setupFunc.HasValue)
+            var setupFunc = _uLoxEngine.Context.VM.GetGlobal("SetupGame");
+            if (!setupFunc.IsNull)
             {
-                _uLoxScriptEnvironment.CallFunction(setupFunc.Value, 0);
+                _uLoxEngine.Context.VM.PushCallFrameAndRun(setupFunc, 0);
             }
-            var updateFunc = _uLoxScriptEnvironment.GetGlobal("Update");
-            if(updateFunc.HasValue)
-            {
-                gameUpdateFunction = updateFunc.Value;
-            }
+            gameUpdateFunction = _uLoxEngine.Context.VM.GetGlobal("Update");
         }
 
         private void Update()
         {
             if (!gameUpdateFunction.IsNull)
             {
-                _uLoxScriptEnvironment.SetGlobal("dt", Value.New(Time.deltaTime));
-                _uLoxScriptEnvironment.CallFunction(gameUpdateFunction, 0);
+                _uLoxEngine.Context.VM.SetGlobal("dt", Value.New(Time.deltaTime));
+                _uLoxEngine.Context.VM.PushCallFrameAndRun(gameUpdateFunction, 0);
             }
         }
     }

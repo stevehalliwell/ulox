@@ -15,7 +15,7 @@ namespace ULox.Demo
         [SerializeField] private TextAsset[] sampleScripts, testScripts;
 
 
-        private SharedVM sharedVM;
+        private SharedEngine sharedVM;
 
         private void Start()
         {
@@ -30,7 +30,7 @@ namespace ULox.Demo
             testDropdown.AddOptions(testScripts.Select(x => new Dropdown.OptionData(x.name)).ToList());
             testDropdown.onValueChanged.AddListener(TestDropDownChangedHandler);
 
-            sharedVM = FindObjectOfType<SharedVM>();
+            sharedVM = FindObjectOfType<SharedEngine>();
             Reset();
         }
 

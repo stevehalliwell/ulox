@@ -1,14 +1,13 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Linq;
-using System.Collections.Generic;
-using System;
 
 namespace ULox.Demo
 {
-    //TODO rename, shared engine, vms are not required to be shared
-    public class SharedVM : MonoBehaviour
+    public class SharedEngine : MonoBehaviour
     {
         [SerializeField] private PrefabCollectionSO prefabCollectionSO;
         [SerializeField] private TextAssetCollectionSO textAssetCollectionSO;
@@ -27,7 +26,7 @@ namespace ULox.Demo
         {
             Dictionary<string, string> builtinDict = null;
             if (textAssetCollectionSO != null)
-                builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name,x => x.text);
+                builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name, x => x.text);
 
             var scriptLocator = new ScriptLocator(builtinDict, new DirectoryInfo(Application.streamingAssetsPath));
             Engine = new Engine(scriptLocator, new Context(new Program(), new Vm()));
@@ -36,8 +35,8 @@ namespace ULox.Demo
                 x => Debug.Log(x),
                 () => new Vm());
 
-            List<GameObject> prefabs = null; 
-            if(prefabCollectionSO != null)
+            List<GameObject> prefabs = null;
+            if (prefabCollectionSO != null)
                 prefabs = prefabCollectionSO.Collection;
 
             Engine.DeclareUnityLibraries(
@@ -55,7 +54,8 @@ namespace ULox.Demo
             Engine.BuildAndRun();
         }
     }
-    public static partial class EngineExt
+
+    public static partial class SharedEngineExt
     {
         public static void DeclareUnityLibraries(
             this Engine engine,

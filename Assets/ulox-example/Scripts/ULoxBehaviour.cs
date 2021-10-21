@@ -13,7 +13,7 @@ namespace ULox.Demo
 
         private void Start()
         {
-            _engine = FindObjectOfType<SharedVM>().Engine;
+            _engine = FindObjectOfType<SharedEngine>().Engine;
 
             BindToScript();
             

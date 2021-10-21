@@ -780,10 +780,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 1701529280}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 27ca08d7b59ec734aac4c51c59a3c2b5, type: 3}
+  m_Script: {fileID: 11500000, guid: 772c4726a2f862646a6b6830d7792180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   script: {fileID: 9027929339269108002, guid: 1c55608ce5e3ef04983ff9c04b556945, type: 3}
+  useInstanceVm: 1
 --- !u!4 &1701529282
 Transform:
   m_ObjectHideFlags: 0

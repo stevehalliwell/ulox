@@ -5,9 +5,10 @@ namespace ULox.Demo
     public class ULoxBehaviour : MonoBehaviour
     {
         [SerializeField] private TextAsset script;
+        [SerializeField] private bool useInstanceVm = true;
         private Value _anonymousOnCollision = Value.Null();
         private Value _gameUpdateFunction = Value.Null();
-        private Vm _ourVM;
+        private IVm _ourVM;
         private Engine _engine;
 
         private void Start()
@@ -15,6 +16,12 @@ namespace ULox.Demo
             _engine = FindObjectOfType<SharedVM>().Engine;
 
             BindToScript();
+            
+            var setupFunc = _ourVM.FindFunctionWithArity("SetupGame",0);
+            if (!setupFunc.IsNull)
+            {
+                _ourVM.PushCallFrameAndRun(setupFunc, 0);
+            }
         }
 
         private void OnCollisionEnter(Collision collision)
@@ -35,13 +42,16 @@ namespace ULox.Demo
         private void BindToScript()
         {
             _engine.RunScript(script.text);
-            _ourVM = new Vm();
-            _ourVM.CopyFrom(_engine.Context.VM);
-
+            _ourVM = _engine.Context.VM;
+            if (useInstanceVm)
+            {
+                _ourVM = new Vm();
+                _ourVM.CopyFrom(_engine.Context.VM);
+            }
             _ourVM.SetGlobal("thisGameObject", Value.Object(gameObject));
 
             _anonymousOnCollision = _ourVM.FindFunctionWithArity("OnCollision", 0);
-            //_gameUpdateFunction = _ourVM.FindFunctionWithArity("Update", 0);
+            _gameUpdateFunction = _ourVM.FindFunctionWithArity("Update", 0);
         }
     }
 }

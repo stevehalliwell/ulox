@@ -89,12 +89,18 @@ namespace ULox
 
         public Value FindFunctionWithArity(string name, int arity)
         {
-            var globalVal = GetGlobal(name);
-
-            if (globalVal.type == ValueType.Closure &&
-                    globalVal.val.asClosure.chunk.Arity == arity)
+            try
             {
-                return globalVal;
+                var globalVal = GetGlobal(name);
+
+                if (globalVal.type == ValueType.Closure &&
+                        globalVal.val.asClosure.chunk.Arity == arity)
+                {
+                    return globalVal;
+                }
+            }
+            catch (System.Exception)
+            {
             }
 
             return Value.Null();

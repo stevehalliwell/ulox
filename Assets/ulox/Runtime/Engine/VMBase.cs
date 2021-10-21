@@ -474,9 +474,12 @@ namespace ULox
 
             PopCallFrame();
 
-            var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
+            if (prevStackStart >= 0)
+            {
+                var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
 
-            DiscardPop(toRemove);
+                DiscardPop(toRemove);
+            }
 
             if(result.type != ValueType.Void)
                 Push(result);

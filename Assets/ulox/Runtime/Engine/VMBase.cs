@@ -74,24 +74,33 @@ namespace ULox
 
         protected virtual bool ExtendedCall(Value callee, int argCount) => false;
 
-        public virtual void CopyFrom(VMBase otherVM)
+        public virtual void CopyFrom(IVm otherVM)
         {
             _engine = otherVM.Engine;
 
-            foreach (var val in otherVM._globals)
+            if (otherVM is VMBase asVmBase)
             {
-                SetGlobal(val.Key, val.Value);
+                foreach (var val in asVmBase._globals)
+                {
+                    SetGlobal(val.Key, val.Value);
+                }
             }
         }
 
         public Value FindFunctionWithArity(string name, int arity)
         {
-            var globalVal = GetGlobal(name);
-
-            if (globalVal.type == ValueType.Closure &&
-                    globalVal.val.asClosure.chunk.Arity == arity)
+            try
             {
-                return globalVal;
+                var globalVal = GetGlobal(name);
+
+                if (globalVal.type == ValueType.Closure &&
+                        globalVal.val.asClosure.chunk.Arity == arity)
+                {
+                    return globalVal;
+                }
+            }
+            catch (System.Exception)
+            {
             }
 
             return Value.Null();
@@ -471,9 +480,12 @@ namespace ULox
 
             PopCallFrame();
 
-            var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
+            if (prevStackStart >= 0)
+            {
+                var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
 
-            DiscardPop(toRemove);
+                DiscardPop(toRemove);
+            }
 
             if(result.type != ValueType.Void)
                 Push(result);

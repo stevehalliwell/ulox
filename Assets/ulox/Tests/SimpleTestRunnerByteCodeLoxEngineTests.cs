@@ -61,7 +61,7 @@ namespace ULox.Tests
                 }
                 return true;
             }
-            public override void CopyFrom(VMBase otherVM)
+            public override void CopyFrom(IVm otherVM)
             {
                 base.CopyFrom(otherVM);
                 if (otherVM is SimpleTestrunnerVM matchingVM)

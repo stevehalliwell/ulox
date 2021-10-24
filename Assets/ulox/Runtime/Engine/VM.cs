@@ -377,6 +377,7 @@ namespace ULox
                 // Freeze is then called on the inst left behindby the 
                 //  using custom callframe as we need the location of the inst but no params, as they will all be gone
                 //  by the time we get to execute.
+                DuplicateStackValuesNew(instLocOnStack, argCount);
                 PushFrameCallNativeWithFixedStackStart(ClassFinishCreation, instLocOnStack);
             }
 
@@ -425,6 +426,7 @@ namespace ULox
         private Value CopyMatchingParamsToFields(VMBase vm, int argCount)
         {
             var instVal = vm.GetArg(0);
+
             var inst = instVal.val.asInstance;
 
             var initChunk = inst.FromClass.Initialiser.val.asClosure.chunk;
@@ -446,7 +448,7 @@ namespace ULox
                 }
             }
 
-            return instVal;
+            return Value.Void();
         }
         
         private Value ClassFinishCreation(VMBase vm, int argCount)

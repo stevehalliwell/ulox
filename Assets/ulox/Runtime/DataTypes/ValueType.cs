@@ -3,6 +3,7 @@
     public enum ValueType : byte
     {
         Null,
+        Void,
         Double,
         Bool,
         String,

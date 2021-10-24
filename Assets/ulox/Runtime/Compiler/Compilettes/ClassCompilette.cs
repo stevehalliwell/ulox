@@ -183,13 +183,8 @@ namespace ULox
         private void DoInit(CompilerBase compiler)
         {
             byte constant = compiler.AddCustomStringConstant(InitMethodName);
-            CreateInitMethod(compiler);
-            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
-        }
-
-        private void CreateInitMethod(CompilerBase compiler)
-        {
             compiler.Function(InitMethodName, FunctionType.Init);
+            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
         }
 
         private void DoClassMethod(CompilerBase compiler)

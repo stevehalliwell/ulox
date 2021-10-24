@@ -427,5 +427,42 @@ print(foo.a);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void MixinInits_WhenMultipleInit_ShouldDoAll()
+        {
+            var script = @"
+class Foo
+{
+    var fizz = 1, negative = -1;
+}
+
+class Bar
+{
+    var buzz = 2, bitcount;
+}
+
+class FooBar
+{
+    mixin Foo, Bar;
+
+    init(fizz, buzz, bitcount){}
+}
+
+var expectedFizz = 10;
+var expectedBuzz = 20;
+var expectedBitcount = 30;
+var result = -1;
+
+var fooBar = FooBar(expectedFizz, expectedBuzz, expectedBitcount);
+result = fooBar.fizz + fooBar.negative + fooBar.buzz + fooBar.bitcount;
+
+print(result);
+";
+
+            testEngine.Run(script);
+
+            Assert.AreEqual("59", testEngine.InterpreterResult);
+        }
     }
 }

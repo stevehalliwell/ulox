@@ -751,5 +751,126 @@ AddPrint(t2);
 
             Assert.AreEqual("33", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void InitWithoutArgsWithLocals_WhenCalled_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init()
+    {
+        var loc = 1;
+        var c = loc + 2;
+        ExtrnGlobal(c);
     }
 }
+
+fun PassedMethod()
+{
+    return 1;
+}
+
+fun ExtrnGlobal(in)
+{
+    print(in);
+}
+
+var t = T();
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void InitWithArgsAndLocals_WhenCalled_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(a,b)
+    {
+        var loc = a();
+        var c = loc + b;
+        ExtrnGlobal(c);
+    }
+}
+
+fun PassedMethod()
+{
+    return 1;
+}
+
+fun ExtrnGlobal(in)
+{
+    print(in);
+}
+
+var t = T(PassedMethod, 2);
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void InitWithManyArgsAndNoLocals_WhenCalled_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(a,b,c,d,e,f,g)
+    {
+        print(d);
+    }
+}
+
+var t = T(1,2,3,4,5,6,7);
+");
+
+            Assert.AreEqual("4", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void InitWithManyArgsAndOneLocals_WhenCalled_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(a,b,c,d,e,f,g)
+    {
+        var h = 8;
+        print(d);
+        print(h);
+    }
+}
+
+var t = T(1,2,3,4,5,6,7);
+");
+
+            Assert.AreEqual("48", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void MethodWithManyArgsAndOneLocals_WhenCalled_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    Meth(a,b,c,d,e,f,g)
+    {
+        var h = 8;
+        print(d);
+        print(h);
+    }
+}
+
+var t = T();
+t.Meth(1,2,3,4,5,6,7);
+");
+
+            Assert.AreEqual("48", testEngine.InterpreterResult);
+        }
+    }
+}
+
+//TODO add class test for init with args and no init and using local vars

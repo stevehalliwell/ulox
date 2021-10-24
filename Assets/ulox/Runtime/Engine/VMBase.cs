@@ -475,7 +475,8 @@ namespace ULox
 
             DiscardPop(toRemove);
 
-            Push(result);
+            if(result.type != ValueType.Void)
+                Push(result);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

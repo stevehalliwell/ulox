@@ -67,7 +67,8 @@
                 (TokenType.AND, new ParseRule(null, comp.And, Precedence.And)),
                 (TokenType.OR, new ParseRule(null, comp.Or, Precedence.Or)),
                 (TokenType.OPEN_PAREN, new ParseRule(comp.Grouping, comp.Call, Precedence.Call)),
-                (TokenType.CONTEXT_NAME_FUNC, new ParseRule(comp.FName, null, Precedence.None))
+                (TokenType.CONTEXT_NAME_FUNC, new ParseRule(comp.FName, null, Precedence.None)),
+                (TokenType.VALUE_STACK_TOP, new ParseRule(comp.ValueStackTop, null, Precedence.None))
                               );
         }
 

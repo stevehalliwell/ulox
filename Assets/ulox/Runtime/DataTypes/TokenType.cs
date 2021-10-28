@@ -82,6 +82,8 @@
         CONTEXT_NAME_TESTCASE,
         CONTEXT_NAME_TESTSET,
 
+        VALUE_STACK_TOP,
+
         BUILD,
         
         REGISTER,

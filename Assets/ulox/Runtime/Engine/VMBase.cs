@@ -24,6 +24,7 @@ namespace ULox
         private readonly ClosureInternal NativeCallClosure;
 
         protected readonly FastStack<Value> _valueStack = new FastStack<Value>();
+        protected readonly FastStack<Value> _returnStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         protected CallFrame currentCallFrame;
         private IEngine _engine;
@@ -51,6 +52,7 @@ namespace ULox
         protected Value Peek(int ind = 0) => _valueStack.Peek(ind);
 
         public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
+        public string GenerateReturnDump() => new DumpStack().Generate(_returnStack);
 
         public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
 
@@ -194,7 +196,7 @@ namespace ULox
 
                 case OpCode.RETURN:
                     {
-                        DoReturnOp();
+                        DoReturnOp(chunk);
 
                         if (_callFrames.Count == 0)
                         {
@@ -388,7 +390,8 @@ namespace ULox
                 var argCount = CurrentFrameStackValues;
                 var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
 
-                ReturnAndPopFrame(res);
+                ReturnOneValue(res);
+                FinishReturnOp();
             }
             else
             {
@@ -467,15 +470,40 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoReturnOp()
+        private void DoReturnOp(Chunk chunk)
         {
-            Value result = Pop();
+            var returnMode = (ReturnMode)ReadByte(chunk);
+            switch (returnMode)
+            {
+            case ReturnMode.One:
+                ReturnOneValue(Pop());
+                break;
+            case ReturnMode.Begin:
+                break;
+            case ReturnMode.End:
+                break;
+            default:
+                break;
+            }
 
-            CloseUpvalues(currentCallFrame.StackStart);
-            ReturnAndPopFrame(result);
+            FinishReturnOp();
         }
 
-        private void ReturnAndPopFrame(Value result)
+        private void FinishReturnOp()
+        {
+            CloseUpvalues(currentCallFrame.StackStart);
+            ReturnAndPopFrame();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReturnOneValue(Value val)
+        {
+            _returnStack.Reset();
+            _returnStack.Push(val);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReturnAndPopFrame()
         {
             var prevStackStart = currentCallFrame.StackStart;
 
@@ -488,8 +516,19 @@ namespace ULox
                 DiscardPop(toRemove);
             }
 
-            if(result.type != ValueType.Void)
-                Push(result);
+            TransferReturnToStack();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void TransferReturnToStack()
+        {
+            if (_returnStack.Count == 1 && _returnStack.Peek().IsVoid)
+                return;
+
+            for (int i = 0; i < _returnStack.Count; i++)
+            {
+                Push(_returnStack[i]);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

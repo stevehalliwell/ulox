@@ -12,6 +12,8 @@ namespace ULox
 
         public bool IsNull => type == ValueType.Null;
 
+        public bool IsVoid => type == ValueType.Void;
+
         public string str() => ToString();
 
         public override string ToString()

@@ -321,7 +321,7 @@ namespace ULox
             else
                 EmitOpCode(OpCode.NULL);
 
-            EmitOpCode(OpCode.RETURN);
+            EmitOpAndBytes(OpCode.RETURN,(byte)ReturnMode.One);
         }
 
         public void Consume(TokenType tokenType, string msg)
@@ -435,10 +435,11 @@ namespace ULox
             }
         }
 
-        public byte ArgumentList()
+        //TODO build commands should use this
+        public byte ExpressionList(TokenType terminatorToken, string missingTermError)
         {
             byte argCount = 0;
-            if (!Check(TokenType.CLOSE_PAREN))
+            if (!Check(terminatorToken))
             {
                 do
                 {
@@ -450,8 +451,13 @@ namespace ULox
                 } while (Match(TokenType.COMMA));
             }
 
-            Consume(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
+            Consume(terminatorToken, missingTermError);
             return argCount;
+        }
+
+        public byte ArgumentList()
+        {
+            return ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
         }
 
         protected void EmitLoop(int loopStart)
@@ -585,6 +591,13 @@ namespace ULox
             if (comp.scopeDepth == 0) return;
 
             var declName = comp.chunk.ReadConstant(AddStringConstant()).val.asString.String;
+            DeclareVariableByName(declName);
+        }
+
+        private void DeclareVariableByName(string declName)
+        {
+            var comp = CurrentCompilerState;
+            if (comp.scopeDepth == 0) return;
 
             for (int i = comp.localCount - 1; i >= 0; i--)
             {
@@ -618,6 +631,16 @@ namespace ULox
 
         public void VarDeclaration(CompilerBase compiler)
         {
+            if (Match(TokenType.OPEN_PAREN))
+                MultiVarAssignToReturns();
+            else
+                PlainVarDeclare();
+
+            Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
+        }
+
+        private void PlainVarDeclare()
+        {
             do
             {
                 var global = ParseVariable("Expect variable name");
@@ -629,8 +652,32 @@ namespace ULox
 
                 DefineVariable(global);
             } while (Match(TokenType.COMMA));
+        }
 
-            Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
+        private void MultiVarAssignToReturns()
+        {
+            var varNames = new List<string>();
+            do
+            {
+                Consume(TokenType.IDENTIFIER, "Expect identifier within multivar declaration.");
+                varNames.Add((string)PreviousToken.Literal);
+            } while (Match(TokenType.COMMA));
+
+            Consume(TokenType.CLOSE_PAREN, "Expect ')' to end a multivar declaration.");
+            Consume(TokenType.ASSIGN, "Expect '=' after multivar declaration.");
+
+            Expression();
+
+            //write varNames count to be compared against return array length
+
+            foreach (var varName in varNames)
+            {
+                //do equiv of ParseVariable, DefineVariable
+                DeclareVariableByName(varName);
+                MarkInitialised();
+                var id = AddCustomStringConstant(varName);
+                DefineVariable(id);
+            }
         }
 
         public void BlockStatement()
@@ -682,7 +729,7 @@ namespace ULox
             {
                 Expression();
                 Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
-                EmitOpCode(OpCode.RETURN);
+                EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
             }
         }
 
@@ -950,6 +997,11 @@ namespace ULox
         {
             Expression();
             Consume(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
+        }
+
+        internal void ValueStackTop(bool canAssign)
+        {
+            //no ops to add, will result in vm taking top stack value
         }
 
         public void Call(bool canAssign)

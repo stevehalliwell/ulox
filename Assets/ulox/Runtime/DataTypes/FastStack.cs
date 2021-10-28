@@ -8,8 +8,9 @@ namespace ULox
     {
         private const int StartingSize = 16;
         private const int GrowFactor = 2;
+        private const int StartingBack = -1;
         private T[] _array = new T[StartingSize];
-        private int _back = -1;
+        private int _back = StartingBack;
 
         public int Count
         {
@@ -39,6 +40,9 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DiscardPop(int amount = 1) => _back -= amount;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Reset() => _back = StartingBack;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Peek(int down = 0) => _array[_back - down];

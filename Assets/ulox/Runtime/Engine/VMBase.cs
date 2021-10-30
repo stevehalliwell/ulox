@@ -62,6 +62,7 @@ namespace ULox
         public Value GetArg(int index) => _valueStack[currentCallFrame.StackStart + index];
         public int CurrentFrameStackValues => _valueStack.Count - currentCallFrame.StackStart;
         public Value StackTop => _valueStack.Peek();
+        public int StackCount => _valueStack.Count;
 
 
         public void SetEngine(IEngine engine) => _engine = engine;
@@ -477,16 +478,27 @@ namespace ULox
             {
             case ReturnMode.One:
                 ReturnOneValue(Pop());
+
+                FinishReturnOp();
                 break;
             case ReturnMode.Begin:
+                currentCallFrame.ReturnStart = (byte)StackCount;
                 break;
             case ReturnMode.End:
+                ReturnFromMark();
+
+                FinishReturnOp();
+                break;
+            case ReturnMode.MarkMultiReturnAssignStart:
+                currentCallFrame.ReturnStart = (byte)StackCount;
+                break;
+            case ReturnMode.MarkMultiReturnAssignEnd:
+                ProcessStackForMultiAssign();
                 break;
             default:
+                throw new VMException($"Unhandled return mode '{returnMode}'.");
                 break;
             }
-
-            FinishReturnOp();
         }
 
         private void FinishReturnOp()
@@ -500,6 +512,18 @@ namespace ULox
         {
             _returnStack.Reset();
             _returnStack.Push(val);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReturnFromMark()
+        {
+            _returnStack.Reset();
+            for (int i = currentCallFrame.ReturnStart; i < StackCount; i++)
+            {
+                _returnStack.Push(_valueStack[i]);
+            }
+
+            DiscardPop(StackCount - currentCallFrame.ReturnStart);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -524,6 +548,19 @@ namespace ULox
         {
             if (_returnStack.Count == 1 && _returnStack.Peek().IsVoid)
                 return;
+
+            for (int i = 0; i < _returnStack.Count; i++)
+            {
+                Push(_returnStack[i]);
+            }
+        }
+
+        //todo the returning function can tell us how many we are about to receive we don't need to track it separately?
+        private void ProcessStackForMultiAssign()
+        {
+            _returnStack.Reset();
+            while (_valueStack.Count > currentCallFrame.ReturnStart)
+                _returnStack.Push(Pop());
 
             for (int i = 0; i < _returnStack.Count; i++)
             {
@@ -600,7 +637,7 @@ namespace ULox
 
             PushNewCallframe(new CallFrame()
             {
-                StackStart = _valueStack.Count - argCount - 1,
+                StackStart = (byte)(_valueStack.Count - argCount - 1),
                 Closure = closureInternal
             });
         }
@@ -608,11 +645,11 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void PushFrameCallNative(System.Func<VMBase, int, Value> asNativeFunc, int argCount)
         {
-            PushFrameCallNativeWithFixedStackStart(asNativeFunc, _valueStack.Count - argCount - 1);
+            PushFrameCallNativeWithFixedStackStart(asNativeFunc, (byte)(_valueStack.Count - argCount - 1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushFrameCallNativeWithFixedStackStart(System.Func<VMBase, int, Value> asNativeFunc, int stackStart)
+        protected void PushFrameCallNativeWithFixedStackStart(System.Func<VMBase, int, Value> asNativeFunc, byte stackStart)
         {
             PushNewCallframe(new CallFrame()
             {

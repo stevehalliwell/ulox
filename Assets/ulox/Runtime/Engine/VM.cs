@@ -369,7 +369,7 @@ namespace ULox
         private void InitNewInstance(ClassInternal klass, int argCount, Value inst, bool isleaf)
         {
             var stackCount = _valueStack.Count;
-            var instLocOnStack = stackCount - argCount-1;
+            var instLocOnStack = (byte)(stackCount - argCount-1);
 
             if (isleaf)
             {
@@ -409,7 +409,7 @@ namespace ULox
                     {
                         Closure = initChain.Item1,
                         InstructionPointer = initChain.Item2,
-                        StackStart = _valueStack.Count - 1, //last thing checked
+                        StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                     });
                 }
             }
@@ -531,7 +531,7 @@ namespace ULox
             PushNewCallframe(new CallFrame()
             {
                 Closure = opClosure.val.asClosure,
-                StackStart = _valueStack.Count - 3,
+                StackStart = (byte)(_valueStack.Count - 3),
             });
         }
 

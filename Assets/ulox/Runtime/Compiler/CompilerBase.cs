@@ -321,7 +321,7 @@ namespace ULox
             else
                 EmitOpCode(OpCode.NULL);
 
-            EmitOpAndBytes(OpCode.RETURN,(byte)ReturnMode.One);
+            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
         }
 
         public void Consume(TokenType tokenType, string msg)
@@ -666,12 +666,17 @@ namespace ULox
             Consume(TokenType.CLOSE_PAREN, "Expect ')' to end a multivar declaration.");
             Consume(TokenType.ASSIGN, "Expect '=' after multivar declaration.");
 
+            //mark stack start
+            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.MarkMultiReturnAssignStart);
+
             Expression();
 
-            //write varNames count to be compared against return array length
+            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.MarkMultiReturnAssignEnd);
 
-            foreach (var varName in varNames)
+            //we don't really want to reverse these, as we want things kike (a,b) = fun return (1,2,3); ends up with 1,2
+            for (int i = 0; i < varNames.Count; i++)
             {
+                var varName = varNames[i];
                 //do equiv of ParseVariable, DefineVariable
                 DeclareVariableByName(varName);
                 MarkInitialised();
@@ -714,23 +719,35 @@ namespace ULox
 
         public void ReturnStatement(CompilerBase compiler)
         {
-            //if (compilerStates.Count <= 1)
-            //    throw new CompilerException("Cannot return from a top-level statement.");
+            if (CurrentCompilerState.functionType == FunctionType.Init)
+                throw new CompilerException("Cannot return an expression from an 'init'.");
 
-            if (Match(TokenType.END_STATEMENT))
+            if (Match(TokenType.OPEN_PAREN))
+                MultiReturnBody();
+            else
+                SimpleReturnBody();
+
+            Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
+        }
+
+        private void SimpleReturnBody()
+        {
+            if (Check(TokenType.END_STATEMENT))
             {
                 EmitReturn();
-            }
-            else if (CurrentCompilerState.functionType == FunctionType.Init)
-            {
-                throw new CompilerException("Cannot return an expression from an 'init'.");
             }
             else
             {
                 Expression();
-                Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
                 EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
             }
+        }
+
+        private void MultiReturnBody()
+        {
+            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.Begin);
+            ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
+            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.End);
         }
 
         public void YieldStatement(CompilerBase compiler)

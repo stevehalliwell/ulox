@@ -5,6 +5,8 @@
         One,
         Begin,
         End,
+        MarkMultiReturnAssignStart,
+        MarkMultiReturnAssignEnd,
     }
 
     public enum OpCode : byte

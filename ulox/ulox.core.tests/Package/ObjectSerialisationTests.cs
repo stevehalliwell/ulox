@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml;
 using UnityEngine;
 
@@ -9,7 +10,9 @@ namespace ULox.Tests
     public interface IValueHeirarchyWriter
     {
         void WriteNameAndValue(HashedString name, Value v);
+
         void StartElement(HashedString name, Value v);
+
         void EndElement(HashedString name, Value v);
     }
 
@@ -39,6 +42,7 @@ namespace ULox.Tests
                 }
                 _writer.EndElement(name, v);
                 break;
+
             default:
                 _writer.WriteNameAndValue(name, v);
                 break;
@@ -63,8 +67,7 @@ namespace ULox.Tests
         public void WriteNameAndValue(HashedString name, Value v)
         {
             AppendIndent();
-            _sb.Append(name.String);
-            _sb.AppendLine(v.ToString());
+            _sb.AppendLine($"{name.String}:{v}");
         }
 
         public void StartElement(HashedString name, Value v)
@@ -126,7 +129,8 @@ class T
     var a = 1, b = 2, c = 3;
 }
 
-var obj = T();");
+var obj = T();
+obj.a = T();");
 
             var obj = testEngine.Vm.GetGlobal(new HashedString("obj"));
             var testWriter = new StringBuilderValueHeirarchyWriter();
@@ -141,7 +145,69 @@ var obj = T();");
             res = xml.GetString();
             Debug.Log(res);
         }
+
+        [Test]
+        public void StringBuilderSerialise_WhenGivenKnownObject_ShouldReturnExpectedOutput()
+        {
+            var scriptString = @"
+class T
+{
+    var a = 1, b = 2, c = 3;
+}
+
+var obj = T();
+obj.a = T();";
+
+            var expected = @"root
+  a
+    a:1
+    b:2
+    c:3
+  b:2
+  c:3";
+            var result = "error";
+
+            testEngine.Run(scriptString);
+            var obj = testEngine.Vm.GetGlobal(new HashedString("obj"));
+            var testWriter = new StringBuilderValueHeirarchyWriter();
+            var testObjWalker = new ValueHeirarchyWalker(testWriter);
+            testObjWalker.Walk(obj);
+            result = testWriter.GetString();
+
+            StringAssert.Contains(Regex.Replace(expected, @"\s+", " "), Regex.Replace(result, @"\s+", " "));
+        }
+
+        [Test]
+        public void XMLSerialise_WhenGivenKnownObject_ShouldReturnExpectedOutput()
+        {
+            var scriptString = @"
+class T
+{
+    var a = 1, b = 2, c = 3;
+}
+
+var obj = T();
+obj.a = T();";
+
+            var expected = @"<root>
+  <a>
+    <a>1</a>
+    <b>2</b>
+    <c>3</c>
+  </a>
+  <b>2</b>
+  <c>3</c>
+</root>";
+            var result = "error";
+
+            testEngine.Run(scriptString);
+            var obj = testEngine.Vm.GetGlobal(new HashedString("obj"));
+            var xml = new XmlValueHeirarchyWriter();
+            var xmlWalker = new ValueHeirarchyWalker(xml);
+            xmlWalker.Walk(obj);
+            result = xml.GetString();
+
+            StringAssert.Contains(Regex.Replace(expected, @"\s+", " "), Regex.Replace(result, @"\s+", " "));
+        }
     }
-
-
 }

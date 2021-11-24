@@ -584,7 +584,7 @@ namespace ULox
 
             if (comp.scopeDepth == 0) return;
 
-            var declName = comp.chunk.ReadConstant(AddStringConstant()).val.asString;
+            var declName = comp.chunk.ReadConstant(AddStringConstant()).val.asString.String;
 
             for (int i = comp.localCount - 1; i >= 0; i--)
             {
@@ -612,7 +612,7 @@ namespace ULox
             var global = ParseVariable("Expect function name.");
             MarkInitialised();
 
-            Function(CurrentChunk.ReadConstant(global).val.asString, FunctionType.Function);
+            Function(CurrentChunk.ReadConstant(global).val.asString.String, FunctionType.Function);
             DefineVariable(global);
         }
 

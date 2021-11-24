@@ -13,7 +13,7 @@ namespace ULox
         public bool asBool;
 
         [FieldOffset(0)]
-        public string asString;
+        public HashedString asString;
 
         [FieldOffset(0)]
         public System.Func<VMBase, int, Value> asNativeFunc;

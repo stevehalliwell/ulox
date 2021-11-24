@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace ULox
 {
@@ -8,47 +9,48 @@ namespace ULox
         public const int FirstMathOp = (int)OpCode.ADD;
         public const int LastMathOp = (int)OpCode.MODULUS;
 
-        public readonly static List<string> MathOperatorMethodNames = new List<string>()
+        public readonly static List<HashedString> MathOperatorMethodNames = new List<HashedString>()
         {
-            "_add",
-            "_sub",
-            "_mul",
-            "_div",
-            "_mod",
+            new HashedString("_add"),
+            new HashedString("_sub"),
+            new HashedString("_mul"),
+            new HashedString("_div"),
+            new HashedString("_mod"),
         };
 
         public const int FirstCompOp = (int)OpCode.EQUAL;
         public const int LastCompOp = (int)OpCode.GREATER;
 
-        public readonly static List<string> ComparisonOperatorMethodNames = new List<string>()
+        public readonly static List<HashedString> ComparisonOperatorMethodNames = new List<HashedString>()
         {
-            "_eq",
-            "_ls",
-            "_gr",
+            new HashedString("_eq"),
+            new HashedString("_ls"),
+            new HashedString("_gr"),
         };
 
-        private readonly Dictionary<string, Value> methods = new Dictionary<string, Value>();
-        private readonly Dictionary<string, ClassInternal> flavours = new Dictionary<string, ClassInternal>();
+        private readonly Table methods = new Table();
+        private readonly Table flavours = new Table();
         private readonly Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
         private readonly Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
 
         //TODO these props also need to be write protected by the freeze
-        public string Name { get; protected set; }
+        public HashedString Name { get; protected set; }
         public Value Initialiser { get; protected set; } = Value.Null();
         public ClassInternal Super { get; protected set; }
         public List<(ClosureInternal, int)> InitChains { get; protected set; } = new List<(ClosureInternal, int)>();
 
-        public ClassInternal(string name)
+        public ClassInternal(HashedString name)
         {
             Name = name;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetMethod(string name) => methods[name];
+        public Value GetMethod(HashedString name) => methods[name];
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool TryGetMethod(HashedString name, out Value method) => methods.TryGetValue(name, out method);
 
-        public bool TryGetMethod(string name, out Value method) => methods.TryGetValue(name, out method);
-
-        public void AddMethod(string key, Value method)
+        public void AddMethod(HashedString key, Value method)
         {
             CanWrite();
             methods[key] = method;
@@ -56,14 +58,14 @@ namespace ULox
             {
                 Initialiser = method;
             }
-            var opIndex = MathOperatorMethodNames.IndexOf(key);
+            var opIndex = MathOperatorMethodNames.FindIndex(x => key.Hash == x.Hash);
             if (opIndex != -1)
             {
                 mathOperators[opIndex] = method;
             }
             else
             {
-                opIndex = ComparisonOperatorMethodNames.IndexOf(key);
+                opIndex = ComparisonOperatorMethodNames.FindIndex(x => key.Hash == x.Hash);
                 if (opIndex != -1)
                 {
                     compOperators[opIndex] = method;
@@ -95,10 +97,12 @@ namespace ULox
             }
         }
 
-        public void AddMixin(ClassInternal flavour)
+        public void AddMixin(Value flavourValue)
         {
             CanWrite();
-            flavours[flavour.Name] = flavour;
+            var flavour = flavourValue.val.asClass;
+            flavours[flavour.Name] = flavourValue;
+
 
             foreach (var flavourMeth in flavour.methods)
             {
@@ -114,7 +118,7 @@ namespace ULox
             }
         }
 
-        private void MixinMethod(string key, Value value)
+        private void MixinMethod(HashedString key, Value value)
         {
             if(methods.TryGetValue(key, out var existing))
             {

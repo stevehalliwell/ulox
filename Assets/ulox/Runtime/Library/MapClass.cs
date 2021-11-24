@@ -4,18 +4,20 @@ namespace ULox
 {
     public class MapClass : ClassInternal
     {
-        private const string MapFieldName = "map";
+        private readonly static HashedString MapFieldName = new HashedString("map");
 
         private class InternalMap : Dictionary<Value, Value> { }
 
-        public MapClass() : base("Map")
+        public MapClass() : base(new HashedString("Map"))
         {
             this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
-            this.AddMethod(nameof(Count), Value.New(Count));
-            this.AddMethod(nameof(Create), Value.New(Create));
-            this.AddMethod(nameof(Read), Value.New(Read));
-            this.AddMethod(nameof(Update), Value.New(Update));
-            this.AddMethod(nameof(Delete), Value.New(Delete));
+            this.AddMethodsToClass(
+                (nameof(Count), Value.New(Count)),
+                (nameof(Create), Value.New(Create)),
+                (nameof(Read), Value.New(Read)),
+                (nameof(Update), Value.New(Update)),
+                (nameof(Delete), Value.New(Delete))
+                );
         }
 
         private Value InitInstance(VMBase vm, int argCount)

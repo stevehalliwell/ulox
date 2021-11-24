@@ -4,7 +4,7 @@ namespace ULox
 {
     public class ClassCompilette : ICompilette
     {
-        public const string InitMethodName = "init";
+        public static readonly HashedString InitMethodName = new HashedString("init");
 
         protected Dictionary<TokenType, ICompilette> innerDeclarationCompilettes = new Dictionary<TokenType, ICompilette>();
 
@@ -182,9 +182,14 @@ namespace ULox
 
         private void DoInit(CompilerBase compiler)
         {
-            byte constant = compiler.AddCustomStringConstant(InitMethodName);
-            compiler.Function(InitMethodName, FunctionType.Init);
+            byte constant = compiler.AddCustomStringConstant(InitMethodName.String);
+            CreateInitMethod(compiler);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
+        }
+
+        private void CreateInitMethod(CompilerBase compiler)
+        {
+            compiler.Function(InitMethodName.String, FunctionType.Init);
         }
 
         private void DoClassMethod(CompilerBase compiler)
@@ -192,7 +197,7 @@ namespace ULox
             compiler.Consume(TokenType.IDENTIFIER, "Expect method name.");
             byte constant = compiler.AddStringConstant();
 
-            var name = compiler.CurrentChunk.ReadConstant(constant).val.asString;
+            var name = compiler.CurrentChunk.ReadConstant(constant).val.asString.String;
             FunctionType funcType = FunctionType.Method;
             compiler.Function(name, funcType);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
@@ -217,7 +222,7 @@ namespace ULox
 
             var name = compiler.CurrentChunk.ReadConstant(constant).val.asString;
 
-            compiler.Function(name, FunctionType.Function);
+            compiler.Function(name.String, FunctionType.Function);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
         }
 
@@ -228,7 +233,7 @@ namespace ULox
                 compiler.Consume(TokenType.IDENTIFIER, "Expect var name.");
                 byte nameConstant = compiler.AddStringConstant();
 
-                classVarNames.Add(compiler.CurrentChunk.ReadConstant(nameConstant).val.asString);
+                classVarNames.Add(compiler.CurrentChunk.ReadConstant(nameConstant).val.asString.String);
 
                 var compState = compiler.CurrentCompilerState;
 

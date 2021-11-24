@@ -5,14 +5,11 @@
         public string Name => nameof(FreezeLibrary);
 
         public Table GetBindings()
-        {
-            var resTable = new Table();
-
-            resTable.Add(nameof(IsFrozen), Value.New(IsFrozen));
-            resTable.Add(nameof(Unfreeze), Value.New(Unfreeze));
-
-            return resTable;
-        }
+            => this.GenerateBindingTable(
+                (nameof(IsFrozen), Value.New(IsFrozen)),
+                (nameof(Unfreeze), Value.New(Unfreeze))
+                );
+       
 
         public Value IsFrozen(VMBase vm, int argCount)
         {

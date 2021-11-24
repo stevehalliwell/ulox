@@ -8,11 +8,13 @@
         {
             var resTable = new Table();
             var diLibInst = new InstanceInternal();
-            resTable.Add("DI", Value.New(diLibInst));
+            resTable.Add(new HashedString("DI"), Value.New(diLibInst));
 
-            diLibInst.SetField(nameof(Count), Value.New(Count));
-            diLibInst.SetField(nameof(GenerateDump), Value.New(GenerateDump));
-            diLibInst.SetField(nameof(Freeze), Value.New(Freeze));
+            diLibInst.AddFieldsToInstance(
+                (nameof(Count), Value.New(Count)),
+                (nameof(GenerateDump), Value.New(GenerateDump)),
+                (nameof(Freeze), Value.New(Freeze))
+                );
             diLibInst.Freeze();
 
             return resTable;

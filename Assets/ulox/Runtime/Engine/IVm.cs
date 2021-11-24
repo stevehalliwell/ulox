@@ -6,13 +6,13 @@
 
         string GenerateGlobalsDump();
         string GenerateStackDump();
-        Value GetGlobal(string name);
+        Value GetGlobal(HashedString name);
         InterpreterResult Interpret(Chunk chunk);
         InterpreterResult PushCallFrameAndRun(Value func, int args);
         InterpreterResult Run(IProgram program);
-        void SetGlobal(string name, Value val);
+        void SetGlobal(HashedString name, Value val);
         void SetEngine(IEngine engine);
         void CopyFrom(IVm otherVM);
-        Value FindFunctionWithArity(string name, int arity);
+        Value FindFunctionWithArity(HashedString name, int arity);
     }
 }

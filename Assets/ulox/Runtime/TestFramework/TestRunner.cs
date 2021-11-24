@@ -38,10 +38,10 @@ namespace ULox
         public bool Enabled { get; set; } = true;
         public bool AllPassed => !tests.Any(x => !x.Value);
         public int TestsFound => tests.Count;
-        public string CurrentTestSetName { get; set; } = string.Empty;
+        public HashedString CurrentTestSetName { get; set; } = new HashedString(string.Empty);
         public Func<VMBase> CreateVM { get; private set; }
 
-        public void StartTest(string name)
+        public void StartTest(HashedString name)
         {
             var id = $"{CurrentTestSetName}:{name}";
             if (tests.ContainsKey(id))
@@ -50,7 +50,7 @@ namespace ULox
             tests[id] = false;
         }
 
-        public void EndTest(string name) => tests[$"{CurrentTestSetName}:{name}"] = true;
+        public void EndTest(HashedString name) => tests[$"{CurrentTestSetName}:{name}"] = true;
 
         public string GenerateDump()
         {
@@ -85,7 +85,7 @@ namespace ULox
                     break;
 
                 case TestOpType.TestSetEnd:
-                CurrentTestSetName = string.Empty;
+                CurrentTestSetName = new HashedString(string.Empty);
                 vm.ReadByte(chunk);//byte we don't use
                 vm.ReadByte(chunk);//byte we don't use
                 break;

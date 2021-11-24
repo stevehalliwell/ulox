@@ -2,16 +2,11 @@
 
 namespace ULox
 {
-    public class Table : Dictionary<string, Value>
+    public class Table : Dictionary<HashedString, Value>
     {
-        public Table()
+        public readonly static HashedStringComparer TableKeyComparer = new HashedStringComparer();
+        public Table():base(TableKeyComparer)
         {
         }
-
-        public Table(IDictionary<string, Value> dictionary) : base(dictionary)
-        {
-        }
-
-        public static Table Empty() => new Table();
     }
 }

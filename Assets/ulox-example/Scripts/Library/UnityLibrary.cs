@@ -20,26 +20,22 @@ namespace ULox
         }
 
         public Table GetBindings()
-        {
-            var resTable = new Table();
-
-            resTable.Add(nameof(SetSpriteColour), Value.New(SetSpriteColour));
-            resTable.Add(nameof(SetCollisionCallback), Value.New(SetCollisionCallback));
-            resTable.Add(nameof(SetGameObjectTag), Value.New(SetGameObjectTag));
-            resTable.Add(nameof(GetGameObjectTag), Value.New(GetGameObjectTag));
-            resTable.Add(nameof(SetGameObjectPosition), Value.New(SetGameObjectPosition));
-            resTable.Add(nameof(SetGameObjectScale), Value.New(SetGameObjectScale));
-            resTable.Add(nameof(ReloadScene), Value.New(ReloadScene));
-            resTable.Add(nameof(SetUIText), Value.New(SetUIText));
-            resTable.Add(nameof(CreateFromPrefab), Value.New(CreateFromPrefab));
-            resTable.Add(nameof(RandRange), Value.New(RandRange));
-            resTable.Add(nameof(GetKey), Value.New(GetKey));
-            resTable.Add(nameof(DestroyUnityObject), Value.New(DestroyUnityObject));
-            resTable.Add(nameof(GetRigidBody2DFromGameObject), Value.New(GetRigidBody2DFromGameObject));
-            resTable.Add(nameof(SetRigidBody2DVelocity), Value.New(SetRigidBody2DVelocity));
-
-            return resTable;
-        }
+            => this.GenerateBindingTable(
+                (nameof(SetSpriteColour), Value.New(SetSpriteColour)),
+                (nameof(SetCollisionCallback), Value.New(SetCollisionCallback)),
+                (nameof(SetGameObjectTag), Value.New(SetGameObjectTag)),
+                (nameof(GetGameObjectTag), Value.New(GetGameObjectTag)),
+                (nameof(SetGameObjectPosition), Value.New(SetGameObjectPosition)),
+                (nameof(SetGameObjectScale), Value.New(SetGameObjectScale)),
+                (nameof(ReloadScene), Value.New(ReloadScene)),
+                (nameof(SetUIText), Value.New(SetUIText)),
+                (nameof(CreateFromPrefab), Value.New(CreateFromPrefab)),
+                (nameof(RandRange), Value.New(RandRange)),
+                (nameof(GetKey), Value.New(GetKey)),
+                (nameof(DestroyUnityObject), Value.New(DestroyUnityObject)),
+                (nameof(GetRigidBody2DFromGameObject), Value.New(GetRigidBody2DFromGameObject)),
+                (nameof(SetRigidBody2DVelocity), Value.New(SetRigidBody2DVelocity))
+            );
 
         private Value RandRange(VMBase vm, int argCount)
         {
@@ -51,7 +47,7 @@ namespace ULox
         private Value GetKey(VMBase vm, int argCount)
         {
             var keyName = vm.GetArg(1).val.asString;
-            return Value.New(Input.GetKey(keyName));
+            return Value.New(Input.GetKey(keyName.String));
         }
 
         private Value DestroyUnityObject(VMBase vm, int argCount)
@@ -81,7 +77,7 @@ namespace ULox
 
         private Value SetUIText(VMBase vm, int argCount)
         {
-            _outputText?.Invoke(vm.GetArg(1).val.asString);
+            _outputText?.Invoke(vm.GetArg(1).val.asString.String);
             return Value.Null();
         }
 
@@ -104,14 +100,14 @@ namespace ULox
             var closure = vm.GetArg(3);
             //TODO: too easy to copy or mistype the index, make it a stack
 
-            go.GetOrAddComponent<ULoxCollisionFilter>().AddHandler(tagHit, () => vm.PushCallFrameAndRun(closure, 0));
+            go.GetOrAddComponent<ULoxCollisionFilter>().AddHandler(tagHit.String, () => vm.PushCallFrameAndRun(closure, 0));
             return Value.Null();
         }
 
         private Value SetGameObjectTag(VMBase vm, int argCount)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
-            var tag = vm.GetArg(2).val.asString;
+            var tag = vm.GetArg(2).val.asString.String;
             go.tag = tag;
             return Value.Null();
         }
@@ -150,7 +146,7 @@ namespace ULox
 
         private Value CreateFromPrefab(VMBase vm, int argCount)
         {
-            var targetName = vm.GetArg(1).val.asString;
+            var targetName = vm.GetArg(1).val.asString.String;
             var loc = _availablePrefabs.Find(x => x.name == targetName);
             if (loc != null)
                 return Value.Object(Object.Instantiate(loc));

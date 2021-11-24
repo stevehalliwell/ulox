@@ -28,7 +28,7 @@ namespace ULox
                     return val.asBool.ToString();
 
                 case ValueType.String:
-                    return val.asString ?? "null";
+                    return val.asString.String ?? "null";
 
                 case ValueType.Chunk:
                     var chunk = val.asChunk;
@@ -69,7 +69,9 @@ namespace ULox
             {
             case ValueType.Instance:
                 var inst = copyFrom.val.asInstance;
-                return Value.New(new InstanceInternal(inst.FromClass, new Table(inst.Fields), inst.IsFrozen));
+                var newInst = new InstanceInternal();
+                newInst.CopyFrom(inst);
+                return Value.New(newInst);
                 break;
             case ValueType.Null:
             case ValueType.Double:
@@ -98,7 +100,9 @@ namespace ULox
 
         public static Value New(bool val) => New(ValueType.Bool, new ValueTypeDataUnion() { asBool = val });
 
-        public static Value New(string val) => New(ValueType.String, new ValueTypeDataUnion() { asString = val });
+        public static Value New(HashedString val) => New(ValueType.String, new ValueTypeDataUnion() { asString = val });
+
+        public static Value New(string val) => New(new HashedString(val));
 
         public static Value New(Chunk val) => New(ValueType.Chunk, new ValueTypeDataUnion() { asObject = val });
 
@@ -191,7 +195,7 @@ namespace ULox
             case ValueType.Bool:
                 return val.asBool.GetHashCode();
             case ValueType.String:
-                return val.asString.GetHashCode();
+                return val.asString.Hash;
             case ValueType.Null:
             case ValueType.Chunk:
             case ValueType.NativeFunction:

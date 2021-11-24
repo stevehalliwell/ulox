@@ -5,12 +5,10 @@
         public string Name => nameof(StandardClassesLibrary);
 
         public Table GetBindings()
-        {
-            var resTable = new Table();
-            resTable.Add("List", Value.New(new ListClass()));
-            resTable.Add("Map", Value.New(new MapClass()));
-            resTable.Add("Dynamic", Value.New(new DynamicClass()));
-            return resTable;
-        }
+            => this.GenerateBindingTable(
+                ("List", Value.New(new ListClass())),
+                ("Map", Value.New(new MapClass())),
+                ("Dynamic", Value.New(new DynamicClass()))
+                );
     }
 }

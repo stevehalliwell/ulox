@@ -2,12 +2,14 @@
 {
     public class DynamicClass : ClassInternal
     {
-        public const string Name = "Dynamic";
+        public static readonly HashedString Name = new HashedString("Dynamic");
 
         public DynamicClass() : base(Name)
         {
-            this.AddMethod(nameof(HasField), Value.New(HasField));
-            this.AddMethod(nameof(RemoveField), Value.New(RemoveField));
+            this.AddMethodsToClass(
+                (nameof(HasField), Value.New(HasField)),
+                (nameof(RemoveField), Value.New(RemoveField))
+                );
         }
 
         private Value HasField(VMBase vm, int argCount)

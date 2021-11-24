@@ -152,7 +152,7 @@ namespace ULox.Tests
                     return Value.Null();
                 }
 
-                VM.SetGlobal("print", Value.New(Print));
+                VM.SetGlobal(new HashedString("print"), Value.New(Print));
             }
 
             protected void AppendResult(string str) => InterpreterResult += str;

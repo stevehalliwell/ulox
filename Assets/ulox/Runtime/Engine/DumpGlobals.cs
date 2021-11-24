@@ -7,7 +7,7 @@ namespace ULox
     {
         private readonly StringBuilder sb = new StringBuilder();
 
-        public string Generate(IEnumerable<KeyValuePair<string, Value>> globals)
+        public string Generate(Table globals)
         {
             foreach (var item in globals)
             {

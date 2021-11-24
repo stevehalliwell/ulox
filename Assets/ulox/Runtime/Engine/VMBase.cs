@@ -150,6 +150,7 @@ namespace ULox
 
         public InterpreterResult Interpret(Chunk chunk, int ip)
         {
+            //TODO why push this empty string?
             Push(Value.New(""));
             Push(Value.New(new ClosureInternal() { chunk = chunk }));
             PushCallFrameFromValue(Peek(), 0);

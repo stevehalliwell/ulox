@@ -102,7 +102,6 @@ namespace ULox
 
         public static Value New(HashedString val) => New(ValueType.String, new ValueTypeDataUnion() { asString = val });
 
-        // todo minimise use
         public static Value New(string val) => New(new HashedString(val));
 
         public static Value New(Chunk val) => New(ValueType.Chunk, new ValueTypeDataUnion() { asObject = val });

@@ -40,7 +40,7 @@ namespace ULox
             return resTable;
         }
 
-        private static Value AreApproxEqual(VMBase vm, int argCount)
+        private static NativeCallResult AreApproxEqual(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -58,86 +58,95 @@ namespace ULox
                     $"Expect diff of squres to be less than '{SquareDividedTolerance}' " +
                     $"but '{squareDif}' and '{largerSquare}' are greater '{difsqOverLargersq}'.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value AreEqual(VMBase vm, int argCount)
+        private static NativeCallResult AreEqual(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (!lhs.Compare(ref lhs, ref rhs))
                 throw new AssertException($"'{lhs}' does not equal '{rhs}'.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value AreNotEqual(VMBase vm, int argCount)
+        private static NativeCallResult AreNotEqual(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (lhs.Compare(ref lhs, ref rhs))
                 throw new AssertException($"'{lhs}' does not NOT equal '{rhs}'.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value IsTrue(VMBase vm, int argCount)
+        private static NativeCallResult IsTrue(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             if (lhs.IsFalsey)
                 throw new AssertException($"'{lhs}' is not truthy.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value IsFalse(VMBase vm, int argCount)
+        private static NativeCallResult IsFalse(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             if (!lhs.IsFalsey)
                 throw new AssertException($"'{lhs}' is not falsy.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value IsNull(VMBase vm, int argCount)
+        private static NativeCallResult IsNull(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             if (!lhs.IsNull)
                 throw new AssertException($"'{lhs}' is not null.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value IsNotNull(VMBase vm, int argCount)
+        private static NativeCallResult IsNotNull(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             if (lhs.IsNull)
                 throw new AssertException($"'{lhs}' is null.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value DoesContain(VMBase vm, int argCount)
+        private static NativeCallResult DoesContain(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (!rhs.val.asString.String.Contains(lhs.val.asString.String))
                 throw new AssertException($"'{rhs}' did not contain '{lhs}'.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value DoesNotContain(VMBase vm, int argCount)
+        private static NativeCallResult DoesNotContain(VMBase vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (rhs.val.asString.String.Contains(lhs.val.asString.String))
                 throw new AssertException($"'{rhs}' did contain '{lhs}', should not have.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private Value Throws(VMBase vm, int argCount)
+        private NativeCallResult Throws(VMBase vm, int argCount)
         {
             var toRun = vm.GetArg(1).val.asClosure.chunk;
             if (toRun == null)
@@ -156,19 +165,22 @@ namespace ULox
             if (!didThrow)
                 throw new AssertException($"'{toRun.Name}' did not throw, but should have.");
 
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value Pass(VMBase vm, int argCount)
+        private static NativeCallResult Pass(VMBase vm, int argCount)
         {
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
-        private static Value Fail(VMBase vm, int argCount)
+        private static NativeCallResult Fail(VMBase vm, int argCount)
         {
             var msg = vm.GetArg(1);
             throw new AssertException($"Fail. '{msg}'");
-            return Value.Null();
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
     }
 }

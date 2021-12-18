@@ -10,8 +10,16 @@
                 (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump))
                 );
 
-        public Value GenerateStackDump(VMBase vm, int argCount) => Value.New(vm.GenerateStackDump());
+        public NativeCallResult GenerateStackDump(VMBase vm, int argCount)
+        {
+            vm.PushReturn(Value.New(vm.GenerateStackDump()));
+            return NativeCallResult.Success;
+        }
 
-        public Value GenerateGlobalsDump(VMBase vm, int argCount) => Value.New(vm.GenerateGlobalsDump());
+        public NativeCallResult GenerateGlobalsDump(VMBase vm, int argCount)
+        {
+            vm.PushReturn(Value.New(vm.GenerateGlobalsDump()));
+            return NativeCallResult.Success;
+        }
     }
 }

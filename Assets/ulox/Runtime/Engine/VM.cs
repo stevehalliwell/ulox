@@ -422,7 +422,7 @@ namespace ULox
             }
         }
 
-        private Value CopyMatchingParamsToFields(VMBase vm, int argCount)
+        private NativeCallResult CopyMatchingParamsToFields(VMBase vm, int argCount)
         {
             var instVal = vm.GetArg(0);
 
@@ -447,15 +447,17 @@ namespace ULox
                 }
             }
 
-            return Value.Void();
+            vm.PushReturn(Value.Void());
+            return NativeCallResult.Success;
         }
-        
-        private Value ClassFinishCreation(VMBase vm, int argCount)
+
+        private NativeCallResult ClassFinishCreation(VMBase vm, int argCount)
         {
             var instVal = vm.GetArg(0);
             var inst = instVal.val.asInstance;
             inst.FromClass.FinishCreation(inst);
-            return instVal;
+            vm.PushReturn(instVal);
+            return NativeCallResult.Success;
         }
 
        [MethodImpl(MethodImplOptions.AggressiveInlining)]

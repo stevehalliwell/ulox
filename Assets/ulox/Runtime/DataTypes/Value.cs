@@ -108,7 +108,7 @@ namespace ULox
 
         public static Value New(Chunk val) => New(ValueType.Chunk, new ValueTypeDataUnion() { asObject = val });
 
-        public static Value New(System.Func<VMBase, int, Value> val)
+        public static Value New(NativeCallDelegate val)
             => New(ValueType.NativeFunction, new ValueTypeDataUnion() { asNativeFunc = val });
 
         public static Value New(ClosureInternal val)

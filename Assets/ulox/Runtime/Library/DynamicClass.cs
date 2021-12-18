@@ -12,7 +12,7 @@
                 );
         }
 
-        private Value HasField(VMBase vm, int argCount)
+        private NativeCallResult HasField(VMBase vm, int argCount)
         {
             var obj = vm.GetArg(1);
             var fieldName = vm.GetArg(2);
@@ -22,10 +22,11 @@
             var inst = obj.val.asInstance;
             var b = inst.HasField(fieldName.val.asString);
 
-            return Value.New(b);
+            vm.PushReturn(Value.New(b));
+            return NativeCallResult.Success;
         }
 
-        private Value RemoveField(VMBase vm, int argCount)
+        private NativeCallResult RemoveField(VMBase vm, int argCount)
         {
             var obj = vm.GetArg(1);
             var fieldName = vm.GetArg(2);
@@ -34,10 +35,10 @@
 
             var inst = obj.val.asInstance;
             var fieldNameStr = fieldName.val.asString;
-            var currentValue = inst.GetField(fieldNameStr);
             inst.RemoveField(fieldNameStr);
 
-            return currentValue;
+            vm.PushReturn(Value.Null());
+            return NativeCallResult.Success;
         }
 
         public override void FinishCreation(InstanceInternal inst)

@@ -453,7 +453,11 @@ MyFunc();");
         [Test]
         public void Engine_Compile_NativeFunc_Call()
         {
-            testEngine.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) => Value.New("Native")));
+            testEngine.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) => 
+            { 
+                vm.PushReturn(Value.New("Native")); 
+                return NativeCallResult.Success; 
+            }));
 
             testEngine.Run(@"print (CallEmptyNative());");
 
@@ -763,9 +767,10 @@ print(res);
         [Test]
         public void Engine_NativeFunc_Call_0Param_String()
         {
-            Value Func(VMBase vm, int args)
+            NativeCallResult Func(VMBase vm, int args)
             {
-                return Value.New("Hello from native.");
+                vm.PushReturn(Value.New("Hello from native."));
+                return NativeCallResult.Success;
             }
 
             testEngine.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
@@ -778,9 +783,10 @@ print(res);
         [Test]
         public void Engine_NativeFunc_Call_1Param_String()
         {
-            Value Func(VMBase vm, int args)
+            NativeCallResult Func(VMBase vm, int args)
             {
-                return Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native.");
+                vm.PushReturn(Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native."));
+                return NativeCallResult.Success;
             }
 
             testEngine.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
@@ -1437,7 +1443,8 @@ Assert.AreNotEqual(1,2);");
                 var libName = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.Context.BindLibrary(libName);
 
-                return Value.Null();
+                vm.PushReturn(Value.Null());
+                return NativeCallResult.Success;
             }));
 
             testEngine.Run(@"
@@ -1457,7 +1464,8 @@ Assert.AreNotEqual(1,2);");
                 var libName = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.Context.BindLibrary(libName);
 
-                return Value.Null();
+                vm.PushReturn(Value.Null());
+                return NativeCallResult.Success;
             }));
 
             testEngine.Engine.ScriptLocator.Add("assertbody", "Assert.AreNotEqual(1, 2); print(1);");
@@ -1466,7 +1474,8 @@ Assert.AreNotEqual(1,2);");
                 var name = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.LocateAndQueue(name);
 
-                return Value.Null();
+                vm.PushReturn(Value.Null());
+                return NativeCallResult.Success;
             }));
 
             testEngine.Run(@"

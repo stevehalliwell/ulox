@@ -73,6 +73,14 @@ namespace ULox
             return Run();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushReturn(Value val)
+        {
+            if(currentCallFrame.ReturnStart == 0)
+                currentCallFrame.ReturnStart = (byte)StackCount;
+
+            _valueStack.Push(val);
+        }
         protected virtual bool ExtendedOp(OpCode opCode, Chunk chunk) => false;
 
         protected virtual bool ExtendedCall(Value callee, int argCount) => false;
@@ -386,17 +394,25 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoNativeCall(OpCode opCode)
         {
-            if (currentCallFrame.nativeFunc != null)
-            {
-                var argCount = CurrentFrameStackValues;
-                var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
-
-                ReturnOneValue(res);
-                FinishReturnOp();
-            }
-            else
-            {
+            if (currentCallFrame.nativeFunc == null)
                 throw new VMException($"{opCode} without nativeFunc encountered. This is not allowed.");
+
+            var argCount = CurrentFrameStackValues;
+
+            _returnStack.Reset();
+
+            var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
+
+            if (res == NativeCallResult.Success)
+            {
+                if (currentCallFrame.ReturnStart != 0)
+                {
+                    ReturnFromMark();
+                }
+                else
+                {
+                    ReturnOneValue(Value.Void());
+                }
             }
         }
 
@@ -477,17 +493,14 @@ namespace ULox
             switch (returnMode)
             {
             case ReturnMode.One:
-                ReturnOneValue(Pop());
-
-                FinishReturnOp();
+                var top = Pop();
+                ReturnOneValue(top);
                 break;
             case ReturnMode.Begin:
                 currentCallFrame.ReturnStart = (byte)StackCount;
                 break;
             case ReturnMode.End:
                 ReturnFromMark();
-
-                FinishReturnOp();
                 break;
             case ReturnMode.MarkMultiReturnAssignStart:
                 currentCallFrame.ReturnStart = (byte)StackCount;
@@ -501,17 +514,19 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReturnOneValue(Value top)
+        {
+            _returnStack.Reset();
+            _returnStack.Push(top);
+            FinishReturnOp();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void FinishReturnOp()
         {
             CloseUpvalues(currentCallFrame.StackStart);
             ReturnAndPopFrame();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReturnOneValue(Value val)
-        {
-            _returnStack.Reset();
-            _returnStack.Push(val);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -524,6 +539,8 @@ namespace ULox
             }
 
             DiscardPop(StackCount - currentCallFrame.ReturnStart);
+
+            FinishReturnOp();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -643,19 +660,19 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushFrameCallNative(System.Func<VMBase, int, Value> asNativeFunc, int argCount)
+        protected void PushFrameCallNative(NativeCallDelegate nativeCallDel, int argCount)
         {
-            PushFrameCallNativeWithFixedStackStart(asNativeFunc, (byte)(_valueStack.Count - argCount - 1));
+            PushFrameCallNativeWithFixedStackStart(nativeCallDel, (byte)(_valueStack.Count - argCount - 1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushFrameCallNativeWithFixedStackStart(System.Func<VMBase, int, Value> asNativeFunc, byte stackStart)
+        protected void PushFrameCallNativeWithFixedStackStart(NativeCallDelegate nativeCallDel, byte stackStart)
         {
             PushNewCallframe(new CallFrame()
             {
                 StackStart = stackStart,
                 Closure = NativeCallClosure,
-                nativeFunc = asNativeFunc,
+                nativeFunc = nativeCallDel,
                 InstructionPointer = 0
             });
         }

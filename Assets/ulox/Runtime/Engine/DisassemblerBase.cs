@@ -44,6 +44,7 @@ namespace ULox
             opCodeHandlers[(int)OpCode.CALL] = AppendByte;
             opCodeHandlers[(int)OpCode.PUSH_BOOL] = AppendByte;
             opCodeHandlers[(int)OpCode.PUSH_BYTE] = AppendByte;
+            opCodeHandlers[(int)OpCode.VALIDATE] = AppendByte;
 
             opCodeHandlers[(int)OpCode.CONSTANT] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.DEFINE_GLOBAL] = AppendStringConstant;

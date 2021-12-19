@@ -139,6 +139,20 @@ print(res2);");
             Assert.AreEqual("12", testEngine.InterpreterResult);
         }
 
+        [Test]
+        public void Run_WhenReturn2AndTake2WithParams_ShouldMatchExpected()
+        {
+            testEngine.Run(@"
+fun A(a,b){return (a+1,b+2);}
+
+var (res1,res2) = A(1,2);
+
+print(res1);
+print(res2);");
+
+            Assert.AreEqual("24", testEngine.InterpreterResult);
+        }
+
         //cannot work as it things there are 2 return values but it doesn't know that
         [Test]
         public void Run_WhenReturn2OfTheReturnOf2AndTake2_ShouldMatchExpected()
@@ -158,6 +172,26 @@ print(d);");
             Assert.AreEqual("1212", testEngine.InterpreterResult);
         }
 
+        //cannot work as it things there are 2 return values but it doesn't know that
+        [Test]
+        public void Run_WhenReturn2UniqueOfTheReturnOf2AndTake2_ShouldMatchExpected()
+        {
+            testEngine.Run(@"
+fun Outter(){return (1,2);}
+fun Outter2(){return (3,4);}
+
+fun A2(){return (Outter(),Outter2());}
+
+var (a,b,c,d) = A2();
+
+print(a);
+print(b);
+print(c);
+print(d);");
+
+            Assert.AreEqual("1234", testEngine.InterpreterResult);
+        }
+
         [Test]
         public void Run_WhenReturn2Take1_ShouldError()
         {
@@ -168,7 +202,7 @@ var (res1) = A(); //2 is left on stack
 
 print (res1);");
 
-            Assert.AreEqual("error", testEngine.InterpreterResult);
+            Assert.AreEqual("Multi var assign to result mismatch. Taking '1' but results contains '2'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -183,7 +217,7 @@ print (res1);
 print (res2);
 print (res3);");
 
-            Assert.AreEqual("error", testEngine.InterpreterResult);
+            Assert.AreEqual("Multi var assign to result mismatch. Taking '3' but results contains '2'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -204,7 +238,7 @@ print(e);");
         }
 
         [Test]
-        public void Run_WhenReturnEmptyMultiReturn_ShouldError()
+        public void Run_WhenReturnEmptyMultiReturn_ShouldReturnNull()
         {
             testEngine.Run(@"
 fun A(){return ();}
@@ -213,20 +247,47 @@ var res1 = A();
 
 print(res1);");
 
-            Assert.AreEqual("error", testEngine.InterpreterResult);
+            Assert.AreEqual("null", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Run_WhenReturnNoneTake1_ShouldError()
+        public void Run_WhenReturnOneMultiReturn_ShouldReturnOne()
         {
             testEngine.Run(@"
-fun A(){return;}
+fun A(){return (1);}
 
 var res1 = A();
 
 print(res1);");
 
-            Assert.AreEqual("error", testEngine.InterpreterResult);
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Run_WhenReturnEmptyMultiAndAssign_ShouldNull()
+        {
+            testEngine.Run(@"
+fun A(){return();}
+
+var res1 = A();
+
+print(res1);");
+
+            Assert.AreEqual("null", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Run_WhenReturnNoneTake2_ShouldError()
+        {
+            testEngine.Run(@"
+fun A(){return;}
+
+var (res1,res2) = A();
+
+print(res1);
+print(res2);");
+
+            Assert.AreEqual("Multi var assign to result mismatch. Taking '2' but results contains '1'.", testEngine.InterpreterResult);
         }
 
         [Test]

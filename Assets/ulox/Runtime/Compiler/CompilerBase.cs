@@ -673,6 +673,9 @@ namespace ULox
 
             EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.MarkMultiReturnAssignEnd);
 
+            EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)varNames.Count);
+            EmitOpAndBytes(OpCode.VALIDATE, (byte)ValidateOp.MultiReturnMatches);
+
             //we don't really want to reverse these, as we want things kike (a,b) = fun return (1,2,3); ends up with 1,2
             for (int i = 0; i < varNames.Count; i++)
             {
@@ -746,7 +749,9 @@ namespace ULox
         private void MultiReturnBody()
         {
             EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.Begin);
-            ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
+            var returnCount = ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
+            if (returnCount == 0)
+                EmitOpCode(OpCode.NULL);
             EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.End);
         }
 

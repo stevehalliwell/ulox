@@ -367,11 +367,33 @@ namespace ULox
                         DoNativeCall(opCode);
                     break;
 
+                case OpCode.VALIDATE:
+                    DoValidateOp(chunk);
+                    break;
+
                 default:
                     if (!ExtendedOp(opCode, chunk))
                         throw new VMException($"Unhandled OpCode '{opCode}'.");
                     break;
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoValidateOp(Chunk chunk)
+        {
+            var validateOp = (ValidateOp)ReadByte(chunk);
+            switch (validateOp)
+            {
+            case ValidateOp.MultiReturnMatches:
+                var requestedResultsValue = Pop();
+                var requestedResults = (int)requestedResultsValue.val.asDouble;
+                var availableResults = _returnStack.Count;
+                if (requestedResults != availableResults)
+                    throw new VMException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'.");
+                break;
+            default:
+                break;
             }
         }
 

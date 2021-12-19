@@ -9,6 +9,11 @@
         MarkMultiReturnAssignEnd,
     }
 
+    public enum ValidateOp : byte
+    {
+        MultiReturnMatches
+    }
+
     public enum OpCode : byte
     {
         NONE,
@@ -55,6 +60,8 @@
         YIELD,
 
         THROW,
+
+        VALIDATE,
 
         CLASS,
         GET_PROPERTY,

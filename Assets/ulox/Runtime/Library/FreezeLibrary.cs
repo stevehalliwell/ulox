@@ -18,10 +18,8 @@
                 vm.PushReturn(Value.New(target.val.asInstance.IsFrozen));
             else if(target.type == ValueType.Class)
                 vm.PushReturn(Value.New(target.val.asClass.IsFrozen));
-            else
-                vm.PushReturn(Value.Null());
 
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         public NativeCallResult Unfreeze(VMBase vm, int argCount)
@@ -32,8 +30,7 @@
             if (target.type == ValueType.Class)
                 target.val.asClass.Unfreeze();
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
     }
 }

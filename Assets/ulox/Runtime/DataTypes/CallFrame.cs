@@ -2,7 +2,8 @@
 {
     public enum NativeCallResult
     {
-        Success,
+        SuccessfulExpression,
+        SuccessfulStatement,
         Failure
     }
 

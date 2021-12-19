@@ -24,14 +24,14 @@
         {
             var di = FromVm(vm);
             vm.PushReturn(Value.New(di.Count));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private NativeCallResult GenerateDump(VMBase vm, int argCount)
         {
             var di = FromVm(vm);
             vm.PushReturn(Value.New(di.GenerateDump()));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         //TODO rename this is confusing now that objects can freeze
@@ -39,8 +39,7 @@
         {
             var di = FromVm(vm);
             di.Freeze();
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private DiContainer FromVm(VMBase vMBase)

@@ -12,8 +12,6 @@ namespace ULox
 
         public bool IsNull => type == ValueType.Null;
 
-        public bool IsVoid => type == ValueType.Void;
-
         public string str() => ToString();
 
         public override string ToString()
@@ -127,8 +125,6 @@ namespace ULox
         public static Value New(BoundMethod val) => New(ValueType.BoundMethod, new ValueTypeDataUnion() { asObject = val });
 
         public static Value Null() => new Value() { type = ValueType.Null };
-
-        public static Value Void() => new Value() { type = ValueType.Void };
 
         public static Value Object(object obj) => New(ValueType.Object, new ValueTypeDataUnion() { asObject = obj });
 

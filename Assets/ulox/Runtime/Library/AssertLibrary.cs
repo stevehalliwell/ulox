@@ -58,8 +58,7 @@ namespace ULox
                     $"Expect diff of squres to be less than '{SquareDividedTolerance}' " +
                     $"but '{squareDif}' and '{largerSquare}' are greater '{difsqOverLargersq}'.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult AreEqual(VMBase vm, int argCount)
@@ -69,8 +68,7 @@ namespace ULox
             if (!lhs.Compare(ref lhs, ref rhs))
                 throw new AssertException($"'{lhs}' does not equal '{rhs}'.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult AreNotEqual(VMBase vm, int argCount)
@@ -80,8 +78,7 @@ namespace ULox
             if (lhs.Compare(ref lhs, ref rhs))
                 throw new AssertException($"'{lhs}' does not NOT equal '{rhs}'.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult IsTrue(VMBase vm, int argCount)
@@ -90,8 +87,7 @@ namespace ULox
             if (lhs.IsFalsey)
                 throw new AssertException($"'{lhs}' is not truthy.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult IsFalse(VMBase vm, int argCount)
@@ -100,8 +96,7 @@ namespace ULox
             if (!lhs.IsFalsey)
                 throw new AssertException($"'{lhs}' is not falsy.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult IsNull(VMBase vm, int argCount)
@@ -110,8 +105,7 @@ namespace ULox
             if (!lhs.IsNull)
                 throw new AssertException($"'{lhs}' is not null.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult IsNotNull(VMBase vm, int argCount)
@@ -120,8 +114,7 @@ namespace ULox
             if (lhs.IsNull)
                 throw new AssertException($"'{lhs}' is null.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult DoesContain(VMBase vm, int argCount)
@@ -131,8 +124,7 @@ namespace ULox
             if (!rhs.val.asString.String.Contains(lhs.val.asString.String))
                 throw new AssertException($"'{rhs}' did not contain '{lhs}'.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult DoesNotContain(VMBase vm, int argCount)
@@ -142,8 +134,7 @@ namespace ULox
             if (rhs.val.asString.String.Contains(lhs.val.asString.String))
                 throw new AssertException($"'{rhs}' did contain '{lhs}', should not have.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private NativeCallResult Throws(VMBase vm, int argCount)
@@ -165,22 +156,19 @@ namespace ULox
             if (!didThrow)
                 throw new AssertException($"'{toRun.Name}' did not throw, but should have.");
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult Pass(VMBase vm, int argCount)
         {
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult Fail(VMBase vm, int argCount)
         {
             var msg = vm.GetArg(1);
             throw new AssertException($"Fail. '{msg}'");
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
     }
 }

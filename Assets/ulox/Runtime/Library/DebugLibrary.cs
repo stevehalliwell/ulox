@@ -13,13 +13,13 @@
         public NativeCallResult GenerateStackDump(VMBase vm, int argCount)
         {
             vm.PushReturn(Value.New(vm.GenerateStackDump()));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         public NativeCallResult GenerateGlobalsDump(VMBase vm, int argCount)
         {
             vm.PushReturn(Value.New(vm.GenerateGlobalsDump()));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
     }
 }

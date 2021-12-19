@@ -456,7 +456,7 @@ MyFunc();");
             testEngine.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) => 
             { 
                 vm.PushReturn(Value.New("Native")); 
-                return NativeCallResult.Success; 
+                return NativeCallResult.SuccessfulExpression; 
             }));
 
             testEngine.Run(@"print (CallEmptyNative());");
@@ -770,7 +770,7 @@ print(res);
             NativeCallResult Func(VMBase vm, int args)
             {
                 vm.PushReturn(Value.New("Hello from native."));
-                return NativeCallResult.Success;
+                return NativeCallResult.SuccessfulExpression;
             }
 
             testEngine.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
@@ -786,7 +786,7 @@ print(res);
             NativeCallResult Func(VMBase vm, int args)
             {
                 vm.PushReturn(Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native."));
-                return NativeCallResult.Success;
+                return NativeCallResult.SuccessfulExpression;
             }
 
             testEngine.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
@@ -1444,7 +1444,7 @@ Assert.AreNotEqual(1,2);");
                 testEngine.Engine.Context.BindLibrary(libName);
 
                 vm.PushReturn(Value.Null());
-                return NativeCallResult.Success;
+                return NativeCallResult.SuccessfulExpression;
             }));
 
             testEngine.Run(@"
@@ -1465,7 +1465,7 @@ Assert.AreNotEqual(1,2);");
                 testEngine.Engine.Context.BindLibrary(libName);
 
                 vm.PushReturn(Value.Null());
-                return NativeCallResult.Success;
+                return NativeCallResult.SuccessfulExpression;
             }));
 
             testEngine.Engine.ScriptLocator.Add("assertbody", "Assert.AreNotEqual(1, 2); print(1);");
@@ -1475,7 +1475,7 @@ Assert.AreNotEqual(1,2);");
                 testEngine.Engine.LocateAndQueue(name);
 
                 vm.PushReturn(Value.Null());
-                return NativeCallResult.Success;
+                return NativeCallResult.SuccessfulExpression;
             }));
 
             testEngine.Run(@"

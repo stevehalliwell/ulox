@@ -23,7 +23,7 @@
             var b = inst.HasField(fieldName.val.asString);
 
             vm.PushReturn(Value.New(b));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private NativeCallResult RemoveField(VMBase vm, int argCount)
@@ -37,8 +37,7 @@
             var fieldNameStr = fieldName.val.asString;
             inst.RemoveField(fieldNameStr);
 
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         public override void FinishCreation(InstanceInternal inst)

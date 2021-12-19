@@ -153,7 +153,7 @@ namespace ULox.Tests
                 _logger(str);
                 AppendResult(str);
                 vm.PushReturn(Value.Null());
-                return NativeCallResult.Success;
+                return NativeCallResult.SuccessfulExpression;
             }
 
             protected void AppendResult(string str) => InterpreterResult += str;

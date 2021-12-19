@@ -447,8 +447,7 @@ namespace ULox
                 }
             }
 
-            vm.PushReturn(Value.Void());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulStatement;
         }
 
         private NativeCallResult ClassFinishCreation(VMBase vm, int argCount)
@@ -457,7 +456,7 @@ namespace ULox
             var inst = instVal.val.asInstance;
             inst.FromClass.FinishCreation(inst);
             vm.PushReturn(instVal);
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
        [MethodImpl(MethodImplOptions.AggressiveInlining)]

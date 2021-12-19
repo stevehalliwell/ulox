@@ -142,8 +142,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopCallFrame()
+        private byte PopCallFrame()
         {
+            var poppedStackStart = currentCallFrame.StackStart;
             //remove top
             _callFrames.Pop();
 
@@ -152,6 +153,8 @@ namespace ULox
                 currentCallFrame = _callFrames.Peek();
             else
                 currentCallFrame = default;
+
+            return poppedStackStart;
         }
 
         public InterpreterResult Interpret(Chunk chunk)
@@ -398,21 +401,18 @@ namespace ULox
                 throw new VMException($"{opCode} without nativeFunc encountered. This is not allowed.");
 
             var argCount = CurrentFrameStackValues;
-
-            _returnStack.Reset();
-
             var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
 
-            if (res == NativeCallResult.Success)
+            if (res == NativeCallResult.SuccessfulExpression)
             {
                 if (currentCallFrame.ReturnStart != 0)
-                {
                     ReturnFromMark();
-                }
                 else
-                {
-                    ReturnOneValue(Value.Void());
-                }
+                    ReturnOneValue(Value.Null());
+            }
+            else if (res == NativeCallResult.SuccessfulStatement)
+            {
+                PopFrameAndDiscard();
             }
         }
 
@@ -526,46 +526,53 @@ namespace ULox
         private void FinishReturnOp()
         {
             CloseUpvalues(currentCallFrame.StackStart);
-            ReturnAndPopFrame();
+            PopFrameDiscardAndTransferReturns();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ReturnFromMark()
         {
+            var returnStart = currentCallFrame.ReturnStart;
             _returnStack.Reset();
-            for (int i = currentCallFrame.ReturnStart; i < StackCount; i++)
+            for (int i = returnStart; i < StackCount; i++)
             {
                 _returnStack.Push(_valueStack[i]);
             }
 
-            DiscardPop(StackCount - currentCallFrame.ReturnStart);
+            DiscardPop(StackCount - returnStart);
 
             FinishReturnOp();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReturnAndPopFrame()
+        private void PopFrameDiscardAndTransferReturns()
         {
-            var prevStackStart = currentCallFrame.StackStart;
+            PopFrameAndDiscard();
 
-            PopCallFrame();
+            TransferReturnToStack();
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void PopFrameAndDiscard()
+        {
+            var prevStackStart = PopCallFrame();
+            DiscardPopToCount(prevStackStart);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DiscardPopToCount(byte prevStackStart)
+        {
             if (prevStackStart >= 0)
             {
                 var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
 
                 DiscardPop(toRemove);
             }
-
-            TransferReturnToStack();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void TransferReturnToStack()
         {
-            if (_returnStack.Count == 1 && _returnStack.Peek().IsVoid)
-                return;
-
             for (int i = 0; i < _returnStack.Count; i++)
             {
                 Push(_returnStack[i]);

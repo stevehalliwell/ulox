@@ -32,6 +32,60 @@ print(d);");
         }
 
         [Test]
+        public void Run_WhenReturnNothingFromExternalFunctionInMiddleOfMathOpsAndAllLocals_ShouldNotImpactMathOps()
+        {
+            testEngine.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+
+            testEngine.Run(@"
+fun Locals()
+{
+    var a = 1;
+    var b = 2;
+    A();
+
+    a += b + 1;
+
+    print(a);
+}
+
+Locals();");
+
+            Assert.AreEqual("4", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Run_WhenReturnNothing_ShouldNotHaveError()
+        {
+            testEngine.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+
+            testEngine.Run(@"A();");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Run_WhenReturnNothingFromExternalFunctionInMiddleOfMathOps_ShouldNotImpactMathOps()
+        {
+            testEngine.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+
+            testEngine.Run(@"
+var a = 1;
+var b = 2;
+A();
+
+a += b + 1;
+
+print(a);");
+
+            Assert.AreEqual("4", testEngine.InterpreterResult);
+        }
+
+        private NativeCallResult ReturnNothing(VMBase vm, int argc)
+        {
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        [Test]
         public void Run_WhenReturnFromExternalFunction_ShouldMatchExpected()
         {
             testEngine.Vm.SetGlobal(new HashedString("A1"), Value.New(Return1Thing));
@@ -47,7 +101,7 @@ print(a);");
         private NativeCallResult Return1Thing(VMBase vm, int arg2)
         {
             vm.PushReturn(Value.New(1));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         [Test]
@@ -68,7 +122,7 @@ print(b);");
         {
             vm.PushReturn(Value.New(1));
             vm.PushReturn(Value.New(2));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         [Test]
@@ -150,12 +204,27 @@ print(e);");
         }
 
         [Test]
+        public void Run_WhenReturnEmptyMultiReturn_ShouldError()
+        {
+            testEngine.Run(@"
+fun A(){return ();}
+
+var res1 = A();
+
+print(res1);");
+
+            Assert.AreEqual("error", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Run_WhenReturnNoneTake1_ShouldError()
         {
             testEngine.Run(@"
 fun A(){return;}
 
-var res1 = A();");
+var res1 = A();
+
+print(res1);");
 
             Assert.AreEqual("error", testEngine.InterpreterResult);
         }

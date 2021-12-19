@@ -21,21 +21,20 @@
         public NativeCallResult print(VMBase vm, int argCount)
         {
             _printer?.Invoke(vm.GetArg(1).ToString());
-            vm.PushReturn(Value.Null());
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         public NativeCallResult str(VMBase vm, int argCount)
         {
             var v = vm.GetArg(1);
             vm.PushReturn(Value.New(v.str()));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
 
         public NativeCallResult Duplicate(VMBase vm, int argCount)
         {
             vm.PushReturn(Value.Copy(vm.GetArg(1)));
-            return NativeCallResult.Success;
+            return NativeCallResult.SuccessfulExpression;
         }
     }
 }

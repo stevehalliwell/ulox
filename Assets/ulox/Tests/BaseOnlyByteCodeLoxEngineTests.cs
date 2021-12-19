@@ -61,8 +61,7 @@ namespace ULox.Tests
                 var str = vm.GetArg(1).ToString();
                 _logger(str);
                 AppendResult(str);
-                vm.PushReturn(Value.Null());
-                return NativeCallResult.Success;
+                return NativeCallResult.SuccessfulExpression;
             }
 
             protected void AppendResult(string str) => InterpreterResult += str;

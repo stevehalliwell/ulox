@@ -20,24 +20,26 @@
             return resTable;
         }
 
-        private Value Count(VMBase vm, int argCount)
+        private NativeCallResult Count(VMBase vm, int argCount)
         {
             var di = FromVm(vm);
-            return Value.New(di.Count);
+            vm.PushReturn(Value.New(di.Count));
+            return NativeCallResult.SuccessfulExpression;
         }
 
-        private Value GenerateDump(VMBase vm, int argCount)
+        private NativeCallResult GenerateDump(VMBase vm, int argCount)
         {
             var di = FromVm(vm);
-            return Value.New(di.GenerateDump());
+            vm.PushReturn(Value.New(di.GenerateDump()));
+            return NativeCallResult.SuccessfulExpression;
         }
 
         //TODO rename this is confusing now that objects can freeze
-        private Value Freeze(VMBase vm, int argCount)
+        private NativeCallResult Freeze(VMBase vm, int argCount)
         {
             var di = FromVm(vm);
             di.Freeze();
-            return Value.Null();
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private DiContainer FromVm(VMBase vMBase)

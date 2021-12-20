@@ -11,18 +11,18 @@
                 );
        
 
-        public Value IsFrozen(VMBase vm, int argCount)
+        public NativeCallResult IsFrozen(VMBase vm, int argCount)
         {
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)
-                return Value.New(target.val.asInstance.IsFrozen);
-            if(target.type == ValueType.Class)
-                return Value.New(target.val.asClass.IsFrozen);
+                vm.PushReturn(Value.New(target.val.asInstance.IsFrozen));
+            else if(target.type == ValueType.Class)
+                vm.PushReturn(Value.New(target.val.asClass.IsFrozen));
 
-            return Value.Null();
+            return NativeCallResult.SuccessfulExpression;
         }
 
-        public Value Unfreeze(VMBase vm, int argCount)
+        public NativeCallResult Unfreeze(VMBase vm, int argCount)
         {
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)
@@ -30,7 +30,7 @@
             if (target.type == ValueType.Class)
                 target.val.asClass.Unfreeze();
 
-            return Value.Null();
+            return NativeCallResult.SuccessfulExpression;
         }
     }
 }

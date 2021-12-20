@@ -24,6 +24,7 @@ namespace ULox
         private readonly ClosureInternal NativeCallClosure;
 
         protected readonly FastStack<Value> _valueStack = new FastStack<Value>();
+        protected readonly FastStack<Value> _returnStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         protected CallFrame currentCallFrame;
         private IEngine _engine;
@@ -51,6 +52,7 @@ namespace ULox
         protected Value Peek(int ind = 0) => _valueStack.Peek(ind);
 
         public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
+        public string GenerateReturnDump() => new DumpStack().Generate(_returnStack);
 
         public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
 
@@ -60,6 +62,7 @@ namespace ULox
         public Value GetArg(int index) => _valueStack[currentCallFrame.StackStart + index];
         public int CurrentFrameStackValues => _valueStack.Count - currentCallFrame.StackStart;
         public Value StackTop => _valueStack.Peek();
+        public int StackCount => _valueStack.Count;
 
 
         public void SetEngine(IEngine engine) => _engine = engine;
@@ -70,6 +73,14 @@ namespace ULox
             return Run();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushReturn(Value val)
+        {
+            if(currentCallFrame.ReturnStart == 0)
+                currentCallFrame.ReturnStart = (byte)StackCount;
+
+            _valueStack.Push(val);
+        }
         protected virtual bool ExtendedOp(OpCode opCode, Chunk chunk) => false;
 
         protected virtual bool ExtendedCall(Value callee, int argCount) => false;
@@ -131,8 +142,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopCallFrame()
+        private byte PopCallFrame()
         {
+            var poppedStackStart = currentCallFrame.StackStart;
             //remove top
             _callFrames.Pop();
 
@@ -141,6 +153,8 @@ namespace ULox
                 currentCallFrame = _callFrames.Peek();
             else
                 currentCallFrame = default;
+
+            return poppedStackStart;
         }
 
         public InterpreterResult Interpret(Chunk chunk)
@@ -194,7 +208,7 @@ namespace ULox
 
                 case OpCode.RETURN:
                     {
-                        DoReturnOp();
+                        DoReturnOp(chunk);
 
                         if (_callFrames.Count == 0)
                         {
@@ -353,11 +367,33 @@ namespace ULox
                         DoNativeCall(opCode);
                     break;
 
+                case OpCode.VALIDATE:
+                    DoValidateOp(chunk);
+                    break;
+
                 default:
                     if (!ExtendedOp(opCode, chunk))
                         throw new VMException($"Unhandled OpCode '{opCode}'.");
                     break;
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoValidateOp(Chunk chunk)
+        {
+            var validateOp = (ValidateOp)ReadByte(chunk);
+            switch (validateOp)
+            {
+            case ValidateOp.MultiReturnMatches:
+                var requestedResultsValue = Pop();
+                var requestedResults = (int)requestedResultsValue.val.asDouble;
+                var availableResults = _returnStack.Count;
+                if (requestedResults != availableResults)
+                    throw new VMException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'.");
+                break;
+            default:
+                break;
             }
         }
 
@@ -383,16 +419,22 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoNativeCall(OpCode opCode)
         {
-            if (currentCallFrame.nativeFunc != null)
-            {
-                var argCount = CurrentFrameStackValues;
-                var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
-
-                ReturnAndPopFrame(res);
-            }
-            else
-            {
+            if (currentCallFrame.nativeFunc == null)
                 throw new VMException($"{opCode} without nativeFunc encountered. This is not allowed.");
+
+            var argCount = CurrentFrameStackValues;
+            var res = currentCallFrame.nativeFunc.Invoke(this, argCount);
+
+            if (res == NativeCallResult.SuccessfulExpression)
+            {
+                if (currentCallFrame.ReturnStart != 0)
+                    ReturnFromMark();
+                else
+                    ReturnOneValue(Value.Null());
+            }
+            else if (res == NativeCallResult.SuccessfulStatement)
+            {
+                PopFrameAndDiscard();
             }
         }
 
@@ -467,29 +509,109 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoReturnOp()
+        private void DoReturnOp(Chunk chunk)
         {
-            Value result = Pop();
-
-            CloseUpvalues(currentCallFrame.StackStart);
-            ReturnAndPopFrame(result);
+            var returnMode = (ReturnMode)ReadByte(chunk);
+            switch (returnMode)
+            {
+            case ReturnMode.One:
+                var top = Pop();
+                ReturnOneValue(top);
+                break;
+            case ReturnMode.Begin:
+                currentCallFrame.ReturnStart = (byte)StackCount;
+                break;
+            case ReturnMode.End:
+                ReturnFromMark();
+                break;
+            case ReturnMode.MarkMultiReturnAssignStart:
+                currentCallFrame.ReturnStart = (byte)StackCount;
+                break;
+            case ReturnMode.MarkMultiReturnAssignEnd:
+                ProcessStackForMultiAssign();
+                break;
+            default:
+                throw new VMException($"Unhandled return mode '{returnMode}'.");
+                break;
+            }
         }
 
-        private void ReturnAndPopFrame(Value result)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReturnOneValue(Value top)
         {
-            var prevStackStart = currentCallFrame.StackStart;
+            _returnStack.Reset();
+            _returnStack.Push(top);
+            FinishReturnOp();
+        }
 
-            PopCallFrame();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void FinishReturnOp()
+        {
+            CloseUpvalues(currentCallFrame.StackStart);
+            PopFrameDiscardAndTransferReturns();
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReturnFromMark()
+        {
+            var returnStart = currentCallFrame.ReturnStart;
+            _returnStack.Reset();
+            for (int i = returnStart; i < StackCount; i++)
+            {
+                _returnStack.Push(_valueStack[i]);
+            }
+
+            DiscardPop(StackCount - returnStart);
+
+            FinishReturnOp();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void PopFrameDiscardAndTransferReturns()
+        {
+            PopFrameAndDiscard();
+
+            TransferReturnToStack();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void PopFrameAndDiscard()
+        {
+            var prevStackStart = PopCallFrame();
+            DiscardPopToCount(prevStackStart);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DiscardPopToCount(byte prevStackStart)
+        {
             if (prevStackStart >= 0)
             {
                 var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
 
                 DiscardPop(toRemove);
             }
+        }
 
-            if(result.type != ValueType.Void)
-                Push(result);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void TransferReturnToStack()
+        {
+            for (int i = 0; i < _returnStack.Count; i++)
+            {
+                Push(_returnStack[i]);
+            }
+        }
+
+        //todo the returning function can tell us how many we are about to receive we don't need to track it separately?
+        private void ProcessStackForMultiAssign()
+        {
+            _returnStack.Reset();
+            while (_valueStack.Count > currentCallFrame.ReturnStart)
+                _returnStack.Push(Pop());
+
+            for (int i = 0; i < _returnStack.Count; i++)
+            {
+                Push(_returnStack[i]);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -561,25 +683,25 @@ namespace ULox
 
             PushNewCallframe(new CallFrame()
             {
-                StackStart = _valueStack.Count - argCount - 1,
+                StackStart = (byte)(_valueStack.Count - argCount - 1),
                 Closure = closureInternal
             });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushFrameCallNative(System.Func<VMBase, int, Value> asNativeFunc, int argCount)
+        protected void PushFrameCallNative(NativeCallDelegate nativeCallDel, int argCount)
         {
-            PushFrameCallNativeWithFixedStackStart(asNativeFunc, _valueStack.Count - argCount - 1);
+            PushFrameCallNativeWithFixedStackStart(nativeCallDel, (byte)(_valueStack.Count - argCount - 1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushFrameCallNativeWithFixedStackStart(System.Func<VMBase, int, Value> asNativeFunc, int stackStart)
+        protected void PushFrameCallNativeWithFixedStackStart(NativeCallDelegate nativeCallDel, byte stackStart)
         {
             PushNewCallframe(new CallFrame()
             {
                 StackStart = stackStart,
                 Closure = NativeCallClosure,
-                nativeFunc = asNativeFunc,
+                nativeFunc = nativeCallDel,
                 InstructionPointer = 0
             });
         }

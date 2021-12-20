@@ -14,7 +14,6 @@ namespace ULox
         {
             opCodeHandlers = new Func<Chunk, int, int>[Enum.GetValues(typeof(OpCode)).Length];
 
-            opCodeHandlers[(int)OpCode.RETURN] = AppendNothing;
             opCodeHandlers[(int)OpCode.NEGATE] = AppendNothing;
             opCodeHandlers[(int)OpCode.ADD] = AppendNothing;
             opCodeHandlers[(int)OpCode.SUBTRACT] = AppendNothing;
@@ -37,6 +36,7 @@ namespace ULox
             opCodeHandlers[(int)OpCode.JUMP] = AppendUShort;
             opCodeHandlers[(int)OpCode.LOOP] = AppendUShort;
 
+            opCodeHandlers[(int)OpCode.RETURN] = AppendByte;
             opCodeHandlers[(int)OpCode.GET_UPVALUE] = AppendByte;
             opCodeHandlers[(int)OpCode.SET_UPVALUE] = AppendByte;
             opCodeHandlers[(int)OpCode.GET_LOCAL] = AppendByte;
@@ -44,6 +44,7 @@ namespace ULox
             opCodeHandlers[(int)OpCode.CALL] = AppendByte;
             opCodeHandlers[(int)OpCode.PUSH_BOOL] = AppendByte;
             opCodeHandlers[(int)OpCode.PUSH_BYTE] = AppendByte;
+            opCodeHandlers[(int)OpCode.VALIDATE] = AppendByte;
 
             opCodeHandlers[(int)OpCode.CONSTANT] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.DEFINE_GLOBAL] = AppendStringConstant;

@@ -4,6 +4,7 @@ using System.Text;
 
 namespace ULox
 {
+    //TODO add fluent to augment index with additional info, e.g. frame top
     public class DumpStack
     {
         private readonly StringBuilder sb = new StringBuilder();

@@ -20,21 +20,23 @@ namespace ULox
                 );
         }
 
-        private Value InitInstance(VMBase vm, int argCount)
+        private NativeCallResult InitInstance(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             inst.val.asInstance.SetField(MapFieldName, Value.Object(new InternalMap()));
-            return inst;
+            vm.PushReturn(inst);
+            return NativeCallResult.SuccessfulExpression;
         }
 
-        private Value Count(VMBase vm, int argCount)
+        private NativeCallResult Count(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
-            return Value.New(map.Count);
+            vm.PushReturn(Value.New(map.Count));
+            return NativeCallResult.SuccessfulExpression;
         }
 
-        private Value Create(VMBase vm, int argCount)
+        private NativeCallResult Create(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
@@ -43,14 +45,16 @@ namespace ULox
 
             if (map.ContainsKey(key))
             {
-                return Value.New(false);
+                vm.PushReturn(Value.New(false));
+                return NativeCallResult.SuccessfulExpression;
             }
 
             map[key] = val;
-            return Value.New(true);
+            vm.PushReturn(Value.New(true));
+            return NativeCallResult.SuccessfulExpression;
         }
 
-        private Value Read(VMBase vm, int argCount)
+        private NativeCallResult Read(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
@@ -58,12 +62,14 @@ namespace ULox
 
             if (map.TryGetValue(key, out var val))
             {
-                return val;
+                vm.PushReturn(val);
+                return NativeCallResult.SuccessfulExpression;
             }
-            return Value.Null();
+
+            return NativeCallResult.SuccessfulExpression;
         }
 
-        private Value Update(VMBase vm, int argCount)
+        private NativeCallResult Update(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
@@ -72,20 +78,23 @@ namespace ULox
 
             if (!map.ContainsKey(key))
             {
-                return Value.New(false);
+                vm.PushReturn(Value.New(false));
+                return NativeCallResult.SuccessfulExpression;
             }
 
             map[key] = val;
-            return Value.New(true);
+            vm.PushReturn(Value.New(true));
+            return NativeCallResult.SuccessfulExpression;
         }
 
-        private Value Delete(VMBase vm, int argCount)
+        private NativeCallResult Delete(VMBase vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
             var key = vm.GetArg(1);
 
-            return Value.New(map.Remove(key));
+            vm.PushReturn(Value.New(map.Remove(key)));
+            return NativeCallResult.SuccessfulExpression;
         }
     }
 }

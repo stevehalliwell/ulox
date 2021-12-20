@@ -22,51 +22,58 @@ var balls = List();
 
 fun RandVec2()
 {
-	return Vec2.Create(RandRange(-3,3),RandRange(-3,3));
-}
-
-fun Scale(v2, scalar)
-{
-	return Vec2.Create(v2.x* scalar, v2.y*scalar);
+	return (RandRange(-3,3),RandRange(-3,3));
 }
 
 class Ball
 {
-	var pos = RandVec2(),
-		vel = RandVec2(),
-		go = CreateFromPrefab(ballName);
-	
+	init()
+	{
+		var (x,y) = RandVec2();
+		this.posx = x;
+		this.posy = y;
+
+		var (vx,vy) = RandVec2();
+		this.velx = vx;
+		this.vely = vy;
+		
+		this.go = CreateFromPrefab(ballName);
+	}
+
   	Tick()
   	{
-  		this.pos = this.pos + Scale(this.vel, dt);
+  		this.posx = this.posx + this.velx * dt;
+  		this.posy = this.posy + this.vely * dt;
+
 		this.Contain(limit);
 		this.UpdateGoPosition();
   	}
 	
 	Contain(lim)
 	{
-		var x = this.pos.x;
-		var y = this.pos.y;
-		var v = this.vel;
+		var x = this.posx;
+		var y = this.posy;
+		var vx = this.velx;
+		var vy = this.vely;
 
-  		if((x < -lim and v.x < 0) or 
-  		   (x > lim  and v.x > 0) )
+  		if((x < -lim and vx < 0) or 
+  		   (x > lim  and vx > 0) )
   		{
-			  v.x = v.x * -1;
-			  this.vel = v;
+			  vx *= -1;
+			  this.velx = vx;
 		}
   		
-  		if((y < -lim and v.y < 0) or
-  		   (y > lim  and v.y > 0) )
+  		if((y < -lim and vy < 0) or
+  		   (y > lim  and vy > 0) )
   		{
-			  v.y = v.y * -1;
-			  this.vel = v;
+			  vy *= -1;
+			  this.vely = vy;
 		}
 	}
 	
 	UpdateGoPosition()
 	{
-  		SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
+  		SetGameObjectPosition(this.go, this.posx, this.posy, 0);
 	}
 }
 

@@ -115,8 +115,7 @@ namespace ULox
             if (_previousInitFragJumpLocation != -1)
                 compiler.PatchJump(_previousInitFragJumpLocation);
 
-            //EmitOpCode(OpCode.NULL);
-            compiler.EmitOpCode(OpCode.RETURN);
+            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
 
             compiler.PatchJump(classReturnEnd);
 

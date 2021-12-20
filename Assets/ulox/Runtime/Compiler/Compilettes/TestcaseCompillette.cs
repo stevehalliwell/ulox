@@ -49,7 +49,7 @@
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.CaseEnd, nameConstantID, 0x00);
 
             compiler.EmitOpCode(OpCode.NULL);
-            compiler.EmitOpCode(OpCode.RETURN);
+            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
 
             //emit jump to step to next and save it
             compiler.PatchJump(testFragmentJump);

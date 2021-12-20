@@ -17,6 +17,7 @@ namespace ULox.Tests
             chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
             chunk.WriteSimple(OpCode.MULTIPLY, 1);
             chunk.WriteSimple(OpCode.RETURN, 2);
+            chunk.WriteByte((byte)ReturnMode.One, 2);
 
             return chunk;
         }
@@ -452,12 +453,30 @@ MyFunc();");
         [Test]
         public void Engine_Compile_NativeFunc_Call()
         {
-            testEngine.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) => Value.New("Native")));
+            testEngine.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) => 
+            { 
+                vm.PushReturn(Value.New("Native")); 
+                return NativeCallResult.SuccessfulExpression; 
+            }));
 
             testEngine.Run(@"print (CallEmptyNative());");
 
             Assert.AreEqual("Native", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Engine_Compile_Return()
+        {
+            testEngine.Run(@"
+fun A(){return 1;}
+
+print (A());");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        //TODO single take of a multi return
+        //todo multivar assign replace existing named variable
 
         [Test]
         public void Engine_Compile_Call_Mixed_Ops()
@@ -748,9 +767,10 @@ print(res);
         [Test]
         public void Engine_NativeFunc_Call_0Param_String()
         {
-            Value Func(VMBase vm, int args)
+            NativeCallResult Func(VMBase vm, int args)
             {
-                return Value.New("Hello from native.");
+                vm.PushReturn(Value.New("Hello from native."));
+                return NativeCallResult.SuccessfulExpression;
             }
 
             testEngine.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
@@ -763,9 +783,10 @@ print(res);
         [Test]
         public void Engine_NativeFunc_Call_1Param_String()
         {
-            Value Func(VMBase vm, int args)
+            NativeCallResult Func(VMBase vm, int args)
             {
-                return Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native.");
+                vm.PushReturn(Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native."));
+                return NativeCallResult.SuccessfulExpression;
             }
 
             testEngine.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
@@ -1422,7 +1443,8 @@ Assert.AreNotEqual(1,2);");
                 var libName = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.Context.BindLibrary(libName);
 
-                return Value.Null();
+                vm.PushReturn(Value.Null());
+                return NativeCallResult.SuccessfulExpression;
             }));
 
             testEngine.Run(@"
@@ -1442,7 +1464,8 @@ Assert.AreNotEqual(1,2);");
                 var libName = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.Context.BindLibrary(libName);
 
-                return Value.Null();
+                vm.PushReturn(Value.Null());
+                return NativeCallResult.SuccessfulExpression;
             }));
 
             testEngine.Engine.ScriptLocator.Add("assertbody", "Assert.AreNotEqual(1, 2); print(1);");
@@ -1451,7 +1474,8 @@ Assert.AreNotEqual(1,2);");
                 var name = vm.GetArg(1).val.asString.String;
                 testEngine.Engine.LocateAndQueue(name);
 
-                return Value.Null();
+                vm.PushReturn(Value.Null());
+                return NativeCallResult.SuccessfulExpression;
             }));
 
             testEngine.Run(@"

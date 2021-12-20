@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace ULox.Tests
@@ -52,16 +53,17 @@ namespace ULox.Tests
             {
                 _logger = logger;
 
-                Value Print(VMBase vm, int args)
-                {
-                    var str = vm.GetArg(1).ToString();
-                    _logger(str);
-                    AppendResult(str);
-                    return Value.Null();
-                }
-
                 VM.SetGlobal(new HashedString("print"), Value.New(Print));
             }
+
+            private NativeCallResult Print(VMBase vm, int argc)
+            {
+                var str = vm.GetArg(1).ToString();
+                _logger(str);
+                AppendResult(str);
+                return NativeCallResult.SuccessfulExpression;
+            }
+
             protected void AppendResult(string str) => InterpreterResult += str;
             public string InterpreterResult { get; private set; } = string.Empty;
 

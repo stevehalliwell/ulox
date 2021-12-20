@@ -1020,11 +1020,6 @@ namespace ULox
             ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
         }
 
-        internal void ValueStackTop(bool canAssign)
-        {
-            //no ops to add, will result in vm taking top stack value
-        }
-
         public void Call(bool canAssign)
         {
             var argCount = ArgumentList();

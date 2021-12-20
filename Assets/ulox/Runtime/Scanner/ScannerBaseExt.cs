@@ -75,8 +75,7 @@
                 ("fun", TokenType.FUNCTION),
                 ("throw", TokenType.THROW),
                 ("yield", TokenType.YIELD),
-                ("fname", TokenType.CONTEXT_NAME_FUNC),
-                ("valuestacktop", TokenType.VALUE_STACK_TOP)
+                ("fname", TokenType.CONTEXT_NAME_FUNC)
                 );
 
             scannerBase.AddSingleCharTokenGenerators(

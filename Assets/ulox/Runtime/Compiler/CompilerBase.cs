@@ -1017,8 +1017,7 @@ namespace ULox
 
         public void Grouping(bool canAssign)
         {
-            Expression();
-            Consume(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
+            ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
         }
 
         internal void ValueStackTop(bool canAssign)

@@ -1,12 +1,41 @@
 ﻿using NUnit.Framework;
-using System;
 
 namespace ULox.Tests
 {
     [TestFixture]
     public class MutliReturnTests : EngineTestBase
     {
-        //cannot work as it things there are 2 return values but it doesn't know that
+        [Test]
+        public void Vec2Add_WhenGivenKnowValues_ShouldReturnExpected()
+        {
+            testEngine.Run(@"
+var a = 1,b = 2,c = 3,d = 4;
+
+fun Add(x1,y1, x2, y2)
+{
+    return (x1 + x2, y1 + y2);
+}
+
+var (x,y) = Add(a,b,c,d);
+
+print(x);
+print(y);");
+
+            Assert.AreEqual("46", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Run_WhenMultiVarAssignInline_ShouldMatchExpected()
+        {
+            testEngine.Run(@"
+var (a,b) = (1,2);
+
+print(a);
+print(b);");
+
+            Assert.AreEqual("12", testEngine.InterpreterResult);
+        }
+
         [Test]
         public void Run_WhenReturn4OfTheReturn2WithOperationsInMiddleStack_ShouldMatchExpected()
         {

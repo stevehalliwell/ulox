@@ -35,7 +35,7 @@ namespace ULox
                 (nameof(Throws), Value.New(Throws)),
                 (nameof(Pass), Value.New(Pass)),
                 (nameof(Fail), Value.New(Fail))
-                );
+                                          );
 
             return resTable;
         }

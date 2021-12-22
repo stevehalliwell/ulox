@@ -1,13 +1,5 @@
 ﻿namespace ULox
 {
-    public enum TestOpType : byte
-    {
-        TestSetStart,
-        CaseStart,
-        CaseEnd,
-        TestSetEnd,
-    }
-
     public class TestcaseCompillette : ICompilette
     {
         public TokenType Match => TokenType.TESTCASE;

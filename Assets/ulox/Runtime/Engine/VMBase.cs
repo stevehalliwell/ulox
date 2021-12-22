@@ -35,7 +35,7 @@ namespace ULox
         public VMBase()
         {
             var nativeChunk = new Chunk("NativeCallChunkWrapper");
-            nativeChunk.WriteByte((byte)OpCode.NATIVE_CALL,0);
+            nativeChunk.WriteByte((byte)OpCode.NATIVE_CALL, 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }
 
@@ -52,18 +52,20 @@ namespace ULox
         protected Value Peek(int ind = 0) => _valueStack.Peek(ind);
 
         public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
+
         public string GenerateReturnDump() => new DumpStack().Generate(_returnStack);
 
         public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
 
         public Value GetGlobal(HashedString name) => _globals[name];
+
         public void SetGlobal(HashedString name, Value val) => _globals[name] = val;
 
         public Value GetArg(int index) => _valueStack[currentCallFrame.StackStart + index];
+
         public int CurrentFrameStackValues => _valueStack.Count - currentCallFrame.StackStart;
         public Value StackTop => _valueStack.Peek();
         public int StackCount => _valueStack.Count;
-
 
         public void SetEngine(IEngine engine) => _engine = engine;
 
@@ -76,11 +78,12 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushReturn(Value val)
         {
-            if(currentCallFrame.ReturnStart == 0)
+            if (currentCallFrame.ReturnStart == 0)
                 currentCallFrame.ReturnStart = (byte)StackCount;
 
             _valueStack.Push(val);
         }
+
         protected virtual bool ExtendedOp(OpCode opCode, Chunk chunk) => false;
 
         protected virtual bool ExtendedCall(Value callee, int argCount) => false;
@@ -105,7 +108,7 @@ namespace ULox
                 var globalVal = GetGlobal(name);
 
                 if (globalVal.type == ValueType.Closure &&
-                        globalVal.val.asClosure.chunk.Arity == arity)
+                    globalVal.val.asClosure.chunk.Arity == arity)
                 {
                     return globalVal;
                 }
@@ -360,11 +363,11 @@ namespace ULox
                     break;
 
                 case OpCode.BUILD:
-                        DoBuildOp(chunk);
+                    DoBuildOp(chunk);
                     break;
 
                 case OpCode.NATIVE_CALL:
-                        DoNativeCall(opCode);
+                    DoNativeCall(opCode);
                     break;
 
                 case OpCode.VALIDATE:
@@ -392,6 +395,7 @@ namespace ULox
                 if (requestedResults != availableResults)
                     throw new VMException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'.");
                 break;
+
             default:
                 break;
             }
@@ -408,9 +412,11 @@ namespace ULox
             case BuildOpType.Bind:
                 Engine.Context.BindLibrary(str.String);
                 break;
+
             case BuildOpType.Queue:
                 Engine.LocateAndQueue(str.String);
                 break;
+
             default:
                 throw new VMException($"Unhanlded BuildOpType '{buildOpType}'");
             }
@@ -518,18 +524,23 @@ namespace ULox
                 var top = Pop();
                 ReturnOneValue(top);
                 break;
+
             case ReturnMode.Begin:
                 currentCallFrame.ReturnStart = (byte)StackCount;
                 break;
+
             case ReturnMode.End:
                 ReturnFromMark();
                 break;
+
             case ReturnMode.MarkMultiReturnAssignStart:
                 currentCallFrame.ReturnStart = (byte)StackCount;
                 break;
+
             case ReturnMode.MarkMultiReturnAssignEnd:
                 ProcessStackForMultiAssign();
                 break;
+
             default:
                 throw new VMException($"Unhandled return mode '{returnMode}'.");
                 break;
@@ -799,7 +810,7 @@ namespace ULox
         {
             for (int i = 0; i <= count; i++)
             {
-                Push(_valueStack[startAt+i]);
+                Push(_valueStack[startAt + i]);
             }
         }
     }

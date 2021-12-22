@@ -3,7 +3,7 @@
 namespace ULox
 {
     public class Context : IContext
-    { 
+    {
         private Dictionary<string, IULoxLibrary> _libraries = new Dictionary<string, IULoxLibrary>();
         private List<CompiledScript> _compiledChunks = new List<CompiledScript>();
 
@@ -28,7 +28,7 @@ namespace ULox
         {
             if (!_libraries.TryGetValue(name, out var lib))
                 throw new VMException($"No library of name '{name}' found.");
-            
+
             var toAdd = lib.GetBindings();
 
             foreach (var item in toAdd)
@@ -37,7 +37,7 @@ namespace ULox
             }
         }
 
-        public void AddLibrary(IULoxLibrary lib) 
+        public void AddLibrary(IULoxLibrary lib)
         {
             DeclareLibrary(lib);
             BindLibrary(lib.Name);

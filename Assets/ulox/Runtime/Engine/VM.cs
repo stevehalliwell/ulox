@@ -127,13 +127,12 @@ namespace ULox
                 TestRunner.DoTestOpCode(this, chunk);
                 break;
 
-
             case OpCode.REGISTER:
                 {
                     var constantIndex = ReadByte(chunk);
                     var name = chunk.ReadConstant(constantIndex).val.asString;
                     var implementation = Pop();
-                    DiContainer.Set(name,implementation);
+                    DiContainer.Set(name, implementation);
                 }
                 break;
 
@@ -156,14 +155,17 @@ namespace ULox
                     case ValueType.Instance:
                         instVal.val.asInstance.Freeze();
                         break;
+
                     case ValueType.Class:
                         instVal.val.asClass.Freeze();
                         break;
+
                     default:
                         throw new VMException($"Freeze attempted on unsupported type '{instVal.type}'.");
                     }
                 }
                 break;
+
             default:
                 return false;
             }
@@ -369,11 +371,11 @@ namespace ULox
         private void InitNewInstance(ClassInternal klass, int argCount, Value inst, bool isleaf)
         {
             var stackCount = _valueStack.Count;
-            var instLocOnStack = (byte)(stackCount - argCount-1);
+            var instLocOnStack = (byte)(stackCount - argCount - 1);
 
             if (isleaf)
             {
-                // Freeze is then called on the inst left behindby the 
+                // Freeze is then called on the inst left behindby the
                 //  using custom callframe as we need the location of the inst but no params, as they will all be gone
                 //  by the time we get to execute.
                 DuplicateStackValuesNew(instLocOnStack, argCount);
@@ -400,8 +402,8 @@ namespace ULox
 
             foreach (var initChain in klass.InitChains)
             {
-                if(initChain.Item2 != -1) 
-                { 
+                if (initChain.Item2 != -1)
+                {
                     if (!klass.Initialiser.IsNull)
                         Push(inst);
 
@@ -441,7 +443,7 @@ namespace ULox
                     var paramName = arg.val.asString;
                     if (inst.HasField(paramName))
                     {
-                        var value = vm.GetArg(i+ argOffset);
+                        var value = vm.GetArg(i + argOffset);
                         inst.SetField(paramName, value);
                     }
                 }
@@ -459,7 +461,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-       [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int PrepareSuperInit(ClassInternal klass, int argCount, Value inst, int stackCount)
         {
             int argsToSuperInit = 0;

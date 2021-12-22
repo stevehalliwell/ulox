@@ -6,9 +6,10 @@ namespace ULox
     {
         private static readonly HashedString ListFieldName = new HashedString("list");
 
-        private class InternalList : List<Value> { }
+        private class InternalList : List<Value>
+        { }
 
-        public ListClass(): base(new HashedString("List"))
+        public ListClass() : base(new HashedString("List"))
         {
             this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
             this.AddMethodsToClass(
@@ -19,7 +20,7 @@ namespace ULox
                 (nameof(Add), Value.New(Add)),
                 (nameof(Remove), Value.New(Remove)),
                 (nameof(Empty), Value.New(Empty))
-                );
+                                  );
         }
 
         private NativeCallResult InitInstance(VMBase vm, int argCount)

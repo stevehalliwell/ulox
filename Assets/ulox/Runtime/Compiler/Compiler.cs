@@ -20,12 +20,12 @@
                 _classCompiler,
                 _testcaseCompilette,
                 _buildCompilette
-                );
+                                          );
 
             this.AddStatementCompilettes(
                 new CompiletteAction(TokenType.REGISTER, RegisterStatement),
                 new CompiletteAction(TokenType.FREEZE, FreezeStatement)
-                );
+                                        );
 
             this.SetPrattRules(
                 (TokenType.DOT, new ParseRule(null, this.Dot, Precedence.Call)),
@@ -35,10 +35,8 @@
                 (TokenType.CONTEXT_NAME_TESTCASE, new ParseRule(TCName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTSET, new ParseRule(TSName, null, Precedence.None)),
                 (TokenType.INJECT, new ParseRule(Inject, null, Precedence.Term))
-                );
+                              );
         }
-
-
 
         private void RegisterStatement(CompilerBase compiler)
         {
@@ -114,6 +112,7 @@
             byte name = AddStringConstant();
             EmitOpAndBytes(OpCode.INJECT, name);
         }
+
         #endregion Expressions
     }
 }

@@ -4,9 +4,10 @@ namespace ULox
 {
     public class MapClass : ClassInternal
     {
-        private readonly static HashedString MapFieldName = new HashedString("map");
+        private static readonly HashedString MapFieldName = new HashedString("map");
 
-        private class InternalMap : Dictionary<Value, Value> { }
+        private class InternalMap : Dictionary<Value, Value>
+        { }
 
         public MapClass() : base(new HashedString("Map"))
         {
@@ -17,7 +18,7 @@ namespace ULox
                 (nameof(Read), Value.New(Read)),
                 (nameof(Update), Value.New(Update)),
                 (nameof(Delete), Value.New(Delete))
-                );
+                                  );
         }
 
         private NativeCallResult InitInstance(VMBase vm, int argCount)

@@ -9,7 +9,7 @@
             this.AddMethodsToClass(
                 (nameof(HasField), Value.New(HasField)),
                 (nameof(RemoveField), Value.New(RemoveField))
-                );
+                                  );
         }
 
         private NativeCallResult HasField(VMBase vm, int argCount)

@@ -8,7 +8,8 @@ namespace ULox
 
         protected Dictionary<TokenType, ICompilette> innerDeclarationCompilettes = new Dictionary<TokenType, ICompilette>();
 
-        protected enum Stage { Invalid, Begin, Static, Mixin, Var, Init, Method, Complete }
+        protected enum Stage
+        { Invalid, Begin, Static, Mixin, Var, Init, Method, Complete }
 
         protected Stage _stage = Stage.Invalid;
         public string CurrentClassName { get; private set; }
@@ -93,14 +94,13 @@ namespace ULox
             _stage = Stage.Complete;
 
             //dump all mixins after everything else so we don't have to fight regular class setup process in vm
-            while(mixinNames.Count > 0)
+            while (mixinNames.Count > 0)
             {
                 var mixinName = mixinNames.Pop();
                 compiler.NamedVariable(mixinName, false);
                 compiler.NamedVariable(CurrentClassName, false);
                 compiler.EmitOpAndBytes(OpCode.MIXIN);
             }
-
 
             //emit return //if we are the last link in the chain this ends our call
 
@@ -132,7 +132,7 @@ namespace ULox
 
         private void ValidStage(Stage stage)
         {
-            if(_stage > stage)
+            if (_stage > stage)
             {
                 throw new CompilerException($"Class '{CurrentClassName}', encountered element of stage '{stage}' too late, class is at stage '{_stage}'. This is not allowed.");
             }

@@ -8,7 +8,7 @@
             => this.GenerateBindingTable(
                 (nameof(GenerateStackDump), Value.New(GenerateStackDump)),
                 (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump))
-                );
+                                        );
 
         public NativeCallResult GenerateStackDump(VMBase vm, int argCount)
         {

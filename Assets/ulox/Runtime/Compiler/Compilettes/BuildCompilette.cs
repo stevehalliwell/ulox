@@ -1,11 +1,5 @@
 ﻿namespace ULox
 {
-    public enum BuildOpType : byte
-    {
-        Bind,
-        Queue,
-    }
-
     public class BuildCompilette : ICompilette
     {
         private const string BindIdentKeyword = "bind";

@@ -14,7 +14,7 @@
                 (nameof(Count), Value.New(Count)),
                 (nameof(GenerateDump), Value.New(GenerateDump)),
                 (nameof(Freeze), Value.New(Freeze))
-                );
+                                         );
             diLibInst.Freeze();
 
             return resTable;
@@ -44,7 +44,7 @@
 
         private DiContainer FromVm(VMBase vMBase)
         {
-            if(vMBase is Vm vm)
+            if (vMBase is Vm vm)
             {
                 return vm.DiContainer;
             }

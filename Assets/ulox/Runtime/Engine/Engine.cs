@@ -26,7 +26,7 @@ namespace ULox
 
         public void BuildAndRun()
         {
-            while(_buildQueue.Count > 0)
+            while (_buildQueue.Count > 0)
             {
                 var script = _buildQueue.Dequeue();
                 var s = Context.CompileScript(script);

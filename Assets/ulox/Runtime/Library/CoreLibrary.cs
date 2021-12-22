@@ -16,7 +16,7 @@
                 (nameof(print), Value.New(print)),
                 (nameof(Duplicate), Value.New(Duplicate)),
                 (nameof(str), Value.New(str))
-                );
+                                        );
 
         public NativeCallResult print(VMBase vm, int argCount)
         {

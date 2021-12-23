@@ -1,0 +1,7 @@
+//In TryItOut all libraries are already available to you but for completeness
+build bind "CoreLibrary";
+
+var a = 7;
+var b = Duplicate(a);
+
+print(str(a) + " is a duplicate of " + str(b));

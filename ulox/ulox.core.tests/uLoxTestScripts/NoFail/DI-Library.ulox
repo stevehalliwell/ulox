@@ -1,0 +1,89 @@
+build bind 
+    "DiLibrary",
+    "VmLibrary";
+
+register DummyService null;
+
+fun InnerMainInjectedScale()
+{
+    var scale = inject ParentService;
+    a *= scale;
+}
+
+var a = 0;
+
+
+test DISimpleTests
+{
+    testcase ValidateDiLibraryCount
+    {
+        var serviceInst = 7;
+        register Service1 serviceInst;
+        register Service2 null;
+        fun ServiceFunction(){}
+        register Service3 ServiceFunction;
+        var expected = 4;
+        var result = 0;
+
+        result = DI.Count();
+
+        Assert.AreEqual(expected,result);        
+    }
+
+    testcase ValidateDiLibraryCountDummyOnly
+    {
+        var expected = 1;
+        var result = 0;
+
+        result = DI.Count();
+
+        Assert.AreEqual(expected,result);        
+    }
+
+    testcase ValidateDiLibraryDump
+    {
+        var serviceInst = 7;
+        register Service1 serviceInst;
+        register Service2 null;
+        fun ServiceFunction(a){return a;}
+        var result = "";
+
+        result = DI.GenerateDump();
+
+        Assert.DoesContain("DummyService:null",result);
+        Assert.DoesContain("Service1:7",result);
+        Assert.DoesContain("Service2:null",result);
+    }
+    
+    testcase InherDiFromParentVM
+    {
+        var expected = 20;
+        var startingValue = 10;
+        var result = 0;
+        var innerVM = VM();
+        register ParentService 2;
+
+        a = startingValue;
+        innerVM.InheritFromEnclosing();
+        innerVM.Start(InnerMainInjectedScale);
+        innerVM.CopyBackToEnclosing();
+        result = a;
+
+        Assert.AreEqual(expected, result);
+    }
+    
+
+    testcase ReRegisterAndInjectInSingleScope
+    {
+        var serviceInst = 7;
+        register Service serviceInst;
+        DI.Freeze();
+        register Service serviceInst;
+        var expected = serviceInst;
+        var result = 0;
+
+        result = inject Service;
+
+        Assert.AreEqual(expected, result);        
+    }
+}

@@ -1,0 +1,50 @@
+class MixMe
+{
+    Speak(){return cname;}
+    Modify(obj){obj.text = obj.text + cname;}
+}
+
+class MixedSingleMeth 
+{
+    mixin MixMe;
+    var bar = 2;
+}
+
+class MixedCombined
+{
+    mixin MixMe;
+
+    Modify(obj){obj.text = obj.text + cname;}
+}
+
+class StringContainer
+{
+    var text = "";
+}
+
+test MixinsMethods
+{
+    testcase ClassHasMixedInMethods
+    {
+        var expected = "MixMe";
+        var result = "";
+        var obj = MixedSingleMeth();
+
+        result = obj.Speak();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase CombinedMethodsUsed
+    {
+        var expected = "MixMeMixedCombined";
+        var result;
+        var obj = StringContainer();
+        var underTest = MixedCombined();
+
+        underTest.Modify(obj);
+        result = obj.text;
+
+        Assert.AreEqual(expected, result);
+    }
+}

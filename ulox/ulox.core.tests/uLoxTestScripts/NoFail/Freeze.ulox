@@ -1,0 +1,43 @@
+build bind "FreezeLibrary";
+
+class Foo
+{
+
+}
+
+test FreezeTests
+{
+    testcase CannotAddFieldsToFrozenClass
+    {
+        fun AttemptToAddToClass()
+        {
+            Foo.a = "not allowed";
+        }
+
+        Assert.Throws(AttemptToAddToClass);
+    }
+
+    testcase CannotAddFieldsToFrozenInstance
+    {
+        fun AttemptToAddToInst()
+        {
+            var f = Foo();
+            f.a = "not allowed";
+        }
+
+        Assert.Throws(AttemptToAddToInst);
+    }
+
+    testcase UnfreezeAndModify
+    {
+        var expected = 1;
+        var result = 0;
+        var inst = Foo();
+
+        Unfreeze(inst);
+        inst.a = expected;
+        result = inst.a;
+
+        Assert.AreEqual(expected, result);
+    }
+}

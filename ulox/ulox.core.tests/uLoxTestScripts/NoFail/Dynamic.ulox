@@ -1,0 +1,43 @@
+build bind "StandardClassesLibrary";
+
+test DynamicTests
+{
+    testcase DynamicField
+    {
+        var expected = 3;
+        var result = 0;
+        var o = Dynamic();
+        o.val = expected;
+
+        result = o.val;
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase DynamicMethod
+    {
+        var expected = 3;
+        var result = 0;
+        var o = Dynamic();
+        fun Method(){return expected;}
+        o.Meth = Method;
+
+        result = o.Meth();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase DynamicInstanceAccess
+    {
+        var expected = 3;
+        var result = 0;
+        var o = Dynamic();
+        o.val = expected;
+        fun Method(self){return self.val;}
+        o.Meth = Method;
+
+        result = o.Meth(o);
+
+        Assert.AreEqual(expected, result);
+    }
+}

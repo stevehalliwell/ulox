@@ -1,0 +1,130 @@
+class Simple {}
+
+class Method
+{
+    Meth(){return 1;}
+    MethBraceless{return 1;}
+}
+
+class WithInit
+{
+    init(a,b)
+    {
+        this.a = a;
+        this.b = b;
+    }
+
+    Sum() { return this.a + this.b; }
+}
+
+class AutoInitVars
+{
+    var a,b=10;
+    init(a) { }
+
+    Sum() { return this.a + this.b; }
+}
+
+class Statics
+{
+    static var a, b = 2;
+}
+
+test Classes
+{
+    testcase SimpleClassObject
+    {
+        Assert.IsNotNull(Simple);
+    }
+
+    testcase SimpleInstance
+    {
+        var s = Simple();
+
+        Assert.IsNotNull(s);
+    }
+
+    testcase Method
+    {
+        var expected = 1;
+        var result = 0;
+        var m = Method();
+
+        result = m.Meth();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase NoInstanceNeededWhenNoThisUsed
+    {
+        var expected = 1;
+        var result = 0;
+
+        result = Method.Meth();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase MethodBracelcess
+    {
+        var expected = 1;
+        var result = 0;
+        var m = Method();
+
+        result = m.MethBraceless();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase Initialiser
+    {
+        var expected = 3;
+        var result = 0;
+        var w = WithInit(1,2);
+
+        result = w.Sum();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase AutoInitialiser
+    {
+        var expected = 20;
+        var result = 0;
+        var w = AutoInitVars(10);
+
+        result = w.Sum();
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase BoundMethod
+    {
+        var expected = 20;
+        var result = 0;
+        var w = AutoInitVars(10);
+
+        var bound = w.Sum;
+        result = bound();
+
+        Assert.AreEqual(expected, result);
+    }
+
+//If this is after StaticsVarValueUsage we see statics leaking betweensub vms
+    testcase StaticsInitlaValuesUsage
+    {
+        Assert.IsNotNull(Statics);
+        Assert.IsNull(Statics.a);
+    }
+
+    testcase StaticsVarValueUsage
+    {
+        var expected = 4;
+        var result = 0;
+
+        Statics.a = Statics.b;
+        result = Statics.a + Statics.b;
+
+        Assert.AreEqual(expected, result);
+    }
+}

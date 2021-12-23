@@ -1,0 +1,140 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E1907AB2-7EE6-4494-A737-02031F7C4AF2}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ulox</RootNamespace>
+    <AssemblyName>ulox</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Runtime\Chunk.cs" />
+    <Compile Include="Runtime\ClassInternal.cs" />
+    <Compile Include="Runtime\Compiler\Compiler.cs" />
+    <Compile Include="Runtime\Compiler\CompilerBase.cs" />
+    <Compile Include="Runtime\Compiler\CompiletteAction.cs" />
+    <Compile Include="Runtime\Compiler\Compilettes\BuildCompilette.cs" />
+    <Compile Include="Runtime\Compiler\Compilettes\ClassCompilette.cs" />
+    <Compile Include="Runtime\Compiler\Compilettes\TestcaseCompillette.cs" />
+    <Compile Include="Runtime\Compiler\Compilettes\TestDeclarationCompilette.cs" />
+    <Compile Include="Runtime\DiContainer.cs" />
+    <Compile Include="Runtime\Engine\Context.cs" />
+    <Compile Include="Runtime\Engine\Disassembler.cs" />
+    <Compile Include="Runtime\Engine\DisassemblerBase.cs" />
+    <Compile Include="Runtime\Engine\DumpGlobals.cs" />
+    <Compile Include="Runtime\Engine\DumpStack.cs" />
+    <Compile Include="Runtime\Engine\Engine.cs" />
+    <Compile Include="Runtime\Engine\Program.cs" />
+    <Compile Include="Runtime\Engine\ProgramBase.cs" />
+    <Compile Include="Runtime\Engine\ScriptLocator.cs" />
+    <Compile Include="Runtime\Engine\VM.cs" />
+    <Compile Include="Runtime\Engine\VMBase.cs" />
+    <Compile Include="Runtime\FastStack.cs" />
+    <Compile Include="Runtime\HashedString.cs" />
+    <Compile Include="Runtime\IndexableStack.cs" />
+    <Compile Include="Runtime\InstanceInternal.cs" />
+    <Compile Include="Runtime\Interfaces\ICompilette.cs" />
+    <Compile Include="Runtime\Interfaces\IContext.cs" />
+    <Compile Include="Runtime\Interfaces\IEngine.cs" />
+    <Compile Include="Runtime\Interfaces\IProgram.cs" />
+    <Compile Include="Runtime\Interfaces\IScannerCharMatchTokenGenerator.cs" />
+    <Compile Include="Runtime\Interfaces\IScannerTokenGenerator.cs" />
+    <Compile Include="Runtime\Interfaces\IScriptLocator.cs" />
+    <Compile Include="Runtime\Interfaces\IULoxLibrary.cs" />
+    <Compile Include="Runtime\Interfaces\IVm.cs" />
+    <Compile Include="Runtime\Library\AssertLibrary.cs" />
+    <Compile Include="Runtime\Library\CoreLibrary.cs" />
+    <Compile Include="Runtime\Library\DebugLibrary.cs" />
+    <Compile Include="Runtime\Library\DiLibrary.cs" />
+    <Compile Include="Runtime\Library\DynamicClass.cs" />
+    <Compile Include="Runtime\Library\FreezeLibrary.cs" />
+    <Compile Include="Runtime\Library\ListClass.cs" />
+    <Compile Include="Runtime\Library\MapClass.cs" />
+    <Compile Include="Runtime\Library\StandardClassesLibrary.cs" />
+    <Compile Include="Runtime\Library\ULoxLibraryExt.cs" />
+    <Compile Include="Runtime\Library\VMClass.cs" />
+    <Compile Include="Runtime\Library\VMLibrary.cs" />
+    <Compile Include="Runtime\Scanner\Generators\CompoundCharScannerCharMatchTokenGenerator.cs" />
+    <Compile Include="Runtime\Scanner\Generators\ConfiguredSingleCharScannerCharMatchTokenGenerator.cs" />
+    <Compile Include="Runtime\Scanner\Generators\IdentifierScannerTokenGenerator.cs" />
+    <Compile Include="Runtime\Scanner\Generators\NumberScannerTokenGenerator.cs" />
+    <Compile Include="Runtime\Scanner\Generators\PrefixedCharScannerCharMatchTokenGenerator.cs" />
+    <Compile Include="Runtime\Scanner\Generators\SlashScannerTokenGenerator.cs" />
+    <Compile Include="Runtime\Scanner\Generators\StringScannerTokenGenerator.cs" />
+    <Compile Include="Runtime\Scanner\Generators\WhiteSpaceScannerTokenGenerator.cs" />
+    <Compile Include="Runtime\Scanner\Scanner.cs" />
+    <Compile Include="Runtime\Scanner\ScannerBase.cs" />
+    <Compile Include="Runtime\Scanner\ScannerBaseExt.cs" />
+    <Compile Include="Runtime\Table.cs" />
+    <Compile Include="Runtime\TestRunner.cs" />
+    <Compile Include="Runtime\Types\BoundMethod.cs" />
+    <Compile Include="Runtime\Types\BuildOpType.cs" />
+    <Compile Include="Runtime\Types\CallFrame.cs" />
+    <Compile Include="Runtime\Types\ClosureInternal.cs" />
+    <Compile Include="Runtime\Types\CompiledScript.cs" />
+    <Compile Include="Runtime\Types\CompilerState.cs" />
+    <Compile Include="Runtime\Types\Exceptions\AssertException.cs" />
+    <Compile Include="Runtime\Types\Exceptions\CompilerException.cs" />
+    <Compile Include="Runtime\Types\Exceptions\FreezeException.cs" />
+    <Compile Include="Runtime\Types\Exceptions\LoxException.cs" />
+    <Compile Include="Runtime\Types\Exceptions\PanicException.cs" />
+    <Compile Include="Runtime\Types\Exceptions\ScannerException.cs" />
+    <Compile Include="Runtime\Types\Exceptions\TestRunnerException.cs" />
+    <Compile Include="Runtime\Types\Exceptions\VMException.cs" />
+    <Compile Include="Runtime\Types\FunctionType.cs" />
+    <Compile Include="Runtime\Types\InterpreterResult.cs" />
+    <Compile Include="Runtime\Types\Local.cs" />
+    <Compile Include="Runtime\Types\LoopState.cs" />
+    <Compile Include="Runtime\Types\OpCode.cs" />
+    <Compile Include="Runtime\Types\ParseRule.cs" />
+    <Compile Include="Runtime\Types\Precedence.cs" />
+    <Compile Include="Runtime\Types\RunLengthLineNumber.cs" />
+    <Compile Include="Runtime\Types\TestOpType.cs" />
+    <Compile Include="Runtime\Types\Token.cs" />
+    <Compile Include="Runtime\Types\TokenType.cs" />
+    <Compile Include="Runtime\Types\Upvalue.cs" />
+    <Compile Include="Runtime\Types\UpvalueInternal.cs" />
+    <Compile Include="Runtime\Types\ValueType.cs" />
+    <Compile Include="Runtime\Value.cs" />
+    <Compile Include="Runtime\ValueTypeDataUnion.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Runtime\ULox.Runtime.asmdef" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

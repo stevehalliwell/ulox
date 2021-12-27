@@ -71,7 +71,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Package\uLoxTestScripts\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Package\Scripts\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ulox.core\ulox.core.csproj">

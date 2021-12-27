@@ -1,8 +1,0 @@
-test ContextNames
-{
-    testcase TCName
-    {
-        Assert.AreEqual("ContextNames",tsname);
-        Assert.AreEqual("TCName",tcname);
-    }
-}

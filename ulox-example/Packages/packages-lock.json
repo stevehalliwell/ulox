@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.ulox.core": {
+      "version": "file:E:/Repos/ulox/ulox/ulox.core/Package",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,

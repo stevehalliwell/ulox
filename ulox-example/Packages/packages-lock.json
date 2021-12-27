@@ -1,7 +1,13 @@
 {
   "dependencies": {
     "com.ulox.core": {
-      "version": "file:E:/Repos/ulox/ulox/ulox.core/Package",
+      "version": "file:../../ulox/ulox.core/Package",
+      "depth": 0,
+      "source": "local",
+      "dependencies": {}
+    },
+    "com.ulox.core.tests": {
+      "version": "file:../../ulox/ulox.core.tests/Package",
       "depth": 0,
       "source": "local",
       "dependencies": {}

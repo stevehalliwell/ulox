@@ -48,33 +48,30 @@
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Tests\BaseOnlyByteCodeLoxEngineTests.cs" />
-    <Compile Include="Tests\ByteCodeEngineTests.cs" />
-    <Compile Include="Tests\ByteCodeInterpreterTestEngine.cs" />
-    <Compile Include="Tests\ClassInherTests.cs" />
-    <Compile Include="Tests\ClassStaticTests.cs" />
-    <Compile Include="Tests\ClassTests.cs" />
-    <Compile Include="Tests\DynamicTests.cs" />
-    <Compile Include="Tests\EngineTestBase.cs" />
-    <Compile Include="Tests\FreezeTests.cs" />
-    <Compile Include="Tests\MixinTests.cs" />
-    <Compile Include="Tests\MutliReturnTests.cs" />
-    <Compile Include="Tests\ScannerTests.cs" />
-    <Compile Include="Tests\SimpleTestRunnerByteCodeLoxEngineTests.cs" />
-    <Compile Include="Tests\TableTests.cs" />
-    <Compile Include="Tests\TryItOutTests.cs" />
-    <Compile Include="Tests\UloxScriptTestBase.cs" />
-    <Compile Include="Tests\UloxScriptTests.cs" />
+    <Compile Include="Package\Tests\BaseOnlyByteCodeLoxEngineTests.cs" />
+    <Compile Include="Package\Tests\ByteCodeEngineTests.cs" />
+    <Compile Include="Package\Tests\ByteCodeInterpreterTestEngine.cs" />
+    <Compile Include="Package\Tests\ClassInherTests.cs" />
+    <Compile Include="Package\Tests\ClassStaticTests.cs" />
+    <Compile Include="Package\Tests\ClassTests.cs" />
+    <Compile Include="Package\Tests\DynamicTests.cs" />
+    <Compile Include="Package\Tests\EngineTestBase.cs" />
+    <Compile Include="Package\Tests\FreezeTests.cs" />
+    <Compile Include="Package\Tests\MixinTests.cs" />
+    <Compile Include="Package\Tests\MutliReturnTests.cs" />
+    <Compile Include="Package\Tests\ScannerTests.cs" />
+    <Compile Include="Package\Tests\SimpleTestRunnerByteCodeLoxEngineTests.cs" />
+    <Compile Include="Package\Tests\TableTests.cs" />
+    <Compile Include="Package\Tests\TryItOutTests.cs" />
+    <Compile Include="Package\Tests\UloxScriptTestBase.cs" />
+    <Compile Include="Package\Tests\UloxScriptTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
-    <None Include="Tests\ulox.Tests.asmdef" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="uLoxTestScripts\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <None Include="Package\uLoxTestScripts\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\ulox.core\ulox.core.csproj">

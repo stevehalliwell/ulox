@@ -5,7 +5,7 @@ using System.IO;
 [TestFixture]
 public class TryItOutTests : UloxScriptTestBase
 {
-    public const string TryItOutFolderName = "uLoxTestScripts/TryItOutSamples";
+    public const string TryItOutFolderName = "Package/uLoxTestScripts/TryItOutSamples";
 
     [SetUp]
     public override void Setup()

@@ -244,7 +244,6 @@ test T
         [TestCase("Functions")]
         [TestCase("Logic")]
         [TestCase("Math")]
-        [Ignore("Runner is mad about these paths, can resolve later.")]
         public void RunTestScript_NoFail(string fileNamePartial)
         {
             var noFailFiles = UloxScriptTestBase.GetFilesInSubFolder(NoFailUloxTests.NoFailFolderName);

@@ -4,7 +4,7 @@ using System.IO;
 
 public class NoFailUloxTests : UloxScriptTestBase
 {
-    public const string NoFailFolderName = "uLoxTestScripts/NoFail";
+    public const string NoFailFolderName = "Package/uLoxTestScripts/NoFail";
 
     [TestCaseSource(nameof(ScriptGenerator))]
     public void Tests(string script)

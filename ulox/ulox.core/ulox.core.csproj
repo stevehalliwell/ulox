@@ -133,8 +133,5 @@
     <Compile Include="Package\Runtime\Value.cs" />
     <Compile Include="Package\Runtime\ValueTypeDataUnion.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="Package\Runtime\ULox.Runtime.asmdef" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

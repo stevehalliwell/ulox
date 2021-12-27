@@ -281,6 +281,7 @@ fun foo(p)
                 Assert.AreEqual(tokenResults[i], resultingTokenTypes[i]);
             }
         }
+
         [Test]
         [TestCaseSource(nameof(Generator))]
         public void Scanner_TokenTypeMatch(string testString, TokenType[] tokenResults)

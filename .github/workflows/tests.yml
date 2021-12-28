@@ -8,26 +8,25 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  test:
-    name: Checkout and Run Tests
+  unity-test:
+    name: Checkout and Run Unity Tests
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           lfs: true
 
-      # Cache
       - uses: actions/cache@v2
         with:
-          path: Library
-          key: Library
+          path: ulox-example/Library
+          key: ulox-example/Library
 
-      # Test
-      - name: Run tests
+      - name: Run Unity tests
         uses: game-ci/unity-test-runner@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectPath: ulox-example/

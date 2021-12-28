@@ -1,6 +1,6 @@
 # ULox
 
-[![Tests](https://github.com/stevehalliwell/ulox/actions/workflows/tests.yml/badge.svg)](https://github.com/stevehalliwell/ulox/actions/workflows/tests.yml) [![Build](https://github.com/stevehalliwell/ulox/actions/workflows/build-deploy.yml/badge.svg)](https://github.com/stevehalliwell/ulox/actions/workflows/build-deploy.yml)
+[![Coverage Status](https://coveralls.io/repos/github/stevehalliwell/ulox/badge.svg?branch=main)](https://coveralls.io/github/stevehalliwell/ulox?branch=main) [![Tests](https://github.com/stevehalliwell/ulox/actions/workflows/tests.yml/badge.svg)](https://github.com/stevehalliwell/ulox/actions/workflows/tests.yml) [![Build](https://github.com/stevehalliwell/ulox/actions/workflows/build-deploy.yml/badge.svg)](https://github.com/stevehalliwell/ulox/actions/workflows/build-deploy.yml)
 
 A scripting language and language playground, in C#, in Unity.
 

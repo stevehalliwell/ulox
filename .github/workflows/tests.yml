@@ -8,6 +8,31 @@ on:
     branches: [ main, develop ]
 
 jobs:
+  lox-test:
+    name: checkout and run c# tests
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+      - name: Setup VSTest
+        uses: darenm/Setup-VSTest@v1
+
+      - run: dotnet test ulox/ /p:CollectCoverage=true /p:CoverletOutputFormat=lcov 
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ulox/ulox.core.tests/coverage.info
+
   unity-test:
     name: Checkout and Run Unity Tests
     runs-on: ubuntu-latest

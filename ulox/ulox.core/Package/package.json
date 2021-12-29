@@ -1,0 +1,11 @@
+{
+	"name": "com.ulox.core",
+	"displayName":"ULox Core",
+	"version": "0.0.1",
+    "unity": "2019.2",
+    "keywords": ["scripting"],
+    "category": "tools",
+	"description": "A bytecode interpreted language in c# for game scripting.",
+    "dependencies": {
+    }
+}

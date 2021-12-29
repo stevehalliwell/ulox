@@ -8,26 +8,58 @@ on:
     branches: [ main, develop ]
 
 jobs:
-  test:
-    name: Checkout and Run Tests
-    runs-on: ubuntu-latest
+  lox-test:
+    name: checkout and run c# tests
+    runs-on: windows-latest
+
     steps:
-      # Checkout
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
           lfs: true
 
-      # Cache
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
+      - name: Setup VSTest
+        uses: darenm/Setup-VSTest@v1
+
+      - run: dotnet test ulox/ --logger "trx;LogFileName=TestResults.trx" /p:CollectCoverage=true /p:CoverletOutputFormat=lcov 
+
+      - name: Coveralls
+        uses: coverallsapp/github-action@master
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: ulox/ulox.core.tests/coverage.info
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: ulox.core Tests
+          path: ulox/ulox.core.tests/TestResults/TestResults.trx
+          reporter: dotnet-trx
+
+  unity-test:
+    name: Checkout and Run Unity Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+
       - uses: actions/cache@v2
         with:
-          path: Library
-          key: Library
+          path: ulox-example/Library
+          key: ulox-example/Library
 
-      # Test
-      - name: Run tests
+      - name: Run Unity tests
         uses: game-ci/unity-test-runner@v2
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
+          projectPath: ulox-example/

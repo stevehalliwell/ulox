@@ -300,7 +300,7 @@ class T
 
 var t = T();");
 
-            Assert.AreEqual("Class 'T', encountered element of stage 'Init' too late, class is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Type 'T', encountered element of stage 'Init' too late, type is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -348,7 +348,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Class 'T', encountered element of stage 'Var' too late, class is at stage 'Init'. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Type 'T', encountered element of stage 'Var' too late, type is at stage 'Init'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -869,6 +869,26 @@ t.Meth(1,2,3,4,5,6,7);
 ");
 
             Assert.AreEqual("48", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void PropertyGet_WhenDeclaredAndCalledViaShortHand_ShouldReturnExpectedValue()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a = 0;
+    Inc(){this.a = this.a + 1;}
+    A{return this.a;}
+}
+
+var t = T();
+t.Inc();
+t.Inc();
+print(t.A());
+");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
         }
     }
 }

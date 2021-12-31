@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ULox
 {
@@ -6,301 +7,150 @@ namespace ULox
     {
         public static readonly HashedString InitMethodName = new HashedString("init");
 
-        protected Dictionary<TokenType, ICompilette> innerDeclarationCompilettes = new Dictionary<TokenType, ICompilette>();
+        protected Dictionary<TokenType, ITypeBodyCompilette> _innerDeclarationCompilettes = new Dictionary<TokenType, ITypeBodyCompilette>();
+        private ITypeBodyCompilette _bodyCompiletteFallback;
 
-        protected enum Stage
-        { Invalid, Begin, Static, Mixin, Var, Init, Method, Complete }
+        protected TypeCompiletteStage _stage = TypeCompiletteStage.Invalid;
+        public string CurrentClassName { get; protected set; }
+        private short _initChainInstruction;
+        public short InitChainInstruction => _initChainInstruction;
+        private bool _hasSuper;
+        private readonly ITypeBodyCompilette[] _stageOrderedBodyCompilettes;
 
-        protected Stage _stage = Stage.Invalid;
-        public string CurrentClassName { get; private set; }
+        public ClassCompilette()
+        {
+            AddInnerDeclarationCompilette(new TypeStaticElementCompilette());
+            AddInnerDeclarationCompilette(new TypeInitCompilette());
+            AddInnerDeclarationCompilette(new TypeMethodCompilette());
+            AddInnerDeclarationCompilette(new TypeMixinCompilette(this));
+            AddInnerDeclarationCompilette(new TypePropertyCompilette(this));
 
-        private List<string> classVarNames = new List<string>();
-        private Stack<string> mixinNames = new Stack<string>();
-        private int _initFragStartLocation = -1;
-        private int _previousInitFragJumpLocation = -1;
+            _stageOrderedBodyCompilettes = _innerDeclarationCompilettes.Values
+                .OrderBy(x => x.Stage)
+                .ToArray();
+        }
 
-        public void AddInnerDeclarationCompilette(ICompilette compilette)
-            => innerDeclarationCompilettes[compilette.Match] = compilette;
+        public void AddInnerDeclarationCompilette(ITypeBodyCompilette compilette)
+        {
+            _innerDeclarationCompilettes[compilette.Match] = compilette;
+            if (compilette.Match == TokenType.NONE)
+                _bodyCompiletteFallback = compilette;
+        }
 
-        public TokenType Match => TokenType.CLASS;
+        public virtual TokenType Match => TokenType.CLASS;
 
-        public void Process(CompilerBase compiler)
+        public virtual void Process(CompilerBase compiler)
         {
             ClassDeclaration(compiler);
         }
 
         private void ClassDeclaration(CompilerBase compiler)
         {
-            _initFragStartLocation = -1;
-            _previousInitFragJumpLocation = -1;
+            foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
+                bodyCompilette.Start();
 
-            _stage = Stage.Begin;
-            classVarNames.Clear();
-            mixinNames.Clear();
-            compiler.Consume(TokenType.IDENTIFIER, "Expect class name.");
-            var className = (string)compiler.PreviousToken.Literal;
-            var compState = compiler.CurrentCompilerState;
-            CurrentClassName = className;
+            DoBeginDeclareType(compiler, out var compState);
+            DoDeclareLineInher(compiler, compState);
+            DoEndDeclareType(compiler);
 
-            byte nameConstant = compiler.AddStringConstant();
-            compiler.DeclareVariable();
-            EmitClassOp(compiler, nameConstant, out var initChainInstruction);
-            compiler.DefineVariable(nameConstant);
+            foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
+                bodyCompilette.PreBody(compiler);
 
-            bool hasSuper = false;
+            DoClassBody(compiler);
 
-            if (compiler.Match(TokenType.LESS))
-            {
-                hasSuper = DoClassInher(compiler, className, compState);
-            }
+            foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
+                bodyCompilette.PostBody(compiler);
 
-            compiler.NamedVariable(className, false);
-            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before class body.");
-            while (!compiler.Check(TokenType.CLOSE_BRACE) && !compiler.Check(TokenType.EOF))
-            {
-                if (compiler.Match(TokenType.STATIC))
-                {
-                    ValidStage(Stage.Static);
-                    DoClassStatic(compiler);
-                }
-                else if (compiler.Match(TokenType.MIXIN))
-                {
-                    ValidStage(Stage.Mixin);
-                    DoClassMixins(compiler);
-                }
-                else if (compiler.Match(TokenType.VAR))
-                {
-                    ValidStage(Stage.Var);
-                    Property(compiler);
-                }
-                else if (compiler.Match(TokenType.INIT))
-                {
-                    ValidStage(Stage.Init);
-                    DoInit(compiler);
-                }
-                else if (innerDeclarationCompilettes.TryGetValue(compiler.CurrentToken.TokenType, out var complette))
-                {
-                    ValidStage(Stage.Method);
-                    compiler.Advance();
-                    complette.Process(compiler);
-                }
-                else
-                {
-                    ValidStage(Stage.Method);
-                    DoClassMethod(compiler);
-                }
-            }
+            DoEndType(compiler);
 
-            _stage = Stage.Complete;
-
-            //dump all mixins after everything else so we don't have to fight regular class setup process in vm
-            while (mixinNames.Count > 0)
-            {
-                var mixinName = mixinNames.Pop();
-                compiler.NamedVariable(mixinName, false);
-                compiler.NamedVariable(CurrentClassName, false);
-                compiler.EmitOpAndBytes(OpCode.MIXIN);
-            }
-
-            //emit return //if we are the last link in the chain this ends our call
-
-            if (_initFragStartLocation != -1)
-            {
-                compiler.WriteUShortAt(initChainInstruction, (ushort)_initFragStartLocation);
-            }
-
-            //return stub used by init and test chains
-            var classReturnEnd = compiler.EmitJump(OpCode.JUMP);
-
-            if (_previousInitFragJumpLocation != -1)
-                compiler.PatchJump(_previousInitFragJumpLocation);
-
-            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
-
-            compiler.PatchJump(classReturnEnd);
-
-            compiler.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
-            compiler.EmitOpCode(OpCode.POP);
-
-            if (hasSuper)
-            {
-                compiler.EndScope();
-            }
+            foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
+                bodyCompilette.End();
 
             CurrentClassName = null;
         }
 
-        private void ValidStage(Stage stage)
+        protected void DoEndType(CompilerBase compiler)
+        {
+            compiler.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
+            compiler.EmitOpCode(OpCode.POP);
+
+            if (_hasSuper)
+            {
+                compiler.EndScope();
+            }
+        }
+
+        protected void DoEndDeclareType(CompilerBase compiler)
+        {
+            compiler.NamedVariable(CurrentClassName, false);
+            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
+        }
+
+        protected void DoBeginDeclareType(CompilerBase compiler, out CompilerState compState)
+        {
+            _stage = TypeCompiletteStage.Begin;
+            compiler.Consume(TokenType.IDENTIFIER, "Expect type name.");
+            CurrentClassName = (string)compiler.PreviousToken.Literal;
+            compState = compiler.CurrentCompilerState;
+            byte nameConstant = compiler.AddStringConstant();
+            compiler.DeclareVariable();
+            EmitClassOp(compiler, nameConstant);
+            compiler.DefineVariable(nameConstant);
+        }
+
+        protected void DoClassBody(CompilerBase compiler)
+        {
+            while (!compiler.Check(TokenType.CLOSE_BRACE) && !compiler.Check(TokenType.EOF))
+            {
+                var compilette = _bodyCompiletteFallback;
+                if (_innerDeclarationCompilettes.TryGetValue(compiler.CurrentToken.TokenType, out var matchingCompilette))
+                {
+                    compiler.Advance();
+                    compilette = matchingCompilette;
+                }
+
+                ValidStage(compilette.Stage);
+                compilette.Process(compiler);
+            }
+
+            _stage = TypeCompiletteStage.Complete;
+        }
+
+        protected void ValidStage(TypeCompiletteStage stage)
         {
             if (_stage > stage)
             {
-                throw new CompilerException($"Class '{CurrentClassName}', encountered element of stage '{stage}' too late, class is at stage '{_stage}'. This is not allowed.");
+                throw new CompilerException($"Type '{CurrentClassName}', encountered element of stage '{stage}' too late, type is at stage '{_stage}'. This is not allowed.");
             }
             _stage = stage;
         }
 
-        private static void EmitClassOp(
+        private void EmitClassOp(
             CompilerBase compiler,
-            byte nameConstant,
-            out short initInstructionLoc)
+            byte nameConstant)
         {
             compiler.EmitOpAndBytes(OpCode.CLASS, nameConstant);
-            initInstructionLoc = (short)compiler.CurrentChunk.Instructions.Count;
+            _initChainInstruction = (short)compiler.CurrentChunk.Instructions.Count;
             compiler.EmitUShort(0);
         }
 
-        private static bool DoClassInher(CompilerBase compiler, string className, CompilerState compState)
+        protected void DoDeclareLineInher(CompilerBase compiler, CompilerState compState)
         {
-            bool hasSuper;
+            _hasSuper = false;
+            if (!compiler.Match(TokenType.LESS)) return;
+
             compiler.Consume(TokenType.IDENTIFIER, "Expect superclass name.");
             compiler.NamedVariableFromPreviousToken(false);
-            if (className == (string)compiler.PreviousToken.Literal)
+            if (CurrentClassName == (string)compiler.PreviousToken.Literal)
                 throw new CompilerException("A class cannot inher from itself.");
 
             compiler.BeginScope();
             compiler.AddLocal(compState, "super");
             compiler.DefineVariable(0);
 
-            compiler.NamedVariable(className, false);
+            compiler.NamedVariable(CurrentClassName, false);
             compiler.EmitOpCode(OpCode.INHERIT);
-            hasSuper = true;
-            return hasSuper;
-        }
-
-        private void DoClassMixins(CompilerBase compiler)
-        {
-            do
-            {
-                compiler.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
-                mixinNames.Push(compiler.PreviousToken.Literal as string);
-            } while (compiler.Match(TokenType.COMMA));
-
-            //TODO all of these methods trail with end statement, DRY.
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after mixin declaration.");
-        }
-
-        private void DoInit(CompilerBase compiler)
-        {
-            byte constant = compiler.AddCustomStringConstant(InitMethodName.String);
-            CreateInitMethod(compiler);
-            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
-        }
-
-        private void CreateInitMethod(CompilerBase compiler)
-        {
-            compiler.Function(InitMethodName.String, FunctionType.Init);
-        }
-
-        private void DoClassMethod(CompilerBase compiler)
-        {
-            compiler.Consume(TokenType.IDENTIFIER, "Expect method name.");
-            byte constant = compiler.AddStringConstant();
-
-            var name = compiler.CurrentChunk.ReadConstant(constant).val.asString.String;
-            FunctionType funcType = FunctionType.Method;
-            compiler.Function(name, funcType);
-            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
-        }
-
-        private void DoClassStatic(CompilerBase compiler)
-        {
-            if (compiler.Match(TokenType.VAR))
-            {
-                StaticProperty(compiler);
-            }
-            else
-            {
-                StaticMethod(compiler);
-            }
-        }
-
-        private void StaticMethod(CompilerBase compiler)
-        {
-            compiler.Consume(TokenType.IDENTIFIER, "Expect method name.");
-            byte constant = compiler.AddStringConstant();
-
-            var name = compiler.CurrentChunk.ReadConstant(constant).val.asString;
-
-            compiler.Function(name.String, FunctionType.Function);
-            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
-        }
-
-        private void Property(CompilerBase compiler)
-        {
-            do
-            {
-                compiler.Consume(TokenType.IDENTIFIER, "Expect var name.");
-                byte nameConstant = compiler.AddStringConstant();
-
-                classVarNames.Add(compiler.CurrentChunk.ReadConstant(nameConstant).val.asString.String);
-
-                var compState = compiler.CurrentCompilerState;
-
-                int initFragmentJump = -1;
-                //emit jump // to skip this during imperative
-                initFragmentJump = compiler.EmitJump(OpCode.JUMP);
-                //patch jump previous init fragment if it exists
-                if (_previousInitFragJumpLocation != -1)
-                {
-                    compiler.PatchJump(_previousInitFragJumpLocation);
-                }
-                else
-                {
-                    _initFragStartLocation = compiler.CurrentChunk.Instructions.Count;
-                }
-
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
-
-                //if = consume it and then
-                //eat 1 expression or a push null
-                if (compiler.Match(TokenType.ASSIGN))
-                {
-                    compiler.Expression();
-                }
-                else
-                {
-                    compiler.EmitOpCode(OpCode.NULL);
-                }
-
-                //emit set prop
-                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
-                compiler.EmitOpCode(OpCode.POP);
-                //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                _previousInitFragJumpLocation = compiler.EmitJump(OpCode.JUMP);
-
-                //patch jump from skip imperative
-                compiler.PatchJump(initFragmentJump);
-            } while (compiler.Match(TokenType.COMMA));
-
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after property declaration.");
-        }
-
-        private void StaticProperty(CompilerBase compiler)
-        {
-            do
-            {
-                compiler.Consume(TokenType.IDENTIFIER, "Expect var name.");
-                byte nameConstant = compiler.AddStringConstant();
-
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
-
-                //if = consume it and then
-                //eat 1 expression or a push null
-                if (compiler.Match(TokenType.ASSIGN))
-                {
-                    compiler.Expression();
-                }
-                else
-                {
-                    compiler.EmitOpCode(OpCode.NULL);
-                }
-
-                //emit set prop
-                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
-                compiler.EmitOpCode(OpCode.POP);
-            } while (compiler.Match(TokenType.COMMA));
-
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after property declaration.");
+            _hasSuper = true;
         }
     }
 }

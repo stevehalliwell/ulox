@@ -5,11 +5,11 @@ namespace ULox
     public class TypeMixinCompilette : ITypeBodyCompilette
     {
         private Stack<string> _mixinNames = new Stack<string>();
-        private ClassCompilette _classCompilette;
+        private TypeCompilette _typeCompilette;
 
-        public TypeMixinCompilette(ClassCompilette classCompilette)
+        public TypeMixinCompilette(TypeCompilette typeCompilette)
         {
-            _classCompilette = classCompilette;
+            _typeCompilette = typeCompilette;
         }
 
         public TokenType Match => TokenType.MIXIN;
@@ -26,7 +26,7 @@ namespace ULox
             {
                 var mixinName = _mixinNames.Pop();
                 compiler.NamedVariable(mixinName, false);
-                compiler.NamedVariable(_classCompilette.CurrentClassName, false);
+                compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
                 compiler.EmitOpAndBytes(OpCode.MIXIN);
             }
         }

@@ -5,11 +5,12 @@ namespace ULox
     public class DiContainer
     {
         private bool _isFrozen = false;
-        private Table _diTable = new Table();
+        private readonly Table _diTable = new Table();
 
         public int Count => _diTable.Count;
 
-        public void Freeze() => _isFrozen = true;
+        public void Freeze() 
+            => _isFrozen = true;
 
         public DiContainer ShallowCopy()
         {
@@ -21,14 +22,14 @@ namespace ULox
 
             if (_isFrozen)
                 ret.Freeze();
-            
+
             return ret;
         }
 
         public string GenerateDump()
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"Registered in DI{(_isFrozen?"(frozen)":"")}:");
+            sb.AppendLine($"Registered in DI{(_isFrozen ? "(frozen)" : "")}:");
 
             foreach (var item in _diTable)
             {

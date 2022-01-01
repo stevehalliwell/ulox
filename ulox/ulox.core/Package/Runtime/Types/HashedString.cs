@@ -8,7 +8,12 @@ namespace ULox
     {
         public readonly int Hash;
         public readonly string String;
-        public HashedString(string str) { String = str; Hash = str.GetHashCode(); }
+
+        public HashedString(string str)
+        { 
+            String = str; 
+            Hash = str.GetHashCode(); 
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CompareTo(HashedString other) => this.Hash.CompareTo(other.Hash);

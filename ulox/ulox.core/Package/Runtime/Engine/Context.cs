@@ -4,8 +4,8 @@ namespace ULox
 {
     public class Context : IContext
     {
-        private Dictionary<string, IULoxLibrary> _libraries = new Dictionary<string, IULoxLibrary>();
-        private List<CompiledScript> _compiledChunks = new List<CompiledScript>();
+        private readonly Dictionary<string, IULoxLibrary> _libraries = new Dictionary<string, IULoxLibrary>();
+        private readonly List<CompiledScript> _compiledChunks = new List<CompiledScript>();
 
         public Context(
             IProgram program,

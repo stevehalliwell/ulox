@@ -8,11 +8,11 @@ namespace ULox
 
         private int _initFragStartLocation = -1;
         private int _previousInitFragJumpLocation = -1;
-        private ClassCompilette _classCompilette;
+        private TypeCompilette _typeCompilette;
 
-        public TypePropertyCompilette(ClassCompilette classCompilette)
+        public TypePropertyCompilette(TypeCompilette typeCompilette)
         {
-            _classCompilette = classCompilette;
+            _typeCompilette = typeCompilette;
         }
 
         public TokenType Match => TokenType.VAR;
@@ -27,7 +27,7 @@ namespace ULox
             //emit return //if we are the last link in the chain this ends our call
 
             if (_initFragStartLocation != -1)
-                compiler.WriteUShortAt(_classCompilette.InitChainInstruction, (ushort)_initFragStartLocation);
+                compiler.WriteUShortAt(_typeCompilette.InitChainInstruction, (ushort)_initFragStartLocation);
 
             //return stub used by init and test chains
             var classReturnEnd = compiler.EmitJump(OpCode.JUMP);
@@ -53,9 +53,8 @@ namespace ULox
 
                 _classVarNames.Add(compiler.CurrentChunk.ReadConstant(nameConstant).val.asString.String);
 
-                int initFragmentJump = -1;
                 //emit jump // to skip this during imperative
-                initFragmentJump = compiler.EmitJump(OpCode.JUMP);
+                int initFragmentJump = compiler.EmitJump(OpCode.JUMP);
                 //patch jump previous init fragment if it exists
                 if (_previousInitFragJumpLocation != -1)
                 {

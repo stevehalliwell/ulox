@@ -8,7 +8,6 @@ namespace ULox
 {
     public class TestRunner
     {
-
         private readonly Dictionary<string, bool> tests = new Dictionary<string, bool>();
 
         public TestRunner(Func<VMBase> createVM)
@@ -31,7 +30,8 @@ namespace ULox
             tests[id] = false;
         }
 
-        public void EndTest(HashedString name) => tests[$"{CurrentTestSetName}:{name}"] = true;
+        public void EndTest(HashedString name) 
+            => tests[$"{CurrentTestSetName}:{name}"] = true;
 
         public string GenerateDump()
         {
@@ -51,21 +51,21 @@ namespace ULox
             var testOpType = (TestOpType)vm.ReadByte(chunk);
             switch (testOpType)
             {
-                case TestOpType.CaseStart:
-                    StartTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
-                    vm.ReadByte(chunk);//byte we don't use
-                    break;
+            case TestOpType.CaseStart:
+                StartTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
+                vm.ReadByte(chunk);//byte we don't use
+                break;
 
-                case TestOpType.CaseEnd:
-                    EndTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
-                    vm.ReadByte(chunk);//byte we don't use
-                    break;
+            case TestOpType.CaseEnd:
+                EndTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
+                vm.ReadByte(chunk);//byte we don't use
+                break;
 
-                case TestOpType.TestSetStart:
-                    DoTestSet(vm, chunk);
-                    break;
+            case TestOpType.TestSetStart:
+                DoTestSet(vm, chunk);
+                break;
 
-                case TestOpType.TestSetEnd:
+            case TestOpType.TestSetEnd:
                 CurrentTestSetName = new HashedString(string.Empty);
                 vm.ReadByte(chunk);//byte we don't use
                 vm.ReadByte(chunk);//byte we don't use

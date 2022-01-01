@@ -5,8 +5,8 @@ namespace ULox
 {
     public class ScriptLocator : IScriptLocator
     {
-        private Dictionary<string, string> _builtinScripts;
-        private DirectoryInfo _directory;
+        private readonly Dictionary<string, string> _builtinScripts;
+        private readonly DirectoryInfo _directory;
 
         public ScriptLocator(
             Dictionary<string, string> builtinScripts,

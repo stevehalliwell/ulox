@@ -40,4 +40,8 @@
   <ItemGroup>
     <ProjectReference Include="..\ulox.core\ulox.core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="**/*.meta" Visible="false" />
+    <None Update="**/*.asmdef" Visible="false" />
+  </ItemGroup>
 </Project>

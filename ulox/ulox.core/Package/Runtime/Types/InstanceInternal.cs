@@ -4,7 +4,8 @@ namespace ULox
 {
     public class InstanceInternal
     {
-        public InstanceInternal()
+        public InstanceInternal() 
+            : this(null)
         {
         }
 
@@ -39,22 +40,20 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetField(HashedString key, out Value val) => Fields.TryGetValue(key, out val);
+        public bool TryGetField(HashedString key, out Value val) 
+            => Fields.TryGetValue(key, out val);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool RemoveField(HashedString fieldNameStr) => Fields.Remove(fieldNameStr);
+        public bool RemoveField(HashedString fieldNameStr) 
+            => Fields.Remove(fieldNameStr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Freeze()
-        {
-            IsFrozen = true;
-        }
+            => IsFrozen = true;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Unfreeze()
-        {
-            IsFrozen = false;
-        }
+        public void Unfreeze() 
+            => IsFrozen = false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyFrom(InstanceInternal inst)

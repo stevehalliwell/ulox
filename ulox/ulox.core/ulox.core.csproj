@@ -20,4 +20,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Net.Http" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="**/*.meta" Visible="false" />
+    <None Update="**/*.asmdef" Visible="false" />
+  </ItemGroup>
 </Project>

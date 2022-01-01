@@ -70,7 +70,7 @@
 
         protected void This(bool canAssign)
         {
-            if (_classCompiler.CurrentClassName == null)
+            if (_classCompiler.CurrentTypeName == null)
                 throw new CompilerException("Cannot use this outside of a class declaration.");
 
             Variable(false);
@@ -78,7 +78,7 @@
 
         protected void Super(bool canAssign)
         {
-            if (_classCompiler.CurrentClassName == null)
+            if (_classCompiler.CurrentTypeName == null)
                 throw new CompilerException("Cannot use super outside a class.");
 
             Consume(TokenType.DOT, "Expect '.' after a super.");
@@ -102,7 +102,7 @@
 
         public void CName(bool canAssign)
         {
-            var cname = _classCompiler.CurrentClassName;
+            var cname = _classCompiler.CurrentTypeName;
             CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), PreviousToken.Line);
         }
 

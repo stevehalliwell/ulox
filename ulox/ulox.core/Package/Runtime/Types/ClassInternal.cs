@@ -8,7 +8,7 @@ namespace ULox
         public const int FirstMathOp = (int)OpCode.ADD;
         public const int LastMathOp = (int)OpCode.MODULUS;
 
-        public readonly static List<HashedString> MathOperatorMethodNames = new List<HashedString>()
+        public static readonly HashedString[] MathOperatorMethodNames = new HashedString[]
         {
             new HashedString("_add"),
             new HashedString("_sub"),
@@ -20,7 +20,7 @@ namespace ULox
         public const int FirstCompOp = (int)OpCode.EQUAL;
         public const int LastCompOp = (int)OpCode.GREATER;
 
-        public readonly static List<HashedString> ComparisonOperatorMethodNames = new List<HashedString>()
+        public static readonly HashedString[] ComparisonOperatorMethodNames = new HashedString[]
         {
             new HashedString("_eq"),
             new HashedString("_ls"),
@@ -34,6 +34,7 @@ namespace ULox
 
         //TODO these props also need to be write protected by the freeze
         public HashedString Name { get; protected set; }
+
         public Value Initialiser { get; protected set; } = Value.Null();
         public ClassInternal Super { get; protected set; }
         public List<(ClosureInternal, int)> InitChains { get; protected set; } = new List<(ClosureInternal, int)>();
@@ -45,7 +46,7 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value GetMethod(HashedString name) => methods[name];
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetMethod(HashedString name, out Value method) => methods.TryGetValue(name, out method);
 
@@ -53,18 +54,18 @@ namespace ULox
         {
             CanWrite();
             methods[key] = method;
-            if (key == ClassCompilette.InitMethodName)
+            if (key == TypeCompilette.InitMethodName)
             {
                 Initialiser = method;
             }
-            var opIndex = MathOperatorMethodNames.FindIndex(x => key.Hash == x.Hash);
+            var opIndex = System.Array.FindIndex(MathOperatorMethodNames, x => key.Hash == x.Hash);
             if (opIndex != -1)
             {
                 mathOperators[opIndex] = method;
             }
             else
             {
-                opIndex = ComparisonOperatorMethodNames.FindIndex(x => key.Hash == x.Hash);
+                opIndex = System.Array.FindIndex(ComparisonOperatorMethodNames, x => key.Hash == x.Hash);
                 if (opIndex != -1)
                 {
                     compOperators[opIndex] = method;
@@ -102,7 +103,6 @@ namespace ULox
             var flavour = flavourValue.val.asClass;
             flavours[flavour.Name] = flavourValue;
 
-
             foreach (var flavourMeth in flavour.methods)
             {
                 MixinMethod(flavourMeth.Key, flavourMeth.Value);
@@ -110,7 +110,7 @@ namespace ULox
 
             foreach (var flavourInitChain in flavour.InitChains)
             {
-                if(!InitChains.Contains(flavourInitChain))
+                if (!InitChains.Contains(flavourInitChain))
                 {
                     InitChains.Add(flavourInitChain);
                 }
@@ -119,7 +119,7 @@ namespace ULox
 
         private void MixinMethod(HashedString key, Value value)
         {
-            if(methods.TryGetValue(key, out var existing))
+            if (methods.TryGetValue(key, out var existing))
             {
                 //combine
                 if (existing.type == ValueType.Closure)
@@ -157,8 +157,6 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual void FinishCreation(InstanceInternal inst)
-        {
-            inst.Freeze();
-        }
+            => inst.Freeze();
     }
 }

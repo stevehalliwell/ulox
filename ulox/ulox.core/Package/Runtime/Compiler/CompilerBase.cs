@@ -149,90 +149,18 @@ namespace ULox
                 chunk = new Chunk(name),
             });
 
+            //todo refactor out
             if (functionType == FunctionType.Method || functionType == FunctionType.Init)
-                AddLocal(compilerStates.Peek(), "this", 0);
+                CurrentCompilerState.AddLocal("this", 0);
             else
-                AddLocal(compilerStates.Peek(), "", 0);
+                CurrentCompilerState.AddLocal("", 0);
         }
 
-        public void AddLocal(CompilerState comp, string name, int depth = -1)
-        {
-            if (comp.localCount == byte.MaxValue)
-                throw new CompilerException("Too many local variables.");
-
-            comp.locals[comp.localCount++] = new Local(name, depth);
-        }
-
-        private int ResolveUpvalue(CompilerState compilerState, string name)
-        {
-            if (compilerState.enclosing == null) return -1;
-
-            int local = ResolveLocal(compilerState.enclosing, name);
-            if (local != -1)
-            {
-                compilerState.enclosing.locals[local].IsCaptured = true;
-                return AddUpvalue(compilerState, (byte)local, true);
-            }
-
-            int upvalue = ResolveUpvalue(compilerState.enclosing, name);
-            if (upvalue != -1)
-            {
-                return AddUpvalue(compilerState, (byte)upvalue, false);
-            }
-
-            return -1;
-        }
-
-        private int AddUpvalue(CompilerState compilerState, byte index, bool isLocal)
-        {
-            int upvalueCount = compilerState.chunk.UpvalueCount;
-
-            Upvalue upvalue = default;
-
-            for (int i = 0; i < upvalueCount; i++)
-            {
-                upvalue = compilerState.upvalues[i];
-                if (upvalue.index == index && upvalue.isLocal == isLocal)
-                {
-                    return i;
-                }
-            }
-
-            if (upvalueCount == byte.MaxValue)
-            {
-                throw new CompilerException("Too many closure variables in function.");
-            }
-
-            compilerState.upvalues[upvalueCount] = new Upvalue(index, isLocal);
-            return compilerState.chunk.UpvalueCount++;
-        }
-
-        private int ResolveLocal(CompilerState compilerState, string name)
-        {
-            for (int i = compilerState.localCount - 1; i >= 0; i--)
-            {
-                var local = compilerState.locals[i];
-                if (name == local.Name)
-                {
-                    if (local.Depth == -1)
-                        throw new CompilerException($"{name}. Cannot referenece a variable in it's own initialiser.");  //todo all of these throws need to report names and locations
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        public void NamedVariableFromPreviousToken(bool canAssign)
-        {
-            var name = (string)PreviousToken.Literal;
-            NamedVariable(name, canAssign);
-        }
-
+        //TODO refactor
         public void NamedVariable(string name, bool canAssign)
         {
             OpCode getOp = OpCode.FETCH_GLOBAL, setOp = OpCode.ASSIGN_GLOBAL;
-            var argID = ResolveLocal(compilerStates.Peek(), name);
+            var argID = CurrentCompilerState.ResolveLocal(name);
             if (argID != -1)
             {
                 getOp = OpCode.GET_LOCAL;
@@ -240,7 +168,7 @@ namespace ULox
             }
             else
             {
-                argID = ResolveUpvalue(compilerStates.Peek(), name);
+                argID = CurrentCompilerState.ResolveUpvalue(name);
                 if (argID != -1)
                 {
                     getOp = OpCode.GET_UPVALUE;
@@ -316,6 +244,7 @@ namespace ULox
 
         protected void EmitReturn()
         {
+            //todo refactor out
             if (compilerStates.Peek().functionType == FunctionType.Init)
                 EmitOpAndBytes(OpCode.GET_LOCAL, 0);
             else
@@ -361,6 +290,18 @@ namespace ULox
         {
             CurrentChunk.WriteSimple(op, PreviousToken.Line);
         }
+
+        protected void EmitOpCodes(params OpCode[] ops)
+        {
+            for (int i = 0; i < ops.Length; i++)
+                EmitOpCode(ops[i]);
+        }
+
+        public byte AddStringConstant()
+            => AddCustomStringConstant((string)PreviousToken.Literal);
+
+        public byte AddCustomStringConstant(string str)
+            => CurrentChunk.AddConstant(Value.New(str));
 
         public void EmitOpAndBytes(OpCode op, params byte[] b)
         {
@@ -565,23 +506,14 @@ namespace ULox
         {
             if (CurrentCompilerState.scopeDepth > 0)
             {
-                MarkInitialised();
+                CurrentCompilerState.MarkInitialised();
                 return;
             }
 
             EmitOpAndBytes(OpCode.DEFINE_GLOBAL, global);
         }
 
-        protected void EmitOpCodePair(OpCode op1, OpCode op2)
-        {
-            CurrentChunk.WriteSimple(op1, PreviousToken.Line);
-            CurrentChunk.WriteSimple(op2, PreviousToken.Line);
-        }
-
-        public byte AddStringConstant() => AddCustomStringConstant((string)PreviousToken.Literal);
-
-        public byte AddCustomStringConstant(string str) => CurrentChunk.AddConstant(Value.New(str));
-
+        //TODO can move to compiler state?
         public void DeclareVariable()
         {
             var comp = CurrentCompilerState;
@@ -589,39 +521,13 @@ namespace ULox
             if (comp.scopeDepth == 0) return;
 
             var declName = comp.chunk.ReadConstant(AddStringConstant()).val.asString.String;
-            DeclareVariableByName(declName);
-        }
-
-        private void DeclareVariableByName(string declName)
-        {
-            var comp = CurrentCompilerState;
-            if (comp.scopeDepth == 0) return;
-
-            for (int i = comp.localCount - 1; i >= 0; i--)
-            {
-                var local = comp.locals[i];
-                if (local.Depth != -1 && local.Depth < comp.scopeDepth)
-                    break;
-
-                if (declName == local.Name)
-                    throw new CompilerException($"Already a variable with name '{declName}' in this scope.");
-            }
-
-            AddLocal(comp, declName);
-        }
-
-        protected void MarkInitialised()
-        {
-            var comp = CurrentCompilerState;
-
-            if (comp.scopeDepth == 0) return;
-            comp.LastLocal.Depth = comp.scopeDepth;
+            comp.DeclareVariableByName(declName);
         }
 
         public void FunctionDeclaration(CompilerBase compiler)
         {
             var global = ParseVariable("Expect function name.");
-            MarkInitialised();
+            CurrentCompilerState.MarkInitialised();
 
             Function(CurrentChunk.ReadConstant(global).val.asString.String, FunctionType.Function);
             DefineVariable(global);
@@ -679,12 +585,17 @@ namespace ULox
             {
                 var varName = varNames[i];
                 //do equiv of ParseVariable, DefineVariable
-                DeclareVariableByName(varName);
-                MarkInitialised();
+                CurrentCompilerState.DeclareVariableByName(varName);
+                CurrentCompilerState.MarkInitialised();
                 var id = AddCustomStringConstant(varName);
                 DefineVariable(id);
             }
         }
+
+        #region Statements
+
+        public void BlockStatement(CompilerBase obj)
+            => BlockStatement();
 
         public void BlockStatement()
         {
@@ -692,10 +603,6 @@ namespace ULox
             Block();
             EndScope();
         }
-
-        #region Statements
-
-        public void BlockStatement(CompilerBase obj) => BlockStatement();
 
         public void IfStatement(CompilerBase compiler)
         {
@@ -720,6 +627,7 @@ namespace ULox
 
         public void ReturnStatement(CompilerBase compiler)
         {
+            //TODO refactor out
             if (CurrentCompilerState.functionType == FunctionType.Init)
                 throw new CompilerException("Cannot return an expression from an 'init'.");
 
@@ -946,9 +854,9 @@ namespace ULox
             case TokenType.EQUALITY: EmitOpCode(OpCode.EQUAL); break;
             case TokenType.GREATER: EmitOpCode(OpCode.GREATER); break;
             case TokenType.LESS: EmitOpCode(OpCode.LESS); break;
-            case TokenType.BANG_EQUAL: EmitOpCodePair(OpCode.EQUAL, OpCode.NOT); break;
-            case TokenType.GREATER_EQUAL: EmitOpCodePair(OpCode.LESS, OpCode.NOT); break;
-            case TokenType.LESS_EQUAL: EmitOpCodePair(OpCode.GREATER, OpCode.NOT); break;
+            case TokenType.BANG_EQUAL: EmitOpCodes(OpCode.EQUAL, OpCode.NOT); break;
+            case TokenType.GREATER_EQUAL: EmitOpCodes(OpCode.LESS, OpCode.NOT); break;
+            case TokenType.LESS_EQUAL: EmitOpCodes(OpCode.GREATER, OpCode.NOT); break;
 
             default:
                 break;
@@ -987,7 +895,8 @@ namespace ULox
 
         public void Variable(bool canAssign)
         {
-            NamedVariableFromPreviousToken(canAssign);
+            var name = (string)PreviousToken.Literal;
+            NamedVariable(name, canAssign);
         }
 
         public void And(bool canAssign)
@@ -1025,105 +934,5 @@ namespace ULox
         }
 
         #endregion Expressions
-    }
-
-    public static class CompilerBaseExt
-    {
-        public static void AddDeclarationCompilettes(this CompilerBase comp, params ICompilette[] compilettes)
-        {
-            foreach (var item in compilettes)
-            {
-                comp.AddDeclarationCompilette(item);
-            }
-        }
-
-        public static void AddStatementCompilettes(this CompilerBase comp, params ICompilette[] compilettes)
-        {
-            foreach (var item in compilettes)
-            {
-                comp.AddStatementCompilette(item);
-            }
-        }
-
-        public static void SetPrattRules(this CompilerBase comp, params (TokenType tt, ParseRule rule)[] rules)
-        {
-            foreach (var item in rules)
-            {
-                comp.SetPrattRule(item.tt, item.rule);
-            }
-        }
-
-        public static void SetupSimpleCompiler(this CompilerBase comp)
-        {
-            comp.AddDeclarationCompilettes(
-                new CompiletteAction(TokenType.FUNCTION, comp.FunctionDeclaration),
-                new CompiletteAction(TokenType.VAR, comp.VarDeclaration));
-
-            comp.AddStatementCompilettes(
-                new CompiletteAction(TokenType.IF, comp.IfStatement),
-                new CompiletteAction(TokenType.RETURN, comp.ReturnStatement),
-                new CompiletteAction(TokenType.YIELD, comp.YieldStatement),
-                new CompiletteAction(TokenType.BREAK, comp.BreakStatement),
-                new CompiletteAction(TokenType.CONTINUE, comp.ContinueStatement),
-                new CompiletteAction(TokenType.LOOP, comp.LoopStatement),
-                new CompiletteAction(TokenType.WHILE, comp.WhileStatement),
-                new CompiletteAction(TokenType.FOR, comp.ForStatement),
-                new CompiletteAction(TokenType.OPEN_BRACE, comp.BlockStatement),
-                new CompiletteAction(TokenType.THROW, comp.ThrowStatement));
-
-            comp.SetPrattRules(
-                (TokenType.MINUS, new ParseRule(comp.Unary, comp.Binary, Precedence.Term)),
-                (TokenType.PLUS, new ParseRule(null, comp.Binary, Precedence.Term)),
-                (TokenType.SLASH, new ParseRule(null, comp.Binary, Precedence.Factor)),
-                (TokenType.STAR, new ParseRule(null, comp.Binary, Precedence.Factor)),
-                (TokenType.PERCENT, new ParseRule(null, comp.Binary, Precedence.Factor)),
-                (TokenType.BANG, new ParseRule(comp.Unary, null, Precedence.None)),
-                (TokenType.INT, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.FLOAT, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.TRUE, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.FALSE, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.NULL, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.BANG_EQUAL, new ParseRule(null, comp.Binary, Precedence.Equality)),
-                (TokenType.EQUALITY, new ParseRule(null, comp.Binary, Precedence.Equality)),
-                (TokenType.LESS, new ParseRule(null, comp.Binary, Precedence.Comparison)),
-                (TokenType.LESS_EQUAL, new ParseRule(null, comp.Binary, Precedence.Comparison)),
-                (TokenType.GREATER, new ParseRule(null, comp.Binary, Precedence.Comparison)),
-                (TokenType.GREATER_EQUAL, new ParseRule(null, comp.Binary, Precedence.Comparison)),
-                (TokenType.STRING, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.IDENTIFIER, new ParseRule(comp.Variable, null, Precedence.None)),
-                (TokenType.AND, new ParseRule(null, comp.And, Precedence.And)),
-                (TokenType.OR, new ParseRule(null, comp.Or, Precedence.Or)),
-                (TokenType.OPEN_PAREN, new ParseRule(comp.Grouping, comp.Call, Precedence.Call)),
-                (TokenType.CONTEXT_NAME_FUNC, new ParseRule(comp.FName, null, Precedence.None))
-                              );
-        }
-
-        public static void Dot(this CompilerBase comp, bool canAssign)
-        {
-            comp.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
-            byte name = comp.AddStringConstant();
-
-            if (canAssign && comp.Match(TokenType.ASSIGN))
-            {
-                comp.Expression();
-                comp.EmitOpAndBytes(OpCode.SET_PROPERTY, name);
-            }
-            else if (comp.Match(TokenType.OPEN_PAREN))
-            {
-                var argCount = comp.ArgumentList();
-                comp.EmitOpAndBytes(OpCode.INVOKE, name);
-                comp.EmitBytes(argCount);
-            }
-            else
-            {
-                comp.EmitOpAndBytes(OpCode.GET_PROPERTY, name);
-            }
-        }
-
-        public static void FName(this CompilerBase comp, bool canAssign)
-        {
-            var fname = comp.CurrentChunk.Name;
-            comp.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), comp.PreviousToken.Line);
-        }
     }
 }

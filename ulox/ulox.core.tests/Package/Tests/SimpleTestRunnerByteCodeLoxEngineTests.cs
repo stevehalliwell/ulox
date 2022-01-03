@@ -12,7 +12,7 @@ namespace ULox.Tests
             public SimpleTestrunnerScanner()
             {
                 this.SetupSimpleScanner();
-                this.AddIdentifierGenerators(
+                this.AddIdentifierGenerator(
                     ( ".",      TokenType.DOT),
 
                     ( "test",  TokenType.TEST),
@@ -30,7 +30,7 @@ namespace ULox.Tests
                 var testcaseCompilette = new TestcaseCompillette();
                 var testdec = new TestDeclarationCompilette();
                 testcaseCompilette.SetTestDeclarationCompilette(testdec);
-                this.AddDeclarationCompilettes(
+                this.AddDeclarationCompilette(
                     testdec,
                     testcaseCompilette);
 

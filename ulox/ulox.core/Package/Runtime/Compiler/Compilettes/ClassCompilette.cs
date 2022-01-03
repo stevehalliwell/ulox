@@ -22,8 +22,8 @@
             foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
                 bodyCompilette.Start();
 
-            DoBeginDeclareType(compiler, out var compState);
-            DoDeclareLineInher(compiler, compState);
+            DoBeginDeclareType(compiler);
+            DoDeclareLineInher(compiler);
             DoEndDeclareType(compiler);
 
             foreach (var bodyCompilette in _stageOrderedBodyCompilettes)

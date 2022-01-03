@@ -1,0 +1,130 @@
+﻿namespace ULox
+{
+    public static class CompilerBaseExt
+    {
+        public static void AddDeclarationCompilette(this CompilerBase comp, (TokenType match, System.Action<CompilerBase> action) processAction)
+        {
+            comp.AddDeclarationCompilette(new CompiletteAction(processAction.match, processAction.action));
+        }
+
+        public static void AddDeclarationCompilette(this CompilerBase comp, params ICompilette[] compilettes)
+        {
+            foreach (var item in compilettes)
+            {
+                comp.AddDeclarationCompilette(item);
+            }
+        }
+
+        public static void AddDeclarationCompilette(this CompilerBase comp, params (TokenType match, System.Action<CompilerBase> action)[] processActions)
+        {
+            foreach (var item in processActions)
+            {
+                comp.AddDeclarationCompilette(item);
+            }
+        }
+
+        public static void AddStatementCompilette(this CompilerBase comp, (TokenType match, System.Action<CompilerBase> action) processAction)
+        {
+            comp.AddStatementCompilette(new CompiletteAction(processAction.match, processAction.action));
+        }
+
+        public static void AddStatementCompilette(this CompilerBase comp, params (TokenType match, System.Action<CompilerBase> action)[] processActions)
+        {
+            foreach (var item in processActions)
+            {
+                comp.AddStatementCompilette(item);
+            }
+        }
+
+        public static void AddStatementCompilette(this CompilerBase comp, params ICompilette[] compilettes)
+        {
+            foreach (var item in compilettes)
+            {
+                comp.AddStatementCompilette(item);
+            }
+        }
+
+        public static void SetPrattRules(this CompilerBase comp, params (TokenType tt, ParseRule rule)[] rules)
+        {
+            foreach (var item in rules)
+            {
+                comp.SetPrattRule(item.tt, item.rule);
+            }
+        }
+
+        public static void SetupSimpleCompiler(this CompilerBase comp)
+        {
+            comp.AddDeclarationCompilette(
+                (TokenType.FUNCTION, comp.FunctionDeclaration),
+                (TokenType.VAR, comp.VarDeclaration)
+                                          );
+
+            comp.AddStatementCompilette(
+                (TokenType.IF, comp.IfStatement),
+                (TokenType.RETURN, comp.ReturnStatement),
+                (TokenType.YIELD, comp.YieldStatement),
+                (TokenType.BREAK, comp.BreakStatement),
+                (TokenType.CONTINUE, comp.ContinueStatement),
+                (TokenType.LOOP, comp.LoopStatement),
+                (TokenType.WHILE, comp.WhileStatement),
+                (TokenType.FOR, comp.ForStatement),
+                (TokenType.OPEN_BRACE, comp.BlockStatement),
+                (TokenType.THROW, comp.ThrowStatement)
+                                        );
+
+            comp.SetPrattRules(
+                (TokenType.MINUS, new ParseRule(comp.Unary, comp.Binary, Precedence.Term)),
+                (TokenType.PLUS, new ParseRule(null, comp.Binary, Precedence.Term)),
+                (TokenType.SLASH, new ParseRule(null, comp.Binary, Precedence.Factor)),
+                (TokenType.STAR, new ParseRule(null, comp.Binary, Precedence.Factor)),
+                (TokenType.PERCENT, new ParseRule(null, comp.Binary, Precedence.Factor)),
+                (TokenType.BANG, new ParseRule(comp.Unary, null, Precedence.None)),
+                (TokenType.INT, new ParseRule(comp.Literal, null, Precedence.None)),
+                (TokenType.FLOAT, new ParseRule(comp.Literal, null, Precedence.None)),
+                (TokenType.TRUE, new ParseRule(comp.Literal, null, Precedence.None)),
+                (TokenType.FALSE, new ParseRule(comp.Literal, null, Precedence.None)),
+                (TokenType.NULL, new ParseRule(comp.Literal, null, Precedence.None)),
+                (TokenType.BANG_EQUAL, new ParseRule(null, comp.Binary, Precedence.Equality)),
+                (TokenType.EQUALITY, new ParseRule(null, comp.Binary, Precedence.Equality)),
+                (TokenType.LESS, new ParseRule(null, comp.Binary, Precedence.Comparison)),
+                (TokenType.LESS_EQUAL, new ParseRule(null, comp.Binary, Precedence.Comparison)),
+                (TokenType.GREATER, new ParseRule(null, comp.Binary, Precedence.Comparison)),
+                (TokenType.GREATER_EQUAL, new ParseRule(null, comp.Binary, Precedence.Comparison)),
+                (TokenType.STRING, new ParseRule(comp.Literal, null, Precedence.None)),
+                (TokenType.IDENTIFIER, new ParseRule(comp.Variable, null, Precedence.None)),
+                (TokenType.AND, new ParseRule(null, comp.And, Precedence.And)),
+                (TokenType.OR, new ParseRule(null, comp.Or, Precedence.Or)),
+                (TokenType.OPEN_PAREN, new ParseRule(comp.Grouping, comp.Call, Precedence.Call)),
+                (TokenType.CONTEXT_NAME_FUNC, new ParseRule(comp.FName, null, Precedence.None))
+                              );
+        }
+
+        public static void Dot(this CompilerBase comp, bool canAssign)
+        {
+            comp.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+            byte name = comp.AddStringConstant();
+
+            if (canAssign && comp.Match(TokenType.ASSIGN))
+            {
+                comp.Expression();
+                comp.EmitOpAndBytes(OpCode.SET_PROPERTY, name);
+            }
+            else if (comp.Match(TokenType.OPEN_PAREN))
+            {
+                var argCount = comp.ArgumentList();
+                comp.EmitOpAndBytes(OpCode.INVOKE, name);
+                comp.EmitBytes(argCount);
+            }
+            else
+            {
+                comp.EmitOpAndBytes(OpCode.GET_PROPERTY, name);
+            }
+        }
+
+        public static void FName(this CompilerBase comp, bool canAssign)
+        {
+            var fname = comp.CurrentChunk.Name;
+            comp.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), comp.PreviousToken.Line);
+        }
+    }
+}

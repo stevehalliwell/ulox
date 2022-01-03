@@ -15,17 +15,17 @@
             _testcaseCompilette.SetTestDeclarationCompilette(_testdec);
             _buildCompilette = new BuildCompilette();
             _classCompiler = new ClassCompilette();
-            this.AddDeclarationCompilettes(
+            this.AddDeclarationCompilette(
                 _testdec,
                 _classCompiler,
                 _testcaseCompilette,
                 _buildCompilette
-                                          );
+                                         );
 
-            this.AddStatementCompilettes(
-                new CompiletteAction(TokenType.REGISTER, RegisterStatement),
-                new CompiletteAction(TokenType.FREEZE, FreezeStatement)
-                                        );
+            this.AddStatementCompilette(
+                (TokenType.REGISTER, RegisterStatement),
+                (TokenType.FREEZE, FreezeStatement)
+                                       );
 
             this.SetPrattRules(
                 (TokenType.DOT, new ParseRule(null, this.Dot, Precedence.Call)),
@@ -73,7 +73,7 @@
             if (_classCompiler.CurrentTypeName == null)
                 throw new CompilerException("Cannot use this outside of a class declaration.");
 
-            Variable(false);
+            NamedVariable("this", canAssign);
         }
 
         protected void Super(bool canAssign)

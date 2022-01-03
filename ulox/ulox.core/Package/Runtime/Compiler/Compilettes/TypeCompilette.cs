@@ -52,12 +52,11 @@ namespace ULox
             compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
         }
 
-        protected void DoBeginDeclareType(CompilerBase compiler, out CompilerState compState)
+        protected void DoBeginDeclareType(CompilerBase compiler)
         {
             _stage = TypeCompiletteStage.Begin;
             compiler.Consume(TokenType.IDENTIFIER, "Expect type name.");
             CurrentTypeName = (string)compiler.PreviousToken.Literal;
-            compState = compiler.CurrentCompilerState;
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
             EmitClassOp(compiler, nameConstant);
@@ -100,18 +99,19 @@ namespace ULox
             compiler.EmitUShort(0);
         }
 
-        protected void DoDeclareLineInher(CompilerBase compiler, CompilerState compState)
+        protected void DoDeclareLineInher(CompilerBase compiler)
         {
             _hasSuper = false;
             if (!compiler.Match(TokenType.LESS)) return;
 
             compiler.Consume(TokenType.IDENTIFIER, "Expect superclass name.");
-            compiler.NamedVariableFromPreviousToken(false);
+            var name = (string)compiler.PreviousToken.Literal;
+            compiler.NamedVariable(name, false);
             if (CurrentTypeName == (string)compiler.PreviousToken.Literal)
                 throw new CompilerException("A class cannot inher from itself.");
 
             compiler.BeginScope();
-            compiler.AddLocal(compState, "super");
+            compiler.CurrentCompilerState.AddLocal("super");
             compiler.DefineVariable(0);
 
             compiler.NamedVariable(CurrentTypeName, false);

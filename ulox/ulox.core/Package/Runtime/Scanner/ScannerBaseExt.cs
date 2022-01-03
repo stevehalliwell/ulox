@@ -28,7 +28,7 @@
             }
         }
 
-        public static void AddDefaultGenerators(this ScannerBase scannerBase, params IScannerTokenGenerator[] scannerTokenGenerators)
+        public static void AddDefaultGenerator(this ScannerBase scannerBase, params IScannerTokenGenerator[] scannerTokenGenerators)
         {
             foreach (var item in scannerTokenGenerators)
             {
@@ -36,7 +36,7 @@
             }
         }
 
-        public static void AddIdentifierGenerators(this ScannerBase scannerBase, params (string name, TokenType tokenType)[] litteralToTokens)
+        public static void AddIdentifierGenerator(this ScannerBase scannerBase, params (string name, TokenType tokenType)[] litteralToTokens)
         {
             foreach (var item in litteralToTokens)
             {
@@ -46,7 +46,7 @@
 
         public static void SetupSimpleScanner(this ScannerBase scannerBase)
         {
-            scannerBase.AddDefaultGenerators(
+            scannerBase.AddDefaultGenerator(
                 new WhiteSpaceScannerTokenGenerator(),
                 new StringScannerTokenGenerator(),
                 new NumberScannerTokenGenerator()
@@ -54,7 +54,7 @@
 
             scannerBase.AddCharMatchGenerator(new SlashScannerTokenGenerator());
 
-            scannerBase.AddIdentifierGenerators(
+            scannerBase.AddIdentifierGenerator(
                 ("var", TokenType.VAR),
                 ("string", TokenType.STRING),
                 ("int", TokenType.INT),

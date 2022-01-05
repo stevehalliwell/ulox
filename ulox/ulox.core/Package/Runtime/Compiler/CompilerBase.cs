@@ -88,7 +88,7 @@ namespace ULox
             NoDeclarationFound();
         }
 
-        protected void Statement()
+        public void Statement()
         {
             if (statementCompilettes.TryGetValue(CurrentToken.TokenType, out var complette))
             {
@@ -100,7 +100,7 @@ namespace ULox
             NoStatementFound();
         }
 
-        protected void ExpressionStatement()
+        public void ExpressionStatement()
         {
             Expression();
             Consume(TokenType.END_STATEMENT, "Expect ; after expression statement.");
@@ -242,7 +242,7 @@ namespace ULox
             return compilerStates.Pop().chunk;
         }
 
-        protected void EmitReturn()
+        public void EmitReturn()
         {
             //todo refactor out
             if (compilerStates.Peek().functionType == FunctionType.Init)
@@ -400,7 +400,7 @@ namespace ULox
             return ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
         }
 
-        protected void EmitLoop(int loopStart)
+        public void EmitLoop(int loopStart)
         {
             EmitOpCode(OpCode.LOOP);
             int offset = CurrentChunk.Instructions.Count - loopStart + 2;
@@ -409,17 +409,6 @@ namespace ULox
                 throw new CompilerException($"Cannot loop '{offset}'. Max loop is '{ushort.MaxValue}'");
 
             EmitBytes((byte)((offset >> 8) & 0xff), (byte)(offset & 0xff));
-        }
-
-        protected void PatchLoopExits(LoopState loopState)
-        {
-            if (loopState.loopExitPatchLocations.Count == 0)
-                throw new CompilerException("Loops must contain an termination.");
-
-            for (int i = 0; i < loopState.loopExitPatchLocations.Count; i++)
-            {
-                PatchJump(loopState.loopExitPatchLocations[i]);
-            }
         }
 
         public byte ParseVariable(string errMsg)
@@ -524,15 +513,6 @@ namespace ULox
             comp.DeclareVariableByName(declName);
         }
 
-        public void FunctionDeclaration(CompilerBase compiler)
-        {
-            var global = ParseVariable("Expect function name.");
-            CurrentCompilerState.MarkInitialised();
-
-            Function(CurrentChunk.ReadConstant(global).val.asString.String, FunctionType.Function);
-            DefineVariable(global);
-        }
-
         public void VarDeclaration(CompilerBase compiler)
         {
             if (Match(TokenType.OPEN_PAREN))
@@ -540,6 +520,7 @@ namespace ULox
             else
                 PlainVarDeclare();
 
+            //todo repeated
             Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
         }
 
@@ -592,232 +573,12 @@ namespace ULox
             }
         }
 
-        #region Statements
-
-        public void BlockStatement(CompilerBase obj)
-            => BlockStatement();
-
         public void BlockStatement()
         {
             BeginScope();
             Block();
             EndScope();
         }
-
-        public void IfStatement(CompilerBase compiler)
-        {
-            Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
-            Expression();
-            Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
-
-            int thenjump = EmitJump(OpCode.JUMP_IF_FALSE);
-            EmitOpCode(OpCode.POP);
-
-            Statement();
-
-            int elseJump = EmitJump(OpCode.JUMP);
-
-            PatchJump(thenjump);
-            EmitOpCode(OpCode.POP);
-
-            if (Match(TokenType.ELSE)) Statement();
-
-            PatchJump(elseJump);
-        }
-
-        public void ReturnStatement(CompilerBase compiler)
-        {
-            //TODO refactor out
-            if (CurrentCompilerState.functionType == FunctionType.Init)
-                throw new CompilerException("Cannot return an expression from an 'init'.");
-
-            if (Match(TokenType.OPEN_PAREN))
-                MultiReturnBody();
-            else
-                SimpleReturnBody();
-
-            Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
-        }
-
-        private void SimpleReturnBody()
-        {
-            if (Check(TokenType.END_STATEMENT))
-            {
-                EmitReturn();
-            }
-            else
-            {
-                Expression();
-                EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
-            }
-        }
-
-        private void MultiReturnBody()
-        {
-            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.Begin);
-            var returnCount = ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
-            if (returnCount == 0)
-                EmitOpCode(OpCode.NULL);
-            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.End);
-        }
-
-        public void YieldStatement(CompilerBase compiler)
-        {
-            EmitOpCode(OpCode.YIELD);
-            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
-        }
-
-        public void BreakStatement(CompilerBase compiler)
-        {
-            var comp = CurrentCompilerState;
-            if (comp.loopStates.Count == 0)
-                throw new CompilerException("Cannot break when not inside a loop.");
-
-            EmitOpCode(OpCode.NULL);
-            int exitJump = EmitJump(OpCode.JUMP);
-
-            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
-
-            comp.loopStates.Peek().loopExitPatchLocations.Add(exitJump);
-        }
-
-        public void ContinueStatement(CompilerBase compiler)
-        {
-            var comp = CurrentCompilerState;
-            if (comp.loopStates.Count == 0)
-                throw new CompilerException("Cannot continue when not inside a loop.");
-
-            EmitLoop(comp.loopStates.Peek().loopContinuePoint);
-
-            Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
-        }
-
-        public void LoopStatement(CompilerBase compiler)
-        {
-            ConfigurableLoopingStatement(compiler, false, false);
-        }
-
-        public void WhileStatement(CompilerBase compiler)
-        {
-            ConfigurableLoopingStatement(compiler, true, false);
-        }
-
-        public void ForStatement(CompilerBase compiler)
-        {
-            ConfigurableLoopingStatement(compiler, true, true);
-        }
-
-        protected void ConfigurableLoopingStatement(
-            CompilerBase compiler,
-            bool expectsLoopParethesis,
-            bool expectsPreAndPostStatements)
-        {
-            BeginScope();
-
-            var comp = CurrentCompilerState;
-            int loopStart = CurrentChunkInstructinCount;
-            var loopState = new LoopState();
-            comp.loopStates.Push(loopState);
-            loopState.loopContinuePoint = loopStart;
-
-            if (expectsLoopParethesis)
-            {
-                Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
-
-                if (expectsPreAndPostStatements)
-                {
-                    ForLoopInitialisationStatement(compiler);
-
-                    loopStart = CurrentChunkInstructinCount;
-                    loopState.loopContinuePoint = loopStart;
-
-                    if (!Match(TokenType.END_STATEMENT))
-                    {
-                        ForLoopCondtionStatement(loopState);
-                    }
-
-                    if (!Check(TokenType.CLOSE_PAREN))
-                    {
-                        int bodyJump = EmitJump(OpCode.JUMP);
-
-                        int incrementStart = CurrentChunkInstructinCount;
-                        loopState.loopContinuePoint = incrementStart;
-                        Expression();
-                        EmitOpCode(OpCode.POP);
-
-                        //TODO: shouldn't you be able to omit the post loop action and have it work. this seems like it breaks it.
-                        EmitLoop(loopStart);
-                        loopStart = incrementStart;
-                        PatchJump(bodyJump);
-                    }
-                }
-                else
-                {
-                    Expression();
-
-                    int exitJump = EmitJump(OpCode.JUMP_IF_FALSE);
-                    loopState.loopExitPatchLocations.Add(exitJump);
-
-                    EmitOpCode(OpCode.POP);
-                }
-
-                Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
-            }
-
-            Statement();
-
-            EmitLoop(loopStart);
-
-            PatchLoopExits(loopState);
-
-            EmitOpCode(OpCode.POP);
-
-            EndScope();
-        }
-
-        protected void ForLoopCondtionStatement(LoopState loopState)
-        {
-            Expression();
-            Consume(TokenType.END_STATEMENT, "Expect ';' after loop condition.");
-
-            // Jump out of the loop if the condition is false.
-            var exitJump = EmitJump(OpCode.JUMP_IF_FALSE);
-            loopState.loopExitPatchLocations.Add(exitJump);
-            EmitOpCode(OpCode.POP); // Condition.
-        }
-
-        protected void ForLoopInitialisationStatement(CompilerBase compiler)
-        {
-            if (Match(TokenType.END_STATEMENT))
-            {
-                // No initializer.
-            }
-            else if (Match(TokenType.VAR))
-            {
-                VarDeclaration(compiler);
-            }
-            else
-            {
-                ExpressionStatement();
-            }
-        }
-
-        public void ThrowStatement(CompilerBase compiler)
-        {
-            if (!Check(TokenType.END_STATEMENT))
-            {
-                Expression();
-            }
-            else
-            {
-                EmitOpCode(OpCode.NULL);
-            }
-
-            Consume(TokenType.END_STATEMENT, "Expect ; after throw statement.");
-            EmitOpCode(OpCode.THROW);
-        }
-
-        #endregion Statements
 
         #region Expressions
 

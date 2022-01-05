@@ -55,21 +55,22 @@
         public static void SetupSimpleCompiler(this CompilerBase comp)
         {
             comp.AddDeclarationCompilette(
-                (TokenType.FUNCTION, comp.FunctionDeclaration),
+                (TokenType.FUNCTION, FunctionDeclaration),
                 (TokenType.VAR, comp.VarDeclaration)
                                           );
-
             comp.AddStatementCompilette(
-                (TokenType.IF, comp.IfStatement),
-                (TokenType.RETURN, comp.ReturnStatement),
-                (TokenType.YIELD, comp.YieldStatement),
-                (TokenType.BREAK, comp.BreakStatement),
-                (TokenType.CONTINUE, comp.ContinueStatement),
-                (TokenType.LOOP, comp.LoopStatement),
-                (TokenType.WHILE, comp.WhileStatement),
-                (TokenType.FOR, comp.ForStatement),
-                (TokenType.OPEN_BRACE, comp.BlockStatement),
-                (TokenType.THROW, comp.ThrowStatement)
+                new ReturnStatementCompilette(),
+                new LoopStatementCompilette(),
+                new WhileStatementCompilette(),
+                new ForStatementCompilette()
+                );
+            comp.AddStatementCompilette(
+                (TokenType.IF, IfStatement),
+                (TokenType.YIELD, YieldStatement),
+                (TokenType.BREAK, BreakStatement),
+                (TokenType.CONTINUE, ContinueStatement),
+                (TokenType.OPEN_BRACE, BlockStatement),
+                (TokenType.THROW, ThrowStatement)
                                         );
 
             comp.SetPrattRules(
@@ -125,6 +126,89 @@
         {
             var fname = comp.CurrentChunk.Name;
             comp.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), comp.PreviousToken.Line);
+        }
+
+        public static void ThrowStatement(CompilerBase compiler)
+        {
+            if (!compiler.Check(TokenType.END_STATEMENT))
+            {
+                compiler.Expression();
+            }
+            else
+            {
+                compiler.EmitOpCode(OpCode.NULL);
+            }
+
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after throw statement.");
+            compiler.EmitOpCode(OpCode.THROW);
+        }
+
+        public static void ContinueStatement(CompilerBase compiler)
+        {
+            var comp = compiler.CurrentCompilerState;
+            if (comp.loopStates.Count == 0)
+                throw new CompilerException("Cannot continue when not inside a loop.");
+
+            compiler.EmitLoop(comp.loopStates.Peek().loopContinuePoint);
+
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+        }
+
+        public static void IfStatement(CompilerBase compiler)
+        {
+            compiler.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
+            compiler.Expression();
+            compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
+
+            int thenjump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+            compiler.EmitOpCode(OpCode.POP);
+
+            compiler.Statement();
+
+            int elseJump = compiler.EmitJump(OpCode.JUMP);
+
+            compiler.PatchJump(thenjump);
+            compiler.EmitOpCode(OpCode.POP);
+
+            if (compiler.Match(TokenType.ELSE)) compiler.Statement();
+
+            compiler.PatchJump(elseJump);
+        }
+
+        public static void BreakStatement(CompilerBase compiler)
+        {
+            var comp = compiler.CurrentCompilerState;
+            if (comp.loopStates.Count == 0)
+                throw new CompilerException("Cannot break when not inside a loop.");
+
+            compiler.EmitOpCode(OpCode.NULL);
+            int exitJump = compiler.EmitJump(OpCode.JUMP);
+
+            //todo repeat
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+
+            comp.loopStates.Peek().loopExitPatchLocations.Add(exitJump);
+        }
+
+        public static void YieldStatement(CompilerBase compiler)
+        {
+            compiler.EmitOpCode(OpCode.YIELD);
+
+            //todo repeat
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+        }
+
+        public static void BlockStatement(CompilerBase compiler)
+            => compiler.BlockStatement();
+
+
+        public static void FunctionDeclaration(CompilerBase compiler)
+        {
+            var global = compiler.ParseVariable("Expect function name.");
+            compiler.CurrentCompilerState.MarkInitialised();
+
+            compiler.Function(compiler.CurrentChunk.ReadConstant(global).val.asString.String, FunctionType.Function);
+            compiler.DefineVariable(global);
         }
     }
 }

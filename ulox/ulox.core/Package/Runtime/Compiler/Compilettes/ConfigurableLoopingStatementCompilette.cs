@@ -106,20 +106,8 @@
 
         protected void ForLoopInitialisationStatement(CompilerBase compiler)
         {
-            //TODO if we introduce void statements ";" is a valid line of code with no ops emitted
-            //  then this becomes simply, compiler.Statement();
-            if (compiler.Match(TokenType.END_STATEMENT))
-            {
-                // No initializer.
-            }
-            else if (compiler.Match(TokenType.VAR))
-            {
-                compiler.VarDeclaration(compiler);
-            }
-            else
-            {
-                compiler.ExpressionStatement();
-            }
+            //we really only want a var decl, var assign, or empty but Declaration covers everything
+            compiler.Declaration();
         }
 
         protected void PatchLoopExits(CompilerBase compiler, LoopState loopState)

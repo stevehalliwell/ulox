@@ -55,8 +55,10 @@
         public static void SetupSimpleCompiler(this CompilerBase comp)
         {
             comp.AddDeclarationCompilette(
-                (TokenType.FUNCTION, FunctionDeclaration),
-                (TokenType.VAR, comp.VarDeclaration)
+                new VarDeclarationCompilette()
+                                          );
+            comp.AddDeclarationCompilette(
+                (TokenType.FUNCTION, FunctionDeclaration)
                                           );
             comp.AddStatementCompilette(
                 new ReturnStatementCompilette(),
@@ -70,7 +72,8 @@
                 (TokenType.BREAK, BreakStatement),
                 (TokenType.CONTINUE, ContinueStatement),
                 (TokenType.OPEN_BRACE, BlockStatement),
-                (TokenType.THROW, ThrowStatement)
+                (TokenType.THROW, ThrowStatement),
+                (TokenType.END_STATEMENT, NoOpStatement)
                                         );
 
             comp.SetPrattRules(
@@ -151,7 +154,7 @@
 
             compiler.EmitLoop(comp.loopStates.Peek().loopContinuePoint);
 
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after continue.");
         }
 
         public static void IfStatement(CompilerBase compiler)
@@ -195,7 +198,7 @@
             compiler.EmitOpCode(OpCode.YIELD);
 
             //todo repeat
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after yield.");
         }
 
         public static void BlockStatement(CompilerBase compiler)
@@ -209,6 +212,10 @@
 
             compiler.Function(compiler.CurrentChunk.ReadConstant(global).val.asString.String, FunctionType.Function);
             compiler.DefineVariable(global);
+        }
+
+        public static void NoOpStatement(CompilerBase compiler)
+        {
         }
     }
 }

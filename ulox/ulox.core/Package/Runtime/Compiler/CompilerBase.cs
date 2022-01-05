@@ -76,7 +76,7 @@ namespace ULox
             return EndCompile();
         }
 
-        protected void Declaration()
+        public void Declaration()
         {
             if (declarationCompilettes.TryGetValue(CurrentToken.TokenType, out var complette))
             {
@@ -103,6 +103,7 @@ namespace ULox
         public void ExpressionStatement()
         {
             Expression();
+            //todo reeated
             Consume(TokenType.END_STATEMENT, "Expect ; after expression statement.");
             EmitOpCode(OpCode.POP);
         }
@@ -511,66 +512,6 @@ namespace ULox
 
             var declName = comp.chunk.ReadConstant(AddStringConstant()).val.asString.String;
             comp.DeclareVariableByName(declName);
-        }
-
-        public void VarDeclaration(CompilerBase compiler)
-        {
-            if (Match(TokenType.OPEN_PAREN))
-                MultiVarAssignToReturns();
-            else
-                PlainVarDeclare();
-
-            //todo repeated
-            Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
-        }
-
-        private void PlainVarDeclare()
-        {
-            do
-            {
-                var global = ParseVariable("Expect variable name");
-
-                if (Match(TokenType.ASSIGN))
-                    Expression();
-                else
-                    EmitOpCode(OpCode.NULL);
-
-                DefineVariable(global);
-            } while (Match(TokenType.COMMA));
-        }
-
-        private void MultiVarAssignToReturns()
-        {
-            var varNames = new List<string>();
-            do
-            {
-                Consume(TokenType.IDENTIFIER, "Expect identifier within multivar declaration.");
-                varNames.Add((string)PreviousToken.Literal);
-            } while (Match(TokenType.COMMA));
-
-            Consume(TokenType.CLOSE_PAREN, "Expect ')' to end a multivar declaration.");
-            Consume(TokenType.ASSIGN, "Expect '=' after multivar declaration.");
-
-            //mark stack start
-            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.MarkMultiReturnAssignStart);
-
-            Expression();
-
-            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.MarkMultiReturnAssignEnd);
-
-            EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)varNames.Count);
-            EmitOpAndBytes(OpCode.VALIDATE, (byte)ValidateOp.MultiReturnMatches);
-
-            //we don't really want to reverse these, as we want things kike (a,b) = fun return (1,2,3); ends up with 1,2
-            for (int i = 0; i < varNames.Count; i++)
-            {
-                var varName = varNames[i];
-                //do equiv of ParseVariable, DefineVariable
-                CurrentCompilerState.DeclareVariableByName(varName);
-                CurrentCompilerState.MarkInitialised();
-                var id = AddCustomStringConstant(varName);
-                DefineVariable(id);
-            }
         }
 
         public void BlockStatement()

@@ -316,6 +316,36 @@ for(var i = 0;i < 3; i += 1)
         }
 
         [Test]
+        public void Engine_Cycle_For_AssignExistingIncrementVar_Continue()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(i = 0;i < 3; i += 1)
+{
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("012", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Cycle_For_NoInitialiseStatement_Continue()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(;i < 3; i += 1)
+{
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("012", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Cycle_While_Nested()
         {
             testEngine.Run(@"

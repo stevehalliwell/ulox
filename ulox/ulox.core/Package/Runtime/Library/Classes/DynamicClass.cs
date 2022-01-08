@@ -2,9 +2,9 @@
 {
     public class DynamicClass : ClassInternal
     {
-        public static readonly HashedString Name = new HashedString("Dynamic");
+        public static readonly HashedString DynamicClassName = new HashedString("Dynamic");
 
-        public DynamicClass() : base(Name)
+        public DynamicClass() : base(DynamicClassName)
         {
             this.AddMethodsToClass(
                 (nameof(HasField), Value.New(HasField)),

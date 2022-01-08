@@ -5,7 +5,7 @@ using System.Text;
 
 namespace ULox
 {
-    public class DisassemblerBase
+    public class DisassemblerBase : IDisassembler
     {
         private readonly StringBuilder stringBuilder = new StringBuilder();
         protected Func<Chunk, int, int>[] opCodeHandlers;

@@ -1,33 +1,30 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace ULox
 {
-    public abstract class ScannerBase
+    public abstract class ScannerBase : IScanner
     {
         public List<Token> Tokens { get; private set; }
         public int Line { get; set; }
         public int CharacterNumber { get; set; }
         public Char CurrentChar { get; private set; }
 
-        public IdentifierScannerTokenGenerator IdentifierScannerTokenGenerator { get; private set; } = new IdentifierScannerTokenGenerator();
 
         protected List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
-        protected Dictionary<char, IScannerCharMatchTokenGenerator> simpleGenerators = new Dictionary<char, IScannerCharMatchTokenGenerator>();
 
         private StringReader _stringReader;
+        public IdentifierScannerTokenGenerator IdentifierScannerTokenGenerator { get; } = new IdentifierScannerTokenGenerator();
 
         public ScannerBase()
         {
-            AddDefaultGenerator(IdentifierScannerTokenGenerator);
+            AddGenerator(IdentifierScannerTokenGenerator);
             Reset();
         }
 
-        public void AddCharMatchGenerator(IScannerCharMatchTokenGenerator gen)
-            => simpleGenerators[gen.MatchingChar] = gen;
-
-        public void AddDefaultGenerator(IScannerTokenGenerator gen)
+        public void AddGenerator(IScannerTokenGenerator gen)
             => defaultGenerators.Add(gen);
 
         public void Reset()
@@ -46,26 +43,13 @@ namespace ULox
                 while (!IsAtEnd())
                 {
                     Advance();
+                    var ch = CurrentChar;
 
-                    if (simpleGenerators.TryGetValue(CurrentChar, out var foundSimpleGenerator))
-                    {
-                        foundSimpleGenerator.Consume(this);
-                        continue;
-                    }
-
-                    var found = false;
-                    foreach (var item in defaultGenerators)
-                    {
-                        if (item.DoesMatchChar(this))
-                        {
-                            item.Consume(this);
-                            found = true;
-                            break;
-                        }
-                    }
-
-                    if (!found)
+                    var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
+                    if (matchinGen == null)
                         throw new ScannerException(TokenType.IDENTIFIER, Line, CharacterNumber, $"Unexpected character '{CurrentChar}'");
+
+                    matchinGen.Consume(this);
                 }
 
                 AddTokenSingle(TokenType.EOF);

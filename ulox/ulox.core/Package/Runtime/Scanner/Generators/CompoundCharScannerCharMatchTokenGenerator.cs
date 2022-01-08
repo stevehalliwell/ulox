@@ -1,23 +1,30 @@
-﻿namespace ULox
-{
-    public class CompoundCharScannerCharMatchTokenGenerator : PrefixedCharScannerCharMatchTokenGenerator
-    {
-        private TokenType regularType;
-        private TokenType compoundType;
+﻿using System.Linq;
 
-        public CompoundCharScannerCharMatchTokenGenerator(
-            char matchingChar,
-            TokenType regularType,
-            TokenType compoundType)
-            : base(matchingChar)
+namespace ULox
+{
+    public class CompoundCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
+    {
+        private (char ch, TokenType regular, TokenType compound)[] CompoundMatches = new[]
         {
-            this.regularType = regularType;
-            this.compoundType = compoundType;
+            ('+', TokenType.PLUS, TokenType.PLUS_EQUAL),
+            ('-', TokenType.MINUS, TokenType.MINUS_EQUAL),
+            ('*', TokenType.STAR, TokenType.STAR_EQUAL),
+            ('%', TokenType.PERCENT, TokenType.PERCENT_EQUAL),
+            ('!', TokenType.BANG, TokenType.BANG_EQUAL),
+            ('=', TokenType.ASSIGN, TokenType.EQUALITY),
+            ('<', TokenType.LESS, TokenType.LESS_EQUAL),
+            ('>', TokenType.GREATER, TokenType.GREATER_EQUAL)
+        };
+
+        public void Consume(IScanner scanner)
+        {
+            var match = CompoundMatches.First(x => x.ch == scanner.CurrentChar);
+            scanner.AddTokenSingle(scanner.Match('=') ? match.compound : match.regular);
         }
 
-        public override void Consume(ScannerBase scanner)
+        public bool DoesMatchChar(char ch)
         {
-            scanner.AddTokenSingle(scanner.Match('=') ? compoundType : regularType);
+            return CompoundMatches.Any(x => x.ch == ch);
         }
     }
 }

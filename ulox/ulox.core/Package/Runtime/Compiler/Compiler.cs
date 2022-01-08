@@ -28,13 +28,12 @@
                                        );
 
             this.SetPrattRules(
-                (TokenType.DOT, new ParseRule(null, this.Dot, Precedence.Call)),
-                (TokenType.THIS, new ParseRule(This, null, Precedence.None)),
-                (TokenType.SUPER, new ParseRule(Super, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_CLASS, new ParseRule(CName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTCASE, new ParseRule(TCName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTSET, new ParseRule(TSName, null, Precedence.None)),
-                (TokenType.INJECT, new ParseRule(Inject, null, Precedence.Term))
+                (TokenType.THIS, new ActionParseRule(This, null, Precedence.None)),
+                (TokenType.SUPER, new ActionParseRule(Super, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(CName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(TCName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(TSName, null, Precedence.None)),
+                (TokenType.INJECT, new ActionParseRule(Inject, null, Precedence.Term))
                               );
         }
 
@@ -54,13 +53,13 @@
             Consume(TokenType.END_STATEMENT, "Expect ';' after freeze.");
         }
 
-        private void TCName(bool obj)
+        private void TCName(CompilerBase compiler, bool obj)
         {
             var tcname = _testcaseCompilette.TestCaseName;
             CurrentChunk.AddConstantAndWriteInstruction(Value.New(tcname), PreviousToken.Line);
         }
 
-        private void TSName(bool obj)
+        private void TSName(CompilerBase compiler, bool obj)
         {
             var tsname = _testdec.CurrentTestSetName;
             CurrentChunk.AddConstantAndWriteInstruction(Value.New(tsname), PreviousToken.Line);
@@ -68,7 +67,7 @@
 
         #region Expressions
 
-        protected void This(bool canAssign)
+        protected void This(CompilerBase compiler, bool canAssign)
         {
             if (_classCompiler.CurrentTypeName == null)
                 throw new CompilerException("Cannot use this outside of a class declaration.");
@@ -76,7 +75,7 @@
             NamedVariable("this", canAssign);
         }
 
-        protected void Super(bool canAssign)
+        protected void Super(CompilerBase compiler, bool canAssign)
         {
             if (_classCompiler.CurrentTypeName == null)
                 throw new CompilerException("Cannot use super outside a class.");
@@ -100,13 +99,13 @@
             }
         }
 
-        public void CName(bool canAssign)
+        public void CName(CompilerBase compiler, bool canAssign)
         {
             var cname = _classCompiler.CurrentTypeName;
             CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), PreviousToken.Line);
         }
 
-        protected void Inject(bool canAssign)
+        protected void Inject(CompilerBase compiler, bool canAssign)
         {
             Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
             byte name = AddStringConstant();

@@ -26,9 +26,9 @@ namespace ULox
 
         public static bool IsAlphaNumber(int c) => IsAlpha(c) || NumberScannerTokenGenerator.IsDigit(c);
 
-        public bool DoesMatchChar(ScannerBase scanner) => IsAlpha(scanner.CurrentChar);
+        public bool DoesMatchChar(char ch) => IsAlpha(ch);
 
-        public void Consume(ScannerBase scanner)
+        public void Consume(IScanner scanner)
         {
             workingSpaceStringBuilder.Clear();
 

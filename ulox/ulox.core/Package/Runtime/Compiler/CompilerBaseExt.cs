@@ -44,7 +44,7 @@
             }
         }
 
-        public static void SetPrattRules(this CompilerBase comp, params (TokenType tt, ParseRule rule)[] rules)
+        public static void SetPrattRules(this CompilerBase comp, params (TokenType tt, IParseRule rule)[] rules)
         {
             foreach (var item in rules)
             {
@@ -77,58 +77,59 @@
                                         );
 
             comp.SetPrattRules(
-                (TokenType.MINUS, new ParseRule(comp.Unary, comp.Binary, Precedence.Term)),
-                (TokenType.PLUS, new ParseRule(null, comp.Binary, Precedence.Term)),
-                (TokenType.SLASH, new ParseRule(null, comp.Binary, Precedence.Factor)),
-                (TokenType.STAR, new ParseRule(null, comp.Binary, Precedence.Factor)),
-                (TokenType.PERCENT, new ParseRule(null, comp.Binary, Precedence.Factor)),
-                (TokenType.BANG, new ParseRule(comp.Unary, null, Precedence.None)),
-                (TokenType.INT, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.FLOAT, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.TRUE, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.FALSE, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.NULL, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.BANG_EQUAL, new ParseRule(null, comp.Binary, Precedence.Equality)),
-                (TokenType.EQUALITY, new ParseRule(null, comp.Binary, Precedence.Equality)),
-                (TokenType.LESS, new ParseRule(null, comp.Binary, Precedence.Comparison)),
-                (TokenType.LESS_EQUAL, new ParseRule(null, comp.Binary, Precedence.Comparison)),
-                (TokenType.GREATER, new ParseRule(null, comp.Binary, Precedence.Comparison)),
-                (TokenType.GREATER_EQUAL, new ParseRule(null, comp.Binary, Precedence.Comparison)),
-                (TokenType.STRING, new ParseRule(comp.Literal, null, Precedence.None)),
-                (TokenType.IDENTIFIER, new ParseRule(comp.Variable, null, Precedence.None)),
-                (TokenType.AND, new ParseRule(null, comp.And, Precedence.And)),
-                (TokenType.OR, new ParseRule(null, comp.Or, Precedence.Or)),
-                (TokenType.OPEN_PAREN, new ParseRule(comp.Grouping, comp.Call, Precedence.Call)),
-                (TokenType.CONTEXT_NAME_FUNC, new ParseRule(comp.FName, null, Precedence.None))
+                (TokenType.MINUS, new ActionParseRule(Unary, Binary, Precedence.Term)),
+                (TokenType.PLUS, new ActionParseRule(null, Binary, Precedence.Term)),
+                (TokenType.SLASH, new ActionParseRule(null, Binary, Precedence.Factor)),
+                (TokenType.STAR, new ActionParseRule(null, Binary, Precedence.Factor)),
+                (TokenType.PERCENT, new ActionParseRule(null, Binary, Precedence.Factor)),
+                (TokenType.BANG, new ActionParseRule(Unary, null, Precedence.None)),
+                (TokenType.INT, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.FLOAT, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.TRUE, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.FALSE, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.NULL, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.BANG_EQUAL, new ActionParseRule(null, Binary, Precedence.Equality)),
+                (TokenType.EQUALITY, new ActionParseRule(null, Binary, Precedence.Equality)),
+                (TokenType.LESS, new ActionParseRule(null, Binary, Precedence.Comparison)),
+                (TokenType.LESS_EQUAL, new ActionParseRule(null, Binary, Precedence.Comparison)),
+                (TokenType.GREATER, new ActionParseRule(null, Binary, Precedence.Comparison)),
+                (TokenType.GREATER_EQUAL, new ActionParseRule(null, Binary, Precedence.Comparison)),
+                (TokenType.STRING, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.IDENTIFIER, new ActionParseRule(Variable, null, Precedence.None)),
+                (TokenType.AND, new ActionParseRule(null, And, Precedence.And)),
+                (TokenType.OR, new ActionParseRule(null, Or, Precedence.Or)),
+                (TokenType.OPEN_PAREN, new ActionParseRule(Grouping, Call, Precedence.Call)),
+                (TokenType.CONTEXT_NAME_FUNC, new ActionParseRule(FName, null, Precedence.None)),
+                (TokenType.DOT, new ActionParseRule(null, Dot, Precedence.Call))
                               );
         }
 
-        public static void Dot(this CompilerBase comp, bool canAssign)
+        public static void Dot(CompilerBase compiler, bool canAssign)
         {
-            comp.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
-            byte name = comp.AddStringConstant();
+            compiler.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+            byte name = compiler.AddStringConstant();
 
-            if (canAssign && comp.Match(TokenType.ASSIGN))
+            if (canAssign && compiler.Match(TokenType.ASSIGN))
             {
-                comp.Expression();
-                comp.EmitOpAndBytes(OpCode.SET_PROPERTY, name);
+                compiler.Expression();
+                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, name);
             }
-            else if (comp.Match(TokenType.OPEN_PAREN))
+            else if (compiler.Match(TokenType.OPEN_PAREN))
             {
-                var argCount = comp.ArgumentList();
-                comp.EmitOpAndBytes(OpCode.INVOKE, name);
-                comp.EmitBytes(argCount);
+                var argCount = compiler.ArgumentList();
+                compiler.EmitOpAndBytes(OpCode.INVOKE, name);
+                compiler.EmitBytes(argCount);
             }
             else
             {
-                comp.EmitOpAndBytes(OpCode.GET_PROPERTY, name);
+                compiler.EmitOpAndBytes(OpCode.GET_PROPERTY, name);
             }
         }
 
-        public static void FName(this CompilerBase comp, bool canAssign)
+        public static void FName(CompilerBase compiler, bool canAssign)
         {
-            var fname = comp.CurrentChunk.Name;
-            comp.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), comp.PreviousToken.Line);
+            var fname = compiler.CurrentChunk.Name;
+            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), compiler.PreviousToken.Line);
         }
 
         public static void ThrowStatement(CompilerBase compiler)
@@ -216,6 +217,119 @@
 
         public static void NoOpStatement(CompilerBase compiler)
         {
+        }
+
+        public static void Unary(CompilerBase compiler, bool canAssign)
+        {
+            var op = compiler.PreviousToken.TokenType;
+
+            compiler.ParsePrecedence(Precedence.Unary);
+
+            switch (op)
+            {
+            case TokenType.MINUS: compiler.EmitOpCode(OpCode.NEGATE); break;
+            case TokenType.BANG: compiler.EmitOpCode(OpCode.NOT); break;
+            default:
+                break;
+            }
+        }
+
+        public static void Binary(CompilerBase compiler, bool canAssign)
+        {
+            TokenType operatorType = compiler.PreviousToken.TokenType;
+
+            // Compile the right operand.
+            var rule = compiler.PrattParser.GetRule(operatorType);
+            compiler.ParsePrecedence((Precedence)(rule.Precedence + 1));
+
+            switch (operatorType)
+            {
+            case TokenType.PLUS: compiler.EmitOpCode(OpCode.ADD); break;
+            case TokenType.MINUS: compiler.EmitOpCode(OpCode.SUBTRACT); break;
+            case TokenType.STAR: compiler.EmitOpCode(OpCode.MULTIPLY); break;
+            case TokenType.SLASH: compiler.EmitOpCode(OpCode.DIVIDE); break;
+            case TokenType.PERCENT: compiler.EmitOpCode(OpCode.MODULUS); break;
+            case TokenType.EQUALITY: compiler.EmitOpCode(OpCode.EQUAL); break;
+            case TokenType.GREATER: compiler.EmitOpCode(OpCode.GREATER); break;
+            case TokenType.LESS: compiler.EmitOpCode(OpCode.LESS); break;
+            case TokenType.BANG_EQUAL: compiler.EmitOpCodes(OpCode.EQUAL, OpCode.NOT); break;
+            case TokenType.GREATER_EQUAL: compiler.EmitOpCodes(OpCode.LESS, OpCode.NOT); break;
+            case TokenType.LESS_EQUAL: compiler.EmitOpCodes(OpCode.GREATER, OpCode.NOT); break;
+
+            default:
+                break;
+            }
+        }
+
+        public static void Literal(CompilerBase compiler, bool canAssign)
+        {
+            switch (compiler.PreviousToken.TokenType)
+            {
+            case TokenType.TRUE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
+            case TokenType.FALSE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
+            case TokenType.NULL: compiler.EmitOpCode(OpCode.NULL); break;
+            case TokenType.INT:
+            case TokenType.FLOAT:
+                {
+                    var number = (double)compiler.PreviousToken.Literal;
+
+                    var isInt = number == System.Math.Truncate(number);
+
+                    //todo refactor out
+                    if (isInt && number < 255 && number >= 0)
+                        compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
+                    else
+                        compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), compiler.PreviousToken.Line);
+                }
+                break;
+
+            case TokenType.STRING:
+                {
+                    var str = (string)compiler.PreviousToken.Literal;
+                    compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(str), compiler.PreviousToken.Line);
+                }
+                break;
+            }
+        }
+
+        public static void Variable(CompilerBase compiler, bool canAssign)
+        {
+            var name = (string)compiler.PreviousToken.Literal;
+            compiler.NamedVariable(name, canAssign);
+        }
+
+        public static void And(CompilerBase compiler, bool canAssign)
+        {
+            int endJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+
+            compiler.EmitOpCode(OpCode.POP);
+            compiler.ParsePrecedence(Precedence.And);
+
+            compiler.PatchJump(endJump);
+        }
+
+        public static void Or(CompilerBase compiler, bool canAssign)
+        {
+            int elseJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+            int endJump = compiler.EmitJump(OpCode.JUMP);
+
+            compiler.PatchJump(elseJump);
+            compiler.EmitOpCode(OpCode.POP);
+
+            compiler.ParsePrecedence(Precedence.Or);
+
+            compiler.PatchJump(endJump);
+        }
+
+        public static void Grouping(CompilerBase compiler, bool canAssign)
+        {
+            compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
+        }
+
+        public static void Call(CompilerBase compiler, bool canAssign)
+        {
+            var argCount = compiler.ArgumentList();
+            compiler.EmitOpAndBytes(OpCode.CALL, argCount);
         }
     }
 }

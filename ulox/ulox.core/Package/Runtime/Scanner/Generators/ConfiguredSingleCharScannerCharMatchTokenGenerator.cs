@@ -10,8 +10,6 @@
 
         private readonly TokenType tokenType;
 
-        public override void Consume(ScannerBase scanner) => ProduceToken(scanner);
-
-        private void ProduceToken(ScannerBase scanner) => scanner.AddTokenSingle(tokenType);
+        public override void Consume(IScanner scanner) => scanner.AddTokenSingle(tokenType);
     }
 }

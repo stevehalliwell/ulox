@@ -1,14 +1,19 @@
 ﻿namespace ULox
 {
-    public abstract class PrefixedCharScannerCharMatchTokenGenerator : IScannerCharMatchTokenGenerator
+    public abstract class PrefixedCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
     {
         protected PrefixedCharScannerCharMatchTokenGenerator(char matchingChar)
         {
-            MatchingChar = matchingChar;
+            _matchingChar = matchingChar;
         }
 
-        public char MatchingChar { get; private set; }
+        private readonly char _matchingChar;
 
-        public abstract void Consume(ScannerBase scanner);
+        public abstract void Consume(IScanner scanner);
+
+        public bool DoesMatchChar(char ch)
+        {
+            return ch == _matchingChar;
+        }
     }
 }

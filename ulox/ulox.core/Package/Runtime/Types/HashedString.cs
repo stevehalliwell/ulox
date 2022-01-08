@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    //todo add tests
     public class HashedString : IComparable<HashedString>
     {
         public readonly int Hash;

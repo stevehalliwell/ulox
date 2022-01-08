@@ -32,7 +32,6 @@ namespace ULox
 
         private NativeCallResult AddGlobal(VMBase vm, int argCount)
         {
-            var inst = vm.GetArg(0);
             Vm ourVM = GetArg0Vm(vm);
             var name = vm.GetArg(1).val.asString;
             var val = vm.GetArg(2);

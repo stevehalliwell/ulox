@@ -13,8 +13,6 @@ namespace ULox.Tests
             {
                 this.SetupSimpleScanner();
                 this.AddIdentifierGenerator(
-                    ( ".",      TokenType.DOT),
-
                     ( "test",  TokenType.TEST),
                     ( "testcase",  TokenType.TESTCASE));
 
@@ -33,8 +31,6 @@ namespace ULox.Tests
                 this.AddDeclarationCompilette(
                     testdec,
                     testcaseCompilette);
-
-                SetPrattRule(TokenType.DOT, new ParseRule(null, this.Dot, Precedence.Call));
             }
         }
 

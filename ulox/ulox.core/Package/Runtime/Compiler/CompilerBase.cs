@@ -4,7 +4,7 @@ namespace ULox
 {
     //todo for self assign to work, we need to route it through the assign path and
     //  then dump into a grouping, once the grouping is back, we named var ourselves and then emit the math op
-    public abstract class CompilerBase
+    public abstract class CompilerBase : ICompiler
     {
         private IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
 
@@ -13,7 +13,7 @@ namespace ULox
         private List<Token> tokens;
         private int tokenIndex;
 
-        protected ParseRule[] rules;
+        public PrattParser PrattParser { get; private set; } = new PrattParser();
         protected Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         protected Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
 
@@ -23,25 +23,14 @@ namespace ULox
 
         protected CompilerBase()
         {
-            rules = new ParseRule[System.Enum.GetNames(typeof(TokenType)).Length];
-
-            for (int i = 0; i < rules.Length; i++)
-            {
-                rules[i] = new ParseRule(null, null, Precedence.None);
-            }
-
             Reset();
         }
 
         protected virtual void NoDeclarationFound()
-        {
-            Statement();
-        }
+            => Statement();
 
         protected virtual void NoStatementFound()
-        {
-            ExpressionStatement();
-        }
+            => ExpressionStatement();
 
         public void AddDeclarationCompilette(ICompilette compilette)
             => declarationCompilettes[compilette.Match] = compilette;
@@ -49,8 +38,8 @@ namespace ULox
         public void AddStatementCompilette(ICompilette compilette)
             => statementCompilettes[compilette.Match] = compilette;
 
-        public void SetPrattRule(TokenType tt, ParseRule rule)
-            => rules[(int)tt] = rule;
+        public void SetPrattRule(TokenType tt, IParseRule rule)
+            => PrattParser.SetPrattRule(tt, rule);
 
         public void Reset()
         {
@@ -109,38 +98,27 @@ namespace ULox
         }
 
         public void Expression()
-        {
-            ParsePrecedence(Precedence.Assignment);
-        }
+            => ParsePrecedence(Precedence.Assignment);
 
-        protected void ParsePrecedence(Precedence pre)
+        public void ParsePrecedence(Precedence pre)
         {
             Advance();
-            var rule = GetRule(PreviousToken.TokenType);
-            if (rule.Prefix == null)
-            {
-                throw new CompilerException("Expected prefix handler, but got null.");
-            }
+            var rule = PrattParser.GetRule(PreviousToken.TokenType);
 
             var canAssign = pre <= Precedence.Assignment;
-            rule.Prefix(canAssign);
+            rule.Prefix(this, canAssign);
 
-            while (pre <= GetRule(CurrentToken.TokenType).Precedence)
+            while (pre <= PrattParser.GetRule(CurrentToken.TokenType).Precedence)
             {
                 Advance();
-                rule = GetRule(PreviousToken.TokenType);
-                rule.Infix(canAssign);
+                rule = PrattParser.GetRule(PreviousToken.TokenType);
+                rule.Infix(this, canAssign);
             }
 
             if (canAssign && Match(TokenType.ASSIGN))
             {
                 throw new CompilerException("Invalid assignment target.");
             }
-        }
-
-        protected ParseRule GetRule(TokenType operatorType)
-        {
-            return rules[(int)operatorType];
         }
 
         public void PushCompilerState(string name, FunctionType functionType)
@@ -263,9 +241,7 @@ namespace ULox
         }
 
         public bool Check(TokenType type)
-        {
-            return CurrentToken.TokenType == type;
-        }
+            => CurrentToken.TokenType == type;
 
         public bool Match(TokenType type)
         {
@@ -288,11 +264,9 @@ namespace ULox
         }
 
         public void EmitOpCode(OpCode op)
-        {
-            CurrentChunk.WriteSimple(op, PreviousToken.Line);
-        }
+            => CurrentChunk.WriteSimple(op, PreviousToken.Line);
 
-        protected void EmitOpCodes(params OpCode[] ops)
+        public void EmitOpCodes(params OpCode[] ops)
         {
             for (int i = 0; i < ops.Length; i++)
                 EmitOpCode(ops[i]);
@@ -328,9 +302,7 @@ namespace ULox
         }
 
         public void WriteUShortAt(int at, ushort us)
-        {
-            WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
-        }
+            => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
         protected void WriteBytesAt(int at, params byte[] b)
         {
@@ -355,9 +327,7 @@ namespace ULox
         }
 
         public void EmitUShort(ushort us)
-        {
-            EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
-        }
+            => EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
         public void EndScope()
         {
@@ -397,9 +367,7 @@ namespace ULox
         }
 
         public byte ArgumentList()
-        {
-            return ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
-        }
+            => ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
 
         public void EmitLoop(int loopStart)
         {
@@ -488,9 +456,7 @@ namespace ULox
         }
 
         public void BeginScope()
-        {
-            CurrentCompilerState.scopeDepth++;
-        }
+            => CurrentCompilerState.scopeDepth++;
 
         public void DefineVariable(byte global)
         {
@@ -520,121 +486,5 @@ namespace ULox
             Block();
             EndScope();
         }
-
-        #region Expressions
-
-        public void Unary(bool canAssign)
-        {
-            var op = PreviousToken.TokenType;
-
-            ParsePrecedence(Precedence.Unary);
-
-            switch (op)
-            {
-            case TokenType.MINUS: EmitOpCode(OpCode.NEGATE); break;
-            case TokenType.BANG: EmitOpCode(OpCode.NOT); break;
-            default:
-                break;
-            }
-        }
-
-        public void Binary(bool canAssign)
-        {
-            TokenType operatorType = PreviousToken.TokenType;
-
-            // Compile the right operand.
-            ParseRule rule = GetRule(operatorType);
-            ParsePrecedence((Precedence)(rule.Precedence + 1));
-
-            switch (operatorType)
-            {
-            case TokenType.PLUS: EmitOpCode(OpCode.ADD); break;
-            case TokenType.MINUS: EmitOpCode(OpCode.SUBTRACT); break;
-            case TokenType.STAR: EmitOpCode(OpCode.MULTIPLY); break;
-            case TokenType.SLASH: EmitOpCode(OpCode.DIVIDE); break;
-            case TokenType.PERCENT: EmitOpCode(OpCode.MODULUS); break;
-            case TokenType.EQUALITY: EmitOpCode(OpCode.EQUAL); break;
-            case TokenType.GREATER: EmitOpCode(OpCode.GREATER); break;
-            case TokenType.LESS: EmitOpCode(OpCode.LESS); break;
-            case TokenType.BANG_EQUAL: EmitOpCodes(OpCode.EQUAL, OpCode.NOT); break;
-            case TokenType.GREATER_EQUAL: EmitOpCodes(OpCode.LESS, OpCode.NOT); break;
-            case TokenType.LESS_EQUAL: EmitOpCodes(OpCode.GREATER, OpCode.NOT); break;
-
-            default:
-                break;
-            }
-        }
-
-        public void Literal(bool canAssign)
-        {
-            switch (PreviousToken.TokenType)
-            {
-            case TokenType.TRUE: EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
-            case TokenType.FALSE: EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
-            case TokenType.NULL: EmitOpCode(OpCode.NULL); break;
-            case TokenType.INT:
-            case TokenType.FLOAT:
-                {
-                    var number = (double)PreviousToken.Literal;
-
-                    var isInt = number == System.Math.Truncate(number);
-
-                    if (isInt && number < 255 && number >= 0)
-                        EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
-                    else
-                        CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), PreviousToken.Line);
-                }
-                break;
-
-            case TokenType.STRING:
-                {
-                    var str = (string)PreviousToken.Literal;
-                    CurrentChunk.AddConstantAndWriteInstruction(Value.New(str), PreviousToken.Line);
-                }
-                break;
-            }
-        }
-
-        public void Variable(bool canAssign)
-        {
-            var name = (string)PreviousToken.Literal;
-            NamedVariable(name, canAssign);
-        }
-
-        public void And(bool canAssign)
-        {
-            int endJump = EmitJump(OpCode.JUMP_IF_FALSE);
-
-            EmitOpCode(OpCode.POP);
-            ParsePrecedence(Precedence.And);
-
-            PatchJump(endJump);
-        }
-
-        public void Or(bool canAssign)
-        {
-            int elseJump = EmitJump(OpCode.JUMP_IF_FALSE);
-            int endJump = EmitJump(OpCode.JUMP);
-
-            PatchJump(elseJump);
-            EmitOpCode(OpCode.POP);
-
-            ParsePrecedence(Precedence.Or);
-
-            PatchJump(endJump);
-        }
-
-        public void Grouping(bool canAssign)
-        {
-            ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
-        }
-
-        public void Call(bool canAssign)
-        {
-            var argCount = ArgumentList();
-            EmitOpAndBytes(OpCode.CALL, argCount);
-        }
-
-        #endregion Expressions
     }
 }

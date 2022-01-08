@@ -2,59 +2,46 @@
 {
     public static partial class ScannerBaseExt
     {
-        public static void AddSingleCharTokenGenerator(this ScannerBase scannerBase, char ch, TokenType tt)
+        public static void AddSingleCharTokenGenerator(this IScanner scanner, char ch, TokenType tt)
         {
-            scannerBase.AddCharMatchGenerator(new ConfiguredSingleCharScannerCharMatchTokenGenerator(ch, tt));
+            scanner.AddGenerator(new ConfiguredSingleCharScannerCharMatchTokenGenerator(ch, tt));
         }
 
-        public static void AddSingleCharTokenGenerators(this ScannerBase scannerBase, params (char ch, TokenType token)[] tokens)
-        {
-            foreach (var item in tokens)
-            {
-                scannerBase.AddSingleCharTokenGenerator(item.ch, item.token);
-            }
-        }
-
-        public static void AddCompoundCharTokenGenerator(this ScannerBase scannerBase, char ch, TokenType tokenFlat, TokenType tokenCompound)
-        {
-            scannerBase.AddCharMatchGenerator(new CompoundCharScannerCharMatchTokenGenerator(ch, tokenFlat, tokenCompound));
-        }
-
-        public static void AddCompoundCharTokenGenerators(this ScannerBase scannerBase, params (char ch, TokenType tokenFlat, TokenType tokenCompound)[] tokens)
+        public static void AddSingleCharTokenGenerators(this IScanner scanner, params (char ch, TokenType token)[] tokens)
         {
             foreach (var item in tokens)
             {
-                scannerBase.AddCompoundCharTokenGenerator(item.ch, item.tokenFlat, item.tokenCompound);
+                scanner.AddSingleCharTokenGenerator(item.ch, item.token);
             }
         }
 
-        public static void AddDefaultGenerator(this ScannerBase scannerBase, params IScannerTokenGenerator[] scannerTokenGenerators)
+        public static void AddGenerators(this IScanner scanner, params IScannerTokenGenerator[] scannerTokenGenerators)
         {
             foreach (var item in scannerTokenGenerators)
             {
-                scannerBase.AddDefaultGenerator(item);
+                scanner.AddGenerator(item);
             }
         }
 
-        public static void AddIdentifierGenerator(this ScannerBase scannerBase, params (string name, TokenType tokenType)[] litteralToTokens)
+        public static void AddIdentifierGenerator(this IScanner scanner, params (string name, TokenType tokenType)[] litteralToTokens)
         {
             foreach (var item in litteralToTokens)
             {
-                scannerBase.IdentifierScannerTokenGenerator.Add(item.name, item.tokenType);
+                scanner.IdentifierScannerTokenGenerator.Add(item.name, item.tokenType);
             }
         }
 
-        public static void SetupSimpleScanner(this ScannerBase scannerBase)
+        public static void SetupSimpleScanner(this IScanner scanner)
         {
-            scannerBase.AddDefaultGenerator(
+            scanner.AddGenerators(
                 new WhiteSpaceScannerTokenGenerator(),
                 new StringScannerTokenGenerator(),
-                new NumberScannerTokenGenerator()
-            );
+                new NumberScannerTokenGenerator(),
+                new SlashScannerTokenGenerator(),
+                new CompoundCharScannerCharMatchTokenGenerator()
+                                    );
 
-            scannerBase.AddCharMatchGenerator(new SlashScannerTokenGenerator());
-
-            scannerBase.AddIdentifierGenerator(
+            scanner.AddIdentifierGenerator(
                 ("var", TokenType.VAR),
                 ("string", TokenType.STRING),
                 ("int", TokenType.INT),
@@ -75,26 +62,18 @@
                 ("fun", TokenType.FUNCTION),
                 ("throw", TokenType.THROW),
                 ("yield", TokenType.YIELD),
-                ("fname", TokenType.CONTEXT_NAME_FUNC)
-                );
+                ("fname", TokenType.CONTEXT_NAME_FUNC),
+                (".", TokenType.DOT)
+                                              );
 
-            scannerBase.AddSingleCharTokenGenerators(
+            scanner.AddSingleCharTokenGenerators(
                 ('(', TokenType.OPEN_PAREN),
                 (')', TokenType.CLOSE_PAREN),
                 ('{', TokenType.OPEN_BRACE),
                 ('}', TokenType.CLOSE_BRACE),
                 (',', TokenType.COMMA),
-                (';', TokenType.END_STATEMENT));
-
-            scannerBase.AddCompoundCharTokenGenerators(
-                ('+', TokenType.PLUS, TokenType.PLUS_EQUAL),
-                ('-', TokenType.MINUS, TokenType.MINUS_EQUAL),
-                ('*', TokenType.STAR, TokenType.STAR_EQUAL),
-                ('%', TokenType.PERCENT, TokenType.PERCENT_EQUAL),
-                ('!', TokenType.BANG, TokenType.BANG_EQUAL),
-                ('=', TokenType.ASSIGN, TokenType.EQUALITY),
-                ('<', TokenType.LESS, TokenType.LESS_EQUAL),
-                ('>', TokenType.GREATER, TokenType.GREATER_EQUAL));
+                (';', TokenType.END_STATEMENT)
+                                                    );
         }
     }
 }

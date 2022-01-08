@@ -7,8 +7,6 @@
             this.SetupSimpleScanner();
 
             this.AddIdentifierGenerator(
-                (".", TokenType.DOT),
-
                 ("build", TokenType.BUILD),
 
                 ("test", TokenType.TEST),

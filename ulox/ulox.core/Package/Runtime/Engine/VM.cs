@@ -495,7 +495,7 @@ namespace ULox
                     return true;
                 }
 
-                if (lhsInst.FromClass.Name == DynamicClass.Name)
+                if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
                 {
                     return HandleDynamicCustomMathOp(opCode, lhs, rhs);
                 }
@@ -516,7 +516,7 @@ namespace ULox
                     return true;
                 }
 
-                if (lhsInst.FromClass.Name == DynamicClass.Name)
+                if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
                 {
                     return HandleDynamicCustomCompOp(opCode, lhs, rhs);
                 }

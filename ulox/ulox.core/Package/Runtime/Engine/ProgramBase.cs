@@ -4,9 +4,9 @@ using System.Linq;
 namespace ULox
 {
     public class ProgramBase<TScanner, TCompiler, TDisass> : IProgram
-        where TScanner : ScannerBase, new()
-        where TCompiler : CompilerBase, new()
-        where TDisass : DisassemblerBase, new()
+        where TScanner : IScanner, new()
+        where TCompiler : ICompiler, new()
+        where TDisass : IDisassembler, new()
     {
         private readonly TScanner _scanner = new TScanner();
         private readonly TCompiler _compiler = new TCompiler();

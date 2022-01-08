@@ -203,21 +203,14 @@ namespace ULox
                 switch (opCode)
                 {
                 case OpCode.CONSTANT:
-                    {
-                        var constantIndex = ReadByte(chunk);
-                        Push(chunk.ReadConstant(constantIndex));
-                    }
+                    DoConstantOp(chunk);
+
                     break;
 
                 case OpCode.RETURN:
-                    {
-                        DoReturnOp(chunk);
+                    if (DoReturnOp(chunk))
+                        return InterpreterResult.OK;
 
-                        if (_callFrames.Count == 0)
-                        {
-                            return InterpreterResult.OK;
-                        }
-                    }
                     break;
 
                 case OpCode.YIELD:
@@ -242,25 +235,19 @@ namespace ULox
                     break;
 
                 case OpCode.NOT:
-                    Push(Value.New(Pop().IsFalsey));
+                    DoNotOp();
                     break;
 
                 case OpCode.PUSH_BOOL:
-                    {
-                        var b = ReadByte(chunk);
-                        Push(Value.New(b == 1));
-                    }
+                    DoPushBoolOp(chunk);
                     break;
 
                 case OpCode.NULL:
-                    Push(Value.Null());
+                    DoNullOp();
                     break;
 
                 case OpCode.PUSH_BYTE:
-                    {
-                        var b = ReadByte(chunk);
-                        Push(Value.New(b));
-                    }
+                    DoPushByteOp(chunk);
                     break;
 
                 case OpCode.POP:
@@ -272,61 +259,31 @@ namespace ULox
                     break;
 
                 case OpCode.JUMP_IF_FALSE:
-                    {
-                        ushort jump = ReadUShort(chunk);
-                        if (Peek().IsFalsey)
-                            currentCallFrame.InstructionPointer += jump;
-                    }
+                    DoJumpIfFalseOp(chunk);
                     break;
 
                 case OpCode.JUMP:
-                    {
-                        ushort jump = ReadUShort(chunk);
-                        currentCallFrame.InstructionPointer += jump;
-                    }
+                    DoJumpOp(chunk);
                     break;
 
                 case OpCode.LOOP:
-                    {
-                        ushort jump = ReadUShort(chunk);
-                        currentCallFrame.InstructionPointer -= jump;
-                    }
+                    DoLoopOp(chunk);
                     break;
 
                 case OpCode.GET_LOCAL:
-                    {
-                        var slot = ReadByte(chunk);
-                        Push(_valueStack[currentCallFrame.StackStart + slot]);
-                    }
+                    DoGetLocalOp(chunk);
                     break;
 
                 case OpCode.SET_LOCAL:
-                    {
-                        var slot = ReadByte(chunk);
-                        _valueStack[currentCallFrame.StackStart + slot] = Peek();
-                    }
+                    DoSetLocalOp(chunk);
                     break;
 
                 case OpCode.GET_UPVALUE:
-                    {
-                        var slot = ReadByte(chunk);
-                        var upval = currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
-                        if (!upval.isClosed)
-                            Push(_valueStack[upval.index]);
-                        else
-                            Push(upval.value);
-                    }
+                    DoGetUpvalueOp(chunk);
                     break;
 
                 case OpCode.SET_UPVALUE:
-                    {
-                        var slot = ReadByte(chunk);
-                        var upval = currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
-                        if (!upval.isClosed)
-                            _valueStack[upval.index] = Peek();
-                        else
-                            upval.value = Peek();
-                    }
+                    DoSetUpvalueOp(chunk);
                     break;
 
                 case OpCode.DEFINE_GLOBAL:
@@ -342,10 +299,7 @@ namespace ULox
                     break;
 
                 case OpCode.CALL:
-                    {
-                        int argCount = ReadByte(chunk);
-                        PushCallFrameFromValue(Peek(argCount), argCount);
-                    }
+                    DoCallOp(chunk);
                     break;
 
                 case OpCode.CLOSURE:
@@ -353,8 +307,7 @@ namespace ULox
                     break;
 
                 case OpCode.CLOSE_UPVALUE:
-                    CloseUpvalues(_valueStack.Count - 1);
-                    DiscardPop();
+                    DoCloseUpvalueOp();
                     break;
 
                 case OpCode.THROW:
@@ -380,6 +333,111 @@ namespace ULox
                     break;
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoCloseUpvalueOp()
+        {
+            CloseUpvalues(_valueStack.Count - 1);
+            DiscardPop();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoCallOp(Chunk chunk)
+        {
+            int argCount = ReadByte(chunk);
+            PushCallFrameFromValue(Peek(argCount), argCount);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSetUpvalueOp(Chunk chunk)
+        {
+            var slot = ReadByte(chunk);
+            var upval = currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
+            if (!upval.isClosed)
+                _valueStack[upval.index] = Peek();
+            else
+                upval.value = Peek();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoGetUpvalueOp(Chunk chunk)
+        {
+            var slot = ReadByte(chunk);
+            var upval = currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
+            if (!upval.isClosed)
+                Push(_valueStack[upval.index]);
+            else
+                Push(upval.value);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSetLocalOp(Chunk chunk)
+        {
+            var slot = ReadByte(chunk);
+            _valueStack[currentCallFrame.StackStart + slot] = Peek();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoGetLocalOp(Chunk chunk)
+        {
+            var slot = ReadByte(chunk);
+            Push(_valueStack[currentCallFrame.StackStart + slot]);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoLoopOp(Chunk chunk)
+        {
+            ushort jump = ReadUShort(chunk);
+            currentCallFrame.InstructionPointer -= jump;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoJumpOp(Chunk chunk)
+        {
+            ushort jump = ReadUShort(chunk);
+            currentCallFrame.InstructionPointer += jump;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoJumpIfFalseOp(Chunk chunk)
+        {
+            ushort jump = ReadUShort(chunk);
+            if (Peek().IsFalsey)
+                currentCallFrame.InstructionPointer += jump;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoPushByteOp(Chunk chunk)
+        {
+            var b = ReadByte(chunk);
+            Push(Value.New(b));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoNullOp()
+        {
+            Push(Value.Null());
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoPushBoolOp(Chunk chunk)
+        {
+            var b = ReadByte(chunk);
+            Push(Value.New(b == 1));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoNotOp()
+        {
+            Push(Value.New(Pop().IsFalsey));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoConstantOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            Push(chunk.ReadConstant(constantIndex));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -475,9 +533,13 @@ namespace ULox
             var actualName = globalName.val.asString;
 
             if (_globals.TryGetValue(actualName, out var found))
+            {
                 Push(found);
+            }
             else
+            {
                 throw new VMException($"No global of name {actualName} could be found.");
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -515,7 +577,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoReturnOp(Chunk chunk)
+        private bool DoReturnOp(Chunk chunk)
         {
             var returnMode = (ReturnMode)ReadByte(chunk);
             switch (returnMode)
@@ -545,6 +607,8 @@ namespace ULox
                 throw new VMException($"Unhandled return mode '{returnMode}'.");
                 break;
             }
+
+            return _callFrames.Count == 0;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -613,6 +677,7 @@ namespace ULox
         }
 
         //todo the returning function can tell us how many we are about to receive we don't need to track it separately?
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessStackForMultiAssign()
         {
             _returnStack.Reset();
@@ -806,6 +871,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected void DuplicateStackValuesNew(int startAt, int count)
         {
             for (int i = 0; i <= count; i++)

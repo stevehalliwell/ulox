@@ -53,7 +53,7 @@ namespace ULox
                 return $"<inst {val.asInstance.FromClass?.Name}>";
 
             case ValueType.BoundMethod:
-                return $"<boundMeth {val.asBoundMethod.method.chunk.Name}>";
+                return $"<boundMeth {val.asBoundMethod.Method.chunk.Name}>";
 
             case ValueType.Object:
                 return $"<object {val.asObject}>";

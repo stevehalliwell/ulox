@@ -7,6 +7,7 @@ namespace ULox
         public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
         public DiContainer DiContainer { get; private set; } = new DiContainer();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override void CopyFrom(IVm otherVMbase)
         {
             base.CopyFrom(otherVMbase);
@@ -57,30 +58,16 @@ namespace ULox
             switch (opCode)
             {
             case OpCode.GET_PROPERTY:
-                {
-                    DoGetPropertyOp(chunk);
-                }
+                DoGetPropertyOp(chunk);
                 break;
 
             case OpCode.SET_PROPERTY:
-                {
-                    DoSetPropertyOp(chunk);
-                }
+                DoSetPropertyOp(chunk);
                 break;
 
             case OpCode.CLASS:
-                {
-                    var constantIndex = ReadByte(chunk);
-                    var name = chunk.ReadConstant(constantIndex);
-                    var klassValue = Value.New(new ClassInternal(name.val.asString));
-                    Push(klassValue);
-                    var klass = klassValue.val.asClass;
-                    var initChain = ReadUShort(chunk);
-                    if (initChain != 0)
-                    {
-                        klass.AddInitChain(currentCallFrame.Closure, initChain);
-                    }
-                }
+                DoClassOp(chunk);
+
                 break;
 
             case OpCode.METHOD:
@@ -92,35 +79,19 @@ namespace ULox
                 break;
 
             case OpCode.INVOKE:
-                {
-                    DoInvokeOp(chunk);
-                }
+                DoInvokeOp(chunk);
                 break;
 
             case OpCode.INHERIT:
-                {
-                    DoInheritOp(chunk);
-                }
+                DoInheritOp(chunk);
                 break;
 
             case OpCode.GET_SUPER:
-                {
-                    var constantIndex = ReadByte(chunk);
-                    var name = chunk.ReadConstant(constantIndex).val.asString;
-                    var superClassVal = Pop();
-                    var superClass = superClassVal.val.asClass;
-                    BindMethod(superClass, name);
-                }
+                DoGetSuperOp(chunk);
                 break;
 
             case OpCode.SUPER_INVOKE:
-                {
-                    var constantIndex = ReadByte(chunk);
-                    var methName = chunk.ReadConstant(constantIndex).val.asString;
-                    var argCount = ReadByte(chunk);
-                    var superClass = Pop().val.asClass;
-                    InvokeFromClass(superClass, methName, argCount);
-                }
+                DoSuperInvokeOp(chunk);
                 break;
 
             case OpCode.TEST:
@@ -128,48 +99,95 @@ namespace ULox
                 break;
 
             case OpCode.REGISTER:
-                {
-                    var constantIndex = ReadByte(chunk);
-                    var name = chunk.ReadConstant(constantIndex).val.asString;
-                    var implementation = Pop();
-                    DiContainer.Set(name, implementation);
-                }
+                DoRegisterOp(chunk);
                 break;
 
             case OpCode.INJECT:
-                {
-                    var constantIndex = ReadByte(chunk);
-                    var name = chunk.ReadConstant(constantIndex).val.asString;
-                    if (DiContainer.TryGetValue(name, out var found))
-                        Push(found);
-                    else
-                        throw new VMException($"Inject failure. Nothing has been registered (yet) with name '{name}'.");
-                }
+                DoInjectOp(chunk);
                 break;
 
             case OpCode.FREEZE:
-                {
-                    var instVal = Pop();
-                    switch (instVal.type)
-                    {
-                    case ValueType.Instance:
-                        instVal.val.asInstance.Freeze();
-                        break;
-
-                    case ValueType.Class:
-                        instVal.val.asClass.Freeze();
-                        break;
-
-                    default:
-                        throw new VMException($"Freeze attempted on unsupported type '{instVal.type}'.");
-                    }
-                }
+                DoFreezeOp();
                 break;
 
             default:
                 return false;
             }
             return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoClassOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var name = chunk.ReadConstant(constantIndex);
+            var klassValue = Value.New(new ClassInternal(name.val.asString));
+            Push(klassValue);
+            var klass = klassValue.val.asClass;
+            var initChain = ReadUShort(chunk);
+            if (initChain != 0)
+            {
+                klass.AddInitChain(currentCallFrame.Closure, initChain);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoFreezeOp()
+        {
+            var instVal = Pop();
+            switch (instVal.type)
+            {
+            case ValueType.Instance:
+                instVal.val.asInstance.Freeze();
+                break;
+
+            case ValueType.Class:
+                instVal.val.asClass.Freeze();
+                break;
+
+            default:
+                throw new VMException($"Freeze attempted on unsupported type '{instVal.type}'.");
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoInjectOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var name = chunk.ReadConstant(constantIndex).val.asString;
+            if (DiContainer.TryGetValue(name, out var found))
+                Push(found);
+            else
+                throw new VMException($"Inject failure. Nothing has been registered (yet) with name '{name}'.");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoRegisterOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var name = chunk.ReadConstant(constantIndex).val.asString;
+            var implementation = Pop();
+            DiContainer.Set(name, implementation);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSuperInvokeOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var methName = chunk.ReadConstant(constantIndex).val.asString;
+            var argCount = ReadByte(chunk);
+            var superClass = Pop().val.asClass;
+            InvokeFromClass(superClass, methName, argCount);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoGetSuperOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var name = chunk.ReadConstant(constantIndex).val.asString;
+            var superClassVal = Pop();
+            var superClass = superClassVal.val.asClass;
+            BindMethod(superClass, name);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -333,7 +351,9 @@ namespace ULox
                 throw new VMException($"Undefined property {methodName}");
             }
 
-            var bound = Value.New(new BoundMethod() { receiver = Peek(), method = method.val.asClosure });
+            var receiver = Peek();
+            var meth = method.val.asClosure;
+            var bound = Value.New(new BoundMethod(receiver, meth));
 
             DiscardPop();
             Push(bound);
@@ -353,8 +373,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CallMethod(BoundMethod asBoundMethod, int argCount)
         {
-            _valueStack[_valueStack.Count - 1 - argCount] = asBoundMethod.receiver;
-            Call(asBoundMethod.method, argCount);
+            _valueStack[_valueStack.Count - 1 - argCount] = asBoundMethod.Receiver;
+            Call(asBoundMethod.Method, argCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -424,6 +444,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private NativeCallResult CopyMatchingParamsToFields(VMBase vm, int argCount)
         {
             var instVal = vm.GetArg(0);
@@ -452,6 +473,7 @@ namespace ULox
             return NativeCallResult.SuccessfulStatement;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private NativeCallResult ClassFinishCreation(VMBase vm, int argCount)
         {
             var instVal = vm.GetArg(0);
@@ -482,6 +504,7 @@ namespace ULox
             return argsToSuperInit;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs)
         {
             if (lhs.type == ValueType.Instance)
@@ -503,6 +526,7 @@ namespace ULox
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs)
         {
             if (lhs.type == ValueType.Instance)

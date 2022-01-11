@@ -92,7 +92,7 @@ namespace ULox
         public void ExpressionStatement()
         {
             Expression();
-            //todo reeated
+            //todo repeated
             Consume(TokenType.END_STATEMENT, "Expect ; after expression statement.");
             EmitOpCode(OpCode.POP);
         }

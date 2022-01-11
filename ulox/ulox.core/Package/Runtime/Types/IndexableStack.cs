@@ -2,10 +2,10 @@
 
 namespace ULox
 {
-    //todo add tests
     public class IndexableStack<T> : List<T>
     {
-        public void Push(T t) => Add(t);
+        public void Push(T t) 
+            => Add(t);
 
         public T Pop()
         {

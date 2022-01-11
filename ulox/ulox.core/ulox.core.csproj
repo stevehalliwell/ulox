@@ -7,6 +7,7 @@
     <Product>ulox</Product>
     <Copyright>Copyright ©  2021</Copyright>
     <OutputPath>bin\$(Configuration)\</OutputPath>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugType>full</DebugType>

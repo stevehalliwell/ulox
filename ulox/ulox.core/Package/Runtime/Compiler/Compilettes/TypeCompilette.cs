@@ -108,7 +108,7 @@ namespace ULox
             var name = (string)compiler.PreviousToken.Literal;
             compiler.NamedVariable(name, false);
             if (CurrentTypeName == (string)compiler.PreviousToken.Literal)
-                throw new CompilerException("A class cannot inher from itself.");
+                throw new CompilerException($"A class cannot inher from itself. '{CurrentTypeName}' inherits from itself, not allowed.");
 
             compiler.BeginScope();
             compiler.CurrentCompilerState.AddLocal("super");

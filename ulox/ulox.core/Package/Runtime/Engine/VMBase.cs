@@ -15,7 +15,6 @@ namespace ULox
     //  identify push local 0 and paired get or set member, replace with specific this accessing ops
     //todo better string parsing token support
     //todo add conditional
-    //todo add pods
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
     //todo self asign needs safety to prevent their use in declarations.

@@ -47,6 +47,45 @@ b.MethA();");
         }
 
         [Test]
+        public void Engine_Class_CannotInherSelf()
+        {
+            testEngine.Run(@"
+class A < A {}");
+
+            Assert.AreEqual("A class cannot inher from itself. 'A' inherits from itself, not allowed.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_CannotReturnExpFromInit()
+        {
+            testEngine.Run(@"
+class A 
+{
+    init(){return 7;}
+}");
+
+            Assert.AreEqual("Cannot return an expression from an 'init'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_This_OutsideClass()
+        {
+            testEngine.Run(@"
+var a = this.a;");
+
+            Assert.AreEqual("Cannot use this outside of a class declaration.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Super_OutsideClass()
+        {
+            testEngine.Run(@"
+var a = super.a;");
+
+            Assert.AreEqual("Cannot use super outside a class.", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_Inher_Super()
         {
             testEngine.Run(@"

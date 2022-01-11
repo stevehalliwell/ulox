@@ -111,7 +111,6 @@ delegate();");
             Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
         }
 
-        //TODO: add test to version with params
         [Test]
         public void Engine_Class_BoundMethod_InternalAndReturn()
         {
@@ -141,6 +140,32 @@ var delegate = maker.brewLater();
 delegate();");
 
             Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_BoundMethodWithParams_InternalAndReturn()
+        {
+            testEngine.Run(@"
+class CoffeeMaker {
+    init(_coffee) {
+        this.coffee = _coffee;
+    }
+
+    brew(method) {
+        print (""Enjoy your cup of "" + this.coffee + "" ("" + method  + "")"");
+
+        // No reusing the grounds!
+        this.coffee = null;
+    }
+}
+
+var maker = CoffeeMaker(""coffee and chicory"");
+
+var delegate = maker.brew;
+
+delegate(""V60"");");
+
+            Assert.AreEqual("Enjoy your cup of coffee and chicory (V60)", testEngine.InterpreterResult);
         }
 
         [Test]

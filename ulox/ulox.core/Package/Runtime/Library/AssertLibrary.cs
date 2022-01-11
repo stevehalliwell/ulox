@@ -21,7 +21,6 @@ namespace ULox
             var assertInst = new InstanceInternal();
             resTable.Add(new HashedString("Assert"), Value.New(assertInst));
 
-            //todo more to an assert class object?
             assertInst.AddFieldsToInstance(
                 (nameof(AreEqual), Value.New(AreEqual)),
                 (nameof(AreNotEqual), Value.New(AreNotEqual)),

@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    //TODO add tests
     public class FastStack<T> : IEnumerable<T>
     {
         private const int StartingSize = 16;

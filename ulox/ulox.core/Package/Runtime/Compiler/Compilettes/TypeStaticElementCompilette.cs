@@ -43,7 +43,7 @@
                 compiler.EmitOpCode(OpCode.POP);
             } while (compiler.Match(TokenType.COMMA));
 
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after property declaration.");
+            compiler.ConsumeEndStatement();
         }
 
         protected void StaticMethod(CompilerBase compiler)

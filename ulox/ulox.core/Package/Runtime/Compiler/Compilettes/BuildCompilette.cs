@@ -36,7 +36,7 @@
                 compiler.EmitOpAndBytes(OpCode.BUILD, (byte)buildOpType, identId);
             } while (compiler.Match(TokenType.COMMA));
 
-            compiler.Consume(TokenType.END_STATEMENT, "Expect end of statement after build command identifier(s).");
+            compiler.ConsumeEndStatement("build command identifier(s)");
         }
     }
 }

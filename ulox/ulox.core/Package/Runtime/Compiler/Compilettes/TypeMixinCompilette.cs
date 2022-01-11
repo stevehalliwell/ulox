@@ -43,8 +43,7 @@ namespace ULox
                 _mixinNames.Push(compiler.PreviousToken.Literal as string);
             } while (compiler.Match(TokenType.COMMA));
 
-            //TODO repeated
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after mixin declaration.");
+            compiler.ConsumeEndStatement("mixin declaration");
         }
 
         public void Start()

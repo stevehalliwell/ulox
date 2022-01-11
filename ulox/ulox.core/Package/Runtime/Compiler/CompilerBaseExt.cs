@@ -143,7 +143,7 @@
                 compiler.EmitOpCode(OpCode.NULL);
             }
 
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after throw statement.");
+            compiler.ConsumeEndStatement();
             compiler.EmitOpCode(OpCode.THROW);
         }
 
@@ -155,7 +155,7 @@
 
             compiler.EmitLoop(comp.loopStates.Peek().loopContinuePoint);
 
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after continue.");
+            compiler.ConsumeEndStatement();
         }
 
         public static void IfStatement(CompilerBase compiler)
@@ -188,8 +188,7 @@
             compiler.EmitOpCode(OpCode.NULL);
             int exitJump = compiler.EmitJump(OpCode.JUMP);
 
-            //todo repeat
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after break.");
+            compiler.ConsumeEndStatement();
 
             comp.loopStates.Peek().loopExitPatchLocations.Add(exitJump);
         }
@@ -198,8 +197,7 @@
         {
             compiler.EmitOpCode(OpCode.YIELD);
 
-            //todo repeat
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after yield.");
+            compiler.ConsumeEndStatement();
         }
 
         public static void BlockStatement(CompilerBase compiler)

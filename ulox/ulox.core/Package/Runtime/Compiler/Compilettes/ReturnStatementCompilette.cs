@@ -15,7 +15,7 @@
             else
                 SimpleReturnBody(compiler);
 
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after return value.");
+            compiler.ConsumeEndStatement();
         }
 
         private void SimpleReturnBody(CompilerBase compiler)

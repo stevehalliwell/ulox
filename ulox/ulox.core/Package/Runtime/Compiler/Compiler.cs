@@ -43,14 +43,14 @@
             var stringConst = compiler.AddStringConstant();
             Expression();
             EmitOpAndBytes(OpCode.REGISTER, stringConst);
-            Consume(TokenType.END_STATEMENT, "Expect ';' after resgister.");
+            ConsumeEndStatement();
         }
 
         private void FreezeStatement(CompilerBase compiler)
         {
             Expression();
             EmitOpCode(OpCode.FREEZE);
-            Consume(TokenType.END_STATEMENT, "Expect ';' after freeze.");
+            ConsumeEndStatement();
         }
 
         private void TCName(CompilerBase compiler, bool obj)

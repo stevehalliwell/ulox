@@ -13,8 +13,7 @@ namespace ULox
             else
                 PlainVarDeclare(compiler);
 
-            //todo repeated
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ; after variable declaration.");
+            compiler.ConsumeEndStatement();
         }
 
         private static void PlainVarDeclare(CompilerBase compiler)

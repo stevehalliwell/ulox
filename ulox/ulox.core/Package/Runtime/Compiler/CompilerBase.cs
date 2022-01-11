@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -92,9 +93,13 @@ namespace ULox
         public void ExpressionStatement()
         {
             Expression();
-            //todo repeated
-            Consume(TokenType.END_STATEMENT, "Expect ; after expression statement.");
+            ConsumeEndStatement();
             EmitOpCode(OpCode.POP);
+        }
+
+        public void ConsumeEndStatement([CallerMemberName] string after=default)
+        {
+            Consume(TokenType.END_STATEMENT, $"Expect ; after {after}.");
         }
 
         public void Expression()

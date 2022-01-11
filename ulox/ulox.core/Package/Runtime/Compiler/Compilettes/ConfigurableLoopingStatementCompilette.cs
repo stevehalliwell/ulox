@@ -95,8 +95,8 @@
 
         protected void ForLoopCondtionStatement(CompilerBase compiler, LoopState loopState)
         {
-            compiler.Expression();
-            compiler.Consume(TokenType.END_STATEMENT, "Expect ';' after loop condition.");
+            compiler.Expression(); 
+            compiler.ConsumeEndStatement("loop condition");
 
             // Jump out of the loop if the condition is false.
             var exitJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);

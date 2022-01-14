@@ -97,25 +97,6 @@ namespace ULox
             }
         }
 
-        public Value FindFunctionWithArity(HashedString name, int arity)
-        {
-            try
-            {
-                var globalVal = GetGlobal(name);
-
-                if (globalVal.type == ValueType.Closure &&
-                    globalVal.val.asClosure.chunk.Arity == arity)
-                {
-                    return globalVal;
-                }
-            }
-            catch (System.Exception)
-            {
-            }
-
-            return Value.Null();
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(Chunk chunk) => chunk.Instructions[currentCallFrame.InstructionPointer++];
 
@@ -308,8 +289,6 @@ namespace ULox
 
                 case OpCode.THROW:
                     throw new PanicException(Pop().ToString());
-                case OpCode.NONE:
-                    break;
 
                 case OpCode.BUILD:
                     DoBuildOp(chunk);
@@ -800,7 +779,7 @@ namespace ULox
                     return;
                 }
             }
-
+            //todo add tests
             if (lhs.type != rhs.type)
                 throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
 

@@ -17,9 +17,8 @@ namespace ULox
         }
 
         public ScriptLocator()
+            : this(new Dictionary<string, string>(), new DirectoryInfo(System.Environment.CurrentDirectory))
         {
-            _builtinScripts = new Dictionary<string, string>();
-            _directory = new DirectoryInfo(System.Environment.CurrentDirectory);
         }
 
         public void Add(string name, string content)

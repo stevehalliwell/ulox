@@ -21,7 +21,5 @@
         void SetEngine(IEngine engine);
 
         void CopyFrom(IVm otherVM);
-
-        Value FindFunctionWithArity(HashedString name, int arity);
     }
 }

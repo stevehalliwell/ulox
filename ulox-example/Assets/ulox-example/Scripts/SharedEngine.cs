@@ -64,5 +64,46 @@ namespace ULox.Demo
         {
             engine.Context.DeclareLibrary(new UnityLibrary(availablePrefabs, outputText));
         }
+
+        public static void DeclareAllLibraries(
+            this Engine engine,
+            Action<string> logger,
+            Func<VMBase> createVM)
+        {
+            engine.Context.DeclareLibrary(new CoreLibrary(logger));
+            engine.Context.DeclareLibrary(new StandardClassesLibrary());
+            engine.Context.DeclareLibrary(new AssertLibrary(createVM));
+            engine.Context.DeclareLibrary(new DebugLibrary());
+            engine.Context.DeclareLibrary(new VmLibrary(createVM));
+        }
+
+        public static void BindAllLibraries(this Engine engine)
+        {
+            foreach (var libName in engine.Context.LibraryNames)
+            {
+                engine.Context.BindLibrary(libName);
+            }
+        }
+
+        public static Value FindFunctionWithArity(this Engine engine, HashedString name, int arity)
+        {
+            var vm = engine.Context.VM;
+
+            try
+            {
+                var globalVal = vm.GetGlobal(name);
+
+                if (globalVal.type == ValueType.Closure &&
+                    globalVal.val.asClosure.chunk.Arity == arity)
+                {
+                    return globalVal;
+                }
+            }
+            catch (System.Exception)
+            {
+            }
+
+            return Value.Null();
+        }
     }
 }

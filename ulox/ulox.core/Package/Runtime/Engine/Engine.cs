@@ -39,27 +39,4 @@ namespace ULox
             _buildQueue.Enqueue(ScriptLocator.Find(name));
         }
     }
-
-    public static partial class EngineExt
-    {
-        public static void DeclareAllLibraries(
-            this Engine engine,
-            Action<string> logger,
-            Func<VMBase> createVM)
-        {
-            engine.Context.DeclareLibrary(new CoreLibrary(logger));
-            engine.Context.DeclareLibrary(new StandardClassesLibrary());
-            engine.Context.DeclareLibrary(new AssertLibrary(createVM));
-            engine.Context.DeclareLibrary(new DebugLibrary());
-            engine.Context.DeclareLibrary(new VmLibrary(createVM));
-        }
-
-        public static void BindAllLibraries(this Engine engine)
-        {
-            foreach (var libName in engine.Context.LibraryNames)
-            {
-                engine.Context.BindLibrary(libName);
-            }
-        }
-    }
 }

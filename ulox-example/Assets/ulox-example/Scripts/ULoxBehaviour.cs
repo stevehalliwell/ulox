@@ -23,7 +23,7 @@ namespace ULox.Demo
 
             BindToScript();
 
-            var setupFunc = _ourVM.FindFunctionWithArity(SetupGameName, 0);
+            var setupFunc = _engine.FindFunctionWithArity(SetupGameName, 0);
             if (!setupFunc.IsNull)
             {
                 _ourVM.PushCallFrameAndRun(setupFunc, 0);
@@ -57,8 +57,8 @@ namespace ULox.Demo
 
             _ourVM.SetGlobal(thisGameObjectName, Value.Object(gameObject));
 
-            _anonymousOnCollision = _ourVM.FindFunctionWithArity(OnCollisionName, 0);
-            _gameUpdateFunction = _ourVM.FindFunctionWithArity(UpdateName, 0);
+            _anonymousOnCollision = _engine.FindFunctionWithArity(OnCollisionName, 0);
+            _gameUpdateFunction = _engine.FindFunctionWithArity(UpdateName, 0);
         }
     }
 }

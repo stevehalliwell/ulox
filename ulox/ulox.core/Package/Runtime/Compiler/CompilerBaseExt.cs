@@ -15,14 +15,6 @@
             }
         }
 
-        public static void AddDeclarationCompilette(this CompilerBase comp, params (TokenType match, System.Action<CompilerBase> action)[] processActions)
-        {
-            foreach (var item in processActions)
-            {
-                comp.AddDeclarationCompilette(item);
-            }
-        }
-
         public static void AddStatementCompilette(this CompilerBase comp, (TokenType match, System.Action<CompilerBase> action) processAction)
         {
             comp.AddStatementCompilette(new CompiletteAction(processAction.match, processAction.action));

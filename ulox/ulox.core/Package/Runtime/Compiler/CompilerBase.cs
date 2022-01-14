@@ -97,7 +97,7 @@ namespace ULox
             EmitOpCode(OpCode.POP);
         }
 
-        public void ConsumeEndStatement([CallerMemberName] string after=default)
+        public void ConsumeEndStatement([CallerMemberName] string after = default)
         {
             Consume(TokenType.END_STATEMENT, $"Expect ; after {after}.");
         }
@@ -128,96 +128,118 @@ namespace ULox
 
         public void PushCompilerState(string name, FunctionType functionType)
         {
-            compilerStates.Push(new CompilerState(compilerStates.Peek(), functionType)
+            var newCompState = new CompilerState(compilerStates.Peek(), functionType)
             {
                 chunk = new Chunk(name),
-            });
+            };
+            compilerStates.Push(newCompState);
 
-            //todo refactor out
-            if (functionType == FunctionType.Method || functionType == FunctionType.Init)
-                CurrentCompilerState.AddLocal("this", 0);
-            else
+            AfterCompilerStatePushed();
+        }
+
+        protected virtual void AfterCompilerStatePushed()
+        {
+            var functionType = CurrentCompilerState.functionType;
+
+            //calls have local 0 as a reference to the closure but are not able to ref it themselves.
+            if (functionType == FunctionType.Script || functionType == FunctionType.Function)
                 CurrentCompilerState.AddLocal("", 0);
         }
 
-        //TODO refactor
         public void NamedVariable(string name, bool canAssign)
         {
-            OpCode getOp = OpCode.FETCH_GLOBAL, setOp = OpCode.ASSIGN_GLOBAL;
-            var argID = CurrentCompilerState.ResolveLocal(name);
-            if (argID != -1)
+            (var getOp, var setOp, var argId) = ResolveNameLookupOpCode(name);
+
+            if (!canAssign)
+            {
+                EmitOpAndBytes(getOp, argId);
+                return;
+            }
+
+            if (Match(TokenType.ASSIGN))
+            {
+                Expression();
+                EmitOpAndBytes(setOp, argId);
+                return;
+            }
+
+            if (HandleCompoundAssignToken(getOp, setOp, argId))
+                return;
+
+            EmitOpAndBytes(getOp, argId);
+        }
+
+        private bool HandleCompoundAssignToken(OpCode getOp, OpCode setOp, byte argId)
+        {
+            if (MatchAny(TokenType.PLUS_EQUAL,
+                         TokenType.MINUS_EQUAL,
+                         TokenType.STAR_EQUAL,
+                         TokenType.SLASH_EQUAL,
+                         TokenType.PERCENT_EQUAL))
+            {
+                var assignTokenType = PreviousToken.TokenType;
+
+                Expression();
+
+                //expand the compound op
+                EmitOpAndBytes(getOp, argId);
+                EmitOpCode(OpCode.SWAP);
+
+                // self assign ops have to be done here as they tail the previous ordered instructions
+                switch (assignTokenType)
+                {
+                case TokenType.PLUS_EQUAL:
+                    EmitOpCode(OpCode.ADD);
+                    break;
+
+                case TokenType.MINUS_EQUAL:
+                    EmitOpCode(OpCode.SUBTRACT);
+                    break;
+
+                case TokenType.STAR_EQUAL:
+                    EmitOpCode(OpCode.MULTIPLY);
+                    break;
+
+                case TokenType.SLASH_EQUAL:
+                    EmitOpCode(OpCode.DIVIDE);
+                    break;
+
+                case TokenType.PERCENT_EQUAL:
+                    EmitOpCode(OpCode.MODULUS);
+                    break;
+                }
+
+                EmitOpAndBytes(setOp, argId);
+                return true;
+            }
+            return false;
+        }
+
+        private (OpCode getOp, OpCode setOp, byte argId) ResolveNameLookupOpCode(string name)
+        {
+            var getOp = OpCode.FETCH_GLOBAL;
+            var setOp = OpCode.ASSIGN_GLOBAL;
+            var argId = CurrentCompilerState.ResolveLocal(name);
+            if (argId != -1)
             {
                 getOp = OpCode.GET_LOCAL;
                 setOp = OpCode.SET_LOCAL;
             }
             else
             {
-                argID = CurrentCompilerState.ResolveUpvalue(name);
-                if (argID != -1)
+                argId = CurrentCompilerState.ResolveUpvalue(name);
+                if (argId != -1)
                 {
                     getOp = OpCode.GET_UPVALUE;
                     setOp = OpCode.SET_UPVALUE;
                 }
                 else
                 {
-                    argID = CurrentChunk.AddConstant(Value.New(name));
+                    argId = CurrentChunk.AddConstant(Value.New(name));
                 }
             }
 
-            if (canAssign && MatchAny(TokenType.ASSIGN,
-                                      TokenType.PLUS_EQUAL,
-                                      TokenType.MINUS_EQUAL,
-                                      TokenType.STAR_EQUAL,
-                                      TokenType.SLASH_EQUAL,
-                                      TokenType.PERCENT_EQUAL))
-            {
-                var assignTokenType = PreviousToken.TokenType;
-
-                Expression();
-
-                // self assign ops have to be done here as they tail the previous ordered instructions
-                switch (assignTokenType)
-                {
-                case TokenType.PLUS_EQUAL:
-                    EmitOpAndBytes(getOp, (byte)argID);
-                    EmitOpCode(OpCode.SWAP);
-                    EmitOpCode(OpCode.ADD);
-                    break;
-
-                case TokenType.MINUS_EQUAL:
-                    EmitOpAndBytes(getOp, (byte)argID);
-                    EmitOpCode(OpCode.SWAP);
-                    EmitOpCode(OpCode.SUBTRACT);
-                    break;
-
-                case TokenType.STAR_EQUAL:
-                    EmitOpAndBytes(getOp, (byte)argID);
-                    EmitOpCode(OpCode.SWAP);
-                    EmitOpCode(OpCode.MULTIPLY);
-                    break;
-
-                case TokenType.SLASH_EQUAL:
-                    EmitOpAndBytes(getOp, (byte)argID);
-                    EmitOpCode(OpCode.SWAP);
-                    EmitOpCode(OpCode.DIVIDE);
-                    break;
-
-                case TokenType.PERCENT_EQUAL:
-                    EmitOpAndBytes(getOp, (byte)argID);
-                    EmitOpCode(OpCode.SWAP);
-                    EmitOpCode(OpCode.MODULUS);
-                    break;
-
-                case TokenType.ASSIGN:
-                    break;
-                }
-
-                EmitOpAndBytes(setOp, (byte)argID);
-            }
-            else
-            {
-                EmitOpAndBytes(getOp, (byte)argID);
-            }
+            return (getOp, setOp, (byte)argId);
         }
 
         protected Chunk EndCompile()
@@ -228,13 +250,14 @@ namespace ULox
 
         public void EmitReturn()
         {
-            //todo refactor out
-            if (compilerStates.Peek().functionType == FunctionType.Init)
-                EmitOpAndBytes(OpCode.GET_LOCAL, 0);
-            else
-                EmitOpCode(OpCode.NULL);
+            PreEmptyReturnEmit();
 
             EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+        }
+
+        protected virtual void PreEmptyReturnEmit()
+        {
+            EmitOpCode(OpCode.NULL);
         }
 
         public void Consume(TokenType tokenType, string msg)

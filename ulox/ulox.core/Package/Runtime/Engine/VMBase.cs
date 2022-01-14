@@ -3,12 +3,9 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    //todo external code call lox function with params from external code
     //todo introduce labels so that instructions can be modified freely
     //  and afterwards labels can be removed with offsets by an optimizer step.
-    //todo add support for long constant, when we overflow 255 constants in 1 chunk
     //todo delay calls to end of scope
-    //todo caching of instance access to local vars, use delay call to write back to instance at close of scope
     //todo introduce optimiser, pass after compile, have compile build slim ast as it goes
     //  convert labels to offsets
     //  identify and remove unused constants
@@ -166,7 +163,7 @@ namespace ULox
 
         public InterpreterResult Interpret(Chunk chunk, int ip)
         {
-            //TODO why push this empty string?
+            //push this empty string to match the expectation of the function compiler
             Push(Value.New(""));
             Push(Value.New(new ClosureInternal() { chunk = chunk }));
             PushCallFrameFromValue(Peek(), 0);
@@ -787,8 +784,15 @@ namespace ULox
             var rhs = Pop();
             var lhs = Pop();
 
-            if (lhs.type == ValueType.String ||
-                rhs.type == ValueType.String)
+            if(lhs.type == ValueType.Double
+                && rhs.type == ValueType.Double)
+            {
+                DoDoubleMathOp(opCode, rhs, lhs);
+                return;
+            }
+
+            if (lhs.type == ValueType.String
+                || rhs.type == ValueType.String)
             {
                 if (opCode == OpCode.ADD)
                 {
@@ -803,13 +807,12 @@ namespace ULox
             if (DoCustomMathOp(opCode, lhs, rhs))
                 return;
 
-            if (lhs.type != ValueType.Double)
-            {
-                throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
-            }
+            throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
+        }
 
-            //todo reorg this so if custom fails we report no handler rather than no math on Instance
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoDoubleMathOp(OpCode opCode, Value rhs, Value lhs)
+        {
             var res = Value.New(0);
             switch (opCode)
             {

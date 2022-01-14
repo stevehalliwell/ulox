@@ -37,6 +37,24 @@
                               );
         }
 
+        protected override void AfterCompilerStatePushed()
+        {
+            base.AfterCompilerStatePushed();
+
+            var functionType = CurrentCompilerState.functionType;
+
+            if (functionType == FunctionType.Method || functionType == FunctionType.Init)
+                CurrentCompilerState.AddLocal("this", 0);
+        }
+
+        protected override void PreEmptyReturnEmit()
+        {
+            if (CurrentCompilerState.functionType == FunctionType.Init)
+                EmitOpAndBytes(OpCode.GET_LOCAL, 0);
+            else
+                EmitOpCode(OpCode.NULL);
+        }
+
         private void RegisterStatement(CompilerBase compiler)
         {
             Consume(TokenType.IDENTIFIER, "Must provide name after a register statement.");

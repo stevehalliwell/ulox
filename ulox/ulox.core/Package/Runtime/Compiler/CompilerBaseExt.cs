@@ -273,7 +273,6 @@
 
                     var isInt = number == System.Math.Truncate(number);
 
-                    //todo refactor out
                     if (isInt && number < 255 && number >= 0)
                         compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
                     else

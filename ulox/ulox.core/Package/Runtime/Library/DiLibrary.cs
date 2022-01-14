@@ -34,7 +34,6 @@
             return NativeCallResult.SuccessfulExpression;
         }
 
-        //TODO rename this is confusing now that objects can freeze
         private NativeCallResult Freeze(VMBase vm, int argCount)
         {
             var di = FromVm(vm);

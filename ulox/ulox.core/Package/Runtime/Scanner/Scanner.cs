@@ -1,5 +1,6 @@
 ﻿namespace ULox
 {
+    //todo squash all down into scanner and use the ext to make factories
     public class Scanner : ScannerBase
     {
         public Scanner()

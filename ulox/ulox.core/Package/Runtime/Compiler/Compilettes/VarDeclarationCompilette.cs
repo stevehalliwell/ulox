@@ -8,7 +8,7 @@ namespace ULox
 
         public static void VarDeclaration(CompilerBase compiler)
         {
-            if (compiler.Match(TokenType.OPEN_PAREN))
+            if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
                 MultiVarAssignToReturns(compiler);
             else
                 PlainVarDeclare(compiler);
@@ -22,13 +22,13 @@ namespace ULox
             {
                 var global = compiler.ParseVariable("Expect variable name");
 
-                if (compiler.Match(TokenType.ASSIGN))
+                if (compiler.TokenIterator.Match(TokenType.ASSIGN))
                     compiler.Expression();
                 else
                     compiler.EmitOpCode(OpCode.NULL);
 
                 compiler.DefineVariable(global);
-            } while (compiler.Match(TokenType.COMMA));
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
         }
 
         private static void MultiVarAssignToReturns(CompilerBase compiler)
@@ -36,12 +36,12 @@ namespace ULox
             var varNames = new List<string>();
             do
             {
-                compiler.Consume(TokenType.IDENTIFIER, "Expect identifier within multivar declaration.");
-                varNames.Add((string)compiler.PreviousToken.Literal);
-            } while (compiler.Match(TokenType.COMMA));
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier within multivar declaration.");
+                varNames.Add((string)compiler.TokenIterator.PreviousToken.Literal);
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
-            compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' to end a multivar declaration.");
-            compiler.Consume(TokenType.ASSIGN, "Expect '=' after multivar declaration.");
+            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' to end a multivar declaration.");
+            compiler.TokenIterator.Consume(TokenType.ASSIGN, "Expect '=' after multivar declaration.");
 
             //mark stack start
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.MarkMultiReturnAssignStart);

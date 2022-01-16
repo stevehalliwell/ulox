@@ -8,16 +8,14 @@ namespace ULox
         private TypeCompilette _typeCompilette;
 
         public TypeMixinCompilette(TypeCompilette typeCompilette)
-        {
-            _typeCompilette = typeCompilette;
-        }
+            => _typeCompilette = typeCompilette;
 
-        public TokenType Match => TokenType.MIXIN;
-        public TypeCompiletteStage Stage => TypeCompiletteStage.Mixin;
+        public TokenType Match 
+            => TokenType.MIXIN;
+        public TypeCompiletteStage Stage 
+            => TypeCompiletteStage.Mixin;
 
-        public void End()
-        {
-        }
+        public void End() { }
 
         public void PostBody(CompilerBase compiler)
         {
@@ -31,24 +29,20 @@ namespace ULox
             }
         }
 
-        public void PreBody(CompilerBase compiler)
-        {
-        }
+        public void PreBody(CompilerBase compiler) { }
 
         public void Process(CompilerBase compiler)
         {
             do
             {
-                compiler.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
-                _mixinNames.Push(compiler.PreviousToken.Literal as string);
-            } while (compiler.Match(TokenType.COMMA));
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
+                _mixinNames.Push(compiler.TokenIterator.PreviousToken.Literal as string);
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
             compiler.ConsumeEndStatement("mixin declaration");
         }
 
         public void Start()
-        {
-            _mixinNames.Clear();
-        }
+            => _mixinNames.Clear();
     }
 }

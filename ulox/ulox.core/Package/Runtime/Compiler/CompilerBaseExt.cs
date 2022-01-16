@@ -98,15 +98,15 @@
 
         public static void Dot(CompilerBase compiler, bool canAssign)
         {
-            compiler.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
             byte name = compiler.AddStringConstant();
 
-            if (canAssign && compiler.Match(TokenType.ASSIGN))
+            if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
             {
                 compiler.Expression();
                 compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, name);
             }
-            else if (compiler.Match(TokenType.OPEN_PAREN))
+            else if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 var argCount = compiler.ArgumentList();
                 compiler.EmitOpAndBytes(OpCode.INVOKE, name);
@@ -121,12 +121,12 @@
         public static void FName(CompilerBase compiler, bool canAssign)
         {
             var fname = compiler.CurrentChunk.Name;
-            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), compiler.PreviousToken.Line);
+            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), compiler.TokenIterator.PreviousToken.Line);
         }
 
         public static void ThrowStatement(CompilerBase compiler)
         {
-            if (!compiler.Check(TokenType.END_STATEMENT))
+            if (!compiler.TokenIterator.Check(TokenType.END_STATEMENT))
             {
                 compiler.Expression();
             }
@@ -152,9 +152,9 @@
 
         public static void IfStatement(CompilerBase compiler)
         {
-            compiler.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
+            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
             compiler.Expression();
-            compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
+            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
 
             int thenjump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
             compiler.EmitOpCode(OpCode.POP);
@@ -166,7 +166,7 @@
             compiler.PatchJump(thenjump);
             compiler.EmitOpCode(OpCode.POP);
 
-            if (compiler.Match(TokenType.ELSE)) compiler.Statement();
+            if (compiler.TokenIterator.Match(TokenType.ELSE)) compiler.Statement();
 
             compiler.PatchJump(elseJump);
         }
@@ -211,7 +211,7 @@
 
         public static void Unary(CompilerBase compiler, bool canAssign)
         {
-            var op = compiler.PreviousToken.TokenType;
+            var op = compiler.PreviousTokenType;
 
             compiler.ParsePrecedence(Precedence.Unary);
 
@@ -226,7 +226,7 @@
 
         public static void Binary(CompilerBase compiler, bool canAssign)
         {
-            TokenType operatorType = compiler.PreviousToken.TokenType;
+            TokenType operatorType = compiler.PreviousTokenType;
 
             // Compile the right operand.
             var rule = compiler.PrattParser.GetRule(operatorType);
@@ -253,7 +253,7 @@
 
         public static void Literal(CompilerBase compiler, bool canAssign)
         {
-            switch (compiler.PreviousToken.TokenType)
+            switch (compiler.PreviousTokenType)
             {
             case TokenType.TRUE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
             case TokenType.FALSE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
@@ -261,21 +261,22 @@
             case TokenType.INT:
             case TokenType.FLOAT:
                 {
-                    var number = (double)compiler.PreviousToken.Literal;
+                    var number = (double)compiler.TokenIterator.PreviousToken.Literal;
 
                     var isInt = number == System.Math.Truncate(number);
 
                     if (isInt && number < 255 && number >= 0)
                         compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
                     else
-                        compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), compiler.PreviousToken.Line);
+                        //todo push to compiler
+                        compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), compiler.TokenIterator.PreviousToken.Line);
                 }
                 break;
 
             case TokenType.STRING:
                 {
-                    var str = (string)compiler.PreviousToken.Literal;
-                    compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(str), compiler.PreviousToken.Line);
+                    var str = (string)compiler.TokenIterator.PreviousToken.Literal;
+                    compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(str), compiler.TokenIterator.PreviousToken.Line);
                 }
                 break;
             }
@@ -283,7 +284,7 @@
 
         public static void Variable(CompilerBase compiler, bool canAssign)
         {
-            var name = (string)compiler.PreviousToken.Literal;
+            var name = (string)compiler.TokenIterator.PreviousToken.Literal;
             compiler.NamedVariable(name, canAssign);
         }
 

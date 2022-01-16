@@ -48,7 +48,7 @@
         {
             if (_expectsLoopParethesis)
             {
-                compiler.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
+                compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
 
                 if (_expectsPreAndPostStatements)
                 {
@@ -57,12 +57,12 @@
                     loopStart = compiler.CurrentChunkInstructinCount;
                     loopState.loopContinuePoint = loopStart;
 
-                    if (!compiler.Match(TokenType.END_STATEMENT))
+                    if (!compiler.TokenIterator.Match(TokenType.END_STATEMENT))
                     {
                         ForLoopCondtionStatement(compiler, loopState);
                     }
 
-                    if (!compiler.Check(TokenType.CLOSE_PAREN))
+                    if (!compiler.TokenIterator.Check(TokenType.CLOSE_PAREN))
                     {
                         int bodyJump = compiler.EmitJump(OpCode.JUMP);
 
@@ -87,7 +87,7 @@
                     compiler.EmitOpCode(OpCode.POP);
                 }
 
-                compiler.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
+                compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
             }
 
             return loopStart;

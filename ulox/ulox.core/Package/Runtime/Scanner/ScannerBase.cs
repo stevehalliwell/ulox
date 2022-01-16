@@ -11,14 +11,13 @@ namespace ULox
         public int Line { get; set; }
         public int CharacterNumber { get; set; }
         public Char CurrentChar { get; private set; }
-
-
+         
         protected List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
 
         private StringReader _stringReader;
         public IdentifierScannerTokenGenerator IdentifierScannerTokenGenerator { get; } = new IdentifierScannerTokenGenerator();
 
-        public ScannerBase()
+        protected ScannerBase()
         {
             AddGenerator(IdentifierScannerTokenGenerator);
             Reset();

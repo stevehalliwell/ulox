@@ -15,12 +15,13 @@ namespace ULox
             _typeCompilette = typeCompilette;
         }
 
-        public TokenType Match => TokenType.VAR;
-        public TypeCompiletteStage Stage => TypeCompiletteStage.Var;
+        public TokenType Match
+            => TokenType.VAR;
 
-        public void End()
-        {
-        }
+        public TypeCompiletteStage Stage
+            => TypeCompiletteStage.Var;
+
+        public void End() { }
 
         public void PostBody(CompilerBase compiler)
         {
@@ -40,15 +41,13 @@ namespace ULox
             compiler.PatchJump(classReturnEnd);
         }
 
-        public void PreBody(CompilerBase compiler)
-        {
-        }
+        public void PreBody(CompilerBase compiler) { }
 
         public void Process(CompilerBase compiler)
         {
             do
             {
-                compiler.Consume(TokenType.IDENTIFIER, "Expect var name.");
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name.");
                 byte nameConstant = compiler.AddStringConstant();
 
                 _classVarNames.Add(compiler.CurrentChunk.ReadConstant(nameConstant).val.asString.String);
@@ -69,7 +68,7 @@ namespace ULox
 
                 //if = consume it and then
                 //eat 1 expression or a push null
-                if (compiler.Match(TokenType.ASSIGN))
+                if (compiler.TokenIterator.Match(TokenType.ASSIGN))
                 {
                     compiler.Expression();
                 }
@@ -86,7 +85,7 @@ namespace ULox
 
                 //patch jump from skip imperative
                 compiler.PatchJump(initFragmentJump);
-            } while (compiler.Match(TokenType.COMMA));
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
             compiler.ConsumeEndStatement("property declaration");
         }

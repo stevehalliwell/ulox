@@ -9,12 +9,9 @@ namespace ULox
     {
         private IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
 
-        public Token CurrentToken { get; private set; }
-        public Token PreviousToken { get; private set; }
-        private List<Token> tokens;
-        private int tokenIndex;
+        public TokenIterator TokenIterator { get; private set; }
 
-        public PrattParser PrattParser { get; private set; } = new PrattParser();
+        public PrattParserRuleSet PrattParser { get; private set; } = new PrattParserRuleSet();
         protected Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         protected Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
 
@@ -42,23 +39,30 @@ namespace ULox
         public void SetPrattRule(TokenType tt, IParseRule rule)
             => PrattParser.SetPrattRule(tt, rule);
 
+
+        #region token stream
+
+        public TokenType CurrentTokenType
+            => TokenIterator?.CurrentToken.TokenType ?? TokenType.NONE;
+        public TokenType PreviousTokenType
+            => TokenIterator?.PreviousToken.TokenType ?? TokenType.NONE;
+
+        #endregion
+
         public void Reset()
         {
             compilerStates = new IndexableStack<CompilerState>();
-            CurrentToken = default;
-            PreviousToken = default;
-            tokenIndex = 0;
-            tokens = null;
+            TokenIterator = null;
 
             PushCompilerState(string.Empty, FunctionType.Script);
         }
 
         public Chunk Compile(List<Token> inTokens)
         {
-            tokens = inTokens;
-            Advance();
+            TokenIterator = new TokenIterator(inTokens);
+            TokenIterator.Advance();
 
-            while (CurrentToken.TokenType != TokenType.EOF)
+            while (CurrentTokenType != TokenType.EOF)
             {
                 Declaration();
             }
@@ -68,9 +72,9 @@ namespace ULox
 
         public void Declaration()
         {
-            if (declarationCompilettes.TryGetValue(CurrentToken.TokenType, out var complette))
+            if (declarationCompilettes.TryGetValue(CurrentTokenType, out var complette))
             {
-                Advance();
+                TokenIterator.Advance();
                 complette.Process(this);
                 return;
             }
@@ -80,9 +84,9 @@ namespace ULox
 
         public void Statement()
         {
-            if (statementCompilettes.TryGetValue(CurrentToken.TokenType, out var complette))
+            if (statementCompilettes.TryGetValue(CurrentTokenType, out var complette))
             {
-                Advance();
+                TokenIterator.Advance();
                 complette.Process(this);
                 return;
             }
@@ -99,7 +103,7 @@ namespace ULox
 
         public void ConsumeEndStatement([CallerMemberName] string after = default)
         {
-            Consume(TokenType.END_STATEMENT, $"Expect ; after {after}.");
+            TokenIterator.Consume(TokenType.END_STATEMENT, $"Expect ; after {after}.");
         }
 
         public void Expression()
@@ -107,20 +111,20 @@ namespace ULox
 
         public void ParsePrecedence(Precedence pre)
         {
-            Advance();
-            var rule = PrattParser.GetRule(PreviousToken.TokenType);
+            TokenIterator.Advance();
+            var rule = PrattParser.GetRule(PreviousTokenType);
 
             var canAssign = pre <= Precedence.Assignment;
             rule.Prefix(this, canAssign);
 
-            while (pre <= PrattParser.GetRule(CurrentToken.TokenType).Precedence)
+            while (pre <= PrattParser.GetRule(CurrentTokenType).Precedence)
             {
-                Advance();
-                rule = PrattParser.GetRule(PreviousToken.TokenType);
+                TokenIterator.Advance();
+                rule = PrattParser.GetRule(PreviousTokenType);
                 rule.Infix(this, canAssign);
             }
 
-            if (canAssign && Match(TokenType.ASSIGN))
+            if (canAssign && TokenIterator.Match(TokenType.ASSIGN))
             {
                 throw new CompilerException("Invalid assignment target.");
             }
@@ -156,7 +160,7 @@ namespace ULox
                 return;
             }
 
-            if (Match(TokenType.ASSIGN))
+            if (TokenIterator.Match(TokenType.ASSIGN))
             {
                 Expression();
                 EmitOpAndBytes(setOp, argId);
@@ -171,13 +175,13 @@ namespace ULox
 
         private bool HandleCompoundAssignToken(OpCode getOp, OpCode setOp, byte argId)
         {
-            if (MatchAny(TokenType.PLUS_EQUAL,
+            if (TokenIterator.MatchAny(TokenType.PLUS_EQUAL,
                          TokenType.MINUS_EQUAL,
                          TokenType.STAR_EQUAL,
                          TokenType.SLASH_EQUAL,
                          TokenType.PERCENT_EQUAL))
             {
-                var assignTokenType = PreviousToken.TokenType;
+                var assignTokenType = PreviousTokenType;
 
                 Expression();
 
@@ -260,39 +264,10 @@ namespace ULox
             EmitOpCode(OpCode.NULL);
         }
 
-        public void Consume(TokenType tokenType, string msg)
-        {
-            if (CurrentToken.TokenType == tokenType)
-                Advance();
-            else
-                throw new CompilerException(msg + $" at {PreviousToken.Line}:{PreviousToken.Character} '{PreviousToken.Literal}'");
-        }
-
-        public bool Check(TokenType type)
-            => CurrentToken.TokenType == type;
-
-        public bool Match(TokenType type)
-        {
-            if (!Check(type))
-                return false;
-            Advance();
-            return true;
-        }
-
-        private bool MatchAny(params TokenType[] type)
-        {
-            for (int i = 0; i < type.Length; i++)
-            {
-                if (!Check(type[i])) continue;
-
-                Advance();
-                return true;
-            }
-            return false;
-        }
+       
 
         public void EmitOpCode(OpCode op)
-            => CurrentChunk.WriteSimple(op, PreviousToken.Line);
+            => CurrentChunk.WriteSimple(op, TokenIterator.PreviousToken.Line);
 
         public void EmitOpCodes(params OpCode[] ops)
         {
@@ -301,7 +276,7 @@ namespace ULox
         }
 
         public byte AddStringConstant()
-            => AddCustomStringConstant((string)PreviousToken.Literal);
+            => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
         public byte AddCustomStringConstant(string str)
             => CurrentChunk.AddConstant(Value.New(str));
@@ -310,13 +285,6 @@ namespace ULox
         {
             EmitOpCode(op);
             EmitBytes(b);
-        }
-
-        public void Advance()
-        {
-            PreviousToken = CurrentToken;
-            CurrentToken = tokens[tokenIndex];
-            tokenIndex++;
         }
 
         public void PatchJump(int thenjump)
@@ -350,7 +318,7 @@ namespace ULox
         {
             for (int i = 0; i < b.Length; i++)
             {
-                CurrentChunk.WriteByte(b[i], PreviousToken.Line);
+                CurrentChunk.WriteByte(b[i], TokenIterator.PreviousToken.Line);
             }
         }
 
@@ -379,7 +347,7 @@ namespace ULox
         public byte ExpressionList(TokenType terminatorToken, string missingTermError)
         {
             byte argCount = 0;
-            if (!Check(terminatorToken))
+            if (!TokenIterator.Check(terminatorToken))
             {
                 do
                 {
@@ -387,10 +355,10 @@ namespace ULox
                     argCount++;
                     if (argCount == 255)
                         throw new CompilerException("Can't have more than 255 arguments.");
-                } while (Match(TokenType.COMMA));
+                } while (TokenIterator.Match(TokenType.COMMA));
             }
 
-            Consume(terminatorToken, missingTermError);
+            TokenIterator.Consume(terminatorToken, missingTermError);
             return argCount;
         }
 
@@ -410,7 +378,7 @@ namespace ULox
 
         public byte ParseVariable(string errMsg)
         {
-            Consume(TokenType.IDENTIFIER, errMsg);
+            TokenIterator.Consume(TokenType.IDENTIFIER, errMsg);
 
             DeclareVariable();
             if (CurrentCompilerState.scopeDepth > 0) return 0;
@@ -425,7 +393,7 @@ namespace ULox
             FunctionParamListOptional();
 
             // The body.
-            Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
+            TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             Block();
 
             EndFunction();
@@ -433,11 +401,11 @@ namespace ULox
 
         public void FunctionParamListOptional()
         {
-            if (Match(TokenType.OPEN_PAREN))
+            if (TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 // Compile the parameter list.
                 //Consume(TokenType.OPEN_PAREN, "Expect '(' after function name.");
-                if (!Check(TokenType.CLOSE_PAREN))
+                if (!TokenIterator.Check(TokenType.CLOSE_PAREN))
                 {
                     do
                     {
@@ -446,9 +414,9 @@ namespace ULox
 
                         //if it isn't already a constant we want one
                         IncreaseArity(AddStringConstant());
-                    } while (Match(TokenType.COMMA));
+                    } while (TokenIterator.Match(TokenType.COMMA));
                 }
-                Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
+                TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
             }
         }
 
@@ -477,10 +445,11 @@ namespace ULox
 
         public void Block()
         {
-            while (!Check(TokenType.CLOSE_BRACE) && !Check(TokenType.EOF))
+            while (!TokenIterator.Check(TokenType.CLOSE_BRACE) 
+                && !TokenIterator.Check(TokenType.EOF))
                 Declaration();
 
-            Consume(TokenType.CLOSE_BRACE, "Expect '}' after block.");
+            TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after block.");
         }
 
         public void BeginScope()

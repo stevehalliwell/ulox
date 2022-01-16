@@ -763,23 +763,24 @@ namespace ULox
             var rhs = Pop();
             var lhs = Pop();
 
-            if(lhs.type == ValueType.Double
+            if (lhs.type == ValueType.Double
                 && rhs.type == ValueType.Double)
             {
                 DoDoubleMathOp(opCode, rhs, lhs);
                 return;
             }
 
-            if (lhs.type == ValueType.String
-                || rhs.type == ValueType.String)
+            if (opCode == OpCode.ADD
+                &&
+                (
+                 lhs.type == ValueType.String
+                 || rhs.type == ValueType.String)
+                )
             {
-                if (opCode == OpCode.ADD)
-                {
-                    Push(Value.New(lhs.str() + rhs.str()));
-                    return;
-                }
+                Push(Value.New(lhs.str() + rhs.str()));
+                return;
             }
-            //todo add tests
+
             if (lhs.type != rhs.type)
                 throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
 
@@ -828,25 +829,27 @@ namespace ULox
             var rhs = Pop();
             var lhs = Pop();
 
-            if (DoCustomComparisonOp(opCode, lhs, rhs))
+            if (lhs.type == ValueType.Instance)
+                if (DoCustomComparisonOp(opCode, lhs, rhs))
+                    return;
+
+            if(opCode == OpCode.EQUAL)
+            {
+                Push(Value.New(lhs.Compare(ref lhs, ref rhs)));
                 return;
+            }
+
+            if(lhs.type != ValueType.Double || rhs.type != ValueType.Double)
+                throw new VMException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'.");
 
             //do we need specific handling of NaNs on either side
             switch (opCode)
             {
-            case OpCode.EQUAL:
-                Push(Value.New(lhs.Compare(ref lhs, ref rhs)));
-                break;
-
             case OpCode.LESS:
-                if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                    throw new VMException($"Cannot less compare on different types '{lhs.type}' and '{rhs.type}'.");
                 Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
                 break;
 
             case OpCode.GREATER:
-                if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                    throw new VMException($"Cannot greater across on different types '{lhs.type}' and '{rhs.type}'.");
                 Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
                 break;
             }

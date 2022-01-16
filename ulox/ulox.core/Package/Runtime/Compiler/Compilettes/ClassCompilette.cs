@@ -13,9 +13,11 @@
             GenerateCompiletteByStageArray();
         }
 
-        public override TokenType Match => TokenType.CLASS;
+        public override TokenType Match 
+            => TokenType.CLASS;
 
-        public override void Process(CompilerBase compiler) => ClassDeclaration(compiler);
+        public override void Process(CompilerBase compiler) 
+            => ClassDeclaration(compiler);
 
         private void ClassDeclaration(CompilerBase compiler)
         {

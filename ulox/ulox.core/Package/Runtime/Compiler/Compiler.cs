@@ -55,32 +55,33 @@
                 EmitOpCode(OpCode.NULL);
         }
 
-        private void RegisterStatement(CompilerBase compiler)
+        private static void RegisterStatement(CompilerBase compiler)
         {
-            Consume(TokenType.IDENTIFIER, "Must provide name after a register statement.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Must provide name after a register statement.");
             var stringConst = compiler.AddStringConstant();
-            Expression();
-            EmitOpAndBytes(OpCode.REGISTER, stringConst);
-            ConsumeEndStatement();
+            compiler.Expression();
+            compiler.EmitOpAndBytes(OpCode.REGISTER, stringConst);
+            compiler.ConsumeEndStatement();
         }
 
-        private void FreezeStatement(CompilerBase compiler)
+        private static void FreezeStatement(CompilerBase compiler)
         {
-            Expression();
-            EmitOpCode(OpCode.FREEZE);
-            ConsumeEndStatement();
+            compiler.Expression();
+            compiler.EmitOpCode(OpCode.FREEZE);
+            compiler.ConsumeEndStatement();
         }
 
         private void TCName(CompilerBase compiler, bool obj)
         {
             var tcname = _testcaseCompilette.TestCaseName;
-            CurrentChunk.AddConstantAndWriteInstruction(Value.New(tcname), PreviousToken.Line);
+            //todo push to compiler
+            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(tcname), compiler.TokenIterator.PreviousToken.Line);
         }
 
         private void TSName(CompilerBase compiler, bool obj)
         {
             var tsname = _testdec.CurrentTestSetName;
-            CurrentChunk.AddConstantAndWriteInstruction(Value.New(tsname), PreviousToken.Line);
+            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(tsname), compiler.TokenIterator.PreviousToken.Line);
         }
 
         #region Expressions
@@ -90,7 +91,7 @@
             if (_classCompiler.CurrentTypeName == null)
                 throw new CompilerException("Cannot use this outside of a class declaration.");
 
-            NamedVariable("this", canAssign);
+            compiler.NamedVariable("this", canAssign);
         }
 
         protected void Super(CompilerBase compiler, bool canAssign)
@@ -98,36 +99,36 @@
             if (_classCompiler.CurrentTypeName == null)
                 throw new CompilerException("Cannot use super outside a class.");
 
-            Consume(TokenType.DOT, "Expect '.' after a super.");
-            Consume(TokenType.IDENTIFIER, "Expect superclass method name.");
-            var nameID = AddStringConstant();
+            compiler.TokenIterator.Consume(TokenType.DOT, "Expect '.' after a super.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect superclass method name.");
+            var nameID = compiler.AddStringConstant();
 
-            NamedVariable("this", false);
-            if (Match(TokenType.OPEN_PAREN))
+            compiler.NamedVariable("this", false);
+            if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
-                byte argCount = ArgumentList();
-                NamedVariable("super", false);
-                EmitOpAndBytes(OpCode.SUPER_INVOKE, nameID);
-                EmitBytes(argCount);
+                byte argCount = compiler.ArgumentList();
+                compiler.NamedVariable("super", false);
+                compiler.EmitOpAndBytes(OpCode.SUPER_INVOKE, nameID);
+                compiler.EmitBytes(argCount);
             }
             else
             {
-                NamedVariable("super", false);
-                EmitOpAndBytes(OpCode.GET_SUPER, nameID);
+                compiler.NamedVariable("super", false);
+                compiler.EmitOpAndBytes(OpCode.GET_SUPER, nameID);
             }
         }
 
         public void CName(CompilerBase compiler, bool canAssign)
         {
             var cname = _classCompiler.CurrentTypeName;
-            CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), PreviousToken.Line);
+            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), compiler.TokenIterator.PreviousToken.Line);
         }
 
-        protected void Inject(CompilerBase compiler, bool canAssign)
+        protected static void Inject(CompilerBase compiler, bool canAssign)
         {
-            Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
-            byte name = AddStringConstant();
-            EmitOpAndBytes(OpCode.INJECT, name);
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
+            byte name = compiler.AddStringConstant();
+            compiler.EmitOpAndBytes(OpCode.INJECT, name);
         }
 
         #endregion Expressions

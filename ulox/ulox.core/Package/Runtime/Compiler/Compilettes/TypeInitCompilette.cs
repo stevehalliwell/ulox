@@ -2,9 +2,11 @@
 {
     public class TypeInitCompilette : EmptyTypeBodyCompilette
     {
-        public override TokenType Match => TokenType.INIT;
+        public override TokenType Match 
+            => TokenType.INIT;
 
-        public override TypeCompiletteStage Stage => TypeCompiletteStage.Init;
+        public override TypeCompiletteStage Stage 
+            => TypeCompiletteStage.Init;
 
         public override void Process(CompilerBase compiler)
         {

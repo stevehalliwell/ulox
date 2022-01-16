@@ -37,7 +37,7 @@ namespace ULox
 
         protected void DoEndType(CompilerBase compiler)
         {
-            compiler.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
+            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
             compiler.EmitOpCode(OpCode.POP);
 
             if (_hasSuper)
@@ -49,14 +49,14 @@ namespace ULox
         protected void DoEndDeclareType(CompilerBase compiler)
         {
             compiler.NamedVariable(CurrentTypeName, false);
-            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
         }
 
         protected void DoBeginDeclareType(CompilerBase compiler)
         {
             _stage = TypeCompiletteStage.Begin;
-            compiler.Consume(TokenType.IDENTIFIER, "Expect type name.");
-            CurrentTypeName = (string)compiler.PreviousToken.Literal;
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect type name.");
+            CurrentTypeName = (string)compiler.TokenIterator.PreviousToken.Literal;
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
             EmitClassOp(compiler, nameConstant);
@@ -65,12 +65,12 @@ namespace ULox
 
         protected void DoClassBody(CompilerBase compiler)
         {
-            while (!compiler.Check(TokenType.CLOSE_BRACE) && !compiler.Check(TokenType.EOF))
+            while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACE) && !compiler.TokenIterator.Check(TokenType.EOF))
             {
                 var compilette = _bodyCompiletteFallback;
-                if (_innerDeclarationCompilettes.TryGetValue(compiler.CurrentToken.TokenType, out var matchingCompilette))
+                if (_innerDeclarationCompilettes.TryGetValue(compiler.TokenIterator.CurrentToken.TokenType, out var matchingCompilette))
                 {
-                    compiler.Advance();
+                    compiler.TokenIterator.Advance();
                     compilette = matchingCompilette;
                 }
 
@@ -102,12 +102,12 @@ namespace ULox
         protected void DoDeclareLineInher(CompilerBase compiler)
         {
             _hasSuper = false;
-            if (!compiler.Match(TokenType.LESS)) return;
+            if (!compiler.TokenIterator.Match(TokenType.LESS)) return;
 
-            compiler.Consume(TokenType.IDENTIFIER, "Expect superclass name.");
-            var name = (string)compiler.PreviousToken.Literal;
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect superclass name.");
+            var name = (string)compiler.TokenIterator.PreviousToken.Literal;
             compiler.NamedVariable(name, false);
-            if (CurrentTypeName == (string)compiler.PreviousToken.Literal)
+            if (CurrentTypeName == (string)compiler.TokenIterator.PreviousToken.Literal)
                 throw new CompilerException($"A class cannot inher from itself. '{CurrentTypeName}' inherits from itself, not allowed.");
 
             compiler.BeginScope();

@@ -156,4 +156,26 @@ test Math
 
         Assert.AreEqual(expected,a);
     }
+
+    testcase InvalidMathOpNonMatchingTypes
+    {
+        fun WillThrow()
+        {
+            fun dummy(){}
+            dummy+7;
+        }
+
+        Assert.Throws(WillThrow);
+    }
+
+    testcase InvalidMathOpUnsupportedTypes
+    {
+        fun WillThrow()
+        {
+            fun dummy(){}
+            dummy+dummy;
+        }
+
+        Assert.Throws(WillThrow);
+    }
 }

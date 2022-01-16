@@ -529,21 +529,18 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs)
         {
-            if (lhs.type == ValueType.Instance)
+            var lhsInst = lhs.val.asInstance;
+            var opClosure = lhsInst.FromClass.GetCompareOpClosure(opCode);
+            //identify if lhs has a matching method or field
+            if (!opClosure.IsNull)
             {
-                var lhsInst = lhs.val.asInstance;
-                var opClosure = lhsInst.FromClass.GetCompareOpClosure(opCode);
-                //identify if lhs has a matching method or field
-                if (!opClosure.IsNull)
-                {
-                    CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
-                    return true;
-                }
+                CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
+                return true;
+            }
 
-                if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
-                {
-                    return HandleDynamicCustomCompOp(opCode, lhs, rhs);
-                }
+            if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
+            {
+                return HandleDynamicCustomCompOp(opCode, lhs, rhs);
             }
             return false;
         }

@@ -14,9 +14,9 @@
 
         public void Process(CompilerBase compiler)
         {
-            compiler.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
 
-            var testcaseName = (string)compiler.PreviousToken.Literal;
+            var testcaseName = (string)compiler.TokenIterator.PreviousToken.Literal;
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if (string.IsNullOrEmpty(testDeclName))
@@ -29,7 +29,7 @@
 
             _testDeclarationCompilette.AddTestCaseInstruction((ushort)compiler.CurrentChunkInstructinCount);
 
-            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
 
             // The body.
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.CaseStart, nameConstantID, 0x00);

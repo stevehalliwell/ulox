@@ -247,4 +247,14 @@ test ControlFlow
  
         Assert.AreEqual(expected, accum);
     }
+    
+    testcase InvalidCompareOnNonDoubleTypes
+    {
+        fun WillThrow()
+        {
+            7 < true;
+        }
+
+        Assert.Throws(WillThrow);
+    }
 }

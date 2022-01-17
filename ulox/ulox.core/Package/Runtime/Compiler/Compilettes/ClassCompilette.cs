@@ -43,5 +43,45 @@
 
             CurrentTypeName = null;
         }
+
+
+        public void CName(CompilerBase compiler, bool canAssign)
+        {
+            var cname = CurrentTypeName;
+            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), compiler.TokenIterator.PreviousToken.Line);
+        }
+
+
+        public void This(CompilerBase compiler, bool canAssign)
+        {
+            if (CurrentTypeName == null)
+                throw new CompilerException("Cannot use this outside of a class declaration.");
+
+            compiler.NamedVariable("this", canAssign);
+        }
+
+        public void Super(CompilerBase compiler, bool canAssign)
+        {
+            if (CurrentTypeName == null)
+                throw new CompilerException("Cannot use super outside a class.");
+
+            compiler.TokenIterator.Consume(TokenType.DOT, "Expect '.' after a super.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect superclass method name.");
+            var nameID = compiler.AddStringConstant();
+
+            compiler.NamedVariable("this", false);
+            if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
+            {
+                byte argCount = compiler.ArgumentList();
+                compiler.NamedVariable("super", false);
+                compiler.EmitOpAndBytes(OpCode.SUPER_INVOKE, nameID);
+                compiler.EmitBytes(argCount);
+            }
+            else
+            {
+                compiler.NamedVariable("super", false);
+                compiler.EmitOpAndBytes(OpCode.GET_SUPER, nameID);
+            }
+        }
     }
 }

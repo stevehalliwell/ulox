@@ -45,5 +45,12 @@
             compiler.PatchJump(testFragmentJump);
             TestCaseName = null;
         }
+
+        public void TCName(CompilerBase compiler, bool obj)
+        {
+            var tcname = TestCaseName;
+            //todo push to compiler
+            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(tcname), compiler.TokenIterator.PreviousToken.Line);
+        }
     }
 }

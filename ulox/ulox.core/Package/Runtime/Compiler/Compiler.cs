@@ -28,11 +28,11 @@
                                        );
 
             this.SetPrattRules(
-                (TokenType.THIS, new ActionParseRule(This, null, Precedence.None)),
-                (TokenType.SUPER, new ActionParseRule(Super, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(CName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(TCName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(TSName, null, Precedence.None)),
+                (TokenType.THIS, new ActionParseRule(_classCompiler.This, null, Precedence.None)),
+                (TokenType.SUPER, new ActionParseRule(_classCompiler.Super, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(_testcaseCompilette.TCName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TSName, null, Precedence.None)),
                 (TokenType.INJECT, new ActionParseRule(Inject, null, Precedence.Term))
                               );
         }
@@ -71,58 +71,7 @@
             compiler.ConsumeEndStatement();
         }
 
-        private void TCName(CompilerBase compiler, bool obj)
-        {
-            var tcname = _testcaseCompilette.TestCaseName;
-            //todo push to compiler
-            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(tcname), compiler.TokenIterator.PreviousToken.Line);
-        }
-
-        private void TSName(CompilerBase compiler, bool obj)
-        {
-            var tsname = _testdec.CurrentTestSetName;
-            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(tsname), compiler.TokenIterator.PreviousToken.Line);
-        }
-
         #region Expressions
-
-        protected void This(CompilerBase compiler, bool canAssign)
-        {
-            if (_classCompiler.CurrentTypeName == null)
-                throw new CompilerException("Cannot use this outside of a class declaration.");
-
-            compiler.NamedVariable("this", canAssign);
-        }
-
-        protected void Super(CompilerBase compiler, bool canAssign)
-        {
-            if (_classCompiler.CurrentTypeName == null)
-                throw new CompilerException("Cannot use super outside a class.");
-
-            compiler.TokenIterator.Consume(TokenType.DOT, "Expect '.' after a super.");
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect superclass method name.");
-            var nameID = compiler.AddStringConstant();
-
-            compiler.NamedVariable("this", false);
-            if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
-            {
-                byte argCount = compiler.ArgumentList();
-                compiler.NamedVariable("super", false);
-                compiler.EmitOpAndBytes(OpCode.SUPER_INVOKE, nameID);
-                compiler.EmitBytes(argCount);
-            }
-            else
-            {
-                compiler.NamedVariable("super", false);
-                compiler.EmitOpAndBytes(OpCode.GET_SUPER, nameID);
-            }
-        }
-
-        public void CName(CompilerBase compiler, bool canAssign)
-        {
-            var cname = _classCompiler.CurrentTypeName;
-            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), compiler.TokenIterator.PreviousToken.Line);
-        }
 
         protected static void Inject(CompilerBase compiler, bool canAssign)
         {

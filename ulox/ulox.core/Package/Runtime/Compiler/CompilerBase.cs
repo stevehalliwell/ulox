@@ -10,6 +10,10 @@ namespace ULox
         private IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
 
         public TokenIterator TokenIterator { get; private set; }
+        public TokenType CurrentTokenType
+            => TokenIterator?.CurrentToken.TokenType ?? TokenType.NONE;
+        public TokenType PreviousTokenType
+            => TokenIterator?.PreviousToken.TokenType ?? TokenType.NONE;
 
         public PrattParserRuleSet PrattParser { get; private set; } = new PrattParserRuleSet();
         protected Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
@@ -19,16 +23,16 @@ namespace ULox
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
         public CompilerState CurrentCompilerState => compilerStates.Peek();
 
-        protected CompilerBase()
+        protected CompilerBase() 
+            => Reset();
+
+        public void Reset()
         {
-            Reset();
+            compilerStates = new IndexableStack<CompilerState>();
+            TokenIterator = null;
+
+            PushCompilerState(string.Empty, FunctionType.Script);
         }
-
-        protected virtual void NoDeclarationFound()
-            => Statement();
-
-        protected virtual void NoStatementFound()
-            => ExpressionStatement();
 
         public void AddDeclarationCompilette(ICompilette compilette)
             => declarationCompilettes[compilette.Match] = compilette;
@@ -40,21 +44,82 @@ namespace ULox
             => PrattParser.SetPrattRule(tt, rule);
 
 
-        #region token stream
 
-        public TokenType CurrentTokenType
-            => TokenIterator?.CurrentToken.TokenType ?? TokenType.NONE;
-        public TokenType PreviousTokenType
-            => TokenIterator?.PreviousToken.TokenType ?? TokenType.NONE;
+        public void EmitOpCode(OpCode op)
+            => CurrentChunk.WriteSimple(op, TokenIterator.PreviousToken.Line);
 
-        #endregion
-
-        public void Reset()
+        public void EmitOpCodes(params OpCode[] ops)
         {
-            compilerStates = new IndexableStack<CompilerState>();
-            TokenIterator = null;
+            for (int i = 0; i < ops.Length; i++)
+                EmitOpCode(ops[i]);
+        }
 
-            PushCompilerState(string.Empty, FunctionType.Script);
+        public byte AddStringConstant()
+            => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
+
+        public byte AddCustomStringConstant(string str)
+            => CurrentChunk.AddConstant(Value.New(str));
+
+        public void EmitOpAndBytes(OpCode op, params byte[] b)
+        {
+            EmitOpCode(op);
+            EmitBytes(b);
+        }
+
+        public void PatchJump(int thenjump)
+        {
+            int jump = CurrentChunkInstructinCount - thenjump - 2;
+
+            if (jump > ushort.MaxValue)
+                throw new CompilerException($"Cannot jump '{jump}'. Max jump is '{ushort.MaxValue}'");
+
+            WriteBytesAt(thenjump, (byte)((jump >> 8) & 0xff), (byte)(jump & 0xff));
+        }
+
+        public void WriteUShortAt(int at, ushort us)
+            => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
+
+        protected void WriteBytesAt(int at, params byte[] b)
+        {
+            for (int i = 0; i < b.Length; i++)
+            {
+                CurrentChunk.Instructions[at + i] = b[i];
+            }
+        }
+
+        public int EmitJump(OpCode op)
+        {
+            EmitBytes((byte)op, 0xff, 0xff);
+            return CurrentChunk.Instructions.Count - 2;
+        }
+
+        public void EmitBytes(params byte[] b)
+        {
+            for (int i = 0; i < b.Length; i++)
+            {
+                CurrentChunk.WriteByte(b[i], TokenIterator.PreviousToken.Line);
+            }
+        }
+
+        public void EmitUShort(ushort us)
+            => EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
+
+        public void EndScope()
+        {
+            var comp = CurrentCompilerState;
+
+            comp.scopeDepth--;
+
+            while (comp.localCount > 0 &&
+                comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
+            {
+                if (comp.locals[comp.localCount - 1].IsCaptured)
+                    EmitOpCode(OpCode.CLOSE_UPVALUE);
+                else
+                    EmitOpCode(OpCode.POP);
+
+                CurrentCompilerState.localCount--;
+            }
         }
 
         public Chunk Compile(List<Token> inTokens)
@@ -82,6 +147,9 @@ namespace ULox
             NoDeclarationFound();
         }
 
+        protected virtual void NoDeclarationFound()
+            => Statement();
+
         public void Statement()
         {
             if (statementCompilettes.TryGetValue(CurrentTokenType, out var complette))
@@ -94,16 +162,14 @@ namespace ULox
             NoStatementFound();
         }
 
+        protected virtual void NoStatementFound()
+            => ExpressionStatement();
+
         public void ExpressionStatement()
         {
             Expression();
             ConsumeEndStatement();
             EmitOpCode(OpCode.POP);
-        }
-
-        public void ConsumeEndStatement([CallerMemberName] string after = default)
-        {
-            TokenIterator.Consume(TokenType.END_STATEMENT, $"Expect ; after {after}.");
         }
 
         public void Expression()
@@ -128,6 +194,11 @@ namespace ULox
             {
                 throw new CompilerException("Invalid assignment target.");
             }
+        }
+
+        public void ConsumeEndStatement([CallerMemberName] string after = default)
+        {
+            TokenIterator.Consume(TokenType.END_STATEMENT, $"Expect ; after {after}.");
         }
 
         public void PushCompilerState(string name, FunctionType functionType)
@@ -262,85 +333,6 @@ namespace ULox
         protected virtual void PreEmptyReturnEmit()
         {
             EmitOpCode(OpCode.NULL);
-        }
-
-       
-
-        public void EmitOpCode(OpCode op)
-            => CurrentChunk.WriteSimple(op, TokenIterator.PreviousToken.Line);
-
-        public void EmitOpCodes(params OpCode[] ops)
-        {
-            for (int i = 0; i < ops.Length; i++)
-                EmitOpCode(ops[i]);
-        }
-
-        public byte AddStringConstant()
-            => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
-
-        public byte AddCustomStringConstant(string str)
-            => CurrentChunk.AddConstant(Value.New(str));
-
-        public void EmitOpAndBytes(OpCode op, params byte[] b)
-        {
-            EmitOpCode(op);
-            EmitBytes(b);
-        }
-
-        public void PatchJump(int thenjump)
-        {
-            int jump = CurrentChunkInstructinCount - thenjump - 2;
-
-            if (jump > ushort.MaxValue)
-                throw new CompilerException($"Cannot jump '{jump}'. Max jump is '{ushort.MaxValue}'");
-
-            WriteBytesAt(thenjump, (byte)((jump >> 8) & 0xff), (byte)(jump & 0xff));
-        }
-
-        public void WriteUShortAt(int at, ushort us)
-            => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
-
-        protected void WriteBytesAt(int at, params byte[] b)
-        {
-            for (int i = 0; i < b.Length; i++)
-            {
-                CurrentChunk.Instructions[at + i] = b[i];
-            }
-        }
-
-        public int EmitJump(OpCode op)
-        {
-            EmitBytes((byte)op, 0xff, 0xff);
-            return CurrentChunk.Instructions.Count - 2;
-        }
-
-        public void EmitBytes(params byte[] b)
-        {
-            for (int i = 0; i < b.Length; i++)
-            {
-                CurrentChunk.WriteByte(b[i], TokenIterator.PreviousToken.Line);
-            }
-        }
-
-        public void EmitUShort(ushort us)
-            => EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
-
-        public void EndScope()
-        {
-            var comp = CurrentCompilerState;
-
-            comp.scopeDepth--;
-
-            while (comp.localCount > 0 &&
-                comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
-            {
-                if (comp.locals[comp.localCount - 1].IsCaptured)
-                    EmitOpCode(OpCode.CLOSE_UPVALUE);
-                else
-                    EmitOpCode(OpCode.POP);
-
-                CurrentCompilerState.localCount--;
-            }
         }
 
         //TODO build commands should use this

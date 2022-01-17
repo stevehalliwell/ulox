@@ -51,11 +51,10 @@ namespace ULox
             _currentTestcaseInstructions.Add(currentChunkInstructinCount);
         }
 
-
         public void TSName(CompilerBase compiler, bool obj)
         {
             var tsname = CurrentTestSetName;
-            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(tsname), compiler.TokenIterator.PreviousToken.Line);
+            compiler.AddConstantAndWriteOp(Value.New(tsname));
         }
     }
 }

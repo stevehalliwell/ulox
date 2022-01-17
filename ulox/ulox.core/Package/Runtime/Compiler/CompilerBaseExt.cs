@@ -121,7 +121,7 @@
         public static void FName(CompilerBase compiler, bool canAssign)
         {
             var fname = compiler.CurrentChunk.Name;
-            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(fname), compiler.TokenIterator.PreviousToken.Line);
+            compiler.AddConstantAndWriteOp(Value.New(fname));
         }
 
         public static void ThrowStatement(CompilerBase compiler)
@@ -269,14 +269,14 @@
                         compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
                     else
                         //todo push to compiler
-                        compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(number), compiler.TokenIterator.PreviousToken.Line);
+                        compiler.AddConstantAndWriteOp(Value.New(number));
                 }
                 break;
 
             case TokenType.STRING:
                 {
                     var str = (string)compiler.TokenIterator.PreviousToken.Literal;
-                    compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(str), compiler.TokenIterator.PreviousToken.Line);
+                    compiler.AddConstantAndWriteOp(Value.New(str));
                 }
                 break;
             }

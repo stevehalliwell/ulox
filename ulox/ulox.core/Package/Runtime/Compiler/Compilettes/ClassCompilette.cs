@@ -44,13 +44,11 @@
             CurrentTypeName = null;
         }
 
-
         public void CName(CompilerBase compiler, bool canAssign)
         {
             var cname = CurrentTypeName;
-            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(cname), compiler.TokenIterator.PreviousToken.Line);
+            compiler.AddConstantAndWriteOp(Value.New(cname));
         }
-
 
         public void This(CompilerBase compiler, bool canAssign)
         {

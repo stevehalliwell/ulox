@@ -57,6 +57,9 @@ namespace ULox
         public byte AddStringConstant()
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
+        public void AddConstantAndWriteOp(Value value)
+            => CurrentChunk.AddConstantAndWriteInstruction(value, TokenIterator.PreviousToken.Line);
+
         public byte AddCustomStringConstant(string str)
             => CurrentChunk.AddConstant(Value.New(str));
 

@@ -49,8 +49,7 @@
         public void TCName(CompilerBase compiler, bool obj)
         {
             var tcname = TestCaseName;
-            //todo push to compiler
-            compiler.CurrentChunk.AddConstantAndWriteInstruction(Value.New(tcname), compiler.TokenIterator.PreviousToken.Line);
+            compiler.AddConstantAndWriteOp(Value.New(tcname));
         }
     }
 }

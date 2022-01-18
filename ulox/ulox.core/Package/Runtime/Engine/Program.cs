@@ -1,5 +1,10 @@
 ﻿namespace ULox
 {
-    public class Program : ProgramBase<Scanner, Compiler, Disassembler>
-    { }
+    public class Program : ProgramBase<Compiler, Disassembler>
+    {
+        public Program()
+            : base(ScannerFactory.CreateScanner())
+        {
+        }
+    }
 }

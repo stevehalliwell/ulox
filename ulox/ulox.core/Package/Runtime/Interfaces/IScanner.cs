@@ -4,7 +4,6 @@ namespace ULox
 {
     public interface IScanner
     {
-        IdentifierScannerTokenGenerator IdentifierScannerTokenGenerator { get; }
         char CurrentChar { get; }
         int Line { get; set; }
         int CharacterNumber { get; set; }

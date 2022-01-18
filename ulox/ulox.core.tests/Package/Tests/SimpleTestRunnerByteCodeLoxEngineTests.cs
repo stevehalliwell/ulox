@@ -7,19 +7,6 @@ namespace ULox.Tests
 {
     public class SimpleTestRunnerByteCodeLoxEngineTests
     {
-        public class SimpleTestrunnerScanner : ScannerBase
-        {
-            public SimpleTestrunnerScanner()
-            {
-                this.SetupSimpleScanner();
-                this.AddIdentifierGenerator(
-                    ( "test",  TokenType.TEST),
-                    ( "testcase",  TokenType.TESTCASE));
-
-                this.AddSingleCharTokenGenerators(('.', TokenType.DOT));
-            }
-        }
-
         public class SimpleTestrunnerCompiler : CompilerBase
         {
             public SimpleTestrunnerCompiler()
@@ -34,8 +21,12 @@ namespace ULox.Tests
             }
         }
 
-        public class SimpleTestrunnerProgram : ProgramBase<SimpleTestrunnerScanner, SimpleTestrunnerCompiler, Disassembler>
+        public class SimpleTestrunnerProgram : ProgramBase<SimpleTestrunnerCompiler, Disassembler>
         {
+            public SimpleTestrunnerProgram()
+                : base(ScannerFactory.CreateSimpleScanner())
+            {
+            }
         }
 
         public class SimpleTestrunnerVM : VMBase

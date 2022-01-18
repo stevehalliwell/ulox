@@ -1,37 +1,95 @@
-﻿namespace ULox
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace ULox
 {
-    //todo squash all down into scanner and use the ext to make factories
-    public class Scanner : ScannerBase
+    public class Scanner : IScanner
     {
+        public List<Token> Tokens { get; private set; }
+        public int Line { get; set; }
+        public int CharacterNumber { get; set; }
+        public Char CurrentChar { get; private set; }
+         
+        protected List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+
+        private StringReader _stringReader;
+
         public Scanner()
         {
-            this.SetupSimpleScanner();
-
-            this.AddIdentifierGenerator(
-                ("build", TokenType.BUILD),
-
-                ("test", TokenType.TEST),
-                ("testcase", TokenType.TESTCASE),
-                ("tcname", TokenType.CONTEXT_NAME_TESTCASE),
-                ("tsname", TokenType.CONTEXT_NAME_TESTSET),
-
-                ("class", TokenType.CLASS),
-                ("mixin", TokenType.MIXIN),
-                ("this", TokenType.THIS),
-                ("super", TokenType.SUPER),
-                ("static", TokenType.STATIC),
-                ("init", TokenType.INIT),
-                ("cname", TokenType.CONTEXT_NAME_CLASS),
-                ("freeze", TokenType.FREEZE),
-
-                ("inject", TokenType.INJECT),
-                ("register", TokenType.REGISTER)
-                );
-
-            this.AddSingleCharTokenGenerators(
-                ('.', TokenType.DOT),
-                (':', TokenType.COLON),
-                ('?', TokenType.QUESTION));
+            Reset();
         }
+
+        public void AddGenerator(IScannerTokenGenerator gen)
+            => defaultGenerators.Add(gen);
+
+        public void Reset()
+        {
+            Tokens = new List<Token>();
+            Line = 1;
+            CharacterNumber = 0;
+            if (_stringReader != null)
+                _stringReader.Dispose();
+        }
+
+        public List<Token> Scan(string text)
+        {
+            using (_stringReader = new StringReader(text))
+            {
+                while (!IsAtEnd())
+                {
+                    Advance();
+                    var ch = CurrentChar;
+
+                    var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
+                    if (matchinGen == null)
+                        throw new ScannerException(TokenType.IDENTIFIER, Line, CharacterNumber, $"Unexpected character '{CurrentChar}'");
+
+                    matchinGen.Consume(this);
+                }
+
+                AddTokenSingle(TokenType.EOF);
+            }
+
+            return Tokens;
+        }
+
+        public bool Match(Char matchingCharToConsume)
+        {
+            if (_stringReader.Peek() == matchingCharToConsume)
+            {
+                if (_stringReader.Read() == '\n')
+                {
+                    Line++;
+                    CharacterNumber = 0;
+                }
+                CharacterNumber++;
+
+                return true;
+            }
+            return false;
+        }
+
+        public void Advance()
+        {
+            CurrentChar = (Char)_stringReader.Read();
+            CharacterNumber++;
+        }
+
+        public bool IsAtEnd()
+            => _stringReader.Peek() == -1;
+
+        public Char Peek()
+            => (Char)_stringReader.Peek();
+
+        public void ReadLine()
+            => _stringReader.ReadLine();
+
+        public void AddTokenSingle(TokenType token)
+            => AddToken(token, CurrentChar.ToString(), null);
+
+        public void AddToken(TokenType simpleToken, string str, object literal)
+            => Tokens.Add(new Token(simpleToken, str, literal, Line, CharacterNumber));
     }
 }

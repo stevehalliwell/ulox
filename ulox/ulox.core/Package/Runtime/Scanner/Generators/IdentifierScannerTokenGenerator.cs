@@ -9,7 +9,16 @@ namespace ULox
 
         private readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
 
-        public void Add(string name, TokenType tt) => keywords[name] = tt;
+        public void Add(string name, TokenType tt) 
+            => keywords[name] = tt;
+
+        public void Add(params (string name, TokenType tt)[] toAdd)
+        {
+            foreach (var item in toAdd)
+            {
+                Add(item.name, item.tt);
+            }
+        }
 
         public static bool IsAlpha(int c)
             => (c >= 'a' && c <= 'z') ||

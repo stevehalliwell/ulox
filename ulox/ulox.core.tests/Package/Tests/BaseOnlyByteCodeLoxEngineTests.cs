@@ -6,14 +6,6 @@ namespace ULox.Tests
 {
     public class BaseOnlyByteCodeLoxEngineTests
     {
-        public class SimpleScanner : ScannerBase
-        {
-            public SimpleScanner()
-            {
-                this.SetupSimpleScanner();
-            }
-        }
-
         public class SimpleCompiler : CompilerBase
         {
             public SimpleCompiler()
@@ -22,7 +14,13 @@ namespace ULox.Tests
             }
         }
 
-        public class SimpleProgram : ProgramBase<SimpleScanner, SimpleCompiler, DisassemblerBase> { }
+        public class SimpleProgram : ProgramBase<SimpleCompiler, DisassemblerBase>
+        {
+            public SimpleProgram() 
+                : base(ScannerFactory.CreateSimpleScanner())
+            {
+            }
+        }
 
         public class SimpleEngine
         {

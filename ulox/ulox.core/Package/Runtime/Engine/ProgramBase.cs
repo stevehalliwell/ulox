@@ -3,13 +3,17 @@ using System.Linq;
 
 namespace ULox
 {
-    public class ProgramBase<TScanner, TCompiler, TDisass> : IProgram
-        where TScanner : IScanner, new()
+    public class ProgramBase<TCompiler, TDisass> : IProgram
         where TCompiler : ICompiler, new()
         where TDisass : IDisassembler, new()
     {
-        private readonly TScanner _scanner = new TScanner();
+        private readonly IScanner _scanner;
         private readonly TCompiler _compiler = new TCompiler();
+
+        public ProgramBase(IScanner scanner)
+        {
+            _scanner = scanner;
+        }
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
 

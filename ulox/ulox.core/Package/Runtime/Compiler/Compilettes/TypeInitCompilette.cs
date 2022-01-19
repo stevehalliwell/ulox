@@ -8,7 +8,7 @@
         public override TypeCompiletteStage Stage 
             => TypeCompiletteStage.Init;
 
-        public override void Process(CompilerBase compiler)
+        public override void Process(Compiler compiler)
         {
             var initName = ClassCompilette.InitMethodName.String;
             byte constant = compiler.AddCustomStringConstant(initName);

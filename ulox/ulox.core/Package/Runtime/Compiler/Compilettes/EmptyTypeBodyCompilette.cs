@@ -9,15 +9,15 @@
         {
         }
 
-        public void PostBody(CompilerBase compiler)
+        public void PostBody(Compiler compiler)
         {
         }
 
-        public void PreBody(CompilerBase compiler)
+        public void PreBody(Compiler compiler)
         {
         }
 
-        public abstract void Process(CompilerBase compiler);
+        public abstract void Process(Compiler compiler);
 
         public void Start()
         {

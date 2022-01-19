@@ -17,7 +17,7 @@ namespace ULox
 
         public void End() { }
 
-        public void PostBody(CompilerBase compiler)
+        public void PostBody(Compiler compiler)
         {
             //dump all mixins after everything else so we don't have to fight regular class setup process in vm
             while (_mixinNames.Count > 0)
@@ -29,9 +29,9 @@ namespace ULox
             }
         }
 
-        public void PreBody(CompilerBase compiler) { }
+        public void PreBody(Compiler compiler) { }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
         {
             do
             {

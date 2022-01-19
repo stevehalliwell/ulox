@@ -2,13 +2,13 @@
 {
     public class ActionParseRule : IParseRule
     {
-        public System.Action<CompilerBase, bool> PrefixAction { get; private set; }
-        public System.Action<CompilerBase, bool> InfixAction { get; private set; }
+        public System.Action<Compiler, bool> PrefixAction { get; private set; }
+        public System.Action<Compiler, bool> InfixAction { get; private set; }
         public Precedence Precedence { get; private set; }
 
         public ActionParseRule(
-            System.Action<CompilerBase, bool> prefix,
-            System.Action<CompilerBase, bool> infix,
+            System.Action<Compiler, bool> prefix,
+            System.Action<Compiler, bool> infix,
             Precedence pre)
         {
             PrefixAction = prefix;
@@ -16,10 +16,10 @@
             Precedence = pre;
         }
 
-        public void Prefix(CompilerBase compiler, bool canAssign)
+        public void Prefix(Compiler compiler, bool canAssign)
             => PrefixAction?.Invoke(compiler, canAssign);
 
-        public void Infix(CompilerBase compiler, bool canAssign)
+        public void Infix(Compiler compiler, bool canAssign)
             => InfixAction?.Invoke(compiler, canAssign);
     }
 }

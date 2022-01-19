@@ -7,7 +7,7 @@
 
         public TokenType Match => TokenType.BUILD;
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after build command.");
 

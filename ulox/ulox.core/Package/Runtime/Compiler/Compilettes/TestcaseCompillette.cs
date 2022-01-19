@@ -12,7 +12,7 @@
             _testDeclarationCompilette = testDeclarationCompilette;
         }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
 
@@ -46,7 +46,7 @@
             TestCaseName = null;
         }
 
-        public void TCName(CompilerBase compiler, bool obj)
+        public void TCName(Compiler compiler, bool obj)
         {
             var tcname = TestCaseName;
             compiler.AddConstantAndWriteOp(Value.New(tcname));

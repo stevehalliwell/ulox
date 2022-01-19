@@ -4,7 +4,7 @@
     {
         public TokenType Match => TokenType.RETURN;
 
-        public void ReturnStatement(CompilerBase compiler)
+        public void ReturnStatement(Compiler compiler)
         {
             //TODO refactor out
             if (compiler.CurrentCompilerState.functionType == FunctionType.Init)
@@ -18,7 +18,7 @@
             compiler.ConsumeEndStatement();
         }
 
-        private void SimpleReturnBody(CompilerBase compiler)
+        private void SimpleReturnBody(Compiler compiler)
         {
             if (compiler.TokenIterator.Check(TokenType.END_STATEMENT))
             {
@@ -31,7 +31,7 @@
             }
         }
 
-        private void MultiReturnBody(CompilerBase compiler)
+        private void MultiReturnBody(Compiler compiler)
         {
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.Begin);
             var returnCount = compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
@@ -40,7 +40,7 @@
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.End);
         }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
             => ReturnStatement(compiler);
     }
 }

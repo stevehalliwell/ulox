@@ -23,7 +23,7 @@ namespace ULox
 
         public void End() { }
 
-        public void PostBody(CompilerBase compiler)
+        public void PostBody(Compiler compiler)
         {
             //emit return //if we are the last link in the chain this ends our call
 
@@ -41,9 +41,9 @@ namespace ULox
             compiler.PatchJump(classReturnEnd);
         }
 
-        public void PreBody(CompilerBase compiler) { }
+        public void PreBody(Compiler compiler) { }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
         {
             do
             {

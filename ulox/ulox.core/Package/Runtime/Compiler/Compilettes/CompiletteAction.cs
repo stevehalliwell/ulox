@@ -4,11 +4,11 @@ namespace ULox
 {
     public class CompiletteAction : ICompilette
     {
-        private readonly Action<CompilerBase> processAction;
+        private readonly Action<Compiler> processAction;
 
         public CompiletteAction(
             TokenType match,
-            Action<CompilerBase> processAction)
+            Action<Compiler> processAction)
         {
             this.processAction = processAction;
             Match = match;
@@ -16,7 +16,7 @@ namespace ULox
 
         public TokenType Match { get; private set; }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
             => processAction.Invoke(compiler);
     }
 }

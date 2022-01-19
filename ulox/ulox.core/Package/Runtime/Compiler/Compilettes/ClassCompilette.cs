@@ -16,10 +16,10 @@
         public override TokenType Match 
             => TokenType.CLASS;
 
-        public override void Process(CompilerBase compiler) 
+        public override void Process(Compiler compiler) 
             => ClassDeclaration(compiler);
 
-        private void ClassDeclaration(CompilerBase compiler)
+        private void ClassDeclaration(Compiler compiler)
         {
             foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
                 bodyCompilette.Start();
@@ -44,13 +44,13 @@
             CurrentTypeName = null;
         }
 
-        public void CName(CompilerBase compiler, bool canAssign)
+        public void CName(Compiler compiler, bool canAssign)
         {
             var cname = CurrentTypeName;
             compiler.AddConstantAndWriteOp(Value.New(cname));
         }
 
-        public void This(CompilerBase compiler, bool canAssign)
+        public void This(Compiler compiler, bool canAssign)
         {
             if (CurrentTypeName == null)
                 throw new CompilerException("Cannot use this outside of a class declaration.");
@@ -58,7 +58,7 @@
             compiler.NamedVariable("this", canAssign);
         }
 
-        public void Super(CompilerBase compiler, bool canAssign)
+        public void Super(Compiler compiler, bool canAssign)
         {
             if (CurrentTypeName == null)
                 throw new CompilerException("Cannot use super outside a class.");

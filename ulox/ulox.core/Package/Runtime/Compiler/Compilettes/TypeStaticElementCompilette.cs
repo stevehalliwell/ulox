@@ -8,7 +8,7 @@
         public override TypeCompiletteStage Stage 
             => TypeCompiletteStage.Static;
 
-        public override void Process(CompilerBase compiler)
+        public override void Process(Compiler compiler)
         {
             if (compiler.TokenIterator.Match(TokenType.VAR))
                 StaticProperty(compiler);
@@ -16,7 +16,7 @@
                 StaticMethod(compiler);
         }
 
-        protected void StaticProperty(CompilerBase compiler)
+        protected void StaticProperty(Compiler compiler)
         {
             do
             {
@@ -44,7 +44,7 @@
             compiler.ConsumeEndStatement();
         }
 
-        protected void StaticMethod(CompilerBase compiler)
+        protected void StaticMethod(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name.");
             byte constant = compiler.AddStringConstant();

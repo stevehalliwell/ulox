@@ -7,7 +7,7 @@ namespace ULox
     {
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
-        private List<Token> _tokens;
+        private readonly List<Token> _tokens;
         private int tokenIndex;
 
         public TokenIterator(List<Token> tokens)

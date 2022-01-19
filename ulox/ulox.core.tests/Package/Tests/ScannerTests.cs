@@ -183,7 +183,7 @@ new TokenType[]
         [SetUp]
         public void SetUp()
         {
-            scanner = ScannerFactory.CreateScanner();
+            scanner = new Scanner();
         }
 
         [Test]

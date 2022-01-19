@@ -8,7 +8,7 @@
         public override TypeCompiletteStage Stage 
             => TypeCompiletteStage.Method;
 
-        public override void Process(CompilerBase compiler)
+        public override void Process(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name.");
             byte constant = compiler.AddStringConstant();

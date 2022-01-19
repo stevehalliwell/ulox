@@ -6,7 +6,7 @@ namespace ULox
     {
         public TokenType Match => TokenType.VAR;
 
-        public static void VarDeclaration(CompilerBase compiler)
+        public static void VarDeclaration(Compiler compiler)
         {
             if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
                 MultiVarAssignToReturns(compiler);
@@ -16,7 +16,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        private static void PlainVarDeclare(CompilerBase compiler)
+        private static void PlainVarDeclare(Compiler compiler)
         {
             do
             {
@@ -31,7 +31,7 @@ namespace ULox
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
         }
 
-        private static void MultiVarAssignToReturns(CompilerBase compiler)
+        private static void MultiVarAssignToReturns(Compiler compiler)
         {
             var varNames = new List<string>();
             do
@@ -65,7 +65,7 @@ namespace ULox
             }
         }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
             => VarDeclaration(compiler);
     }
 }

@@ -6,25 +6,9 @@ namespace ULox.Tests
 {
     public class BaseOnlyByteCodeLoxEngineTests
     {
-        public class SimpleCompiler : CompilerBase
-        {
-            public SimpleCompiler()
-            {
-                this.SetupSimpleCompiler();
-            }
-        }
-
-        public class SimpleProgram : ProgramBase<SimpleCompiler, DisassemblerBase>
-        {
-            public SimpleProgram() 
-                : base(ScannerFactory.CreateSimpleScanner())
-            {
-            }
-        }
-
         public class SimpleEngine
         {
-            public IProgram Program { get; private set; } = new SimpleProgram();
+            public IProgram Program { get; private set; } = new Program();
             private readonly VMBase _vm = new VMBase();
             public VMBase VM => _vm;
 

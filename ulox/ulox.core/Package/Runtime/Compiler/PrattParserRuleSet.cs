@@ -18,5 +18,24 @@ namespace ULox
 
         public IParseRule GetRule(TokenType operatorType) 
             => rules[(int)operatorType];
+
+        public void ParsePrecedence(Compiler compiler, Precedence pre)
+        {
+            compiler.TokenIterator.Advance();
+            var rule = GetRule(compiler.PreviousTokenType);
+
+            var canAssign = pre <= Precedence.Assignment;
+            rule.Prefix(compiler, canAssign);
+
+            while (pre <= GetRule(compiler.CurrentTokenType).Precedence)
+            {
+                compiler.TokenIterator.Advance();
+                rule = GetRule(compiler.PreviousTokenType);
+                rule.Infix(compiler, canAssign);
+            }
+
+            if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
+                throw new CompilerException("Invalid assignment target.");
+        }
     }
 }

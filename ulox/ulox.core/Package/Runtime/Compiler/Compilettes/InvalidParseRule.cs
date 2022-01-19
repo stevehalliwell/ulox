@@ -4,10 +4,10 @@
     {
         public Precedence Precedence => Precedence.None;
 
-        public void Infix(CompilerBase compiler, bool canAssign) 
+        public void Infix(Compiler compiler, bool canAssign) 
             => throw new System.NotImplementedException();
         
-        public void Prefix(CompilerBase compiler, bool canAssign) 
+        public void Prefix(Compiler compiler, bool canAssign) 
             => throw new System.NotImplementedException();
     }
 }

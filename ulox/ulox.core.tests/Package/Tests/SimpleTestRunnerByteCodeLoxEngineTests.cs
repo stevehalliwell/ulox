@@ -7,28 +7,6 @@ namespace ULox.Tests
 {
     public class SimpleTestRunnerByteCodeLoxEngineTests
     {
-        public class SimpleTestrunnerCompiler : CompilerBase
-        {
-            public SimpleTestrunnerCompiler()
-            {
-                this.SetupSimpleCompiler();
-                var testcaseCompilette = new TestcaseCompillette();
-                var testdec = new TestDeclarationCompilette();
-                testcaseCompilette.SetTestDeclarationCompilette(testdec);
-                this.AddDeclarationCompilette(
-                    testdec,
-                    testcaseCompilette);
-            }
-        }
-
-        public class SimpleTestrunnerProgram : ProgramBase<SimpleTestrunnerCompiler, Disassembler>
-        {
-            public SimpleTestrunnerProgram()
-                : base(ScannerFactory.CreateSimpleScanner())
-            {
-            }
-        }
-
         public class SimpleTestrunnerVM : VMBase
         {
             public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new SimpleTestrunnerVM());
@@ -94,7 +72,7 @@ namespace ULox.Tests
 
         public class SimpleTestrunnerEngine
         {
-            public IProgram Program { get; private set; } = new SimpleTestrunnerProgram();
+            public IProgram Program { get; private set; } = new Program();
             private readonly SimpleTestrunnerVM _vm = new SimpleTestrunnerVM();
             public SimpleTestrunnerVM VM => _vm;
 

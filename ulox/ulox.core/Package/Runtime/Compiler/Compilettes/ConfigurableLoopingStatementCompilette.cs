@@ -16,12 +16,12 @@
             _expectsPreAndPostStatements = expectsPreAndPostStatements;
         }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
         {
             ConfigurableLoopingStatement(compiler);
         }
 
-        protected void ConfigurableLoopingStatement(CompilerBase compiler)
+        protected void ConfigurableLoopingStatement(Compiler compiler)
         {
             compiler.BeginScope();
 
@@ -44,7 +44,7 @@
             compiler.EndScope();
         }
 
-        private int BeginLoop(CompilerBase compiler, int loopStart, LoopState loopState)
+        private int BeginLoop(Compiler compiler, int loopStart, LoopState loopState)
         {
             if (_expectsLoopParethesis)
             {
@@ -93,7 +93,7 @@
             return loopStart;
         }
 
-        protected void ForLoopCondtionStatement(CompilerBase compiler, LoopState loopState)
+        protected void ForLoopCondtionStatement(Compiler compiler, LoopState loopState)
         {
             compiler.Expression(); 
             compiler.ConsumeEndStatement("loop condition");
@@ -104,13 +104,13 @@
             compiler.EmitOpCode(OpCode.POP); // Condition.
         }
 
-        protected void ForLoopInitialisationStatement(CompilerBase compiler)
+        protected void ForLoopInitialisationStatement(Compiler compiler)
         {
             //we really only want a var decl, var assign, or empty but Declaration covers everything
             compiler.Declaration();
         }
 
-        protected void PatchLoopExits(CompilerBase compiler, LoopState loopState)
+        protected void PatchLoopExits(Compiler compiler, LoopState loopState)
         {
             if (loopState.loopExitPatchLocations.Count == 0)
                 throw new CompilerException("Loops must contain an termination.");

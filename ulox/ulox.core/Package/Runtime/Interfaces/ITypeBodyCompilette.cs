@@ -6,9 +6,9 @@
 
         void Start();
 
-        void PreBody(CompilerBase compiler);
+        void PreBody(Compiler compiler);
 
-        void PostBody(CompilerBase compiler);
+        void PostBody(Compiler compiler);
 
         void End();
     }

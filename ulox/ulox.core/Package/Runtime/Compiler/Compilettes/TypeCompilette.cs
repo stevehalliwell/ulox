@@ -7,7 +7,7 @@ namespace ULox
     {
         public abstract TokenType Match { get; }
 
-        public abstract void Process(CompilerBase compiler);
+        public abstract void Process(Compiler compiler);
 
         public static readonly HashedString InitMethodName = new HashedString("init");
 
@@ -35,7 +35,7 @@ namespace ULox
                 _bodyCompiletteFallback = compilette;
         }
 
-        protected void DoEndType(CompilerBase compiler)
+        protected void DoEndType(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
             compiler.EmitOpCode(OpCode.POP);
@@ -46,13 +46,13 @@ namespace ULox
             }
         }
 
-        protected void DoEndDeclareType(CompilerBase compiler)
+        protected void DoEndDeclareType(Compiler compiler)
         {
             compiler.NamedVariable(CurrentTypeName, false);
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
         }
 
-        protected void DoBeginDeclareType(CompilerBase compiler)
+        protected void DoBeginDeclareType(Compiler compiler)
         {
             _stage = TypeCompiletteStage.Begin;
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect type name.");
@@ -63,7 +63,7 @@ namespace ULox
             compiler.DefineVariable(nameConstant);
         }
 
-        protected void DoClassBody(CompilerBase compiler)
+        protected void DoClassBody(Compiler compiler)
         {
             while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACE) && !compiler.TokenIterator.Check(TokenType.EOF))
             {
@@ -91,7 +91,7 @@ namespace ULox
         }
 
         private void EmitClassOp(
-            CompilerBase compiler,
+            Compiler compiler,
             byte nameConstant)
         {
             compiler.EmitOpAndBytes(OpCode.CLASS, nameConstant);
@@ -99,7 +99,7 @@ namespace ULox
             compiler.EmitUShort(0);
         }
 
-        protected void DoDeclareLineInher(CompilerBase compiler)
+        protected void DoDeclareLineInher(Compiler compiler)
         {
             _hasSuper = false;
             if (!compiler.TokenIterator.Match(TokenType.LESS)) return;

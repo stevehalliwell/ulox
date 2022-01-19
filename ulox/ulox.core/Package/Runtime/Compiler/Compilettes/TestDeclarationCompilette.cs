@@ -11,12 +11,12 @@ namespace ULox
 
         public string CurrentTestSetName { get; internal set; }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
         {
             TestDeclaration(compiler);
         }
 
-        private void TestDeclaration(CompilerBase compiler)
+        private void TestDeclaration(Compiler compiler)
         {
             //grab name
             var testClassName = (string)compiler.TokenIterator.CurrentToken.Literal;
@@ -51,7 +51,7 @@ namespace ULox
             _currentTestcaseInstructions.Add(currentChunkInstructinCount);
         }
 
-        public void TSName(CompilerBase compiler, bool obj)
+        public void TSName(Compiler compiler, bool obj)
         {
             var tsname = CurrentTestSetName;
             compiler.AddConstantAndWriteOp(Value.New(tsname));

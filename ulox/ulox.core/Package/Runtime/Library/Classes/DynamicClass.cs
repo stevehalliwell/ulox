@@ -12,7 +12,7 @@
                                   );
         }
 
-        private NativeCallResult HasField(VMBase vm, int argCount)
+        private NativeCallResult HasField(Vm vm, int argCount)
         {
             var obj = vm.GetArg(1);
             var fieldName = vm.GetArg(2);
@@ -26,7 +26,7 @@
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult RemoveField(VMBase vm, int argCount)
+        private NativeCallResult RemoveField(Vm vm, int argCount)
         {
             var obj = vm.GetArg(1);
             var fieldName = vm.GetArg(2);

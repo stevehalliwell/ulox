@@ -68,7 +68,7 @@ namespace ULox.Demo
         public static void DeclareAllLibraries(
             this Engine engine,
             Action<string> logger,
-            Func<VMBase> createVM)
+            Func<Vm> createVM)
         {
             engine.Context.DeclareLibrary(new CoreLibrary(logger));
             engine.Context.DeclareLibrary(new StandardClassesLibrary());

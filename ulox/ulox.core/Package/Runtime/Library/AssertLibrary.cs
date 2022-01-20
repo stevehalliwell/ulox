@@ -8,12 +8,12 @@ namespace ULox
 
         public string Name => nameof(AssertLibrary);
 
-        public AssertLibrary(Func<VMBase> createVM)
+        public AssertLibrary(Func<Vm> createVM)
         {
             CreateVM = createVM;
         }
 
-        public Func<VMBase> CreateVM { get; private set; }
+        public Func<Vm> CreateVM { get; private set; }
 
         public Table GetBindings()
         {
@@ -39,7 +39,7 @@ namespace ULox
             return resTable;
         }
 
-        private static NativeCallResult AreApproxEqual(VMBase vm, int argCount)
+        private static NativeCallResult AreApproxEqual(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -60,7 +60,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult AreEqual(VMBase vm, int argCount)
+        private static NativeCallResult AreEqual(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -70,7 +70,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult AreNotEqual(VMBase vm, int argCount)
+        private static NativeCallResult AreNotEqual(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -80,7 +80,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult IsTrue(VMBase vm, int argCount)
+        private static NativeCallResult IsTrue(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             if (lhs.IsFalsey)
@@ -89,7 +89,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult IsFalse(VMBase vm, int argCount)
+        private static NativeCallResult IsFalse(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             if (!lhs.IsFalsey)
@@ -98,7 +98,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult IsNull(VMBase vm, int argCount)
+        private static NativeCallResult IsNull(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             if (!lhs.IsNull)
@@ -107,7 +107,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult IsNotNull(VMBase vm, int argCount)
+        private static NativeCallResult IsNotNull(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             if (lhs.IsNull)
@@ -116,7 +116,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult DoesContain(VMBase vm, int argCount)
+        private static NativeCallResult DoesContain(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -126,7 +126,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult DoesNotContain(VMBase vm, int argCount)
+        private static NativeCallResult DoesNotContain(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -136,7 +136,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Throws(VMBase vm, int argCount)
+        private NativeCallResult Throws(Vm vm, int argCount)
         {
             var toRun = vm.GetArg(1).val.asClosure.chunk;
             if (toRun == null)
@@ -158,12 +158,12 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult Pass(VMBase vm, int argCount)
+        private static NativeCallResult Pass(Vm vm, int argCount)
         {
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static NativeCallResult Fail(VMBase vm, int argCount)
+        private static NativeCallResult Fail(Vm vm, int argCount)
         {
             var msg = vm.GetArg(1);
             throw new AssertException($"Fail. '{msg}'");

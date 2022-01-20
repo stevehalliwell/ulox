@@ -23,7 +23,7 @@ namespace ULox
                                   );
         }
 
-        private NativeCallResult InitInstance(VMBase vm, int argCount)
+        private NativeCallResult InitInstance(Vm vm, int argCount)
         {
             var inst = vm.GetArg(0);
             inst.val.asInstance.SetField(ListFieldName, Value.Object(new InternalList()));
@@ -31,14 +31,14 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Count(VMBase vm, int argCount)
+        private NativeCallResult Count(Vm vm, int argCount)
         {
             InternalList list = GetArg0InternalList(vm);
             vm.PushReturn(Value.New(list.Count));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Resize(VMBase vm, int argCount)
+        private NativeCallResult Resize(Vm vm, int argCount)
         {
             var inst = vm.GetArg(0);
             InternalList list = GetArg0InternalList(vm);
@@ -50,7 +50,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Get(VMBase vm, int argCount)
+        private NativeCallResult Get(Vm vm, int argCount)
         {
             InternalList list = GetArg0InternalList(vm);
             int index = (int)vm.GetArg(1).val.asDouble;
@@ -58,7 +58,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Set(VMBase vm, int argCount)
+        private NativeCallResult Set(Vm vm, int argCount)
         {
             InternalList list = GetArg0InternalList(vm);
             int index = (int)vm.GetArg(1).val.asDouble;
@@ -69,7 +69,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Add(VMBase vm, int argCount)
+        private NativeCallResult Add(Vm vm, int argCount)
         {
             InternalList list = GetArg0InternalList(vm);
             var newValue = vm.GetArg(1);
@@ -78,7 +78,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Remove(VMBase vm, int argCount)
+        private NativeCallResult Remove(Vm vm, int argCount)
         {
             InternalList list = GetArg0InternalList(vm);
             var toRemove = vm.GetArg(1);
@@ -86,14 +86,14 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Empty(VMBase vm, int argCount)
+        private NativeCallResult Empty(Vm vm, int argCount)
         {
             InternalList list = GetArg0InternalList(vm);
             vm.PushReturn(Value.New(list.Count == 0));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private static InternalList GetArg0InternalList(VMBase vm)
+        private static InternalList GetArg0InternalList(Vm vm)
         {
             var inst = vm.GetArg(0);
             var list = inst.val.asInstance.GetField(ListFieldName).val.asObject as InternalList;

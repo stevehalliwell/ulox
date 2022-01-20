@@ -10,13 +10,13 @@
                 (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump))
                                         );
 
-        public NativeCallResult GenerateStackDump(VMBase vm, int argCount)
+        public NativeCallResult GenerateStackDump(Vm vm, int argCount)
         {
             vm.PushReturn(Value.New(vm.GenerateStackDump()));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        public NativeCallResult GenerateGlobalsDump(VMBase vm, int argCount)
+        public NativeCallResult GenerateGlobalsDump(Vm vm, int argCount)
         {
             vm.PushReturn(Value.New(vm.GenerateGlobalsDump()));
             return NativeCallResult.SuccessfulExpression;

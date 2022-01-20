@@ -10,7 +10,7 @@ namespace ULox
     {
         private readonly Dictionary<string, bool> tests = new Dictionary<string, bool>();
 
-        public TestRunner(Func<VMBase> createVM)
+        public TestRunner(Func<Vm> createVM)
         {
             CreateVM = createVM;
         }
@@ -19,7 +19,7 @@ namespace ULox
         public bool AllPassed => !tests.Any(x => !x.Value);
         public int TestsFound => tests.Count;
         public HashedString CurrentTestSetName { get; set; } = new HashedString(string.Empty);
-        public Func<VMBase> CreateVM { get; private set; }
+        public Func<Vm> CreateVM { get; private set; }
 
         public void StartTest(HashedString name)
         {
@@ -46,7 +46,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DoTestOpCode(VMBase vm, Chunk chunk)
+        public void DoTestOpCode(Vm vm, Chunk chunk)
         {
             var testOpType = (TestOpType)vm.ReadByte(chunk);
             switch (testOpType)
@@ -74,7 +74,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoTestSet(VMBase vm, Chunk chunk)
+        private void DoTestSet(Vm vm, Chunk chunk)
         {
             var name = chunk.ReadConstant(vm.ReadByte(chunk)).val.asString;
             var testcaseCount = vm.ReadByte(chunk);
@@ -91,7 +91,7 @@ namespace ULox
             }
         }
 
-        protected virtual void RunTestCase(VMBase vm, Chunk chunk, ushort loc)
+        protected virtual void RunTestCase(Vm vm, Chunk chunk, ushort loc)
         {
             try
             {

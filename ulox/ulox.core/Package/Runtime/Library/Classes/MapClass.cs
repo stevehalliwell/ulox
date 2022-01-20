@@ -21,7 +21,7 @@ namespace ULox
                                   );
         }
 
-        private NativeCallResult InitInstance(VMBase vm, int argCount)
+        private NativeCallResult InitInstance(Vm vm, int argCount)
         {
             var inst = vm.GetArg(0);
             inst.val.asInstance.SetField(MapFieldName, Value.Object(new InternalMap()));
@@ -29,7 +29,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Count(VMBase vm, int argCount)
+        private NativeCallResult Count(Vm vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
@@ -37,7 +37,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Create(VMBase vm, int argCount)
+        private NativeCallResult Create(Vm vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
@@ -55,7 +55,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Read(VMBase vm, int argCount)
+        private NativeCallResult Read(Vm vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
@@ -70,7 +70,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Update(VMBase vm, int argCount)
+        private NativeCallResult Update(Vm vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
@@ -88,7 +88,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Delete(VMBase vm, int argCount)
+        private NativeCallResult Delete(Vm vm, int argCount)
         {
             var inst = vm.GetArg(0);
             var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;

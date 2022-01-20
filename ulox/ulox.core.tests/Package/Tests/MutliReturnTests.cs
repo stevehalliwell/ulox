@@ -109,7 +109,7 @@ print(a);");
             Assert.AreEqual("4", testEngine.InterpreterResult);
         }
 
-        private NativeCallResult ReturnNothing(VMBase vm, int argc)
+        private NativeCallResult ReturnNothing(Vm vm, int argc)
         {
             return NativeCallResult.SuccessfulExpression;
         }
@@ -127,7 +127,7 @@ print(a);");
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
-        private NativeCallResult Return1Thing(VMBase vm, int arg2)
+        private NativeCallResult Return1Thing(Vm vm, int arg2)
         {
             vm.PushReturn(Value.New(1));
             return NativeCallResult.SuccessfulExpression;
@@ -147,7 +147,7 @@ print(b);");
             Assert.AreEqual("12", testEngine.InterpreterResult);
         }
 
-        private NativeCallResult Return2Thing(VMBase vm, int arg2)
+        private NativeCallResult Return2Thing(Vm vm, int arg2)
         {
             vm.PushReturn(Value.New(1));
             vm.PushReturn(Value.New(2));

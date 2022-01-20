@@ -796,7 +796,7 @@ print(res);
         [Test]
         public void Engine_NativeFunc_Call_0Param_String()
         {
-            NativeCallResult Func(VMBase vm, int args)
+            NativeCallResult Func(Vm vm, int args)
             {
                 vm.PushReturn(Value.New("Hello from native."));
                 return NativeCallResult.SuccessfulExpression;
@@ -812,7 +812,7 @@ print(res);
         [Test]
         public void Engine_NativeFunc_Call_1Param_String()
         {
-            NativeCallResult Func(VMBase vm, int args)
+            NativeCallResult Func(Vm vm, int args)
             {
                 vm.PushReturn(Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native."));
                 return NativeCallResult.SuccessfulExpression;

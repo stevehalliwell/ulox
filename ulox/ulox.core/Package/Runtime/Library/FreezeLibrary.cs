@@ -10,7 +10,7 @@
                 (nameof(Unfreeze), Value.New(Unfreeze))
                                         );
 
-        public NativeCallResult IsFrozen(VMBase vm, int argCount)
+        public NativeCallResult IsFrozen(Vm vm, int argCount)
         {
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)
@@ -21,7 +21,7 @@
             return NativeCallResult.SuccessfulExpression;
         }
 
-        public NativeCallResult Unfreeze(VMBase vm, int argCount)
+        public NativeCallResult Unfreeze(Vm vm, int argCount)
         {
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)

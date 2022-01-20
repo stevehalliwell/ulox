@@ -20,34 +20,28 @@
             return resTable;
         }
 
-        private NativeCallResult Count(VMBase vm, int argCount)
+        private NativeCallResult Count(Vm vm, int argCount)
         {
             var di = FromVm(vm);
             vm.PushReturn(Value.New(di.Count));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult GenerateDump(VMBase vm, int argCount)
+        private NativeCallResult GenerateDump(Vm vm, int argCount)
         {
             var di = FromVm(vm);
             vm.PushReturn(Value.New(di.GenerateDump()));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Freeze(VMBase vm, int argCount)
+        private NativeCallResult Freeze(Vm vm, int argCount)
         {
             var di = FromVm(vm);
             di.Freeze();
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private DiContainer FromVm(VMBase vMBase)
-        {
-            if (vMBase is Vm vm)
-            {
-                return vm.DiContainer;
-            }
-            throw new LoxException($"DiLibrary action taken on incommpatible vm.");
-        }
+        private DiContainer FromVm(Vm vMBase)
+            => vMBase.DiContainer;
     }
 }

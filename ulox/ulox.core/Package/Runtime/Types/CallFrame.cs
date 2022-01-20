@@ -7,7 +7,7 @@
         Failure
     }
 
-    public delegate NativeCallResult NativeCallDelegate(VMBase vm, int argc);
+    public delegate NativeCallResult NativeCallDelegate(Vm vm, int argc);
 
     public struct CallFrame
     {

@@ -1,19 +1,5 @@
 ﻿namespace ULox
 {
-    public enum ReturnMode : byte
-    {
-        One,
-        Begin,
-        End,
-        MarkMultiReturnAssignStart,
-        MarkMultiReturnAssignEnd,
-    }
-
-    public enum ValidateOp : byte
-    {
-        MultiReturnMatches
-    }
-
     public enum OpCode : byte
     {
         NONE,

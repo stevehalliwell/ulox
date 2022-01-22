@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
@@ -7,6 +8,9 @@ namespace ULox
         IVm VM { get; }
         IEnumerable<string> LibraryNames { get; }
         IProgram Program { get; }
+        IScriptLocator ScriptLocator { get; }
+
+        event Action<string> OnLog;
 
         void AddLibrary(IULoxLibrary lib);
 

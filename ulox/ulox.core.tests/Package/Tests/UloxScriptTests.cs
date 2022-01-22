@@ -1,6 +1,4 @@
 using NUnit.Framework;
-using System.Collections;
-using System.IO;
 
 public class NoFailUloxTests : UloxScriptTestBase
 {
@@ -14,8 +12,8 @@ public class NoFailUloxTests : UloxScriptTestBase
 
         engine.Run(script);
 
-        Assert.IsTrue(engine.AllPassed);
-        Assert.AreNotEqual(0, engine.TestsFound, "Expect to find at least 1 test in the NoFail tests folder");
+        Assert.IsTrue(engine.MyEngine.Context.VM.TestRunner.AllPassed);
+        Assert.AreNotEqual(0, engine.MyEngine.Context.VM.TestRunner.TestsFound, "Expect to find at least 1 test in the NoFail tests folder");
     }
 
     public static TestCaseData[] ScriptGenerator()

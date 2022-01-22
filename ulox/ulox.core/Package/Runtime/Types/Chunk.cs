@@ -4,13 +4,19 @@ namespace ULox
 {
     public class Chunk
     {
+        internal struct RunLengthLineNumber
+        {
+            public int startingInstruction;
+            public int line;
+        }
+
         private readonly List<Value> constants = new List<Value>();
+        private readonly List<RunLengthLineNumber> _runLengthLineNumbers = new List<RunLengthLineNumber>();
         private int instructionCount = -1;
 
         public List<byte> Instructions { get; private set; } = new List<byte>();
         public List<byte> ArgumentConstantIds { get; private set; } = new List<byte>();
         public IReadOnlyList<Value> Constants => constants.AsReadOnly();
-        public List<RunLengthLineNumber> RunLengthLineNumbers { get; private set; } = new List<RunLengthLineNumber>();
         public string Name { get; set; }
         public int Arity => ArgumentConstantIds.Count;
         public int UpvalueCount { get; internal set; }
@@ -22,15 +28,15 @@ namespace ULox
 
         public int GetLineForInstruction(int instructionNumber)
         {
-            if (RunLengthLineNumbers.Count == 0) return -1;
+            if (_runLengthLineNumbers.Count == 0) return -1;
 
-            for (int i = 0; i < RunLengthLineNumbers.Count; i++)
+            for (int i = 0; i < _runLengthLineNumbers.Count; i++)
             {
-                if (instructionNumber < RunLengthLineNumbers[i].startingInstruction)
-                    return RunLengthLineNumbers[i - 1].line;
+                if (instructionNumber < _runLengthLineNumbers[i].startingInstruction)
+                    return _runLengthLineNumbers[i - 1].line;
             }
 
-            return RunLengthLineNumbers[RunLengthLineNumbers.Count - 1].line;
+            return _runLengthLineNumbers[_runLengthLineNumbers.Count - 1].line;
         }
 
         public void WriteByte(byte b, int line)
@@ -100,9 +106,9 @@ namespace ULox
         {
             instructionCount++;
 
-            if (RunLengthLineNumbers.Count == 0)
+            if (_runLengthLineNumbers.Count == 0)
             {
-                RunLengthLineNumbers.Add(new RunLengthLineNumber()
+                _runLengthLineNumbers.Add(new RunLengthLineNumber()
                 {
                     line = line,
                     startingInstruction = instructionCount
@@ -110,9 +116,9 @@ namespace ULox
                 return;
             }
 
-            if (RunLengthLineNumbers[RunLengthLineNumbers.Count - 1].line != line)
+            if (_runLengthLineNumbers[_runLengthLineNumbers.Count - 1].line != line)
             {
-                RunLengthLineNumbers.Add(new RunLengthLineNumber()
+                _runLengthLineNumbers.Add(new RunLengthLineNumber()
                 {
                     line = line,
                     startingInstruction = instructionCount

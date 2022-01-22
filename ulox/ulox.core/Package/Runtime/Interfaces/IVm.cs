@@ -3,6 +3,7 @@
     public interface IVm
     {
         IEngine Engine { get; }
+        TestRunner TestRunner { get; }
 
         string GenerateGlobalsDump();
 
@@ -21,5 +22,6 @@
         void SetEngine(IEngine engine);
 
         void CopyFrom(IVm otherVM);
+        InterpreterResult Run();
     }
 }

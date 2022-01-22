@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using static ULox.CompilerState;
+
+namespace ULox
 {
     public abstract class ConfigurableLoopingStatementCompilette : ICompilette
     {
@@ -28,7 +30,7 @@
             var comp = compiler.CurrentCompilerState;
             int loopStart = compiler.CurrentChunkInstructinCount;
             var loopState = new LoopState();
-            comp.loopStates.Push(loopState);
+            comp.LoopStates.Push(loopState);
             loopState.loopContinuePoint = loopStart;
 
             loopStart = BeginLoop(compiler, loopStart, loopState);

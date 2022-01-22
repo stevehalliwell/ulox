@@ -4,8 +4,39 @@ namespace ULox
 {
     public class CompilerState
     {
-        public Local[] locals = new Local[byte.MaxValue + 1];
-        public Upvalue[] upvalues = new Upvalue[byte.MaxValue + 1];
+        internal class Local
+        {
+            public Local(string name, int depth)
+            {
+                Name = name;
+                Depth = depth;
+            }
+
+            public string Name { get; private set; }
+            public int Depth { get; set; }
+            public bool IsCaptured { get; set; }
+        }
+
+        public class LoopState
+        {
+            public int loopContinuePoint = -1;
+            public List<int> loopExitPatchLocations = new List<int>();
+        }
+        
+        internal class Upvalue
+        {
+            public byte index;
+            public bool isLocal;
+
+            public Upvalue(byte index, bool isLocal)
+            {
+                this.index = index;
+                this.isLocal = isLocal;
+            }
+        }
+
+        internal Local[] locals = new Local[byte.MaxValue + 1];
+        internal Upvalue[] upvalues = new Upvalue[byte.MaxValue + 1];
         public int localCount;
         public int scopeDepth;
         public Chunk chunk;
@@ -18,9 +49,9 @@ namespace ULox
             functionType = funcType;
         }
 
-        public Stack<LoopState> loopStates = new Stack<LoopState>();
+        public Stack<LoopState> LoopStates { get; private set; } = new Stack<LoopState>();
+        private Local LastLocal => locals[localCount - 1];
 
-        public Local LastLocal => locals[localCount - 1];
 
         public void AddLocal(string name, int depth = -1)
         {

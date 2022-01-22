@@ -17,12 +17,23 @@ namespace ULox
     //todo self asign needs safety to prevent their use in declarations.
     public class Vm : IVm
     {
+        public delegate NativeCallResult NativeCallDelegate(Vm vm, int argc);
+
+        internal struct CallFrame
+        {
+            public int InstructionPointer;
+            public byte StackStart;
+            public byte ReturnStart;  //Used for return from mark and multi assign, as these do not overlap in the same callframe
+            public ClosureInternal Closure;
+            public NativeCallDelegate nativeFunc;
+        }
+
         private readonly ClosureInternal NativeCallClosure;
 
         protected readonly FastStack<Value> _valueStack = new FastStack<Value>();
         protected readonly FastStack<Value> _returnStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
-        protected CallFrame currentCallFrame;
+        private CallFrame currentCallFrame;
         private IEngine _engine;
         public IEngine Engine => _engine;
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
@@ -59,7 +70,7 @@ namespace ULox
 
         public void SetGlobal(HashedString name, Value val) => _globals[name] = val;
 
-        public Value GetArg(int index) 
+        public Value GetArg(int index)
             => _valueStack[currentCallFrame.StackStart + index];
 
         public int CurrentFrameStackValues => _valueStack.Count - currentCallFrame.StackStart;
@@ -100,7 +111,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ReadByte(Chunk chunk) 
+        public byte ReadByte(Chunk chunk)
             => chunk.Instructions[currentCallFrame.InstructionPointer++];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -112,7 +123,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushNewCallframe(CallFrame callFrame)
+        private void PushNewCallframe(CallFrame callFrame)
         {
             if (_callFrames.Count > 0)
             {
@@ -184,7 +195,6 @@ namespace ULox
                 {
                 case OpCode.CONSTANT:
                     DoConstantOp(chunk);
-
                     break;
 
                 case OpCode.RETURN:
@@ -305,10 +315,59 @@ namespace ULox
                     DoValidateOp(chunk);
                     break;
 
-                default:
-                    if (!ExtendedOp(opCode, chunk))
-                        throw new VMException($"Unhandled OpCode '{opCode}'.");
+                case OpCode.GET_PROPERTY:
+                    DoGetPropertyOp(chunk);
                     break;
+
+                case OpCode.SET_PROPERTY:
+                    DoSetPropertyOp(chunk);
+                    break;
+
+                case OpCode.CLASS:
+                    DoClassOp(chunk);
+                    break;
+
+                case OpCode.METHOD:
+                    DoMethodOp(chunk);
+                    break;
+
+                case OpCode.MIXIN:
+                    DoMixinOp(chunk);
+                    break;
+
+                case OpCode.INVOKE:
+                    DoInvokeOp(chunk);
+                    break;
+
+                case OpCode.INHERIT:
+                    DoInheritOp(chunk);
+                    break;
+
+                case OpCode.GET_SUPER:
+                    DoGetSuperOp(chunk);
+                    break;
+
+                case OpCode.SUPER_INVOKE:
+                    DoSuperInvokeOp(chunk);
+                    break;
+
+                case OpCode.TEST:
+                    TestRunner.DoTestOpCode(this, chunk);
+                    break;
+
+                case OpCode.REGISTER:
+                    DoRegisterOp(chunk);
+                    break;
+
+                case OpCode.INJECT:
+                    DoInjectOp(chunk);
+                    break;
+
+                case OpCode.FREEZE:
+                    DoFreezeOp();
+                    break;
+                default:
+                    throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
             }
         }
@@ -709,7 +768,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushCallFrameFromValue(Value callee, int argCount)
+        private void PushCallFrameFromValue(Value callee, int argCount)
         {
             switch (callee.type)
             {
@@ -721,15 +780,39 @@ namespace ULox
                 Call(callee.val.asClosure, argCount);
                 break;
 
-            default:
-                if (!ExtendedCall(callee, argCount))
-                    throw new VMException($"Invalid Call, value type {callee.type} is not handled.");
+            case ValueType.Class:
+                CreateInstance(callee.val.asClass, argCount);
                 break;
+
+            case ValueType.BoundMethod:
+                CallMethod(callee.val.asBoundMethod, argCount);
+                break;
+
+            case ValueType.CombinedClosures:
+                CallCombinedClosures(callee, argCount);
+                break;
+
+            default:
+                throw new VMException($"Invalid Call, value type {callee.type} is not handled.");
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void Call(ClosureInternal closureInternal, int argCount)
+        private void CallCombinedClosures(Value callee, int argCount)
+        {
+            var combinedClosures = callee.val.asCombined;
+            var stackCopyStartIndex = _valueStack.Count - argCount - 1;
+            for (int i = 0; i < combinedClosures.Count; i++)
+            {
+                DuplicateStackValuesNew(stackCopyStartIndex, argCount);
+
+                var closure = combinedClosures[i];
+                Call(closure, argCount);
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Call(ClosureInternal closureInternal, int argCount)
         {
             if (argCount != closureInternal.chunk.Arity)
                 throw new VMException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
@@ -743,13 +826,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushFrameCallNative(NativeCallDelegate nativeCallDel, int argCount)
+        private void PushFrameCallNative(NativeCallDelegate nativeCallDel, int argCount)
         {
             PushFrameCallNativeWithFixedStackStart(nativeCallDel, (byte)(_valueStack.Count - argCount - 1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void PushFrameCallNativeWithFixedStackStart(NativeCallDelegate nativeCallDel, byte stackStart)
+        private void PushFrameCallNativeWithFixedStackStart(NativeCallDelegate nativeCallDel, byte stackStart)
         {
             PushNewCallframe(new CallFrame()
             {
@@ -832,13 +915,13 @@ namespace ULox
                 if (DoCustomComparisonOp(opCode, lhs, rhs))
                     return;
 
-            if(opCode == OpCode.EQUAL)
+            if (opCode == OpCode.EQUAL)
             {
                 Push(Value.New(lhs.Compare(ref lhs, ref rhs)));
                 return;
             }
 
-            if(lhs.type != ValueType.Double || rhs.type != ValueType.Double)
+            if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                 throw new VMException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'.");
 
             //do we need specific handling of NaNs on either side
@@ -861,103 +944,6 @@ namespace ULox
             {
                 Push(_valueStack[startAt + i]);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ExtendedCall(Value callee, int argCount)
-        {
-            switch (callee.type)
-            {
-            case ValueType.Class:
-                CreateInstance(callee.val.asClass, argCount);
-                break;
-
-            case ValueType.BoundMethod:
-                CallMethod(callee.val.asBoundMethod, argCount);
-                break;
-
-            case ValueType.CombinedClosures:
-                {
-                    var combinedClosures = callee.val.asCombined;
-                    var stackCopyStartIndex = _valueStack.Count - argCount - 1;
-                    for (int i = 0; i < combinedClosures.Count; i++)
-                    {
-                        DuplicateStackValuesNew(stackCopyStartIndex, argCount);
-
-                        var closure = combinedClosures[i];
-                        Call(closure, argCount);
-                    }
-                }
-                break;
-
-            default:
-                return false;
-            }
-            return true;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool ExtendedOp(OpCode opCode, Chunk chunk)
-        {
-            switch (opCode)
-            {
-            case OpCode.GET_PROPERTY:
-                DoGetPropertyOp(chunk);
-                break;
-
-            case OpCode.SET_PROPERTY:
-                DoSetPropertyOp(chunk);
-                break;
-
-            case OpCode.CLASS:
-                DoClassOp(chunk);
-
-                break;
-
-            case OpCode.METHOD:
-                DoMethodOp(chunk);
-                break;
-
-            case OpCode.MIXIN:
-                DoMixinOp(chunk);
-                break;
-
-            case OpCode.INVOKE:
-                DoInvokeOp(chunk);
-                break;
-
-            case OpCode.INHERIT:
-                DoInheritOp(chunk);
-                break;
-
-            case OpCode.GET_SUPER:
-                DoGetSuperOp(chunk);
-                break;
-
-            case OpCode.SUPER_INVOKE:
-                DoSuperInvokeOp(chunk);
-                break;
-
-            case OpCode.TEST:
-                TestRunner.DoTestOpCode(this, chunk);
-                break;
-
-            case OpCode.REGISTER:
-                DoRegisterOp(chunk);
-                break;
-
-            case OpCode.INJECT:
-                DoInjectOp(chunk);
-                break;
-
-            case OpCode.FREEZE:
-                DoFreezeOp();
-                break;
-
-            default:
-                return false;
-            }
-            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

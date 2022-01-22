@@ -7,7 +7,7 @@ namespace ULox.Tests
         [Test]
         public void Fields_WhenAddedToDynamic_ShouldSucceed()
         {
-            testEngine.AddLibrary(new StandardClassesLibrary());
+            testEngine.MyEngine.Context.AddLibrary(new StandardClassesLibrary());
 
             testEngine.Run(@"
 var obj = Dynamic();

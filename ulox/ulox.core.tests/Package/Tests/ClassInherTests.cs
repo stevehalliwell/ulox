@@ -120,7 +120,7 @@ b.MethA();");
         [Test]
         public void Engine_Class_InherClassSuperInitNoParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -155,7 +155,7 @@ print(cinst.b);
         [Test]
         public void Engine_Class_InherClassSuperInitParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -237,7 +237,7 @@ print(cerinst.c);
         [Test]
         public void Engine_Class_InherWithVarNoInit()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -266,7 +266,7 @@ print(cinst.b);
         [Test]
         public void Engine_Class_InherWithVarAndInitNoParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -306,7 +306,7 @@ print(cinst.d);
         [Test]
         public void Engine_Class_InherWithVarAndInitAndParams_NoAutoVarInit()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -346,7 +346,7 @@ print(cinst.d);
         [Test]
         public void Engine_Class_InherWithVarAndInitAndAutoVarParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base

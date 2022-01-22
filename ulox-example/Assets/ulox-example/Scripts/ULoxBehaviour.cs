@@ -15,11 +15,11 @@ namespace ULox.Demo
         private Value _anonymousOnCollision = Value.Null();
         private Value _gameUpdateFunction = Value.Null();
         private IVm _ourVM;
-        private Engine _engine;
+        private SharedEngine _engine;
 
         private void Start()
         {
-            _engine = FindObjectOfType<SharedEngine>().Engine;
+            _engine = FindObjectOfType<SharedEngine>();
 
             BindToScript();
 
@@ -47,12 +47,12 @@ namespace ULox.Demo
 
         private void BindToScript()
         {
-            _engine.RunScript(script.text);
-            _ourVM = _engine.Context.VM;
+            _engine.Engine.RunScript(script.text);
+            _ourVM = _engine.Engine.Context.VM;
             if (useInstanceVm)
             {
                 _ourVM = new Vm();
-                _ourVM.CopyFrom(_engine.Context.VM);
+                _ourVM.CopyFrom(_engine.Engine.Context.VM);
             }
 
             _ourVM.SetGlobal(thisGameObjectName, Value.Object(gameObject));

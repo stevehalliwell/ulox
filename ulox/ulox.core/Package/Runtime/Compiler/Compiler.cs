@@ -618,10 +618,10 @@ namespace ULox
         public static void ContinueStatement(Compiler compiler)
         {
             var comp = compiler.CurrentCompilerState;
-            if (comp.loopStates.Count == 0)
+            if (comp.LoopStates.Count == 0)
                 throw new CompilerException("Cannot continue when not inside a loop.");
 
-            compiler.EmitLoop(comp.loopStates.Peek().loopContinuePoint);
+            compiler.EmitLoop(comp.LoopStates.Peek().loopContinuePoint);
 
             compiler.ConsumeEndStatement();
         }
@@ -650,7 +650,7 @@ namespace ULox
         public static void BreakStatement(Compiler compiler)
         {
             var comp = compiler.CurrentCompilerState;
-            if (comp.loopStates.Count == 0)
+            if (comp.LoopStates.Count == 0)
                 throw new CompilerException("Cannot break when not inside a loop.");
 
             compiler.EmitOpCode(OpCode.NULL);
@@ -658,7 +658,7 @@ namespace ULox
 
             compiler.ConsumeEndStatement();
 
-            comp.loopStates.Peek().loopExitPatchLocations.Add(exitJump);
+            comp.LoopStates.Peek().loopExitPatchLocations.Add(exitJump);
         }
 
         public static void YieldStatement(Compiler compiler)

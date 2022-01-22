@@ -8,9 +8,9 @@ namespace ULox
 
         public static bool IsDigit(int ch) => ch >= '0' && ch <= '9';
 
-        public bool DoesMatchChar(ScannerBase scanner) => IsDigit(scanner.CurrentChar);
+        public bool DoesMatchChar(char ch) => IsDigit(ch);
 
-        public void Consume(ScannerBase scanner)
+        public void Consume(IScanner scanner)
         {
             bool hasFoundDecimalPoint = false;
             workingSpaceStringBuilder.Clear();

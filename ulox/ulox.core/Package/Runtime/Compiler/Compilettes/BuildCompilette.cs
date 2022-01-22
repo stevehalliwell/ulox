@@ -7,13 +7,14 @@
 
         public TokenType Match => TokenType.BUILD;
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
         {
-            compiler.Consume(TokenType.IDENTIFIER, "Expect identifier after build command.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after build command.");
 
-            BuildOpType buildOpType = BuildOpType.Bind;
+            var buildOpType = BuildOpType.Bind;
 
-            switch (compiler.PreviousToken.Literal)
+            string lexeme = compiler.TokenIterator.PreviousToken.Lexeme;
+            switch (lexeme)
             {
             case BindIdentKeyword:
                 buildOpType = BuildOpType.Bind;
@@ -24,19 +25,19 @@
                 break;
 
             default:
-                throw new CompilerException($"'build' keyword followed by unexpected identifier '{compiler.PreviousToken.Literal}'.");
+                throw new CompilerException($"'build' keyword followed by unexpected identifier '{lexeme}'.");
             }
 
             //read the rest of the constants and write out build opcodes
             do
             {
-                compiler.Consume(TokenType.STRING, "Expect string after build op type.");
-                var ident = (string)compiler.PreviousToken.Literal;
+                compiler.TokenIterator.Consume(TokenType.STRING, "Expect string after build op type.");
+                var ident = (string)compiler.TokenIterator.PreviousToken.Literal;
                 var identId = compiler.CurrentChunk.AddConstant(Value.New(ident));
                 compiler.EmitOpAndBytes(OpCode.BUILD, (byte)buildOpType, identId);
-            } while (compiler.Match(TokenType.COMMA));
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
-            compiler.Consume(TokenType.END_STATEMENT, "Expect end of statement after build command identifier(s).");
+            compiler.ConsumeEndStatement("build command identifier(s)");
         }
     }
 }

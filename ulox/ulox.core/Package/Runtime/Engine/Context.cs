@@ -1,23 +1,29 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
     public class Context : IContext
     {
-        private Dictionary<string, IULoxLibrary> _libraries = new Dictionary<string, IULoxLibrary>();
-        private List<CompiledScript> _compiledChunks = new List<CompiledScript>();
+        private readonly Dictionary<string, IULoxLibrary> _libraries = new Dictionary<string, IULoxLibrary>();
+        private readonly List<CompiledScript> _compiledChunks = new List<CompiledScript>();
 
         public Context(
+            IScriptLocator scriptLocator,
             IProgram program,
             IVm vm)
         {
+            ScriptLocator = scriptLocator;
             Program = program;
             VM = vm;
         }
 
+        public IScriptLocator ScriptLocator { get; private set; }
         public IProgram Program { get; private set; }
         public IVm VM { get; private set; }
         public IEnumerable<string> LibraryNames => _libraries.Keys;
+
+        public event Action<string> OnLog;
 
         public void DeclareLibrary(IULoxLibrary lib)
         {
@@ -49,5 +55,8 @@ namespace ULox
             _compiledChunks.Add(res);
             return res;
         }
+
+        public void Log(string x)
+            => OnLog?.Invoke(x);
     }
 }

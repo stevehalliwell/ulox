@@ -63,7 +63,7 @@ print(d);");
         [Test]
         public void Run_WhenReturnNothingFromExternalFunctionInMiddleOfMathOpsAndAllLocals_ShouldNotImpactMathOps()
         {
-            testEngine.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
 
             testEngine.Run(@"
 fun Locals()
@@ -85,7 +85,7 @@ Locals();");
         [Test]
         public void Run_WhenReturnNothing_ShouldNotHaveError()
         {
-            testEngine.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
 
             testEngine.Run(@"A();");
 
@@ -95,7 +95,7 @@ Locals();");
         [Test]
         public void Run_WhenReturnNothingFromExternalFunctionInMiddleOfMathOps_ShouldNotImpactMathOps()
         {
-            testEngine.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
 
             testEngine.Run(@"
 var a = 1;
@@ -109,7 +109,7 @@ print(a);");
             Assert.AreEqual("4", testEngine.InterpreterResult);
         }
 
-        private NativeCallResult ReturnNothing(VMBase vm, int argc)
+        private NativeCallResult ReturnNothing(Vm vm, int argc)
         {
             return NativeCallResult.SuccessfulExpression;
         }
@@ -117,7 +117,7 @@ print(a);");
         [Test]
         public void Run_WhenReturnFromExternalFunction_ShouldMatchExpected()
         {
-            testEngine.Vm.SetGlobal(new HashedString("A1"), Value.New(Return1Thing));
+            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A1"), Value.New(Return1Thing));
 
             testEngine.Run(@"
 var a = A1();
@@ -127,7 +127,7 @@ print(a);");
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
-        private NativeCallResult Return1Thing(VMBase vm, int arg2)
+        private NativeCallResult Return1Thing(Vm vm, int arg2)
         {
             vm.PushReturn(Value.New(1));
             return NativeCallResult.SuccessfulExpression;
@@ -136,7 +136,7 @@ print(a);");
         [Test]
         public void Run_WhenReturn2FromExternalFunction_ShouldMatchExpected()
         {
-            testEngine.Vm.SetGlobal(new HashedString("A2"), Value.New(Return2Thing));
+            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A2"), Value.New(Return2Thing));
 
             testEngine.Run(@"
 var (a,b) = A2();
@@ -147,7 +147,7 @@ print(b);");
             Assert.AreEqual("12", testEngine.InterpreterResult);
         }
 
-        private NativeCallResult Return2Thing(VMBase vm, int arg2)
+        private NativeCallResult Return2Thing(Vm vm, int arg2)
         {
             vm.PushReturn(Value.New(1));
             vm.PushReturn(Value.New(2));

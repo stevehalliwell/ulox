@@ -29,9 +29,9 @@ namespace ULox.Demo
                 builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name, x => x.text);
 
             var scriptLocator = new ScriptLocator(builtinDict, new DirectoryInfo(Application.streamingAssetsPath));
-            Engine = new Engine(scriptLocator, new Context(new Program(), new Vm()));
+            Engine = new Engine(new Context(scriptLocator, new Program(), new Vm()));
 
-            Engine.DeclareAllLibraries(
+            DeclareAllLibraries(
                 x => Debug.Log(x),
                 () => new Vm());
 
@@ -39,12 +39,9 @@ namespace ULox.Demo
             if (prefabCollectionSO != null)
                 prefabs = prefabCollectionSO.Collection;
 
-            Engine.DeclareUnityLibraries(
-                prefabs,
-                x => outputText.text = x);
+            Engine.Context.DeclareLibrary(new UnityLibrary(prefabs, x => outputText.text = x));
 
-            if (bindAllLibraries)
-                Engine.BindAllLibraries();
+                BindAllLibraries();
 
             foreach (var item in scriptsNamesToLoad)
             {
@@ -53,16 +50,47 @@ namespace ULox.Demo
 
             Engine.BuildAndRun();
         }
-    }
 
-    public static partial class SharedEngineExt
-    {
-        public static void DeclareUnityLibraries(
-            this Engine engine,
-            List<UnityEngine.GameObject> availablePrefabs,
-            Action<string> outputText)
+        public Value FindFunctionWithArity(HashedString name, int arity)
         {
-            engine.Context.DeclareLibrary(new UnityLibrary(availablePrefabs, outputText));
+            var vm = Engine.Context.VM;
+
+            try
+            {
+                var globalVal = vm.GetGlobal(name);
+
+                if (globalVal.type == ValueType.Closure &&
+                    globalVal.val.asClosure.chunk.Arity == arity)
+                {
+                    return globalVal;
+                }
+            }
+            catch (System.Exception)
+            {
+            }
+
+            return Value.Null();
+        }
+
+        private void DeclareAllLibraries(
+            Action<string> logger,
+            Func<Vm> createVM)
+        {
+            Engine.Context.DeclareLibrary(new CoreLibrary(logger));
+            Engine.Context.DeclareLibrary(new StandardClassesLibrary());
+            Engine.Context.DeclareLibrary(new AssertLibrary(createVM));
+            Engine.Context.DeclareLibrary(new DebugLibrary());
+            Engine.Context.DeclareLibrary(new VmLibrary(createVM));
+        }
+
+        private void BindAllLibraries()
+        {
+            if (!bindAllLibraries) return;
+
+            foreach (var libName in Engine.Context.LibraryNames)
+            {
+                Engine.Context.BindLibrary(libName);
+            }
         }
     }
 }

@@ -6,24 +6,25 @@ namespace ULox
     {
         private readonly List<ushort> _currentTestcaseInstructions = new List<ushort>();
 
-        public TokenType Match => TokenType.TEST;
+        public TokenType Match 
+            => TokenType.TEST;
 
         public string CurrentTestSetName { get; internal set; }
 
-        public void Process(CompilerBase compiler)
+        public void Process(Compiler compiler)
         {
             TestDeclaration(compiler);
         }
 
-        private void TestDeclaration(CompilerBase compiler)
+        private void TestDeclaration(Compiler compiler)
         {
             //grab name
-            var testClassName = (string)compiler.CurrentToken.Literal;
+            var testClassName = (string)compiler.TokenIterator.CurrentToken.Literal;
             CurrentTestSetName = testClassName;
             var testSetNameID = compiler.CurrentChunk.AddConstant(Value.New(testClassName));
-            compiler.Consume(TokenType.IDENTIFIER, "Expect test set name.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect test set name.");
 
-            compiler.Consume(TokenType.OPEN_BRACE, "Expect '{' before test set body.");
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before test set body.");
 
             compiler.BlockStatement();
 
@@ -48,6 +49,12 @@ namespace ULox
         internal void AddTestCaseInstruction(ushort currentChunkInstructinCount)
         {
             _currentTestcaseInstructions.Add(currentChunkInstructinCount);
+        }
+
+        public void TSName(Compiler compiler, bool obj)
+        {
+            var tsname = CurrentTestSetName;
+            compiler.AddConstantAndWriteOp(Value.New(tsname));
         }
     }
 }

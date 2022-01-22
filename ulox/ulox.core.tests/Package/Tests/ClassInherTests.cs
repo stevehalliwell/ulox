@@ -47,6 +47,45 @@ b.MethA();");
         }
 
         [Test]
+        public void Engine_Class_CannotInherSelf()
+        {
+            testEngine.Run(@"
+class A < A {}");
+
+            Assert.AreEqual("A class cannot inher from itself. 'A' inherits from itself, not allowed.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_CannotReturnExpFromInit()
+        {
+            testEngine.Run(@"
+class A 
+{
+    init(){return 7;}
+}");
+
+            Assert.AreEqual("Cannot return an expression from an 'init'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_This_OutsideClass()
+        {
+            testEngine.Run(@"
+var a = this.a;");
+
+            Assert.AreEqual("Cannot use this outside of a class declaration.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Super_OutsideClass()
+        {
+            testEngine.Run(@"
+var a = super.a;");
+
+            Assert.AreEqual("Cannot use super outside a class.", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_Inher_Super()
         {
             testEngine.Run(@"
@@ -81,7 +120,7 @@ b.MethA();");
         [Test]
         public void Engine_Class_InherClassSuperInitNoParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -116,7 +155,7 @@ print(cinst.b);
         [Test]
         public void Engine_Class_InherClassSuperInitParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -198,7 +237,7 @@ print(cerinst.c);
         [Test]
         public void Engine_Class_InherWithVarNoInit()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -227,7 +266,7 @@ print(cinst.b);
         [Test]
         public void Engine_Class_InherWithVarAndInitNoParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -267,7 +306,7 @@ print(cinst.d);
         [Test]
         public void Engine_Class_InherWithVarAndInitAndParams_NoAutoVarInit()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base
@@ -307,7 +346,7 @@ print(cinst.d);
         [Test]
         public void Engine_Class_InherWithVarAndInitAndAutoVarParams()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class Base

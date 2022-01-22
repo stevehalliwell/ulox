@@ -9,16 +9,6 @@ public class UloxScriptTestBase
 {
     private const string ULoxScriptExtension = "*.ulox";
 
-    protected internal class ScriptTestEngine : ByteCodeInterpreterTestEngine
-    {
-        public ScriptTestEngine(Action<string> logger) : base(logger)
-        {
-        }
-
-        public bool AllPassed => Vm.TestRunner.AllPassed;
-        public int TestsFound => Vm.TestRunner.TestsFound;
-    }
-
     public static string[] GetFilesInSubFolder(string subFolderName)
     {
         var folderName = Path.Combine(UloxTestFolder(), subFolderName);
@@ -36,26 +26,21 @@ public class UloxScriptTestBase
         return filesInFolder;
     }
 
-    protected static TestCaseData MakeTestCaseData(string file)
-    {
-        //if (!File.Exists(file))
-        //    return new TestCaseData(new object[] { "" }).SetName($"NoFile: {file}");
+    protected static TestCaseData MakeTestCaseData(string file) 
+        => new TestCaseData(new object[] { File.ReadAllText(file) }).SetName(Path.GetFileName(file));
 
-        return new TestCaseData(new object[] { File.ReadAllText(file) }).SetName(Path.GetFileName(file));
-    }
-
-    protected ScriptTestEngine engine;
+    protected ByteCodeInterpreterTestEngine engine;
 
     [SetUp]
     public virtual void Setup()
     {
-        engine = new ScriptTestEngine(System.Console.WriteLine);
-        engine.AddLibrary(new AssertLibrary(() => new Vm()));
-        engine.Engine.Context.DeclareLibrary(new DebugLibrary());
-        engine.Engine.Context.DeclareLibrary(new StandardClassesLibrary());
-        engine.Engine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
-        engine.Engine.Context.DeclareLibrary(new DiLibrary());
-        engine.Engine.Context.DeclareLibrary(new FreezeLibrary());
+        engine = new ByteCodeInterpreterTestEngine(Console.WriteLine);
+        engine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
+        engine.MyEngine.Context.DeclareLibrary(new DebugLibrary());
+        engine.MyEngine.Context.DeclareLibrary(new StandardClassesLibrary());
+        engine.MyEngine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
+        engine.MyEngine.Context.DeclareLibrary(new DiLibrary());
+        engine.MyEngine.Context.DeclareLibrary(new FreezeLibrary());
     }
 
     protected static TestCaseData[] ScriptGeneratorHelper(string subfolderName)
@@ -75,7 +60,5 @@ public class UloxScriptTestBase
     }
 
     public static string UloxTestFolder()
-    {
-        return TestContext.CurrentContext.TestDirectory;
-    }
+        => TestContext.CurrentContext.TestDirectory;
 }

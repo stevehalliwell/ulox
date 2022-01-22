@@ -9,7 +9,7 @@ namespace ULox.Tests
         [Test]
         public void Engine_Class_StaticFields()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class T

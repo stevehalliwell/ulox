@@ -6,9 +6,9 @@ namespace ULox
     {
         private StringBuilder workingSpaceStringBuilder = new StringBuilder();
 
-        public bool DoesMatchChar(ScannerBase scanner) => scanner.CurrentChar == '"';
+        public bool DoesMatchChar(char ch) => ch == '"';
 
-        public void Consume(ScannerBase scanner)
+        public void Consume(IScanner scanner)
         {
             workingSpaceStringBuilder.Clear();
             scanner.Advance();//skip leading "

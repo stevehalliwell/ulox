@@ -111,7 +111,6 @@ delegate();");
             Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
         }
 
-        //TODO: add test to version with params
         [Test]
         public void Engine_Class_BoundMethod_InternalAndReturn()
         {
@@ -141,6 +140,32 @@ var delegate = maker.brewLater();
 delegate();");
 
             Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_BoundMethodWithParams_InternalAndReturn()
+        {
+            testEngine.Run(@"
+class CoffeeMaker {
+    init(_coffee) {
+        this.coffee = _coffee;
+    }
+
+    brew(method) {
+        print (""Enjoy your cup of "" + this.coffee + "" ("" + method  + "")"");
+
+        // No reusing the grounds!
+        this.coffee = null;
+    }
+}
+
+var maker = CoffeeMaker(""coffee and chicory"");
+
+var delegate = maker.brew;
+
+delegate(""V60"");");
+
+            Assert.AreEqual("Enjoy your cup of coffee and chicory (V60)", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -238,7 +263,7 @@ maker.brew();");
         [Test]
         public void Engine_Class_Fields()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class T{ }
@@ -300,7 +325,7 @@ class T
 
 var t = T();");
 
-            Assert.AreEqual("Class 'T', encountered element of stage 'Init' too late, class is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Type 'T', encountered element of stage 'Init' too late, type is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -348,7 +373,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Class 'T', encountered element of stage 'Var' too late, class is at stage 'Init'. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Type 'T', encountered element of stage 'Var' too late, type is at stage 'Init'. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -495,7 +520,7 @@ a.Speak();");
         [Test]
         public void Engine_Method_Paramless()
         {
-            testEngine.AddLibrary(new AssertLibrary(() => new Vm()));
+            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
 
             testEngine.Run(@"
 class T
@@ -869,6 +894,26 @@ t.Meth(1,2,3,4,5,6,7);
 ");
 
             Assert.AreEqual("48", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void PropertyGet_WhenDeclaredAndCalledViaShortHand_ShouldReturnExpectedValue()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a = 0;
+    Inc(){this.a = this.a + 1;}
+    A{return this.a;}
+}
+
+var t = T();
+t.Inc();
+t.Inc();
+print(t.A());
+");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
         }
     }
 }

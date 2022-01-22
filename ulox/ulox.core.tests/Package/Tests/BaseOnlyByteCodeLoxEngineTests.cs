@@ -6,29 +6,11 @@ namespace ULox.Tests
 {
     public class BaseOnlyByteCodeLoxEngineTests
     {
-        public class SimpleScanner : ScannerBase
-        {
-            public SimpleScanner()
-            {
-                this.SetupSimpleScanner();
-            }
-        }
-
-        public class SimpleCompiler : CompilerBase
-        {
-            public SimpleCompiler()
-            {
-                this.SetupSimpleCompiler();
-            }
-        }
-
-        public class SimpleProgram : ProgramBase<SimpleScanner, SimpleCompiler, DisassemblerBase> { }
-
         public class SimpleEngine
         {
-            public IProgram Program { get; private set; } = new SimpleProgram();
-            private readonly VMBase _vm = new VMBase();
-            public VMBase VM => _vm;
+            public IProgram Program { get; private set; } = new Program();
+            private readonly Vm _vm = new Vm();
+            public Vm VM => _vm;
 
             public string Disassembly => Program.Disassembly;
 
@@ -56,7 +38,7 @@ namespace ULox.Tests
                 VM.SetGlobal(new HashedString("print"), Value.New(Print));
             }
 
-            private NativeCallResult Print(VMBase vm, int argc)
+            private NativeCallResult Print(Vm vm, int argc)
             {
                 var str = vm.GetArg(1).ToString();
                 _logger(str);

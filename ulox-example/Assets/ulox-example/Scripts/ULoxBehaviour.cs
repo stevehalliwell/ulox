@@ -15,15 +15,15 @@ namespace ULox.Demo
         private Value _anonymousOnCollision = Value.Null();
         private Value _gameUpdateFunction = Value.Null();
         private IVm _ourVM;
-        private Engine _engine;
+        private SharedEngine _engine;
 
         private void Start()
         {
-            _engine = FindObjectOfType<SharedEngine>().Engine;
+            _engine = FindObjectOfType<SharedEngine>();
 
             BindToScript();
 
-            var setupFunc = _ourVM.FindFunctionWithArity(SetupGameName, 0);
+            var setupFunc = _engine.FindFunctionWithArity(SetupGameName, 0);
             if (!setupFunc.IsNull)
             {
                 _ourVM.PushCallFrameAndRun(setupFunc, 0);
@@ -47,18 +47,18 @@ namespace ULox.Demo
 
         private void BindToScript()
         {
-            _engine.RunScript(script.text);
-            _ourVM = _engine.Context.VM;
+            _engine.Engine.RunScript(script.text);
+            _ourVM = _engine.Engine.Context.VM;
             if (useInstanceVm)
             {
                 _ourVM = new Vm();
-                _ourVM.CopyFrom(_engine.Context.VM);
+                _ourVM.CopyFrom(_engine.Engine.Context.VM);
             }
 
             _ourVM.SetGlobal(thisGameObjectName, Value.Object(gameObject));
 
-            _anonymousOnCollision = _ourVM.FindFunctionWithArity(OnCollisionName, 0);
-            _gameUpdateFunction = _ourVM.FindFunctionWithArity(UpdateName, 0);
+            _anonymousOnCollision = _engine.FindFunctionWithArity(OnCollisionName, 0);
+            _gameUpdateFunction = _engine.FindFunctionWithArity(UpdateName, 0);
         }
     }
 }

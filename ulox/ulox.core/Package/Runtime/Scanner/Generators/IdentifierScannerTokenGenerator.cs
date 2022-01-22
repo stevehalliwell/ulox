@@ -9,15 +9,16 @@ namespace ULox
 
         private readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
 
-        public IdentifierScannerTokenGenerator(params (string name, TokenType tokenType)[] litteralToTokens)
+        public void Add(string name, TokenType tt) 
+            => keywords[name] = tt;
+
+        public void Add(params (string name, TokenType tt)[] toAdd)
         {
-            foreach (var item in litteralToTokens)
+            foreach (var item in toAdd)
             {
-                keywords[item.name] = item.tokenType;
+                Add(item.name, item.tt);
             }
         }
-
-        public void Add(string name, TokenType tt) => keywords[name] = tt;
 
         public static bool IsAlpha(int c)
             => (c >= 'a' && c <= 'z') ||
@@ -26,9 +27,9 @@ namespace ULox
 
         public static bool IsAlphaNumber(int c) => IsAlpha(c) || NumberScannerTokenGenerator.IsDigit(c);
 
-        public bool DoesMatchChar(ScannerBase scanner) => IsAlpha(scanner.CurrentChar);
+        public bool DoesMatchChar(char ch) => IsAlpha(ch);
 
-        public void Consume(ScannerBase scanner)
+        public void Consume(IScanner scanner)
         {
             workingSpaceStringBuilder.Clear();
 

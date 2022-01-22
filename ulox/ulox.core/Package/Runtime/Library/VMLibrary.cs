@@ -6,9 +6,9 @@ namespace ULox
     {
         public string Name => nameof(VmLibrary);
 
-        public VmLibrary(Func<VMBase> createVM) => CreateVM = createVM;
+        public VmLibrary(Func<Vm> createVM) => CreateVM = createVM;
 
-        public Func<VMBase> CreateVM { get; private set; }
+        public Func<Vm> CreateVM { get; private set; }
 
         public Table GetBindings()
             => this.GenerateBindingTable(

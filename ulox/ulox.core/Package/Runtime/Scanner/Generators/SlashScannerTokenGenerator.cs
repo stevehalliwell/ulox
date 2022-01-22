@@ -6,7 +6,7 @@
         {
         }
 
-        public override void Consume(ScannerBase scanner)
+        public override void Consume(IScanner scanner)
         {
             if (scanner.Match('/'))
             {
@@ -24,7 +24,7 @@
             }
         }
 
-        private void ConsumeBlockComment(ScannerBase scanner)
+        private void ConsumeBlockComment(IScanner scanner)
         {
             while (!scanner.IsAtEnd())
             {

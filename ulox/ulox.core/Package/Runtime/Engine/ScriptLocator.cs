@@ -1,12 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace ULox
 {
     public class ScriptLocator : IScriptLocator
     {
-        private Dictionary<string, string> _builtinScripts;
-        private DirectoryInfo _directory;
+        private readonly Dictionary<string, string> _builtinScripts;
+        private readonly DirectoryInfo _directory;
 
         public ScriptLocator(
             Dictionary<string, string> builtinScripts,
@@ -17,15 +18,12 @@ namespace ULox
         }
 
         public ScriptLocator()
+            : this(new Dictionary<string, string>(), new DirectoryInfo(Environment.CurrentDirectory))
         {
-            _builtinScripts = new Dictionary<string, string>();
-            _directory = new DirectoryInfo(System.Environment.CurrentDirectory);
         }
 
         public void Add(string name, string content)
-        {
-            _builtinScripts[name] = content;
-        }
+            => _builtinScripts[name] = content;
 
         public string Find(string name)
         {

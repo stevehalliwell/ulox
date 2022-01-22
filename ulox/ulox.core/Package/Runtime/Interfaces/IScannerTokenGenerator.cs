@@ -2,8 +2,8 @@
 {
     public interface IScannerTokenGenerator
     {
-        bool DoesMatchChar(ScannerBase scanner);
+        bool DoesMatchChar(char ch);
 
-        void Consume(ScannerBase scanner);
+        void Consume(IScanner scanner);
     }
 }

@@ -1,43 +1,29 @@
-﻿namespace ULox.Tests
+﻿using System;
+
+namespace ULox.Tests
 {
     public class ByteCodeInterpreterTestEngine
     {
-        private readonly System.Action<string> _logger;
-        private readonly Vm _vm;
-        private readonly Engine _engine;
+        private readonly Action<string> _logger;
+        public IEngine MyEngine { get; private set; }
 
         public bool ReThrow { get; set; }
 
-        public Vm Vm => _vm;
-        public IProgram Program => _engine.Context.Program;
-        public Engine Engine => _engine;
-
         public ByteCodeInterpreterTestEngine(System.Action<string> logger)
         {
-            _vm = new Vm();
-            _engine = new Engine(new ScriptLocator(),new Context(new Program(),_vm));
-
             _logger = logger;
-            _engine.Context.AddLibrary(new CoreLibrary(x => 
-            {
-                _logger(x);
-                AppendResult(x);
-            }));
+            MyEngine = Engine.CreateDefault();
+            MyEngine.Context.OnLog += logger;
+            MyEngine.Context.OnLog += AppendResult;
         }
 
-        public void AddLibrary(IULoxLibrary lib)
-        {
-            _engine.Context.AddLibrary(lib);
-        }
-
-        protected void AppendResult(string str) => InterpreterResult += str;
         public string InterpreterResult { get; private set; } = string.Empty;
 
         public void Run(string testString)
         {
             try
             {
-                _engine.RunScript(testString);
+                MyEngine.RunScript(testString);
             }
             catch (LoxException e)
             {
@@ -47,16 +33,13 @@
             }
             finally
             {
-                _logger(_vm.TestRunner.GenerateDump());
+                _logger(MyEngine.Context.VM.TestRunner.GenerateDump());
                 _logger(InterpreterResult);
-                _logger(_engine.Context.Program.Disassembly);
-                _logger(_engine.Context.VM.GenerateGlobalsDump());
+                _logger(MyEngine.Context.Program.Disassembly);
+                _logger(MyEngine.Context.VM.GenerateGlobalsDump());
             }
         }
 
-        internal void Execute(IProgram program)
-        {
-            _engine.Context.VM.Run(program);
-        }
+        private void AppendResult(string str) => InterpreterResult += str;
     }
 }

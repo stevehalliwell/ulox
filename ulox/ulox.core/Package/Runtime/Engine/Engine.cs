@@ -6,14 +6,10 @@ namespace ULox
     public class Engine : IEngine
     {
         public IContext Context { get; private set; }
-        public IScriptLocator ScriptLocator { get; private set; }
         public readonly Queue<string> _buildQueue = new Queue<string>();
 
-        public Engine(
-            IScriptLocator scriptLocator,
-            IContext executionContext)
+        public Engine(IContext executionContext)
         {
-            ScriptLocator = scriptLocator;
             Context = executionContext;
             Context.VM.SetEngine(this);
         }
@@ -35,31 +31,14 @@ namespace ULox
         }
 
         public void LocateAndQueue(string name)
-        {
-            _buildQueue.Enqueue(ScriptLocator.Find(name));
-        }
-    }
+            => _buildQueue.Enqueue(Context.ScriptLocator.Find(name));
 
-    public static partial class EngineExt
-    {
-        public static void DeclareAllLibraries(
-            this Engine engine,
-            Action<string> logger,
-            Func<VMBase> createVM)
+        public static Engine CreateDefault()
         {
-            engine.Context.DeclareLibrary(new CoreLibrary(logger));
-            engine.Context.DeclareLibrary(new StandardClassesLibrary());
-            engine.Context.DeclareLibrary(new AssertLibrary(createVM));
-            engine.Context.DeclareLibrary(new DebugLibrary());
-            engine.Context.DeclareLibrary(new VmLibrary(createVM));
-        }
-
-        public static void BindAllLibraries(this Engine engine)
-        {
-            foreach (var libName in engine.Context.LibraryNames)
-            {
-                engine.Context.BindLibrary(libName);
-            }
+            var context = new Context(new ScriptLocator(), new Program(), new Vm());
+            var engine = new Engine(context);
+            engine.Context.AddLibrary(new CoreLibrary(x => context.Log(x)));
+            return engine;
         }
     }
 }

@@ -6,6 +6,7 @@ namespace ULox.Tests
 {
     public class ScannerTests
     {
+
         private static string[] FloatDeclareTestStrings = new string[]
         {
             @"var PI = 3.14;",
@@ -176,7 +177,15 @@ new TokenType[]
 })
                 .SetName("SimpleString");
         }
-        
+
+        private IScanner scanner;
+
+        [SetUp]
+        public void SetUp()
+        {
+            scanner = new Scanner();
+        }
+
         [Test]
         [TestCaseSource(nameof(FloatDeclareTestStrings))]
         public void Scanner_FloatVarDeclare_TokenTypeMatch(string testString)
@@ -191,11 +200,9 @@ new TokenType[]
                 TokenType.EOF
             };
 
-            var scanner = new Scanner();
+            var tokens = scanner.Scan(testString);
 
-            scanner.Scan(testString);
-
-            var resultingTokenTypes = scanner.Tokens.Select(x => x.TokenType).ToArray();
+            var resultingTokenTypes = tokens.Select(x => x.TokenType).ToArray();
 
             for (int i = 0; i < resultingTokenTypes.Length; i++)
             {
@@ -217,11 +224,9 @@ new TokenType[]
                 TokenType.EOF
             };
 
-            var scanner = new Scanner();
+            var tokens = scanner.Scan(testString);
 
-            scanner.Scan(testString);
-
-            var resultingTokenTypes = scanner.Tokens.Select(x => x.TokenType).ToArray();
+            var resultingTokenTypes = tokens.Select(x => x.TokenType).ToArray();
 
             for (int i = 0; i < resultingTokenTypes.Length; i++)
             {
@@ -244,16 +249,13 @@ fun foo(p)
     var res = bar();
 }";
 
-            var scanner = new Scanner();
-            scanner.Scan(testString);
-
-            var firstRes = scanner.Tokens;
+            var firstRes = scanner.Scan(testString);
 
             scanner.Reset();
 
-            scanner.Scan(testString);
+            var res = scanner.Scan(testString);
 
-            Assert.AreEqual(firstRes, scanner.Tokens);
+            Assert.AreEqual(firstRes, res);
         }
 
         [Test]
@@ -270,11 +272,9 @@ fun foo(p)
                 TokenType.EOF
             };
 
-            var scanner = new Scanner();
+            var tokens = scanner.Scan(testString);
 
-            scanner.Scan(testString);
-
-            var resultingTokenTypes = scanner.Tokens.Select(x => x.TokenType).ToArray();
+            var resultingTokenTypes = tokens.Select(x => x.TokenType).ToArray();
 
             for (int i = 0; i < resultingTokenTypes.Length; i++)
             {
@@ -286,11 +286,9 @@ fun foo(p)
         [TestCaseSource(nameof(Generator))]
         public void Scanner_TokenTypeMatch(string testString, TokenType[] tokenResults)
         {
-            var scanner = new Scanner();
+            var tokens = scanner.Scan(testString);
 
-            scanner.Scan(testString);
-
-            var resultingTokenTypes = scanner.Tokens.Select(x => x.TokenType).ToArray();
+            var resultingTokenTypes = tokens.Select(x => x.TokenType).ToArray();
 
             var resString = string.Join(",", resultingTokenTypes.Select(x => x.ToString()).ToArray());
 

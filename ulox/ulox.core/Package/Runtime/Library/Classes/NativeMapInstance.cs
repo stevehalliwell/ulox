@@ -3,28 +3,27 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class NativeListInstance : InstanceInternal, INativeCollection
+    public class NativeMapInstance : InstanceInternal, INativeCollection
     {
-        public NativeListInstance()
-            : base(NativeListClass.SharedClassInstance)
+        public NativeMapInstance()
+            : base(NativeMapClass.SharedClassInstance)
         {
         }
 
-        private readonly List<Value> _list = new List<Value>();
+        private Dictionary<Value, Value> _map = new Dictionary<Value, Value>();
 
-        public List<Value> List => _list;
+        public Dictionary<Value, Value> Map => _map;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(Value ind, Value val)
         {
-            _list[(int)ind.val.asDouble] = val;
+            _map[ind] = val;
         }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Get(Value ind)
         {
-            return _list[(int)ind.val.asDouble];
+            return _map[ind];
         }
     }
 }

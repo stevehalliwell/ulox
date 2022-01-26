@@ -1,17 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class MapClass : ClassInternal
+    public class NativeMapClass : ClassInternal
     {
-        private static readonly HashedString MapFieldName = new HashedString("map");
+        internal static NativeMapClass SharedClassInstance = new NativeMapClass();
 
-        private class InternalMap : Dictionary<Value, Value>
-        { }
-
-        public MapClass() : base(new HashedString("Map"))
+       public NativeMapClass()
+            : base(new HashedString(nameof(NativeMapClass)))
         {
-            this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
             this.AddMethodsToClass(
                 (nameof(Count), Value.New(Count)),
                 (nameof(Create), Value.New(Create)),
@@ -21,26 +19,23 @@ namespace ULox
                                   );
         }
 
-        private NativeCallResult InitInstance(Vm vm, int argCount)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static Dictionary<Value, Value> GetArg0NativeMapInstance(Vm vm)
         {
             var inst = vm.GetArg(0);
-            inst.val.asInstance.SetField(MapFieldName, Value.Object(new InternalMap()));
-            vm.PushReturn(inst);
-            return NativeCallResult.SuccessfulExpression;
+            var nativeMapinst = inst.val.asInstance as NativeMapInstance;
+            return nativeMapinst.Map;
         }
 
         private NativeCallResult Count(Vm vm, int argCount)
         {
-            var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
-            vm.PushReturn(Value.New(map.Count));
+            vm.PushReturn(Value.New(GetArg0NativeMapInstance(vm).Count));
             return NativeCallResult.SuccessfulExpression;
         }
 
         private NativeCallResult Create(Vm vm, int argCount)
         {
-            var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
+            var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
             var val = vm.GetArg(2);
 
@@ -57,8 +52,7 @@ namespace ULox
 
         private NativeCallResult Read(Vm vm, int argCount)
         {
-            var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
+            var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
 
             if (map.TryGetValue(key, out var val))
@@ -72,8 +66,7 @@ namespace ULox
 
         private NativeCallResult Update(Vm vm, int argCount)
         {
-            var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
+            var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
             var val = vm.GetArg(2);
 
@@ -90,8 +83,7 @@ namespace ULox
 
         private NativeCallResult Delete(Vm vm, int argCount)
         {
-            var inst = vm.GetArg(0);
-            var map = inst.val.asInstance.GetField(MapFieldName).val.asObject as InternalMap;
+            var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
 
             vm.PushReturn(Value.New(map.Remove(key)));

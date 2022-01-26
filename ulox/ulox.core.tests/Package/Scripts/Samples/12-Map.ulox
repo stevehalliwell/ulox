@@ -1,10 +1,6 @@
-// standard classes library provides a map type, 
-//  a key value pair look up type with CRUD
-build bind "StandardClassesLibrary";
-
 var key = "key";
 var expected = "value";
-var m = Map(key);
+var m = [:];
 
 m.Create(key, expected);
 var result = m.Read(key);

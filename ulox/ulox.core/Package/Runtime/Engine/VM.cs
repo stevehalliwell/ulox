@@ -366,8 +366,8 @@ namespace ULox
                 case OpCode.FREEZE:
                     DoFreezeOp();
                     break;
-                case OpCode.LIST:
-                    DoListOp();
+                case OpCode.NATIVE_TYPE:
+                    DoNativeTypeOp(chunk);
                     break;
                 case OpCode.GET_INDEX:
                     DoGetIndexOp();
@@ -388,9 +388,8 @@ namespace ULox
             var newValue = Pop();
             var index = Pop();
             var listValue = Pop();
-            var nativeListInst = listValue.val.asInstance as NativeListInstance;
-            var list = nativeListInst.List;
-            list[(int)index.val.asDouble] = newValue;
+            var nativeCol = listValue.val.asInstance as INativeCollection;
+            nativeCol.Set(index, newValue);
             Push(newValue);
         }
 
@@ -399,15 +398,25 @@ namespace ULox
         {
             var index = Pop();
             var listValue = Pop();
-            var nativeListInst = listValue.val.asInstance as NativeListInstance;
-            var list = nativeListInst.List;
-            Push(list[(int)index.val.asDouble]);
+            var nativeCol = listValue.val.asInstance as INativeCollection;
+            Push(nativeCol.Get(index));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoListOp()
+        private void DoNativeTypeOp(Chunk chunk)
         {
-            Push(Value.New(new NativeListInstance()));
+            var nativeTypeRequested = (NativeType)ReadByte(chunk);
+            switch (nativeTypeRequested)
+            {
+            case NativeType.List:
+                Push(Value.New(new NativeListInstance()));
+                break;
+            case NativeType.Map:
+                Push(Value.New(new NativeMapInstance()));
+                break;
+            default:
+                break;
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

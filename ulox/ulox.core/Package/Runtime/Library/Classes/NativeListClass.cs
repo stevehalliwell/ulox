@@ -5,7 +5,7 @@ namespace ULox
 {
     public class NativeListClass : ClassInternal 
     {
-        public static NativeListClass Instance = new NativeListClass();
+        internal static NativeListClass SharedClassInstance = new NativeListClass();
 
         public NativeListClass()
             : base(new HashedString(nameof(NativeListClass)))

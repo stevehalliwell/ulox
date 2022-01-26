@@ -93,7 +93,7 @@ namespace ULox
                 (TokenType.OR, new ActionParseRule(null, Or, Precedence.Or)),
                 (TokenType.OPEN_PAREN, new ActionParseRule(Grouping, Call, Precedence.Call)),
                 (TokenType.CONTEXT_NAME_FUNC, new ActionParseRule(FName, null, Precedence.None)),
-                (TokenType.OPEN_BRACKET, new ActionParseRule(BracketCreateArray, BracketSubScript, Precedence.Call)),
+                (TokenType.OPEN_BRACKET, new ActionParseRule(BracketCreate, BracketSubScript, Precedence.Call)),
                 (TokenType.DOT, new ActionParseRule(null, Dot, Precedence.Call)),
                 (TokenType.THIS, new ActionParseRule(_classCompiler.This, null, Precedence.None)),
                 (TokenType.SUPER, new ActionParseRule(_classCompiler.Super, null, Precedence.None)),
@@ -573,11 +573,16 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        public static void BracketCreateArray(Compiler compiler, bool canAssign)
+        public static void BracketCreate(Compiler compiler, bool canAssign)
         {
             if(compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
             {
-                compiler.EmitOpCode(OpCode.LIST);
+                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
+            } 
+            else if (compiler.TokenIterator.Match(TokenType.COLON)
+                && compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
+            {
+                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Map);
             }
         }
 

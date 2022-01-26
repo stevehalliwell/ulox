@@ -73,7 +73,7 @@ namespace ULox
             opCodeHandlers[(int)OpCode.REGISTER] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.INJECT] = AppendStringConstant;
 
-            opCodeHandlers[(int)OpCode.LIST] = AppendNothing;
+            opCodeHandlers[(int)OpCode.NATIVE_TYPE] = AppendByte;
             opCodeHandlers[(int)OpCode.GET_INDEX] = AppendNothing;
             opCodeHandlers[(int)OpCode.SET_INDEX] = AppendNothing;
         }

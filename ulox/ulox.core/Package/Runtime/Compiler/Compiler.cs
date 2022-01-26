@@ -48,7 +48,7 @@ namespace ULox
                 _buildCompilette
                                          );
             this.AddDeclarationCompilette(
-                (TokenType.FUNCTION, Compiler.FunctionDeclaration)
+                (TokenType.FUNCTION, FunctionDeclaration)
                                          );
 
             this.AddStatementCompilette(
@@ -58,42 +58,43 @@ namespace ULox
                 new ForStatementCompilette()
                                        );
             this.AddStatementCompilette(
-                (TokenType.IF, Compiler.IfStatement),
-                (TokenType.YIELD, Compiler.YieldStatement),
-                (TokenType.BREAK, Compiler.BreakStatement),
-                (TokenType.CONTINUE, Compiler.ContinueStatement),
-                (TokenType.OPEN_BRACE, Compiler.BlockStatement),
-                (TokenType.THROW, Compiler.ThrowStatement),
-                (TokenType.END_STATEMENT, Compiler.NoOpStatement),
+                (TokenType.IF, IfStatement),
+                (TokenType.YIELD, YieldStatement),
+                (TokenType.BREAK, BreakStatement),
+                (TokenType.CONTINUE, ContinueStatement),
+                (TokenType.OPEN_BRACE, BlockStatement),
+                (TokenType.THROW, ThrowStatement),
+                (TokenType.END_STATEMENT, NoOpStatement),
                 (TokenType.REGISTER, _diCompiletteParts.RegisterStatement),
-                (TokenType.FREEZE, Compiler.FreezeStatement)
+                (TokenType.FREEZE, FreezeStatement)
                                        );
 
             this.SetPrattRules(
-                (TokenType.MINUS, new ActionParseRule(Compiler.Unary, Compiler.Binary, Precedence.Term)),
-                (TokenType.PLUS, new ActionParseRule(null, Compiler.Binary, Precedence.Term)),
-                (TokenType.SLASH, new ActionParseRule(null, Compiler.Binary, Precedence.Factor)),
-                (TokenType.STAR, new ActionParseRule(null, Compiler.Binary, Precedence.Factor)),
-                (TokenType.PERCENT, new ActionParseRule(null, Compiler.Binary, Precedence.Factor)),
-                (TokenType.BANG, new ActionParseRule(Compiler.Unary, null, Precedence.None)),
-                (TokenType.INT, new ActionParseRule(Compiler.Literal, null, Precedence.None)),
-                (TokenType.FLOAT, new ActionParseRule(Compiler.Literal, null, Precedence.None)),
-                (TokenType.TRUE, new ActionParseRule(Compiler.Literal, null, Precedence.None)),
-                (TokenType.FALSE, new ActionParseRule(Compiler.Literal, null, Precedence.None)),
-                (TokenType.NULL, new ActionParseRule(Compiler.Literal, null, Precedence.None)),
-                (TokenType.BANG_EQUAL, new ActionParseRule(null, Compiler.Binary, Precedence.Equality)),
-                (TokenType.EQUALITY, new ActionParseRule(null, Compiler.Binary, Precedence.Equality)),
-                (TokenType.LESS, new ActionParseRule(null, Compiler.Binary, Precedence.Comparison)),
-                (TokenType.LESS_EQUAL, new ActionParseRule(null, Compiler.Binary, Precedence.Comparison)),
-                (TokenType.GREATER, new ActionParseRule(null, Compiler.Binary, Precedence.Comparison)),
-                (TokenType.GREATER_EQUAL, new ActionParseRule(null, Compiler.Binary, Precedence.Comparison)),
-                (TokenType.STRING, new ActionParseRule(Compiler.Literal, null, Precedence.None)),
-                (TokenType.IDENTIFIER, new ActionParseRule(Compiler.Variable, null, Precedence.None)),
-                (TokenType.AND, new ActionParseRule(null, Compiler.And, Precedence.And)),
-                (TokenType.OR, new ActionParseRule(null, Compiler.Or, Precedence.Or)),
-                (TokenType.OPEN_PAREN, new ActionParseRule(Compiler.Grouping, Compiler.Call, Precedence.Call)),
-                (TokenType.CONTEXT_NAME_FUNC, new ActionParseRule(Compiler.FName, null, Precedence.None)),
-                (TokenType.DOT, new ActionParseRule(null, Compiler.Dot, Precedence.Call)),
+                (TokenType.MINUS, new ActionParseRule(Unary, Binary, Precedence.Term)),
+                (TokenType.PLUS, new ActionParseRule(null, Binary, Precedence.Term)),
+                (TokenType.SLASH, new ActionParseRule(null, Binary, Precedence.Factor)),
+                (TokenType.STAR, new ActionParseRule(null, Binary, Precedence.Factor)),
+                (TokenType.PERCENT, new ActionParseRule(null, Binary, Precedence.Factor)),
+                (TokenType.BANG, new ActionParseRule(Unary, null, Precedence.None)),
+                (TokenType.INT, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.FLOAT, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.TRUE, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.FALSE, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.NULL, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.BANG_EQUAL, new ActionParseRule(null, Binary, Precedence.Equality)),
+                (TokenType.EQUALITY, new ActionParseRule(null, Binary, Precedence.Equality)),
+                (TokenType.LESS, new ActionParseRule(null, Binary, Precedence.Comparison)),
+                (TokenType.LESS_EQUAL, new ActionParseRule(null, Binary, Precedence.Comparison)),
+                (TokenType.GREATER, new ActionParseRule(null, Binary, Precedence.Comparison)),
+                (TokenType.GREATER_EQUAL, new ActionParseRule(null, Binary, Precedence.Comparison)),
+                (TokenType.STRING, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.IDENTIFIER, new ActionParseRule(Variable, null, Precedence.None)),
+                (TokenType.AND, new ActionParseRule(null, And, Precedence.And)),
+                (TokenType.OR, new ActionParseRule(null, Or, Precedence.Or)),
+                (TokenType.OPEN_PAREN, new ActionParseRule(Grouping, Call, Precedence.Call)),
+                (TokenType.CONTEXT_NAME_FUNC, new ActionParseRule(FName, null, Precedence.None)),
+                (TokenType.OPEN_BRACKET, new ActionParseRule(BracketCreateArray, BracketSubScript, Precedence.Call)),
+                (TokenType.DOT, new ActionParseRule(null, Dot, Precedence.Call)),
                 (TokenType.THIS, new ActionParseRule(_classCompiler.This, null, Precedence.None)),
                 (TokenType.SUPER, new ActionParseRule(_classCompiler.Super, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
@@ -570,6 +571,29 @@ namespace ULox
             compiler.Expression();
             compiler.EmitOpCode(OpCode.FREEZE);
             compiler.ConsumeEndStatement();
+        }
+
+        public static void BracketCreateArray(Compiler compiler, bool canAssign)
+        {
+            if(compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
+            {
+                compiler.EmitOpCode(OpCode.LIST);
+            }
+        }
+
+        public static void BracketSubScript(Compiler compiler, bool canAssign)
+        {
+            compiler.Expression();
+            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, "Expect close of bracket after open and expression");
+            if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
+            {
+                compiler.Expression();
+                compiler.EmitOpCode(OpCode.SET_INDEX);
+            }
+            else
+            {
+                compiler.EmitOpCode(OpCode.GET_INDEX);
+            }
         }
 
         public static void Dot(Compiler compiler, bool canAssign)

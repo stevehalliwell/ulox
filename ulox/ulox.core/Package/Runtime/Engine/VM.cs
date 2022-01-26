@@ -366,10 +366,47 @@ namespace ULox
                 case OpCode.FREEZE:
                     DoFreezeOp();
                     break;
+                case OpCode.LIST:
+                    DoListOp();
+                    break;
+                case OpCode.GET_INDEX:
+                    DoGetIndexOp();
+                    break;
+                case OpCode.SET_INDEX:
+                    DoSetIndexOp();
+                    break;
+                case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSetIndexOp()
+        {
+            var newValue = Pop();
+            var index = Pop();
+            var listValue = Pop();
+            var nativeListInst = listValue.val.asInstance as NativeListInstance;
+            var list = nativeListInst.List;
+            list[(int)index.val.asDouble] = newValue;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoGetIndexOp()
+        {
+            var index = Pop();
+            var listValue = Pop();
+            var nativeListInst = listValue.val.asInstance as NativeListInstance;
+            var list = nativeListInst.List;
+            Push(list[(int)index.val.asDouble]);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoListOp()
+        {
+            Push(Value.New(new NativeListInstance()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

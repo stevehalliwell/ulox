@@ -68,5 +68,9 @@
         
         REGISTER,
         INJECT,
+
+        LIST,
+        GET_INDEX,
+        SET_INDEX,
     }
 }

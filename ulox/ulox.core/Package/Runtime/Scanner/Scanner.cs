@@ -84,6 +84,8 @@ namespace ULox
                 (')', TokenType.CLOSE_PAREN),
                 ('{', TokenType.OPEN_BRACE),
                 ('}', TokenType.CLOSE_BRACE),
+                ('[', TokenType.OPEN_BRACKET),
+                (']', TokenType.CLOSE_BRACKET),
                 (',', TokenType.COMMA),
                 (';', TokenType.END_STATEMENT),
                 ('.', TokenType.DOT),

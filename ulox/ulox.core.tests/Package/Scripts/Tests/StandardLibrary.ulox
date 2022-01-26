@@ -4,24 +4,24 @@ test StandardClassesLibraryTests
 {
     testcase ListAsArray
     {
-        var list = List();
+        var list = [];
         var len = 5;
         list.Resize(len);
 
         for (var i = 0; i < list.Count(); i+= 1)
         {
-            list.Set(i, i);
+            list[i] = i;
         }
 
         for (var i = 0; i < list.Count(); i+= 1)
         {
-            Assert.AreEqual(i, list.Get(i));
+            Assert.AreEqual(i, list[i]);
         }
     }
     
     testcase ListAdd
     {
-        var list = List();
+        var list = [];
         var len = 5;
 
         for (var i = 0; i < len; i+= 1)
@@ -31,13 +31,13 @@ test StandardClassesLibraryTests
 
         for (var i = 0; i < list.Count(); i+= 1)
         {
-            Assert.AreEqual(i, list.Get(i));
+            Assert.AreEqual(i, list[i]);
         }
     }
     
     testcase ListRemove
     {
-        var list = List();
+        var list = [];
         var len = 5;
         var target = 3;
         var expected = len-1;
@@ -55,7 +55,7 @@ test StandardClassesLibraryTests
     
     testcase ListEmpty
     {
-        var list = List();
+        var list = [];
         var len = 5;
         var expected = true;
         var result = null;
@@ -68,7 +68,7 @@ test StandardClassesLibraryTests
         {
             list.Remove(i);
         }
-        result = list.Empty();
+        result = list.Count() == 0;
 
         Assert.AreEqual(expected, result);
     }

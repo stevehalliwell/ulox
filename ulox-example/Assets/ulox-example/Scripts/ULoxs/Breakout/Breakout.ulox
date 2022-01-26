@@ -1,5 +1,5 @@
-var bricks = List();
-var walls = List();
+var bricks = [];
+var walls = [];
 var gutter;
 var ball;
 var paddle;
@@ -65,7 +65,7 @@ fun Update()
     {
         outputText = outputText + "\n\nGame over.\nPress esc to restart.";
     }
-    else if(bricks.Empty())
+    else if(bricks.Count() == 0)
     {
         outputText = outputText + "\n\nYou have Won!";
     }
@@ -85,7 +85,7 @@ fun GivePointsForBrick(brick, brickStrength)
     points += (brickStrength+1) * 10;
     bricks.Remove(brick);
 
-    if(bricks.Empty())
+    if(bricks.Count() == 0)
     {
         if(ball != null)
         {

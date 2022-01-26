@@ -391,6 +391,7 @@ namespace ULox
             var nativeListInst = listValue.val.asInstance as NativeListInstance;
             var list = nativeListInst.List;
             list[(int)index.val.asDouble] = newValue;
+            Push(newValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -10,7 +10,7 @@ namespace ULox.Tests
             testEngine.MyEngine.Context.AddLibrary(new StandardClassesLibrary());
 
             testEngine.Run(@"
-var list = List();
+var list = [];
 
 for(var i = 0; i < 5; i += 1)
     list.Add(i);
@@ -19,10 +19,13 @@ var c = list.Count();
 print(c);
 
 for(var i = 0; i < c; i += 1)
-    print(list.Get(i));
+    print(list[i]);
 
 for(var i = 0; i < c; i +=1)
-    print(list.Set(i, -i));
+    list[i] = -i;
+
+for(var i = 0; i < c; i += 1)
+    print(list[i]);
 ");
 
             Assert.AreEqual("5012340-1-2-3-4", testEngine.InterpreterResult);
@@ -124,6 +127,19 @@ print(arr.Count());
 ");
 
             Assert.AreEqual("10", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_NativeList_SetNonTrivial_ValueMatches()
+        {
+            testEngine.Run(@"
+var arr = [];
+arr.Resize(10, null);
+arr[5] = 2*4;
+print(arr[5]);
+");
+
+            Assert.AreEqual("8", testEngine.InterpreterResult);
         }
     }
 }

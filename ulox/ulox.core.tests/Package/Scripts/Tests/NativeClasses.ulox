@@ -1,6 +1,4 @@
-build bind "StandardClassesLibrary";
-
-test StandardClassesLibraryTests
+test NativeClassesLibraryTests
 {
     testcase ListAsArray
     {
@@ -78,7 +76,7 @@ test StandardClassesLibraryTests
         var expected = 6;
         var result = 0;
 
-        var obj = Dynamic();
+        var obj = {:};
         obj.a = 1;
         obj.b = 2;
         obj.c = 3;
@@ -99,11 +97,11 @@ test DynamicLibraryTests
         var expectedB = false;
         var resultA = false;
         var resultB = true;
-        var obj = Dynamic();
+        var obj = {:};
         obj.a = 7;
 
-        resultA = Dynamic.HasField(obj, "a");
-        resultB = Dynamic.HasField(obj, "b");
+        resultA = obj.HasField(obj, "a");
+        resultB = obj.HasField(obj, "b");
 
         Assert.AreEqual(expectedA, resultA);
         Assert.AreEqual(expectedB, resultB);
@@ -113,11 +111,11 @@ test DynamicLibraryTests
     {
         var expected = false;
         var result = 0;
-        var obj = Dynamic();
+        var obj = {:};
         obj.a = 7;
 
-        Dynamic.RemoveField(obj, "a");
-        result = Dynamic.HasField(obj, "a");
+        obj.RemoveField(obj, "a");
+        result = obj.HasField(obj, "a");
 
         Assert.AreEqual(expected, result);
     }

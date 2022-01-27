@@ -94,6 +94,7 @@ namespace ULox
                 (TokenType.OPEN_PAREN, new ActionParseRule(Grouping, Call, Precedence.Call)),
                 (TokenType.CONTEXT_NAME_FUNC, new ActionParseRule(FName, null, Precedence.None)),
                 (TokenType.OPEN_BRACKET, new ActionParseRule(BracketCreate, BracketSubScript, Precedence.Call)),
+                (TokenType.OPEN_BRACE, new ActionParseRule(BraceCreateDynamic, null, Precedence.Call)),
                 (TokenType.DOT, new ActionParseRule(null, Dot, Precedence.Call)),
                 (TokenType.THIS, new ActionParseRule(_classCompiler.This, null, Precedence.None)),
                 (TokenType.SUPER, new ActionParseRule(_classCompiler.Super, null, Precedence.None)),
@@ -571,6 +572,15 @@ namespace ULox
             compiler.Expression();
             compiler.EmitOpCode(OpCode.FREEZE);
             compiler.ConsumeEndStatement();
+        }
+
+        private static void BraceCreateDynamic(Compiler compiler, bool arg2)
+        {
+            if (compiler.TokenIterator.Match(TokenType.COLON)
+                  && compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
+            {
+                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Dynamic);
+            }
         }
 
         public static void BracketCreate(Compiler compiler, bool canAssign)

@@ -5,12 +5,12 @@ namespace ULox
 {
     public class NativeListInstance : InstanceInternal, INativeCollection
     {
-        public NativeListInstance()
-            : base(NativeListClass.SharedClassInstance)
+        private readonly List<Value> _list = new List<Value>();
+
+        public NativeListInstance(ClassInternal fromClass)
+            : base(fromClass)
         {
         }
-
-        private readonly List<Value> _list = new List<Value>();
 
         public List<Value> List => _list;
 

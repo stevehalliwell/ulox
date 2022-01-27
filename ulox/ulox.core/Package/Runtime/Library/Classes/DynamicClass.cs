@@ -3,6 +3,7 @@
     public class DynamicClass : ClassInternal
     {
         public static readonly HashedString DynamicClassName = new HashedString("Dynamic");
+        public static readonly Value SharedDynamicClassValue = Value.New(new DynamicClass());
 
         public DynamicClass() : base(DynamicClassName)
         {

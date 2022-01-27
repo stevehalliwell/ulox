@@ -5,12 +5,12 @@ namespace ULox
 {
     public class NativeMapInstance : InstanceInternal, INativeCollection
     {
-        public NativeMapInstance()
-            : base(NativeMapClass.SharedClassInstance)
+        private Dictionary<Value, Value> _map = new Dictionary<Value, Value>();
+
+        public NativeMapInstance(ClassInternal fromClass)
+            : base(fromClass)
         {
         }
-
-        private Dictionary<Value, Value> _map = new Dictionary<Value, Value>();
 
         public Dictionary<Value, Value> Map => _map;
 

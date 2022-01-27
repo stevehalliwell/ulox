@@ -1,6 +1,5 @@
 build bind 
     "CoreLibrary",
-    "StandardClassesLibrary",
     "UnityLibrary",
     "AssertLibrary";
     

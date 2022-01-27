@@ -5,9 +5,9 @@ namespace ULox
 {
     public class NativeMapClass : ClassInternal
     {
-        internal static NativeMapClass SharedClassInstance = new NativeMapClass();
+        public static readonly Value SharedNativeMapClassValue = Value.New(new NativeMapClass());
 
-       public NativeMapClass()
+        public NativeMapClass()
             : base(new HashedString(nameof(NativeMapClass)))
         {
             this.AddMethodsToClass(
@@ -88,6 +88,11 @@ namespace ULox
 
             vm.PushReturn(Value.New(map.Remove(key)));
             return NativeCallResult.SuccessfulExpression;
+        }
+
+        public override InstanceInternal MakeInstance()
+        {
+            return new NativeMapInstance(this);
         }
     }
 }

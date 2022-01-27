@@ -4,5 +4,6 @@
     {
         List,
         Map,
+        Dynamic,
     }
 }

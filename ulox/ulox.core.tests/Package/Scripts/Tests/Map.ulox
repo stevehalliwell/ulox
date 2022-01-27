@@ -1,5 +1,3 @@
-build bind "StandardClassesLibrary";
-
 test MapTests
 {
     testcase ReadNonExistent

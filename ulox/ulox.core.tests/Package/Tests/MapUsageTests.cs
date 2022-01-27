@@ -7,8 +7,6 @@ namespace ULox.Tests
         [Test]
         public void Engine_MapEmtpy_Count0()
         {
-            testEngine.MyEngine.Context.AddLibrary(new StandardClassesLibrary());
-
             testEngine.Run(@"
 var map = [:];
 print(map.Count());
@@ -31,8 +29,6 @@ print(arr);
         [Test]
         public void Engine_MapSet_Count1()
         {
-            testEngine.MyEngine.Context.AddLibrary(new StandardClassesLibrary());
-
             testEngine.Run(@"
 var map = [:];
 map[1] = 2;
@@ -45,8 +41,6 @@ print(map.Count());
         [Test]
         public void Engine_MapSet_MatchesValue()
         {
-            testEngine.MyEngine.Context.AddLibrary(new StandardClassesLibrary());
-
             testEngine.Run(@"
 var map = [:];
 map[1] = 2;
@@ -59,8 +53,6 @@ print(map[1]);
         [Test]
         public void Engine_MapSetAndUpdate_MatchesValue()
         {
-            testEngine.MyEngine.Context.AddLibrary(new StandardClassesLibrary());
-
             testEngine.Run(@"
 var map = [:];
 map[""a""] = 2;

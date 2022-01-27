@@ -5,7 +5,7 @@ namespace ULox
 {
     public class NativeListClass : ClassInternal 
     {
-        internal static NativeListClass SharedClassInstance = new NativeListClass();
+        public static readonly Value SharedNativeListClassValue = Value.New(new NativeListClass());
 
         public NativeListClass()
             : base(new HashedString(nameof(NativeListClass)))
@@ -57,6 +57,11 @@ namespace ULox
             var top = vm.GetArg(1);
             GetArg0NativeListInstance(vm).Remove(top);
             return NativeCallResult.SuccessfulExpression;
+        }
+
+        public override InstanceInternal MakeInstance()
+        {
+            return new NativeListInstance(this);
         }
     }
 }

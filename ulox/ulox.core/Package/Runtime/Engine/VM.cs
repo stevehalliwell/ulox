@@ -409,14 +409,19 @@ namespace ULox
             switch (nativeTypeRequested)
             {
             case NativeType.List:
-                Push(Value.New(new NativeListInstance()));
+                Push(NativeListClass.SharedNativeListClassValue);
                 break;
             case NativeType.Map:
-                Push(Value.New(new NativeMapInstance()));
+                Push(NativeMapClass.SharedNativeMapClassValue);
+                break;
+            case NativeType.Dynamic:
+                Push(DynamicClass.SharedDynamicClassValue);
                 break;
             default:
-                break;
+                throw new VMException($"Unhanlded native type creation '{nativeTypeRequested}'.");
             }
+
+            PushCallFrameFromValue(Peek(0), 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1257,7 +1262,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateInstance(ClassInternal asClass, int argCount)
         {
-            var instInternal = new InstanceInternal(asClass);
+            var instInternal = asClass.MakeInstance();
             var inst = Value.New(instInternal);
             _valueStack[_valueStack.Count - 1 - argCount] = inst;
 

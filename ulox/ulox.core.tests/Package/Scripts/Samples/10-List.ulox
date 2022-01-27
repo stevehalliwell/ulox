@@ -1,5 +1,4 @@
-// standard classes library provides a simple list type
-build bind "StandardClassesLibrary";
+// natively provides a simple list type
 
 var list = [];
 var len = 5;

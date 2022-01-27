@@ -7,8 +7,6 @@ namespace ULox.Tests
         [Test]
         public void Engine_List()
         {
-            testEngine.MyEngine.Context.AddLibrary(new StandardClassesLibrary());
-
             testEngine.Run(@"
 var list = [];
 

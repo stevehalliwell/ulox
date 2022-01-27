@@ -31,10 +31,8 @@
             //read the rest of the constants and write out build opcodes
             do
             {
-                compiler.TokenIterator.Consume(TokenType.STRING, "Expect string after build op type.");
-                var ident = (string)compiler.TokenIterator.PreviousToken.Literal;
-                var identId = compiler.CurrentChunk.AddConstant(Value.New(ident));
-                compiler.EmitOpAndBytes(OpCode.BUILD, (byte)buildOpType, identId);
+                compiler.Expression();
+                compiler.EmitOpAndBytes(OpCode.BUILD, (byte)buildOpType);
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
             compiler.ConsumeEndStatement("build command identifier(s)");

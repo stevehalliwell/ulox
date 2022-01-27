@@ -68,7 +68,7 @@ namespace ULox
 
             opCodeHandlers[(int)OpCode.TEST] = HandleTestOpCode;
 
-            opCodeHandlers[(int)OpCode.BUILD] = AppendByteThenSpaceThenStringConstant;
+            opCodeHandlers[(int)OpCode.BUILD] = AppendByte;
 
             opCodeHandlers[(int)OpCode.REGISTER] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.INJECT] = AppendStringConstant;
@@ -310,13 +310,6 @@ namespace ULox
             i = AppendStringConstant(chunk, i);
             AppendSpace();
             return AppendUShort(chunk, i);
-        }
-
-        private int AppendByteThenSpaceThenStringConstant(Chunk chunk, int i)
-        {
-            i = AppendByte(chunk, i);
-            AppendSpace();
-            return AppendStringConstant(chunk, i);
         }
 
         private int AppendStringConstantThenByte(Chunk chunk, int i)

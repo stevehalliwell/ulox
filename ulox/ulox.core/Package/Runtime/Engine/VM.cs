@@ -551,17 +551,17 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoBuildOp(Chunk chunk)
         {
+            var givenVar = Pop();
+            var str = givenVar.str();
             var buildOpType = (BuildOpType)ReadByte(chunk);
-            var constantIndex = ReadByte(chunk);
-            var str = chunk.ReadConstant(constantIndex).val.asString;
             switch (buildOpType)
             {
             case BuildOpType.Bind:
-                Engine.Context.BindLibrary(str.String);
+                Engine.Context.BindLibrary(str);
                 break;
 
             case BuildOpType.Queue:
-                Engine.LocateAndQueue(str.String);
+                Engine.LocateAndQueue(str);
                 break;
 
             default:

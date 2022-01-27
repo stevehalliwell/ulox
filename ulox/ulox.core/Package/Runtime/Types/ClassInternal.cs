@@ -45,6 +45,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual InstanceInternal MakeInstance()
+        {
+            return new InstanceInternal(this);
+        }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value GetMethod(HashedString name) => methods[name];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

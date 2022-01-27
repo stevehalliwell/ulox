@@ -1,9 +1,7 @@
-// standard classes library provides a dynamic type, 
-//  while all objects can do this, using Dynamic makes your intent clear
+// while all objects can do this, using Dynamic makes your intent clear
 //  and protects you from any future changes around
-build bind "StandardClassesLibrary";
 
-var obj = Dynamic();
+var obj = {:};
 
 obj.a = 1;
 obj.b = 2;

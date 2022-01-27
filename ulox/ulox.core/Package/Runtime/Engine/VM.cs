@@ -366,10 +366,62 @@ namespace ULox
                 case OpCode.FREEZE:
                     DoFreezeOp();
                     break;
+                case OpCode.NATIVE_TYPE:
+                    DoNativeTypeOp(chunk);
+                    break;
+                case OpCode.GET_INDEX:
+                    DoGetIndexOp();
+                    break;
+                case OpCode.SET_INDEX:
+                    DoSetIndexOp();
+                    break;
+                case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSetIndexOp()
+        {
+            var newValue = Pop();
+            var index = Pop();
+            var listValue = Pop();
+            var nativeCol = listValue.val.asInstance as INativeCollection;
+            nativeCol.Set(index, newValue);
+            Push(newValue);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoGetIndexOp()
+        {
+            var index = Pop();
+            var listValue = Pop();
+            var nativeCol = listValue.val.asInstance as INativeCollection;
+            Push(nativeCol.Get(index));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoNativeTypeOp(Chunk chunk)
+        {
+            var nativeTypeRequested = (NativeType)ReadByte(chunk);
+            switch (nativeTypeRequested)
+            {
+            case NativeType.List:
+                Push(NativeListClass.SharedNativeListClassValue);
+                break;
+            case NativeType.Map:
+                Push(NativeMapClass.SharedNativeMapClassValue);
+                break;
+            case NativeType.Dynamic:
+                Push(DynamicClass.SharedDynamicClassValue);
+                break;
+            default:
+                throw new VMException($"Unhanlded native type creation '{nativeTypeRequested}'.");
+            }
+
+            PushCallFrameFromValue(Peek(0), 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1210,7 +1262,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateInstance(ClassInternal asClass, int argCount)
         {
-            var instInternal = new InstanceInternal(asClass);
+            var instInternal = asClass.MakeInstance();
             var inst = Value.New(instInternal);
             _valueStack[_valueStack.Count - 1 - argCount] = inst;
 

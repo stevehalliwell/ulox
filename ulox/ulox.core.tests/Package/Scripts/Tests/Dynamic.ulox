@@ -1,12 +1,10 @@
-build bind "StandardClassesLibrary";
-
 test DynamicTests
 {
     testcase DynamicField
     {
         var expected = 3;
         var result = 0;
-        var o = Dynamic();
+        var o = {:};
         o.val = expected;
 
         result = o.val;
@@ -18,7 +16,7 @@ test DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = Dynamic();
+        var o = {:};
         fun Method(){return expected;}
         o.Meth = Method;
 
@@ -31,7 +29,7 @@ test DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = Dynamic();
+        var o = {:};
         o.val = expected;
         fun Method(self){return self.val;}
         o.Meth = Method;

@@ -840,30 +840,6 @@ print (res);
         }
 
         [Test]
-        public void Engine_List()
-        {
-            testEngine.MyEngine.Context.AddLibrary(new StandardClassesLibrary());
-
-            testEngine.Run(@"
-var list = List();
-
-for(var i = 0; i < 5; i += 1)
-    list.Add(i);
-
-var c = list.Count();
-print(c);
-
-for(var i = 0; i < c; i += 1)
-    print(list.Get(i));
-
-for(var i = 0; i < c; i +=1)
-    print(list.Set(i, -i));
-");
-
-            Assert.AreEqual("5012340-1-2-3-4", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Throw()
         {
             Assert.Throws<PanicException>(() => testEngine.Run(@"throw;"), "Null");

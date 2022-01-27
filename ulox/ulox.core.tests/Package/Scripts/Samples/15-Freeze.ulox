@@ -1,9 +1,7 @@
 // Classes and instances are frozen by default, meaning new fields cannot be added to them
 //  Dynamic instances are not frozen by default but can be frozen via keyword
 
-build bind
-    "StandardClassesLibrary",
-    "FreezeLibrary";
+build bind "FreezeLibrary";
 
 class Foo
 {
@@ -11,7 +9,7 @@ class Foo
 
 var inst = Foo();
 
-var dynInst = Dynamic();
+var dynInst = {:};
 
 print(IsFrozen(Foo));
 print(IsFrozen(inst));

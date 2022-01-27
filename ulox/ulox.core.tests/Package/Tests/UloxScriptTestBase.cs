@@ -37,7 +37,6 @@ public class UloxScriptTestBase
         engine = new ByteCodeInterpreterTestEngine(Console.WriteLine);
         engine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
         engine.MyEngine.Context.DeclareLibrary(new DebugLibrary());
-        engine.MyEngine.Context.DeclareLibrary(new StandardClassesLibrary());
         engine.MyEngine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
         engine.MyEngine.Context.DeclareLibrary(new DiLibrary());
         engine.MyEngine.Context.DeclareLibrary(new FreezeLibrary());

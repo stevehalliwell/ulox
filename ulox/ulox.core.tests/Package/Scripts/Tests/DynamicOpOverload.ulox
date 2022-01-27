@@ -1,8 +1,6 @@
-build bind "StandardClassesLibrary";
-
 fun MakeVec2(x,y)
 {
-    var res = Dynamic();
+    var res = {:};
 
     fun _add(lhs,rhs)
     {

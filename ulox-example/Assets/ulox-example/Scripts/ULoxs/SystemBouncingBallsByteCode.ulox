@@ -18,7 +18,7 @@ var limit = 5;
 var numBallsToSpawn = 100;
 
 var ballName = "BouncyBall";
-var balls = List();
+var balls = [];
 
 fun RandVec2()
 {
@@ -94,6 +94,6 @@ fun Update()
 	var len = balls.Count();
 	for(var i = 0; i < len; i = i + 1)
 	{
-		balls.Get(i).Tick();
+		balls[i].Tick();
 	}
 }

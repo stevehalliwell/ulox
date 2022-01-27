@@ -1,5 +1,5 @@
 var dt;
-var walls = List();
+var walls = [];
 var ball;
 var leftPaddle;
 var rightPaddle;

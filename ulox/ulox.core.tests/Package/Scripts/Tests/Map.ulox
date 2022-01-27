@@ -1,12 +1,10 @@
-build bind "StandardClassesLibrary";
-
 test MapTests
 {
     testcase ReadNonExistent
     {
         var key = "key";
         var result = 0;
-        var m = Map(key);
+        var m = [:];
 
         result = m.Read(key);
 
@@ -18,7 +16,7 @@ test MapTests
         var key = "key";
         var initial = "value";
         var result = 0;
-        var m = Map(key);
+        var m = [:];
 
         result = m.Update(key, initial);
 
@@ -30,7 +28,7 @@ test MapTests
         var key = "key";
         var expected = "value";
         var result = 0;
-        var m = Map(key);
+        var m = [:];
 
         m.Create(key, expected);
         result = m.Read(key);
@@ -43,7 +41,7 @@ test MapTests
         var key = "key";
         var initial = "value";
         var result = 0;
-        var m = Map(key);
+        var m = [:];
 
         m.Create(key, initial);
         result = m.Create(key, initial);
@@ -57,7 +55,7 @@ test MapTests
         var initial = "value";
         var expected = "changed";
         var result = 0;
-        var m = Map(key);
+        var m = [:];
         m.Create(key, initial);
 
         m.Update(key, expected);
@@ -71,7 +69,7 @@ test MapTests
         var key = "key";
         var initial = "value";
         var result = 0;
-        var m = Map(key);
+        var m = [:];
         m.Create(key, initial);
 
         m.Delete(key);
@@ -86,7 +84,7 @@ test MapTests
         var initial = "value";
         var result = 0;
         var expected = 1;
-        var m = Map(key);
+        var m = [:];
 
         m.Create(key, initial);
         result = m.Count();
@@ -100,7 +98,7 @@ test MapTests
         var initial = "value";
         var expected = "value5";
         var result = 0;
-        var m = Map(key);
+        var m = [:];
         
         for(var i = 0; i < 10; i+= 1)
         {
@@ -117,7 +115,7 @@ test MapTests
         var initial = "value";
         var expected = null;
         var result = 0;
-        var m = Map(key);
+        var m = [:];
         
         for(var i = 0; i < 10; i+= 1)
         {

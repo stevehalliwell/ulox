@@ -77,7 +77,6 @@ namespace ULox.Demo
             Func<Vm> createVM)
         {
             Engine.Context.DeclareLibrary(new CoreLibrary(logger));
-            Engine.Context.DeclareLibrary(new StandardClassesLibrary());
             Engine.Context.DeclareLibrary(new AssertLibrary(createVM));
             Engine.Context.DeclareLibrary(new DebugLibrary());
             Engine.Context.DeclareLibrary(new VmLibrary(createVM));

@@ -7,7 +7,7 @@ class GridGenerator
     
     FromRowCol(rows, cols)
     {
-        var retval = List();
+        var retval = [];
         var corner = this.stepSize * Vec2.Create(-cols, -rows);
         corner = Vec2.Scale(corner, 0.5) + Vec2.Scale(this.stepSize, 0.5);
 

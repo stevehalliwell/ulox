@@ -8,7 +8,7 @@ namespace ULox
         public static readonly Value SharedNativeMapClassValue = Value.New(new NativeMapClass());
 
         public NativeMapClass()
-            : base(new HashedString(nameof(NativeMapClass)))
+            : base(new HashedString("NativeMap"))
         {
             this.AddMethodsToClass(
                 (nameof(Count), Value.New(Count)),

@@ -8,7 +8,7 @@ namespace ULox
         public static readonly Value SharedNativeListClassValue = Value.New(new NativeListClass());
 
         public NativeListClass()
-            : base(new HashedString(nameof(NativeListClass)))
+            : base(new HashedString("NativeList"))
         {
             this.AddMethodsToClass(
                 (nameof(Count), Value.New(Count)),

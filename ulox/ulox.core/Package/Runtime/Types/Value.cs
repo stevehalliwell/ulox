@@ -56,6 +56,8 @@ namespace ULox
                 return $"<boundMeth {val.asBoundMethod.Method.chunk.Name}>";
 
             case ValueType.Object:
+                if (val.asObject is DummyClass dummyClassVal)
+                    return dummyClassVal.ToString();
                 return $"<object {val.asObject}>";
 
             default:
@@ -184,6 +186,9 @@ namespace ULox
                 case ValueType.Instance:
                     return lhs.val.asInstance == rhs.val.asInstance;
 
+                case ValueType.Class:
+                    return lhs.val.asClass == rhs.val.asClass;
+
                 default:
                     throw new VMException($"Cannot perform compare on type '{lhs.type}'.");
                 }
@@ -215,6 +220,62 @@ namespace ULox
             default:
                 return EqualityComparer<object>.Default.GetHashCode(val);
             }
+        }
+
+        public Value GetLoxClassType()
+        {
+            switch (type)
+            {
+            case ValueType.Null:
+                return Value.Null();
+            case ValueType.Double:
+                return Value.Object(new CustomDummyClass("Number"));
+            case ValueType.Bool:
+                return Value.Object(new CustomDummyClass("Bool"));
+            case ValueType.String:
+                return Value.Object(new CustomDummyClass("String"));
+            case ValueType.Chunk:
+                break;
+            case ValueType.NativeFunction:
+                break;
+            case ValueType.Closure:
+                break;
+            case ValueType.CombinedClosures:
+                break;
+            case ValueType.Upvalue:
+                break;
+            case ValueType.Class:
+                return Value.New(val.asClass.FromClass);
+                break;
+            case ValueType.Instance:
+                return Value.New(val.asInstance.FromClass);
+                break;
+            case ValueType.BoundMethod:
+                break;
+            case ValueType.Object:
+                return Value.Object(new CustomDummyClass("UserObject"));
+                break;
+            default:
+                break;
+            }
+            return Value.Null();
+        }
+
+        public abstract class DummyClass
+        {
+            public abstract override string ToString();
+        }
+
+        public class CustomDummyClass : DummyClass
+        {
+            private string _typename;
+
+            public CustomDummyClass(string typename)
+            {
+                _typename = typename;
+            }
+
+            public override string ToString() => $"<class {_typename}>";
         }
     }
 }

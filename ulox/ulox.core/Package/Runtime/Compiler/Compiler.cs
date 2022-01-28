@@ -101,7 +101,8 @@ namespace ULox
                 (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(_testcaseCompilette.TCName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TSName, null, Precedence.None)),
-                (TokenType.INJECT, new ActionParseRule(_diCompiletteParts.Inject, null, Precedence.Term))
+                (TokenType.INJECT, new ActionParseRule(_diCompiletteParts.Inject, null, Precedence.Term)),
+                (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term))
                               );
         }
 
@@ -581,6 +582,14 @@ namespace ULox
             {
                 compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Dynamic);
             }
+        }
+        
+        public static void TypeOf(Compiler compiler, bool canAssign)
+        {
+            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after typeof.");
+            compiler.Expression();
+            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after typeof.");
+            compiler.EmitOpCode(OpCode.TYPEOF);
         }
 
         public static void BracketCreate(Compiler compiler, bool canAssign)

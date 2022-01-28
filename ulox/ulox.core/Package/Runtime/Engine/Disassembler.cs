@@ -76,6 +76,8 @@ namespace ULox
             opCodeHandlers[(int)OpCode.NATIVE_TYPE] = AppendByte;
             opCodeHandlers[(int)OpCode.GET_INDEX] = AppendNothing;
             opCodeHandlers[(int)OpCode.SET_INDEX] = AppendNothing;
+
+            opCodeHandlers[(int)OpCode.TYPEOF] = AppendNothing;
         }
 
         public string GetString() => stringBuilder.ToString();

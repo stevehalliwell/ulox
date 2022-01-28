@@ -88,5 +88,7 @@
         
         REGISTER,
         INJECT,
+
+        TYPEOF,
     }
 }

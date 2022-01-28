@@ -72,5 +72,7 @@
         NATIVE_TYPE,
         GET_INDEX,
         SET_INDEX,
+
+        TYPEOF,
     }
 }

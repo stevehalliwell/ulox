@@ -38,7 +38,7 @@ namespace ULox
         protected void DoEndType(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitOpCode(OpCode.FREEZE);
 
             if (_hasSuper)
             {

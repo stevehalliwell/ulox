@@ -375,11 +375,21 @@ namespace ULox
                 case OpCode.SET_INDEX:
                     DoSetIndexOp();
                     break;
+                case OpCode.TYPEOF:
+                    DoTypeOfOp();
+                    break;
                 case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoTypeOfOp()
+        {
+            var target = Pop();
+            Push(target.GetLoxClassType());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1003,9 +1013,9 @@ namespace ULox
         {
             var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex);
-            var klassValue = Value.New(new ClassInternal(name.val.asString));
+            var klass = new ClassInternal(name.val.asString);
+            var klassValue = Value.New(klass);
             Push(klassValue);
-            var klass = klassValue.val.asClass;
             var initChain = ReadUShort(chunk);
             if (initChain != 0)
             {

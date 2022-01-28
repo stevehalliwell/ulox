@@ -37,7 +37,7 @@ var arr = [];
 print(arr);
 ");
 
-            Assert.AreEqual("<inst NativeListClass>", testEngine.InterpreterResult);
+            Assert.AreEqual("<inst NativeList>", testEngine.InterpreterResult);
         }
 
         [Test]

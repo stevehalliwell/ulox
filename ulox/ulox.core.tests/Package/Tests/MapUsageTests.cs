@@ -23,7 +23,7 @@ var arr = [:];
 print(arr);
 ");
 
-            Assert.AreEqual("<inst NativeMapClass>", testEngine.InterpreterResult);
+            Assert.AreEqual("<inst NativeMap>", testEngine.InterpreterResult);
         }
 
         [Test]

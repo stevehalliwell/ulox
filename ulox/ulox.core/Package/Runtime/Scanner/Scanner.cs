@@ -76,7 +76,9 @@ namespace ULox
                 ("freeze", TokenType.FREEZE),
 
                 ("inject", TokenType.INJECT),
-                ("register", TokenType.REGISTER)
+                ("register", TokenType.REGISTER),
+
+                ("typeof", TokenType.TYPEOF)
                                               );
 
             this.AddSingleCharTokenGenerators(

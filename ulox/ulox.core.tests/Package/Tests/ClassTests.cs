@@ -32,6 +32,37 @@ print(t.b);");
         }
 
         [Test]
+        public void Engine_Class_AttemptToModifyInstance_ShouldThrow()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a;
+    var b;
+}
+
+var t = T();
+t.c = 10;");
+
+            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_AttemptToModifyClass_ShouldThrow()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a;
+    var b;
+}
+
+T.c = 10;");
+
+            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void AutoInit_WhenSingleMatchingVarAndInitArgName_ShouldAssignThrough()
         {
             testEngine.Run(@"
@@ -272,7 +303,7 @@ T.a = 2;
 
 print(T.a);");
 
-            Assert.AreEqual("2", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
         }
 
         [Test]

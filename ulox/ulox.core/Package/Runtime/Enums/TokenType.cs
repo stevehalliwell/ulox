@@ -90,5 +90,8 @@
         INJECT,
 
         TYPEOF,
+
+        LOCAL,
+        PURE,
     }
 }

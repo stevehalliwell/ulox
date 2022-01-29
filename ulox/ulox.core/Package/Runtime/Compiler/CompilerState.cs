@@ -22,7 +22,7 @@ namespace ULox
             public int loopContinuePoint = -1;
             public List<int> loopExitPatchLocations = new List<int>();
         }
-        
+
         internal class Upvalue
         {
             public byte index;
@@ -93,9 +93,7 @@ namespace ULox
             }
 
             if (upvalueCount == byte.MaxValue)
-            {
                 throw new CompilerException("Too many closure variables in function.");
-            }
 
             upvalues[upvalueCount] = new Upvalue(index, isLocal);
             return chunk.UpvalueCount++;

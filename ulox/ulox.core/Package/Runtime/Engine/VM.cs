@@ -43,7 +43,7 @@ namespace ULox
 
         public Vm()
         {
-            var nativeChunk = new Chunk("NativeCallChunkWrapper");
+            var nativeChunk = new Chunk("NativeCallChunkWrapper", FunctionType.Function);
             nativeChunk.WriteByte((byte)OpCode.NATIVE_CALL, 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }
@@ -880,11 +880,27 @@ namespace ULox
                 throw new VMException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
                     $", got '{argCount}' but expected '{closureInternal.chunk.Arity}'");
 
+            if(closureInternal.chunk.FunctionType == FunctionType.PureFunction)
+            {
+                for (int i = 0; i < argCount; i++)
+                    ValidatePureArg(i, closureInternal);
+            }
+
             PushNewCallframe(new CallFrame()
             {
                 StackStart = (byte)(_valueStack.Count - argCount - 1),
                 Closure = closureInternal
             });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ValidatePureArg(int peekVal, ClosureInternal closureInternal)
+        {
+            var value = Peek(peekVal);
+            if (!value.IsPure)
+            {
+                throw new VMException($"Pure call '{closureInternal.chunk.Name}' with non-pure confirming argument '{value}'.");
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1239,9 +1255,7 @@ namespace ULox
         private void BindMethod(ClassInternal fromClass, HashedString methodName)
         {
             if (!fromClass.TryGetMethod(methodName, out var method))
-            {
                 throw new VMException($"Undefined property {methodName}");
-            }
 
             var receiver = Peek();
             var meth = method.val.asClosure;
@@ -1255,9 +1269,7 @@ namespace ULox
         private void InvokeFromClass(ClassInternal fromClass, HashedString methodName, int argCount)
         {
             if (!fromClass.TryGetMethod(methodName, out var method))
-            {
                 throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
-            }
 
             PushCallFrameFromValue(method, argCount);
         }

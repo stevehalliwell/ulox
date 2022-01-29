@@ -4,7 +4,7 @@ test DebugLibraryTests
 {
     testcase GenerateStackDump
     {
-        var local = 2;
+        var loc = 2;
         var result = 0;
         var contains1 = "2";
         var contains2 = "0";

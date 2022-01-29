@@ -7,7 +7,7 @@ namespace ULox.Tests
     {
         public static Chunk GenerateManualChunk()
         {
-            var chunk = new Chunk("main");
+            var chunk = new Chunk("main", FunctionType.Script);
 
             chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(1), 1);

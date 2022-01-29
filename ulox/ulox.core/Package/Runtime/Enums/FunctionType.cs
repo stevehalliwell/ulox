@@ -5,7 +5,9 @@
         Script,
         Function,
         LocalFunction,
+        PureFunction,
         Method,
+        LocalMethod,
         Init,
     }
 }

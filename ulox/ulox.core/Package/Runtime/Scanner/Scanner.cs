@@ -80,7 +80,8 @@ namespace ULox
 
                 ("typeof", TokenType.TYPEOF),
 
-                ("local", TokenType.LOCAL)
+                ("local", TokenType.LOCAL),
+                ("pure", TokenType.PURE)
                                               );
 
             this.AddSingleCharTokenGenerators(

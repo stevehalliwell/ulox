@@ -92,5 +92,6 @@
         TYPEOF,
 
         LOCAL,
+        PURE,
     }
 }

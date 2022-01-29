@@ -93,9 +93,7 @@ namespace ULox
             }
 
             if (upvalueCount == byte.MaxValue)
-            {
                 throw new CompilerException("Too many closure variables in function.");
-            }
 
             upvalues[upvalueCount] = new Upvalue(index, isLocal);
             return chunk.UpvalueCount++;

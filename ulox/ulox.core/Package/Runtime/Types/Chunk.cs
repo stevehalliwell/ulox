@@ -18,12 +18,15 @@ namespace ULox
         public List<byte> ArgumentConstantIds { get; private set; } = new List<byte>();
         public IReadOnlyList<Value> Constants => constants.AsReadOnly();
         public string Name { get; set; }
+        public FunctionType FunctionType { get; internal set; }
+
         public int Arity => ArgumentConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 
-        public Chunk(string name)
+        public Chunk(string name, FunctionType functionType)
         {
             Name = name;
+            FunctionType = functionType;
         }
 
         public int GetLineForInstruction(int instructionNumber)

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Linq;
 
 namespace ULox
 {
@@ -235,26 +236,18 @@ namespace ULox
             case ValueType.String:
                 return Value.Object(new CustomDummyClass("String"));
             case ValueType.Chunk:
-                break;
             case ValueType.NativeFunction:
-                break;
             case ValueType.Closure:
-                break;
             case ValueType.CombinedClosures:
-                break;
+            case ValueType.BoundMethod:
             case ValueType.Upvalue:
                 break;
             case ValueType.Class:
                 return Value.New(val.asClass.FromClass);
-                break;
             case ValueType.Instance:
                 return Value.New(val.asInstance.FromClass);
-                break;
-            case ValueType.BoundMethod:
-                break;
             case ValueType.Object:
                 return Value.Object(new CustomDummyClass("UserObject"));
-                break;
             default:
                 break;
             }
@@ -276,6 +269,37 @@ namespace ULox
             }
 
             public override string ToString() => $"<class {_typename}>";
+        }
+
+        public bool IsPure 
+        { 
+            get
+            {
+                switch (type)
+                {
+                case ValueType.Null:
+                case ValueType.Double:
+                case ValueType.Bool:
+                case ValueType.String:
+                case ValueType.Class:
+                case ValueType.Instance:
+                    return true;
+                case ValueType.Chunk:
+                    return val.asChunk.FunctionType == FunctionType.PureFunction;
+                case ValueType.Closure:
+                    return val.asClosure.chunk.FunctionType == FunctionType.PureFunction;
+                case ValueType.BoundMethod:
+                    return val.asBoundMethod.Method.chunk.FunctionType == FunctionType.PureFunction;
+                case ValueType.CombinedClosures:
+                    return val.asCombined.Select(x => x.chunk.FunctionType == FunctionType.PureFunction).Any();
+                case ValueType.NativeFunction:  //todo nativefuncs could declare themselves to be pure
+                case ValueType.Upvalue:
+                case ValueType.Object:
+                    return false;
+                default:
+                    return false;
+                }
+            } 
         }
     }
 }

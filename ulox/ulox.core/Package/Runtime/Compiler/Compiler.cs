@@ -49,7 +49,8 @@ namespace ULox
                                          );
             this.AddDeclarationCompilette(
                 (TokenType.FUNCTION, FunctionDeclaration),
-                (TokenType.LOCAL, LocalFunctionDeclaration)
+                (TokenType.LOCAL, LocalFunctionDeclaration),
+                (TokenType.PURE, PureFunctionDeclaration)
                                          );
 
             this.AddStatementCompilette(
@@ -267,7 +268,7 @@ namespace ULox
         {
             var newCompState = new CompilerState(compilerStates.Peek(), functionType)
             {
-                chunk = new Chunk(name),
+                chunk = new Chunk(name, functionType),
             };
             compilerStates.Push(newCompState);
 
@@ -278,12 +279,17 @@ namespace ULox
         {
             var functionType = CurrentCompilerState.functionType;
 
-            //calls have local 0 as a reference to the closure but are not able to ref it themselves.
-            if (functionType == FunctionType.Script || functionType == FunctionType.Function)
-                CurrentCompilerState.AddLocal("", 0);
-
-            if (functionType == FunctionType.Method || functionType == FunctionType.Init)
+            if (functionType == FunctionType.Method
+                || functionType == FunctionType.LocalMethod
+                || functionType == FunctionType.Init)
+            {
                 CurrentCompilerState.AddLocal("this", 0);
+            }
+            else
+            {
+                //calls have local 0 as a reference to the closure but are not able to ref it themselves.
+                CurrentCompilerState.AddLocal("", 0);
+            }
         }
 
         public void NamedVariable(string name, bool canAssign)
@@ -301,14 +307,28 @@ namespace ULox
             if (TokenIterator.Match(TokenType.ASSIGN))
             {
                 Expression();
+                ConfirmWrite(name, argId);
+
                 EmitOpAndBytes(setOp, argId);
                 return;
             }
 
             if (HandleCompoundAssignToken(getOp, setOp, argId))
+            {
+                ConfirmWrite(name, argId);
                 return;
+            }
 
             EmitOpAndBytes(getOp, argId);
+        }
+
+        private void ConfirmWrite(string name, byte argId)
+        {
+            if (CurrentCompilerState.functionType == FunctionType.PureFunction)
+            {
+                if (argId <= CurrentCompilerState.chunk.Arity)
+                    throw new CompilerException($"Attempted to write to function param '{name}', this is not allowed in a 'pure' function.");
+            }
         }
 
         private void ConfirmAccess(OpCode getOp, OpCode setOp, string name)
@@ -396,7 +416,10 @@ namespace ULox
 
         private bool IsFunctionLocal()
         {
-            return CurrentCompilerState.functionType == FunctionType.LocalFunction;
+            var ft = CurrentCompilerState.functionType;
+            return ft == FunctionType.LocalFunction
+                || ft == FunctionType.LocalMethod
+                || ft == FunctionType.PureFunction;
         }
 
         protected Chunk EndCompile()
@@ -741,6 +764,12 @@ namespace ULox
         {
             compiler.TokenIterator.Consume(TokenType.FUNCTION, "Expect 'fun' after 'local'.");
             InnerFunctionDeclaration(compiler, FunctionType.LocalFunction);
+        }
+
+        public static void PureFunctionDeclaration(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.FUNCTION, "Expect 'fun' after 'pure'.");
+            InnerFunctionDeclaration(compiler, FunctionType.PureFunction);
         }
 
         public static void FunctionDeclaration(Compiler compiler)

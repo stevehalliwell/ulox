@@ -4,6 +4,7 @@
     {
         Script,
         Function,
+        LocalFunction,
         Method,
         Init,
     }

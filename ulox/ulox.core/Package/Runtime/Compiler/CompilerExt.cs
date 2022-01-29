@@ -2,6 +2,14 @@
 {
     public static class CompilerExt
     {
+        public static void AddDeclarationCompilette(this Compiler comp, params (TokenType match, System.Action<Compiler> action)[] processActions)
+        {
+            foreach (var processAction in processActions)
+            {
+                comp.AddDeclarationCompilette(processAction);
+            }
+        }
+
         public static void AddDeclarationCompilette(this Compiler comp, (TokenType match, System.Action<Compiler> action) processAction)
         {
             comp.AddDeclarationCompilette(new CompiletteAction(processAction.match, processAction.action));

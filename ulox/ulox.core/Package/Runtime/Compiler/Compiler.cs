@@ -48,7 +48,8 @@ namespace ULox
                 _buildCompilette
                                          );
             this.AddDeclarationCompilette(
-                (TokenType.FUNCTION, FunctionDeclaration)
+                (TokenType.FUNCTION, FunctionDeclaration),
+                (TokenType.LOCAL, LocalFunctionDeclaration)
                                          );
 
             this.AddStatementCompilette(
@@ -289,6 +290,8 @@ namespace ULox
         {
             (var getOp, var setOp, var argId) = ResolveNameLookupOpCode(name);
 
+            ConfirmAccess(getOp, setOp, name);
+
             if (!canAssign)
             {
                 EmitOpAndBytes(getOp, argId);
@@ -306,6 +309,16 @@ namespace ULox
                 return;
 
             EmitOpAndBytes(getOp, argId);
+        }
+
+        private void ConfirmAccess(OpCode getOp, OpCode setOp, string name)
+        {
+            if (IsFunctionLocal())
+            {
+                if (getOp != OpCode.GET_LOCAL
+                    || setOp != OpCode.SET_LOCAL)
+                    throw new CompilerException($"Identifiier '{name}' could not be found locally in local function '{CurrentCompilerState.chunk.Name}'.");
+            }
         }
 
         private bool HandleCompoundAssignToken(OpCode getOp, OpCode setOp, byte argId)
@@ -379,6 +392,11 @@ namespace ULox
             }
 
             return (getOp, setOp, (byte)argId);
+        }
+
+        private bool IsFunctionLocal()
+        {
+            return CurrentCompilerState.functionType == FunctionType.LocalFunction;
         }
 
         protected Chunk EndCompile()
@@ -583,7 +601,7 @@ namespace ULox
                 compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Dynamic);
             }
         }
-        
+
         public static void TypeOf(Compiler compiler, bool canAssign)
         {
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after typeof.");
@@ -594,10 +612,10 @@ namespace ULox
 
         public static void BracketCreate(Compiler compiler, bool canAssign)
         {
-            if(compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
+            if (compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
             {
                 compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
-            } 
+            }
             else if (compiler.TokenIterator.Match(TokenType.COLON)
                 && compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
             {
@@ -719,12 +737,23 @@ namespace ULox
         public static void BlockStatement(Compiler compiler)
             => compiler.BlockStatement();
 
+        public static void LocalFunctionDeclaration(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.FUNCTION, "Expect 'fun' after 'local'.");
+            InnerFunctionDeclaration(compiler, FunctionType.LocalFunction);
+        }
+
         public static void FunctionDeclaration(Compiler compiler)
+        {
+            InnerFunctionDeclaration(compiler, FunctionType.Function);
+        }
+
+        private static void InnerFunctionDeclaration(Compiler compiler, FunctionType funcType)
         {
             var global = compiler.ParseVariable("Expect function name.");
             compiler.CurrentCompilerState.MarkInitialised();
 
-            compiler.Function(compiler.CurrentChunk.ReadConstant(global).val.asString.String, FunctionType.Function);
+            compiler.Function(compiler.TokenIterator.PreviousToken.Lexeme, funcType);
             compiler.DefineVariable(global);
         }
 

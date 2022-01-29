@@ -78,7 +78,9 @@ namespace ULox
                 ("inject", TokenType.INJECT),
                 ("register", TokenType.REGISTER),
 
-                ("typeof", TokenType.TYPEOF)
+                ("typeof", TokenType.TYPEOF),
+
+                ("local", TokenType.LOCAL)
                                               );
 
             this.AddSingleCharTokenGenerators(

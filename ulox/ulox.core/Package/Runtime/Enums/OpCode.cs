@@ -74,5 +74,7 @@
         SET_INDEX,
 
         TYPEOF,
+
+        LOCAL,
     }
 }

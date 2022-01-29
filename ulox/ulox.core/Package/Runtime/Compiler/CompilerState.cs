@@ -22,7 +22,7 @@ namespace ULox
             public int loopContinuePoint = -1;
             public List<int> loopExitPatchLocations = new List<int>();
         }
-        
+
         internal class Upvalue
         {
             public byte index;

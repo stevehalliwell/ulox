@@ -1,0 +1,65 @@
+fun MakeTestArray()
+{
+    var arr = [];
+
+    for(var i = 0;i < 5; i += 1)
+    {
+        arr.Add(i);
+    }
+
+    return arr;
+}
+
+fun accum(cur, running)
+{
+    return running + cur;
+}
+
+test FunctionalCollectionNativeTests
+{
+    testcase FoldSum
+    {
+        var arr = MakeTestArray();
+
+        var result = arr.Fold(accum, 0);
+
+        Assert.AreEqual(10, result);
+    }
+
+    testcase ReduceSum
+    {
+        var arr = MakeTestArray();
+
+        var result = arr.Reduce(accum);
+
+        Assert.AreEqual(10, result);
+    }
+
+    testcase MapAddOne
+    {
+        var arr = MakeTestArray();
+        fun addone(val)
+        {
+            return val + 1;
+        }
+
+        var result = arr.Map(addone);
+        
+        var reducedResult = result.Reduce(accum);
+        Assert.AreEqual(15, reducedResult);
+    }
+
+    testcase FilterIsEven
+    {
+        var arr = MakeTestArray();
+        fun isEven(val)
+        {
+            return ((val % 2) != 0);
+        }
+
+        var result = arr.Filter(isEven);
+        
+        var foldResult = result.Reduce(accum);
+        Assert.AreEqual(4, foldResult);
+    }
+}

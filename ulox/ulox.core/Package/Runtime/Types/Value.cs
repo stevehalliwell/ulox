@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using System.Collections;
+using System;
 
 namespace ULox
 {
@@ -300,6 +302,38 @@ namespace ULox
                     return false;
                 }
             } 
+        }
+    }
+
+    public class ValueComparer : IComparer<Value>
+    {
+        public readonly static ValueComparer Instance = new ValueComparer();
+
+        public int Compare(Value x, Value y)
+        {
+            switch (x.type)
+            {
+            case ValueType.Null:
+                return 0;
+            case ValueType.Double:
+                return x.val.asDouble.CompareTo(y.val.asDouble);
+            case ValueType.Bool:
+                return x.val.asBool.CompareTo(y.val.asBool);
+            case ValueType.String:
+                return x.val.asString.CompareTo(y.val.asString);
+            case ValueType.Chunk:
+            case ValueType.NativeFunction:
+            case ValueType.Closure:
+            case ValueType.CombinedClosures:
+            case ValueType.Upvalue:
+            case ValueType.Class:
+            case ValueType.Instance:
+            case ValueType.BoundMethod:
+            case ValueType.Object:
+                return Comparer.Default.Compare(x.val.asObject, y.val.asObject);
+            default:
+                throw new Exception();
+            }
         }
     }
 }

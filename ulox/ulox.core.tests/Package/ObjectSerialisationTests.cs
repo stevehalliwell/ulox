@@ -1,9 +1,10 @@
 ﻿using NUnit.Framework;
+using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
-using UnityEngine;
 
 namespace ULox.Tests
 {
@@ -117,6 +118,97 @@ namespace ULox.Tests
         }
     }
 
+    public class XmlDocValueHeirarchyCreator
+    {
+        private XmlReader _reader;
+        private XmlNodeType _prevNodeType;
+        private string _prevNodeName;
+
+        public XmlDocValueHeirarchyCreator(XmlReader reader)
+        {
+            _reader = reader;
+        }
+
+
+        //todo prime root and curval with root node, then call a processnode function,
+        //  takes cur, if encounters prevNode and node element, calls processnode with new cur as arg
+
+        public Value Process()
+        {
+            _reader.Read();
+            if (_reader.Name != "root")
+                return Value.Null();
+
+            _reader.Read();
+            Console.WriteLine($"{_reader.NodeType}:{_reader.Name}");
+            return ProcessNode();
+        }
+        
+        private Value ProcessNode()
+        {
+            var curVal = Value.New(new InstanceInternal());
+
+            _prevNodeType = _reader.NodeType;
+            _prevNodeName = _reader.Name;
+            while (_reader.Read())
+            {
+                Console.WriteLine($"{_reader.NodeType}:{_reader.Name}");
+                switch (_reader.NodeType)
+                {
+                case XmlNodeType.None:
+                    break;
+                case XmlNodeType.Element:
+                    if(_prevNodeType == XmlNodeType.Element)
+                    {
+                        curVal.val.asInstance.SetField(new HashedString(_prevNodeName), ProcessNode());
+                    }
+                    break;
+                case XmlNodeType.Attribute:
+                    break;
+                case XmlNodeType.Text:
+                    curVal.val.asInstance.SetField(new HashedString(_prevNodeName), Value.New(_reader.Value));
+                    break;
+                case XmlNodeType.CDATA:
+                    break;
+                case XmlNodeType.EntityReference:
+                    break;
+                case XmlNodeType.Entity:
+                    break;
+                case XmlNodeType.ProcessingInstruction:
+                    break;
+                case XmlNodeType.Comment:
+                    break;
+                case XmlNodeType.Document:
+                    break;
+                case XmlNodeType.DocumentType:
+                    break;
+                case XmlNodeType.DocumentFragment:
+                    break;
+                case XmlNodeType.Notation:
+                    break;
+                case XmlNodeType.Whitespace:
+                    break;
+                case XmlNodeType.SignificantWhitespace:
+                    break;
+                case XmlNodeType.EndElement:
+                    if (_prevNodeType == XmlNodeType.EndElement)
+                        return curVal;
+                    break;
+                case XmlNodeType.EndEntity:
+                    break;
+                case XmlNodeType.XmlDeclaration:
+                    break;
+                default:
+                    break;
+                }
+                _prevNodeType = _reader.NodeType;
+                _prevNodeName = _reader.Name;
+            }
+
+            return curVal;
+        }
+    }
+
     [TestFixture]
     public class ObjectSerialisationTests : EngineTestBase
     {
@@ -132,18 +224,16 @@ class T
 var obj = T();
 obj.a = T();");
 
-            var obj = testEngine.Vm.GetGlobal(new HashedString("obj"));
+            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
             var testWriter = new StringBuilderValueHeirarchyWriter();
             var testObjWalker = new ValueHeirarchyWalker(testWriter);
             testObjWalker.Walk(obj);
             var res = testWriter.GetString();
-            Debug.Log(res);
 
             var xml = new XmlValueHeirarchyWriter();
             var xmlWalker = new ValueHeirarchyWalker(xml);
             xmlWalker.Walk(obj);
             res = xml.GetString();
-            Debug.Log(res);
         }
 
         [Test]
@@ -168,7 +258,7 @@ obj.a = T();";
             var result = "error";
 
             testEngine.Run(scriptString);
-            var obj = testEngine.Vm.GetGlobal(new HashedString("obj"));
+            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
             var testWriter = new StringBuilderValueHeirarchyWriter();
             var testObjWalker = new ValueHeirarchyWalker(testWriter);
             testObjWalker.Walk(obj);
@@ -201,13 +291,59 @@ obj.a = T();";
             var result = "error";
 
             testEngine.Run(scriptString);
-            var obj = testEngine.Vm.GetGlobal(new HashedString("obj"));
+            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
             var xml = new XmlValueHeirarchyWriter();
             var xmlWalker = new ValueHeirarchyWalker(xml);
             xmlWalker.Walk(obj);
             result = xml.GetString();
 
             StringAssert.Contains(Regex.Replace(expected, @"\s+", " "), Regex.Replace(result, @"\s+", " "));
+        }
+
+        [Test]
+        public void XMLDeserialise_WhenGivenKnownString_ShouldReturnExpectedObject()
+        {
+            var xml = @"<root>
+  <a>
+    <a>1</a>
+    <b>2</b>
+    <c>3</c>
+  </a>
+  <b>2</b>
+  <c>3</c>
+</root>";
+
+            var reader = new StringReader(xml);
+            var xmlReader = XmlReader.Create(reader, new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true});
+            var creator = new XmlDocValueHeirarchyCreator(xmlReader);
+            var obj = Value.Null();
+
+            obj = creator.Process();
+
+            Assert.AreEqual(ValueType.Instance, obj.type);
+
+            var testWriter = new StringBuilderValueHeirarchyWriter();
+            var testObjWalker = new ValueHeirarchyWalker(testWriter);
+            testObjWalker.Walk(obj);
+            var resultString = testWriter.GetString(); 
+            var expectedWalkResult = @"root
+  a
+    a:1
+    b:2
+    c:3
+  b:2
+  c:3";
+            //TODO
+            var desiredWalkResult = @"a
+  a:1
+  b:2
+  c:3
+b:2
+c:3";
+            StringAssert.Contains(Regex.Replace(expectedWalkResult, @"\s+", " "), Regex.Replace(resultString, @"\s+", " "));
+            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("a")));
+            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("b")));
+            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("c")));
         }
     }
 }

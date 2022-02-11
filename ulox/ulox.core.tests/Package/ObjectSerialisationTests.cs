@@ -118,6 +118,90 @@ namespace ULox.Tests
         }
     }
 
+    public class StringBuildDocValueHeirarchyCreator
+    {
+        private class StringReaderConsumer
+        {
+            private StringReader _reader;
+            public string CurrentLine { get; private set; }
+            private bool _consumed = true;
+
+            public StringReaderConsumer(StringReader reader)
+            {
+                _reader = reader;
+            }
+
+            public bool Read()
+            {
+                if (_consumed)
+                {
+                    CurrentLine = _reader.ReadLine();
+                    _consumed = false;
+                }
+
+                return CurrentLine != null;
+            }
+
+            public void Consume()
+            {
+                _consumed = true;
+            }
+        }
+
+        private StringReaderConsumer _consumer;
+
+
+        public StringBuildDocValueHeirarchyCreator(StringReader reader)
+        {
+            _consumer = new StringReaderConsumer(reader);
+        }
+
+        public Value Process()
+        {
+            _consumer.Read();
+            _consumer.Consume();
+            return ProcessLine(0);
+        }
+
+        private Value ProcessLine(int prevIndent)
+        {
+            var curVal = Value.New(new InstanceInternal());
+
+            while (_consumer.Read())
+            {
+                var currentLine = _consumer.CurrentLine;
+                var numLeadingSpaces = currentLine.TrimStart(' ');
+                var leadingSpaces = currentLine.Length - numLeadingSpaces.Length;
+                var currentIndent = leadingSpaces != 0 ? leadingSpaces / 2 : 0;
+
+                if (currentIndent <= prevIndent)
+                    return curVal;
+
+                var trimmed = numLeadingSpaces.Trim();
+                var split = trimmed.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if(split.Length == 1)
+                {
+                    if (currentIndent == prevIndent + 1)
+                    {
+                        _consumer.Consume();
+                        curVal.val.asInstance.SetField(new HashedString(split[0]), ProcessLine(currentIndent));
+                    }
+                    else
+                        throw new Exception();
+
+                }
+                else if(split.Length == 2)
+                {
+                    curVal.val.asInstance.SetField(new HashedString(split[0]), Value.New(split[1]));
+                    _consumer.Consume();
+                }
+            }
+
+            return curVal;
+        }
+    }
+
     public class XmlDocValueHeirarchyCreator
     {
         private XmlReader _reader;
@@ -333,13 +417,43 @@ obj.a = T();";
     c:3
   b:2
   c:3";
-            //TODO
-            var desiredWalkResult = @"a
-  a:1
+
+            StringAssert.Contains(Regex.Replace(expectedWalkResult, @"\s+", " "), Regex.Replace(resultString, @"\s+", " "));
+            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("a")));
+            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("b")));
+            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("c")));
+        }
+
+        [Test]
+        public void StringBuilderDeserialise_WhenGivenKnownString_ShouldReturnExpectedObject()
+        {
+            var sbOut = @"root
+  a
+    a:1
+    b:2
+    c:3
   b:2
-  c:3
-b:2
-c:3";
+  c:3";
+
+            var reader = new StringReader(sbOut);
+            var creator = new StringBuildDocValueHeirarchyCreator(reader);
+            var obj = Value.Null();
+
+            obj = creator.Process();
+
+            Assert.AreEqual(ValueType.Instance, obj.type);
+
+            var testWriter = new StringBuilderValueHeirarchyWriter();
+            var testObjWalker = new ValueHeirarchyWalker(testWriter);
+            testObjWalker.Walk(obj);
+            var resultString = testWriter.GetString();
+            var expectedWalkResult = @"root
+  a
+    a:1
+    b:2
+    c:3
+  b:2
+  c:3";
             StringAssert.Contains(Regex.Replace(expectedWalkResult, @"\s+", " "), Regex.Replace(resultString, @"\s+", " "));
             Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("a")));
             Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("b")));

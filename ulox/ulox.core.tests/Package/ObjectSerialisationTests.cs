@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -37,7 +38,7 @@ namespace ULox.Tests
             {
             case ValueType.Instance:
                 _writer.StartElement(name, v);
-                foreach (var field in v.val.asInstance.Fields)
+                foreach (var field in v.val.asInstance.Fields.OrderBy(x => x.Key.String))
                 {
                     WalkElement(field.Key, field.Value);
                 }
@@ -118,6 +119,41 @@ namespace ULox.Tests
         }
     }
 
+    public class ValueObjectBuilder
+    {
+        private Value _value;
+        private List<(string name, ValueObjectBuilder builder)> _children = new List<(string, ValueObjectBuilder)>();
+
+        public ValueObjectBuilder()
+        {
+            _value = Value.New(new InstanceInternal());
+        }
+
+        public Value Finish()
+        {
+            for (int i = _children.Count - 1; i >= 0; i--)
+            {
+                var item = _children[i];
+                var childVal = item.builder.Finish();
+                _value.val.asInstance.SetField(new HashedString(item.name), childVal);
+            }
+
+            return _value;
+        }
+
+        public void SetField(string v1, string v2)
+        {
+            _value.val.asInstance.SetField(new HashedString(v1), Value.New(v2));
+        }
+
+        public ValueObjectBuilder CreateChild(string prevNodeName)
+        {
+            var child = new ValueObjectBuilder();
+            _children.Add((prevNodeName, child));
+            return child;
+        }
+    }
+
     public class StringBuildDocValueHeirarchyCreator
     {
         private class StringReaderConsumer
@@ -160,13 +196,13 @@ namespace ULox.Tests
         {
             _consumer.Read();
             _consumer.Consume();
-            return ProcessLine(0);
+            var valBuilder = new ValueObjectBuilder();
+            ProcessLine(0, valBuilder);
+            return valBuilder.Finish();
         }
 
-        private Value ProcessLine(int prevIndent)
+        private void ProcessLine(int prevIndent, ValueObjectBuilder valBuilder)
         {
-            var curVal = Value.New(new InstanceInternal());
-
             while (_consumer.Read())
             {
                 var currentLine = _consumer.CurrentLine;
@@ -175,7 +211,7 @@ namespace ULox.Tests
                 var currentIndent = leadingSpaces != 0 ? leadingSpaces / 2 : 0;
 
                 if (currentIndent <= prevIndent)
-                    return curVal;
+                    return;
 
                 var trimmed = numLeadingSpaces.Trim();
                 var split = trimmed.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
@@ -185,7 +221,8 @@ namespace ULox.Tests
                     if (currentIndent == prevIndent + 1)
                     {
                         _consumer.Consume();
-                        curVal.val.asInstance.SetField(new HashedString(split[0]), ProcessLine(currentIndent));
+                        var childBuilder = valBuilder.CreateChild(split[0]);
+                        ProcessLine(currentIndent, childBuilder);
                     }
                     else
                         throw new Exception();
@@ -193,12 +230,10 @@ namespace ULox.Tests
                 }
                 else if(split.Length == 2)
                 {
-                    curVal.val.asInstance.SetField(new HashedString(split[0]), Value.New(split[1]));
+                    valBuilder.SetField(split[0], split[1]);
                     _consumer.Consume();
                 }
             }
-
-            return curVal;
         }
     }
 
@@ -213,10 +248,6 @@ namespace ULox.Tests
             _reader = reader;
         }
 
-
-        //todo prime root and curval with root node, then call a processnode function,
-        //  takes cur, if encounters prevNode and node element, calls processnode with new cur as arg
-
         public Value Process()
         {
             _reader.Read();
@@ -225,13 +256,13 @@ namespace ULox.Tests
 
             _reader.Read();
             Console.WriteLine($"{_reader.NodeType}:{_reader.Name}");
-            return ProcessNode();
+            var builder = new ValueObjectBuilder();
+            ProcessNode(builder);
+            return builder.Finish();
         }
         
-        private Value ProcessNode()
+        private void ProcessNode(ValueObjectBuilder valBuilder)
         {
-            var curVal = Value.New(new InstanceInternal());
-
             _prevNodeType = _reader.NodeType;
             _prevNodeName = _reader.Name;
             while (_reader.Read())
@@ -239,57 +270,26 @@ namespace ULox.Tests
                 Console.WriteLine($"{_reader.NodeType}:{_reader.Name}");
                 switch (_reader.NodeType)
                 {
-                case XmlNodeType.None:
-                    break;
                 case XmlNodeType.Element:
                     if(_prevNodeType == XmlNodeType.Element)
                     {
-                        curVal.val.asInstance.SetField(new HashedString(_prevNodeName), ProcessNode());
+                        var childBuilder = valBuilder.CreateChild(_prevNodeName);
+                        ProcessNode(childBuilder);
                     }
                     break;
-                case XmlNodeType.Attribute:
-                    break;
                 case XmlNodeType.Text:
-                    curVal.val.asInstance.SetField(new HashedString(_prevNodeName), Value.New(_reader.Value));
-                    break;
-                case XmlNodeType.CDATA:
-                    break;
-                case XmlNodeType.EntityReference:
-                    break;
-                case XmlNodeType.Entity:
-                    break;
-                case XmlNodeType.ProcessingInstruction:
-                    break;
-                case XmlNodeType.Comment:
-                    break;
-                case XmlNodeType.Document:
-                    break;
-                case XmlNodeType.DocumentType:
-                    break;
-                case XmlNodeType.DocumentFragment:
-                    break;
-                case XmlNodeType.Notation:
-                    break;
-                case XmlNodeType.Whitespace:
-                    break;
-                case XmlNodeType.SignificantWhitespace:
+                    valBuilder.SetField(_prevNodeName, _reader.Value);
                     break;
                 case XmlNodeType.EndElement:
                     if (_prevNodeType == XmlNodeType.EndElement)
-                        return curVal;
-                    break;
-                case XmlNodeType.EndEntity:
-                    break;
-                case XmlNodeType.XmlDeclaration:
+                        return;
                     break;
                 default:
-                    break;
+                    throw new Exception();
                 }
                 _prevNodeType = _reader.NodeType;
                 _prevNodeName = _reader.Name;
             }
-
-            return curVal;
         }
     }
 

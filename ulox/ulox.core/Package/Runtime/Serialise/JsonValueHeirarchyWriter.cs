@@ -15,13 +15,11 @@ namespace ULox
             _sb = new StringBuilder();
             var sw = new StringWriter(_sb);
             _jsonWriter = new JsonTextWriter(sw);
-            _jsonWriter.Formatting = Newtonsoft.Json.Formatting.Indented;
+            _jsonWriter.Formatting = Formatting.Indented;
         }
 
         public string GetString()
-        {
-            return _sb.ToString();
-        }
+            => _sb.ToString();
 
         public void WriteNameAndValue(string name, Value v)
         {
@@ -29,7 +27,7 @@ namespace ULox
             _jsonWriter.WriteValue(v.ToString());
         }
 
-        public void StartElement(string name, Value v)
+        public void StartNamedElement(string name)
         {
             if(_hasStarted)
                 _jsonWriter.WritePropertyName(name);
@@ -37,9 +35,25 @@ namespace ULox
             _hasStarted = true;
         }
 
-        public void EndElement(string name, Value v)
+        public void EndElement()
+            => _jsonWriter.WriteEndObject();
+
+        public void StartNamedArray(string name)
         {
-            _jsonWriter.WriteEndObject();
+            _jsonWriter.WritePropertyName(name);
+            _jsonWriter.WriteStartArray();
         }
+
+        public void EndArray()
+            => _jsonWriter.WriteEndArray();
+
+        public void StartElement()
+            => _jsonWriter.WriteStartObject();
+
+        public void StartArray() 
+            => _jsonWriter.WriteStartArray();
+
+        public void WriteValue(Value v) 
+            => _jsonWriter.WriteValue(v.ToString());
     }
 }

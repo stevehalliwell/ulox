@@ -13,24 +13,53 @@ namespace ULox
 
         public void Walk(Value v)
         {
-            WalkElement(new HashedString("root"), v);
+            WalkField(new HashedString("root"), v);
         }
 
-        private void WalkElement(HashedString name, Value v)
+        private void WalkField(HashedString name, Value v)
         {
             switch (v.type)
             {
             case ValueType.Instance:
-                _writer.StartElement(name.String, v);
-                foreach (var field in v.val.asInstance.Fields.OrderBy(x => x.Key.String))
+                if (v.val.asInstance is NativeListInstance listInst)
                 {
-                    WalkElement(field.Key, field.Value);
+                    if (name != null)
+                        _writer.StartNamedArray(name.String);
+                    else
+                        _writer.StartArray();
+
+                    foreach (var elm in listInst.List)
+                    {
+                        WalkField(null, elm);
+                    }
+                    _writer.EndArray();
                 }
-                _writer.EndElement(name.String, v);
+                else if (v.val.asInstance.Fields.Count == 0)
+                {
+                    WalkField(name, Value.Null());
+                }
+                else
+                {
+                    if (null == name)
+                        _writer.StartElement();
+                    else
+                        _writer.StartNamedElement(name.String);
+
+                    foreach (var field in v.val.asInstance.Fields.OrderBy(x => x.Key.String))
+                    {
+                        WalkField(field.Key, field.Value);
+                    }
+                    _writer.EndElement();
+                }
+
                 break;
 
             default:
-                _writer.WriteNameAndValue(name.String, v);
+                if(name != null)
+                    _writer.WriteNameAndValue(name.String, v);
+                else
+                    _writer.WriteValue(v);
+
                 break;
             }
         }

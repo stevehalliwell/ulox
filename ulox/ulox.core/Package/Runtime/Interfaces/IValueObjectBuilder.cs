@@ -2,7 +2,8 @@
 {
     public interface IValueObjectBuilder
     {
-        IValueObjectBuilder CreateChild(string prevNodeName);
+        IValueObjectBuilder CreateChild(string name);
+        IValueObjectBuilder CreateArray(string name);
         Value Finish();
         void SetField(string name, string data);
     }

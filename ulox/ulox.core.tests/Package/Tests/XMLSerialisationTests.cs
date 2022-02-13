@@ -8,10 +8,7 @@ namespace ULox.Tests
     [TestFixture]
     public class XMLSerialisationTests : EngineTestBase
     {
-        [Test]
-        public void Serialise_WhenGivenKnownObject_ShouldReturnExpectedOutput()
-        {
-            var scriptString = @"
+        private const string SimpleTestObject = @"
 class T
 {
     var a = 1, b = 2, c = 3;
@@ -21,8 +18,14 @@ var obj = T();
 obj.a = T();
 obj.b = 4;
 obj.c = 5;";
-
-            var expected = @"<root>
+        private const string SimpleSBTestObject = @"root
+  a
+    a:1
+    b:2
+    c:3
+  b:4
+  c:5";
+        private const string SimpleTestObjectResult = @"<root>
   <a>
     <a>1</a>
     <b>2</b>
@@ -31,6 +34,13 @@ obj.c = 5;";
   <b>4</b>
   <c>5</c>
 </root>";
+
+        [Test]
+        public void Serialise_WhenGivenKnownObject_ShouldReturnExpectedOutput()
+        {
+            var scriptString = SimpleTestObject;
+
+            var expected = SimpleTestObjectResult;
             var result = "error";
 
             testEngine.Run(scriptString);
@@ -46,19 +56,11 @@ obj.c = 5;";
         [Test]
         public void Deserialise_WhenGivenKnownString_ShouldReturnExpectedObject()
         {
-            var xml = @"<root>
-  <a>
-    <a>1</a>
-    <b>2</b>
-    <c>3</c>
-  </a>
-  <b>4</b>
-  <c>5</c>
-</root>";
+            var xml = SimpleTestObjectResult;
 
             var reader = new StringReader(xml);
             var xmlReader = XmlReader.Create(reader, new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true });
-            var creator = new XmlDocValueHeirarchyTraverser(new ValueObjectBuilder(), xmlReader);
+            var creator = new XmlDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), xmlReader);
             creator.Process();
             var obj = creator.Finish();
 
@@ -68,13 +70,7 @@ obj.c = 5;";
             var testObjWalker = new ValueHeirarchyWalker(testWriter);
             testObjWalker.Walk(obj);
             var resultString = testWriter.GetString();
-            var expectedWalkResult = @"root
-  a
-    a:1
-    b:2
-    c:3
-  b:4
-  c:5";
+            var expectedWalkResult = SimpleSBTestObject;
 
             StringAssert.Contains(Regex.Replace(expectedWalkResult, @"\s+", " "), Regex.Replace(resultString, @"\s+", " "));
             Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("a")));
@@ -85,19 +81,11 @@ obj.c = 5;";
         [Test]
         public void DeserialiseSerialise_WhenGivenKnownString_ShouldReturnExpectedObject()
         {
-            var xml = @"<root>
-  <a>
-    <a>1</a>
-    <b>2</b>
-    <c>3</c>
-  </a>
-  <b>4</b>
-  <c>5</c>
-</root>";
+            var xml = SimpleTestObjectResult;
 
             var reader = new StringReader(xml);
             var xmlReader = XmlReader.Create(reader, new XmlReaderSettings() { IgnoreComments = true, IgnoreWhitespace = true });
-            var creator = new XmlDocValueHeirarchyTraverser(new ValueObjectBuilder(), xmlReader);
+            var creator = new XmlDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), xmlReader);
             creator.Process();
             var obj = creator.Finish();
 

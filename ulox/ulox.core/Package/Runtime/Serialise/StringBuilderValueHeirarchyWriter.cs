@@ -10,7 +10,7 @@ namespace ULox
 
         public string GetString() => _sb.ToString();
 
-        public void EndElement(string name, Value v) => _indent--;
+        public void EndElement() => _indent--;
 
         private void AppendIndent()
         {
@@ -23,11 +23,40 @@ namespace ULox
             _sb.AppendLine($"{name}:{v}");
         }
 
-        public void StartElement(string name, Value v)
+        public void StartNamedElement(string name)
         {
             AppendIndent();
             _sb.AppendLine(name);
             _indent++;
+        }
+
+        public void StartNamedArray(string name)
+        {
+            AppendIndent();
+            _sb.AppendLine($"{name}:[");
+        }
+
+        public void EndArray()
+        {
+            AppendIndent();
+            _sb.AppendLine($"]");
+        }
+
+        public void StartElement()
+        {
+            _indent++;
+        }
+
+        public void StartArray()
+        {
+            AppendIndent();
+            _sb.AppendLine("[");
+        }
+
+        public void WriteValue(Value v)
+        {
+            AppendIndent();
+            _sb.AppendLine($"{v}");
         }
     }
 }

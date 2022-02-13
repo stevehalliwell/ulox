@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Xml;
 
 namespace ULox
@@ -57,52 +56,6 @@ namespace ULox
                 }
                 prevNodeType = _reader.NodeType;
                 prevNodeName = _reader.Name;
-            }
-            EndChild();
-        }
-    }
-    public class JsonDocValueHeirarchyTraverser : DocValueHeirarchyTraverser
-    {
-        private JsonTextReader _reader;
-
-        public JsonDocValueHeirarchyTraverser(
-            IValueObjectBuilder valBuilder,
-            JsonTextReader reader)
-            : base(valBuilder)
-        {
-            _reader = reader;
-        }
-
-        public override void Prepare()
-        {
-            _reader.Read();
-            if (_reader.TokenType != JsonToken.StartObject)
-                return;
-        }
-
-        protected override void ProcessNode()
-        {
-            var prevPropName = string.Empty;
-            while (_reader.Read())
-            {
-                switch (_reader.TokenType)
-                {
-                case JsonToken.StartObject:
-                    StartChild(prevPropName);
-                    ProcessNode();
-                    break;
-                case JsonToken.PropertyName:
-                    prevPropName = (string)_reader.Value;
-                    break;
-                case JsonToken.String:
-                    Field(prevPropName, (string)_reader.Value);
-                    break;
-                case JsonToken.EndObject:
-                    EndChild();
-                    return;
-                default:
-                    throw new Exception();
-                }
             }
             EndChild();
         }

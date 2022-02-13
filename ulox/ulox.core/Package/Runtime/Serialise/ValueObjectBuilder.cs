@@ -1,15 +1,31 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
     public class ValueObjectBuilder : IValueObjectBuilder
     {
+        public enum ObjectType { Object, Array }
+        private readonly ObjectType _objectType;
+
         private Value _value;
         private List<(string name, ValueObjectBuilder builder)> _children = new List<(string, ValueObjectBuilder)>();
 
-        public ValueObjectBuilder()
+        public ValueObjectBuilder(ObjectType ot)
         {
-            _value = Value.New(new InstanceInternal());
+            _objectType = ot;
+
+            switch (_objectType)
+            {
+            case ObjectType.Object:
+                _value = Value.New(new InstanceInternal());
+                break;
+            case ObjectType.Array:
+                _value = Value.New(NativeListClass.CreateInstance());
+                break;
+            default:
+                break;
+            }
         }
 
         public Value Finish()
@@ -26,13 +42,30 @@ namespace ULox
 
         public void SetField(string name, string data)
         {
-            _value.val.asInstance.SetField(new HashedString(name), Value.New(data));
+            switch (_objectType)
+            {
+            case ObjectType.Object:
+                _value.val.asInstance.SetField(new HashedString(name), Value.New(data));
+                break;
+            case ObjectType.Array:
+                (_value.val.asInstance as NativeListInstance).List.Add(Value.New(data));
+                break;
+            default:
+                throw new Exception();
+            }
         }
 
-        public IValueObjectBuilder CreateChild(string prevNodeName)
+        public IValueObjectBuilder CreateChild(string name)
         {
-            var child = new ValueObjectBuilder();
-            _children.Add((prevNodeName, child));
+            var child = new ValueObjectBuilder(ObjectType.Object);
+            _children.Add((name, child));
+            return child;
+        }
+
+        public IValueObjectBuilder CreateArray(string name)
+        {
+            var child = new ValueObjectBuilder(ObjectType.Array);
+            _children.Add((name, child));
             return child;
         }
     }

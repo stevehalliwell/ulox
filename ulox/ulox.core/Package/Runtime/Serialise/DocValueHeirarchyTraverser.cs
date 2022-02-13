@@ -22,21 +22,22 @@ namespace ULox
         public abstract void Prepare();
         protected abstract void ProcessNode();
 
-        public Value Finish() => _valBuilderRoot.Finish();
+        public Value Finish() 
+            => _valBuilderRoot.Finish();
 
         protected void Field(string name, string val)
-        {
-            _builderStack.Peek().SetField(name, val);
-        }
+            => _builderStack.Peek().SetField(name, val);
 
-        protected void StartChild(string withnName)
-        {
-            _builderStack.Push(_valBuilderRoot.CreateChild(withnName));
-        }
+        protected void Element(string val)
+            => _builderStack.Peek().SetField(null, val);
 
-        protected void EndChild()
-        {
-            _builderStack.Pop();
-        }
+        protected void StartChild(string withName)
+            => _builderStack.Push(_builderStack.Peek().CreateChild(withName));
+
+        protected void StartArray(string withName)
+            => _builderStack.Push(_builderStack.Peek().CreateArray(withName));
+
+        protected void EndChild() 
+            => _builderStack.Pop();
     }
 }

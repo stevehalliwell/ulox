@@ -31,14 +31,39 @@ namespace ULox
             _xmlWriter.WriteElementString(name, v.ToString());
         }
 
-        public void StartElement(string name, Value v)
+        public void StartNamedElement(string name)
         {
             _xmlWriter.WriteStartElement(name);
         }
 
-        public void EndElement(string name, Value v)
+        public void EndElement()
         {
             _xmlWriter.WriteEndElement();
+        }
+
+        public void StartNamedArray(string name)
+        {
+            throw new XmlException("Arrays are not supported in xml writer");
+        }
+
+        public void EndArray()
+        {
+            throw new XmlException("Arrays are not supported in xml writer");
+        }
+
+        public void StartElement()
+        {
+            _xmlWriter.WriteStartElement("");
+        }
+
+        public void StartArray()
+        {
+            throw new XmlException("Arrays are not supported in xml writer");
+        }
+
+        public void WriteValue(Value v)
+        {
+            throw new XmlException("unnamed values in xml writer");
         }
     }
 }

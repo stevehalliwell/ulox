@@ -40,15 +40,15 @@ namespace ULox
             return _value;
         }
 
-        public void SetField(string name, string data)
+        public void SetField(string name, Value data)
         {
             switch (_objectType)
             {
             case ObjectType.Object:
-                _value.val.asInstance.SetField(new HashedString(name), Value.New(data));
+                _value.val.asInstance.SetField(new HashedString(name), data);
                 break;
             case ObjectType.Array:
-                (_value.val.asInstance as NativeListInstance).List.Add(Value.New(data));
+                (_value.val.asInstance as NativeListInstance).List.Add(data);
                 break;
             default:
                 throw new Exception();

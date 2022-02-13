@@ -21,7 +21,7 @@ l.Add(""c"");
 var obj = T();
 obj.a = T();
 obj.b = 4;
-obj.c = 5;
+obj.c = true;
 obj.a.a = l;";
         public const string UloxSBExpectedResult = @"root
   a
@@ -33,7 +33,7 @@ obj.a.a = l;";
     b:2
     c:3
   b:4
-  c:5";
+  c:True";
 
         [Test]
         public void Serialise_WhenGivenKnownObject_ShouldReturnExpectedOutput()

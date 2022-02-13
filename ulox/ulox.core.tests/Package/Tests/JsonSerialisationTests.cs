@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace ULox.Tests
 {
+
     [TestFixture]
     public class JsonSerialisationTests : EngineTestBase
     {
@@ -15,24 +16,77 @@ namespace ULox.Tests
       ""b"",
       ""c""
     ],
-    ""b"": ""2"",
-    ""c"": ""3""
+    ""b"": 2.0,
+    ""c"": 3.0
   },
-  ""b"": ""4"",
-  ""c"": ""5""
+  ""b"": 4.0,
+  ""c"": true
+}";
+        public const string BiggerTestObjectString = @"
+class T
+{
+    var a = 1, b = 2, c = 3;
+}
+
+var objInList = T();
+objInList.b = ""pretty deep in here"";
+
+var l = [];
+l.Add(""a"");
+l.Add(""b"");
+l.Add(objInList);
+
+var obj = T();
+obj.a = T();
+obj.b = 4;
+obj.c = true;
+obj.a.a = l;";
+        public const string BiggerSBExpectedResult = @"{
+  ""a"": {
+    ""a"": [
+      ""a"",
+      ""b"",
+      {
+        ""a"": 1.0,
+        ""b"": ""pretty deep in here"",
+        ""c"": 3.0
+      }
+    ],
+    ""b"": 2.0,
+    ""c"": 3.0
+  },
+  ""b"": 4.0,
+  ""c"": true
 }";
 
         [Test]
         public void Serialise_WhenGivenKnownObject_ShouldReturnExpectedOutput()
         {
             var scriptString = SimpleStringSerialisationTests.UloxTestObjectString;
-
             var expected = UloxJsonExpectedResult;
             var result = "error";
             testEngine.Run(scriptString);
             var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
+            
+            walker.Walk(obj);
+            result = jsonWriter.GetString();
+
+            StringAssert.Contains(Regex.Replace(expected, @"\s+", " "), Regex.Replace(result, @"\s+", " "));
+        }
+
+        [Test]
+        public void Serialise_WhenGiveBiggerObject_ShouldReturnExpectedOutput()
+        {
+            var scriptString = BiggerTestObjectString;
+            var expected = BiggerSBExpectedResult;
+            var result = "error";
+            testEngine.Run(scriptString);
+            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
+            var jsonWriter = new JsonValueHeirarchyWriter();
+            var walker = new ValueHeirarchyWalker(jsonWriter);
+
             walker.Walk(obj);
             result = jsonWriter.GetString();
 

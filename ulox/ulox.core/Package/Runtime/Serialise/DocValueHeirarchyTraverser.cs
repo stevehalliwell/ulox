@@ -26,10 +26,11 @@ namespace ULox
             => _valBuilderRoot.Finish();
 
         protected void Field(string name, string val)
-            => _builderStack.Peek().SetField(name, val);
-
-        protected void Element(string val)
-            => _builderStack.Peek().SetField(null, val);
+            => _builderStack.Peek().SetField(name, Value.New(val));
+        protected void Field(string name, double val)
+            => _builderStack.Peek().SetField(name, Value.New(val));
+        protected void Field(string name, bool val)
+            => _builderStack.Peek().SetField(name, Value.New(val));
 
         protected void StartChild(string withName)
             => _builderStack.Push(_builderStack.Peek().CreateChild(withName));

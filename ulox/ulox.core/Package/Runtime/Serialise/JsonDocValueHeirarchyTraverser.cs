@@ -40,6 +40,12 @@ namespace ULox
                 case JsonToken.String:
                     Field(prevPropName, (string)_reader.Value);
                     break;
+                case JsonToken.Float:
+                    Field(prevPropName, (double)_reader.Value);
+                    break;
+                case JsonToken.Boolean:
+                    Field(prevPropName, (bool)_reader.Value);
+                    break;
                 case JsonToken.EndObject:
                     EndChild();
                     return;

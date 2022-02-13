@@ -5,6 +5,6 @@
         IValueObjectBuilder CreateChild(string name);
         IValueObjectBuilder CreateArray(string name);
         Value Finish();
-        void SetField(string name, string data);
+        void SetField(string name, Value data);
     }
 }

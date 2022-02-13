@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -98,8 +97,7 @@ obj.a.a = l;";
         {
             var xml = UloxJsonExpectedResult;
             var reader = new StringReader(xml);
-            var jsonReader = new JsonTextReader(reader);
-            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), jsonReader);
+            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
             creator.Process();
             var obj = creator.Finish();
 
@@ -121,8 +119,7 @@ obj.a.a = l;";
         {
             var json = UloxJsonExpectedResult;
             var reader = new StringReader(json);
-            var jsonReader = new JsonTextReader(reader);
-            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), jsonReader);
+            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
             creator.Process();
             var obj = creator.Finish();
 

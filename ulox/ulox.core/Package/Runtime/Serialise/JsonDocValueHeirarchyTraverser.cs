@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.IO;
 
 namespace ULox
 {
@@ -9,10 +10,10 @@ namespace ULox
 
         public JsonDocValueHeirarchyTraverser(
             IValueObjectBuilder valBuilder,
-            JsonTextReader reader)
+            TextReader reader)
             : base(valBuilder)
         {
-            _reader = reader;
+            _reader = new JsonTextReader(reader);
         }
 
         public override void Prepare()

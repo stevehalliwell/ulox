@@ -8,7 +8,6 @@ namespace ULox
     {
         private readonly JsonTextWriter _jsonWriter;
         private readonly StringBuilder _sb;
-        private bool _hasStarted = false;
 
         public JsonValueHeirarchyWriter()
         {
@@ -29,10 +28,8 @@ namespace ULox
 
         public void StartNamedElement(string name)
         {
-            if (_hasStarted)
-                _jsonWriter.WritePropertyName(name);
+            _jsonWriter.WritePropertyName(name);
             _jsonWriter.WriteStartObject();
-            _hasStarted = true;
         }
 
         public void EndElement()

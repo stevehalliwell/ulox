@@ -23,17 +23,17 @@ obj.a = T();
 obj.b = 4;
 obj.c = true;
 obj.a.a = l;";
-        public const string UloxSBExpectedResult = @"root
+        public const string UloxSBExpectedResult = @"a
+  a:[
   a
-    a:[
-    a
-    b
-    c
-    ]
-    b:2
-    c:3
-  b:4
-  c:True";
+  b
+  c
+  ]
+  b:2
+  c:3
+b:4
+c:True
+";
 
         [Test]
         public void Serialise_WhenGivenKnownObject_ShouldReturnExpectedOutput()

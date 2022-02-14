@@ -76,6 +76,40 @@ obj.a.a = l;";
         }
 
         [Test]
+        public void Serialise_WhenGivenNull_ShouldReturnExpectedOutput()
+        {
+            var scriptString = @"var obj = null;";
+            var expected = string.Empty;
+            var result = "error";
+            testEngine.Run(scriptString);
+            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
+            var jsonWriter = new JsonValueHeirarchyWriter();
+            var walker = new ValueHeirarchyWalker(jsonWriter);
+
+            walker.Walk(obj);
+            result = jsonWriter.GetString();
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
+        public void Serialise_WhenGivenEmptyObject_ShouldReturnExpectedOutput()
+        {
+            var scriptString = @"var obj = {:};";
+            var expected = string.Empty;
+            var result = "error";
+            testEngine.Run(scriptString);
+            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
+            var jsonWriter = new JsonValueHeirarchyWriter();
+            var walker = new ValueHeirarchyWalker(jsonWriter);
+
+            walker.Walk(obj);
+            result = jsonWriter.GetString();
+
+            Assert.AreEqual(expected, result);
+        }
+
+        [Test]
         public void Serialise_WhenGiveBiggerObject_ShouldReturnExpectedOutput()
         {
             var scriptString = BiggerTestObjectString;
@@ -95,8 +129,8 @@ obj.a.a = l;";
         [Test]
         public void Deserialise_WhenGivenKnownString_ShouldReturnExpectedObject()
         {
-            var xml = UloxJsonExpectedResult;
-            var reader = new StringReader(xml);
+            var jsonString = UloxJsonExpectedResult;
+            var reader = new StringReader(jsonString);
             var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
             creator.Process();
             var obj = creator.Finish();
@@ -132,6 +166,47 @@ obj.a.a = l;";
             Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("a")));
             Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("b")));
             Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("c")));
+        }
+
+        [Test]
+        public void SerialiseViaLibrary_WhenGivenKnownObject_ShouldReturnExpectedOutput()
+        {
+            const string Expected = @"{ 
+    ""a"": 1.0, 
+    ""b"": 2.0, 
+    ""c"": 3.0 
+}";
+            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
+
+            testEngine.Run(@"
+class T { var a = 1, b = 2, c = 3;}
+
+var obj = T();
+var res = Serialise.ToJson(obj);
+print(res);
+");
+            StringAssert.Contains(Regex.Replace(Expected, @"\s+", " "), Regex.Replace(testEngine.InterpreterResult, @"\s+", " "));
+        }
+
+        [Test]
+        public void DeserialiseViaLibrary_WhenGivenKnownObject_ShouldReturnExpectedOutput()
+        {
+            const string Expected = @"{ 
+    ""a"": 1.0, 
+    ""b"": 2.0, 
+    ""c"": 3.0 
+}";
+            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
+
+            testEngine.Run(@"
+var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var res = Serialise.FromJson(jsonString);
+print(res.a);
+print(res.b);
+print(res.c);
+");
+
+            Assert.AreEqual("123",testEngine.InterpreterResult);
         }
     }
 }

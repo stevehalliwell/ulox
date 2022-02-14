@@ -31,6 +31,10 @@ namespace ULox.Tests
                 if (ReThrow)
                     throw;
             }
+            catch (Exception e)
+            {
+                throw;
+            }
             finally
             {
                 _logger(MyEngine.Context.VM.TestRunner.GenerateDump());

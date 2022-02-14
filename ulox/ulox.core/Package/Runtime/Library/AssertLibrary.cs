@@ -35,7 +35,8 @@ namespace ULox
                 (nameof(Pass), Value.New(Pass)),
                 (nameof(Fail), Value.New(Fail))
                                           );
-
+            
+            assertInst.Freeze();
             return resTable;
         }
 

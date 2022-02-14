@@ -13,7 +13,7 @@ namespace ULox
 
         public void Walk(Value v)
         {
-            WalkField(new HashedString("root"), v);
+            WalkField(null, v);
         }
 
         private void WalkField(HashedString name, Value v)

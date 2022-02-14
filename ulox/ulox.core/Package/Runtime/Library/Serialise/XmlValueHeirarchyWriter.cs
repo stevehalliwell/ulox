@@ -7,6 +7,7 @@ namespace ULox
     {
         private readonly XmlWriter _xmlWriter;
         private readonly StringBuilder _sb;
+        private bool _hasStarted = false;
 
         public XmlValueHeirarchyWriter()
         {
@@ -53,7 +54,10 @@ namespace ULox
 
         public void StartElement()
         {
-            _xmlWriter.WriteStartElement("");
+            if (!_hasStarted)
+                StartNamedElement("root");
+            else
+                _xmlWriter.WriteStartElement("");
         }
 
         public void StartArray()

@@ -1,0 +1,109 @@
+build bind "SerialiseLibrary";
+
+test SerialiseLibraryTests
+{
+    testcase ToEmpty
+    {
+        var obj = {:};
+        var expected = "";
+        var res = "ERROR";
+        
+        res = Serialise.ToJson(obj);
+        
+        Assert.AreEqual(expected,res);
+    }
+
+    testcase SimpleTo
+    {
+        var obj = {:};
+        obj.a = 1;
+        obj.b = 2;
+        obj.c = 3;
+        var expected = "{
+  \"a\": 1.0,
+  \"b\": 2.0,
+  \"c\": 3.0
+}";
+        var res = "ERROR";
+        
+        res = Serialise.ToJson(obj);
+        
+        Assert.AreEqual(expected,res);
+    }
+
+    testcase SimpleFrom
+    {
+        var jsonString = "{ \"a\": 1.0,  \"b\": 2.0,  \"c\": 3.0 }";
+        var res = {:};
+        
+        res = Serialise.FromJson(jsonString);
+
+        Assert.AreEqual(1,res.a);
+        Assert.AreEqual(2,res.b);
+        Assert.AreEqual(3,res.c);
+    }
+
+    testcase ComplexTo
+    {
+        var obj = {:};
+        obj.a = {:};
+        obj.a.b = 1;
+        obj.a.c = 2;
+        obj.a.d = 3;
+        obj.e = 4;
+        obj.f = 5;
+        obj.g = [];
+        obj.g.Add("a");
+        obj.g.Add("b");
+        obj.g.Add("c");
+        var expected = "{
+  \"a\": {
+    \"b\": 1.0,
+    \"c\": 2.0,
+    \"d\": 3.0
+  },
+  \"e\": 4.0,
+  \"f\": 5.0,
+  \"g\": [
+    \"a\",
+    \"b\",
+    \"c\"
+  ]
+}";
+        var res = "ERROR";
+        
+        res = Serialise.ToJson(obj);
+        
+        Assert.AreEqual(expected,res);
+    }
+
+    testcase ComplexFrom
+    {
+        var jsonString = "{
+  \"a\": {
+    \"b\": 1.0,
+    \"c\": 2.0,
+    \"d\": 3.0
+  },
+  \"e\": 4.0,
+  \"f\": 5.0,
+  \"g\": [
+    \"a\",
+    \"b\",
+    \"c\"
+  ]
+}";
+        var res = {:};
+        
+        res = Serialise.FromJson(jsonString);
+
+        Assert.AreEqual(1,res.a.b);
+        Assert.AreEqual(2,res.a.c);
+        Assert.AreEqual(3,res.a.d);
+        Assert.AreEqual(4,res.e);
+        Assert.AreEqual(5,res.f);
+        Assert.AreEqual("a",res.g[0]);
+        Assert.AreEqual("b",res.g[1]);
+        Assert.AreEqual("c",res.g[2]);
+    }
+}

@@ -18,13 +18,12 @@ var obj = T();
 obj.a = T();
 obj.b = 4;
 obj.c = 5;";
-        private const string SimpleSBTestObject = @"root
-  a
-    a:1
-    b:2
-    c:3
-  b:4
-  c:5";
+        private const string SimpleSBTestObject = @"a
+  a:1
+  b:2
+  c:3
+b:4
+c:5";
         private const string SimpleTestObjectResult = @"<root>
   <a>
     <a>1</a>

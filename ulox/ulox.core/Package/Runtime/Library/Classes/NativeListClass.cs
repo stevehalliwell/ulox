@@ -273,9 +273,9 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        public override InstanceInternal MakeInstance()
-        {
-            return new NativeListInstance(this);
-        }
+        public override InstanceInternal MakeInstance() => CreateInstance();
+
+        public static InstanceInternal CreateInstance() 
+            => new NativeListInstance(SharedNativeListClassValue.val.asClass);
     }
 }

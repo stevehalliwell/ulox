@@ -40,6 +40,7 @@ public class UloxScriptTestBase
         engine.MyEngine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
         engine.MyEngine.Context.DeclareLibrary(new DiLibrary());
         engine.MyEngine.Context.DeclareLibrary(new FreezeLibrary());
+        engine.MyEngine.Context.DeclareLibrary(new SerialiseLibrary());
     }
 
     protected static TestCaseData[] ScriptGeneratorHelper(string subfolderName)

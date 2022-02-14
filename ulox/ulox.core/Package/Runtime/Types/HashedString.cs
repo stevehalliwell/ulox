@@ -10,16 +10,24 @@ namespace ULox
         public readonly string String;
 
         public HashedString(string str)
-        { 
-            String = str; 
-            Hash = str.GetHashCode(); 
+        {
+            String = str;
+            Hash = str.GetHashCode();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int CompareTo(HashedString other) => this.Hash.CompareTo(other.Hash);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(HashedString left, HashedString right) => left.Hash == right.Hash;
+        public static bool operator ==(HashedString left, HashedString right)
+        {
+            if (((object)left) == null && ((object)right) == null)
+                return true;
+            if (((object)left) == null ^ ((object)right) == null)
+                return false;
+
+            return left.Hash == right.Hash;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(HashedString left, HashedString right) => !(left == right);

@@ -4,7 +4,7 @@
     {
         TypeCompiletteStage Stage { get; }
 
-        void Start();
+        void Start(TypeCompilette typeCompilette);
 
         void PreBody(Compiler compiler);
 

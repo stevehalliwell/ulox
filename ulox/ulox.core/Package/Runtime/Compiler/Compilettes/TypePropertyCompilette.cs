@@ -21,24 +21,11 @@ namespace ULox
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Var;
 
-        public void End() { }
-
-        public void PostBody(Compiler compiler)
+        public void Start(TypeCompilette typeCompilette)
         {
-            //emit return //if we are the last link in the chain this ends our call
-
-            if (_initFragStartLocation != -1)
-                compiler.WriteUShortAt(_typeCompilette.InitChainInstruction, (ushort)_initFragStartLocation);
-
-            //return stub used by init and test chains
-            var classReturnEnd = compiler.EmitJump(OpCode.JUMP);
-
-            if (_previousInitFragJumpLocation != -1)
-                compiler.PatchJump(_previousInitFragJumpLocation);
-
-            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
-
-            compiler.PatchJump(classReturnEnd);
+            _initFragStartLocation = -1;
+            _previousInitFragJumpLocation = -1;
+            _classVarNames.Clear();
         }
 
         public void PreBody(Compiler compiler) { }
@@ -90,11 +77,24 @@ namespace ULox
             compiler.ConsumeEndStatement("property declaration");
         }
 
-        public void Start()
+        public void PostBody(Compiler compiler)
         {
-            _initFragStartLocation = -1;
-            _previousInitFragJumpLocation = -1;
-            _classVarNames.Clear();
+            //emit return //if we are the last link in the chain this ends our call
+
+            if (_initFragStartLocation != -1)
+                compiler.WriteUShortAt(_typeCompilette.InitChainInstruction, (ushort)_initFragStartLocation);
+
+            //return stub used by init and test chains
+            var classReturnEnd = compiler.EmitJump(OpCode.JUMP);
+
+            if (_previousInitFragJumpLocation != -1)
+                compiler.PatchJump(_previousInitFragJumpLocation);
+
+            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+
+            compiler.PatchJump(classReturnEnd);
         }
+
+        public void End() { }
     }
 }

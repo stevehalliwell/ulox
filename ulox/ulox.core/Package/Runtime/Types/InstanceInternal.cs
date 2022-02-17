@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -64,6 +65,78 @@ namespace ULox
                 Fields[keyPair.Key] = keyPair.Value;
             }
             IsFrozen = inst.IsFrozen;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ValidateInstanceMeetsClass(ClassInternal contract)
+        {
+            foreach (var contractMeth in contract.Methods)
+            {
+                Value ourContractMatchingMeth = Value.Null();
+                if (Fields.TryGetValue(contractMeth.Key, out ourContractMatchingMeth)
+                    || FromClass.Methods.TryGetValue(contractMeth.Key, out ourContractMatchingMeth))
+                {
+                    if (contractMeth.Value.type == ValueType.Closure
+                        && ourContractMatchingMeth.type == ValueType.Closure)
+                    {
+                        if (!ValidateHelper(contractMeth.Value.val.asClosure.chunk, ourContractMatchingMeth.val.asClosure.chunk))
+                            return false;
+                    }
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool ValidateInstanceMeetsInstance(InstanceInternal asInstance)
+        {
+            foreach (var field in asInstance.Fields.AsReadOnly)
+            {
+                switch (field.Value.type)
+                {
+                case ValueType.Closure:
+                    Value ourContractMatchingMeth = Value.Null();
+                    var contractMeth = field.Value.val.asClosure.chunk;
+
+                    if (Fields.TryGetValue(field.Key, out ourContractMatchingMeth)
+                    || FromClass.Methods.TryGetValue(field.Key, out ourContractMatchingMeth))
+                    {
+                        if (!ValidateHelper(contractMeth, ourContractMatchingMeth.val.asClosure.chunk))
+                            return false;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+            //todo check class
+
+            return ValidateInstanceMeetsClass(asInstance.FromClass);
+        }
+
+        private bool ValidateHelper(Chunk contractChunk, Chunk ourContractMatchingChunk)
+        {
+            var contractMethArity = contractChunk.Arity;
+            var ourArity = ourContractMatchingChunk.Arity;
+            if (ourArity != contractMethArity)
+                return false;
+
+            if (contractChunk.IsLocal && !ourContractMatchingChunk.IsLocal)
+                return false;
+
+            if (contractChunk.IsPure && !ourContractMatchingChunk.IsPure)
+                return false;
+
+            return true;
         }
     }
 }

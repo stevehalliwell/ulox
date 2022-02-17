@@ -7,6 +7,7 @@
             AddInnerDeclarationCompilette(new TypeStaticElementCompilette());
             AddInnerDeclarationCompilette(new TypeInitCompilette());
             AddInnerDeclarationCompilette(new TypeMethodCompilette());
+            AddInnerDeclarationCompilette(new TypeMeetsCompilette());
             AddInnerDeclarationCompilette(new TypeMixinCompilette(this));
             AddInnerDeclarationCompilette(new TypePropertyCompilette(this));
 
@@ -22,7 +23,7 @@
         private void ClassDeclaration(Compiler compiler)
         {
             foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
-                bodyCompilette.Start();
+                bodyCompilette.Start(this);
 
             DoBeginDeclareType(compiler);
             DoDeclareLineInher(compiler);

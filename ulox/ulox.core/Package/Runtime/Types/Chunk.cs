@@ -19,7 +19,8 @@ namespace ULox
         public IReadOnlyList<Value> Constants => constants.AsReadOnly();
         public string Name { get; set; }
         public FunctionType FunctionType { get; internal set; }
-
+        public bool IsLocal => FunctionType == FunctionType.LocalFunction || FunctionType == FunctionType.LocalMethod;
+        public bool IsPure => FunctionType == FunctionType.PureFunction;
         public int Arity => ArgumentConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 

@@ -385,11 +385,46 @@ namespace ULox
                 case OpCode.TYPEOF:
                     DoTypeOfOp();
                     break;
+                case OpCode.MEETS:
+                    DoMeetsOp();
+                    break;
                 case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoMeetsOp()
+        {
+            var rhs = Pop();
+            var lhs = Pop();
+
+            switch (lhs.type)
+            {
+            case ValueType.Class:
+                lhs.val.asClass.ValidateClassMeetsClass(rhs.val.asClass);
+                break;
+            case ValueType.Instance:
+                bool res = false;
+                switch (rhs.type)
+                {
+                case ValueType.Class:
+                    res = lhs.val.asInstance.ValidateInstanceMeetsClass(rhs.val.asClass);
+                    break;
+                case ValueType.Instance:
+                    res = lhs.val.asInstance.ValidateInstanceMeetsInstance(rhs.val.asInstance);
+                    break;
+                default:
+                    throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");
+                }
+                Push(Value.New(res));
+                break;
+            default:
+                throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");
+            }
+
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

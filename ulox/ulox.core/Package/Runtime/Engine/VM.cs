@@ -408,17 +408,17 @@ namespace ULox
             switch (lhs.type)
             {
             case ValueType.Class:
-                lhs.val.asClass.ValidateClassMeetsClass(rhs.val.asClass);
+                MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
                 break;
             case ValueType.Instance:
                 bool res = false;
                 switch (rhs.type)
                 {
                 case ValueType.Class:
-                    res = lhs.val.asInstance.ValidateInstanceMeetsClass(rhs.val.asClass);
+                    res = MeetValidator.ValidateInstanceMeetsClass(lhs.val.asInstance, rhs.val.asClass);
                     break;
                 case ValueType.Instance:
-                    res = lhs.val.asInstance.ValidateInstanceMeetsInstance(rhs.val.asInstance);
+                    res = MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
                     break;
                 default:
                     throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");

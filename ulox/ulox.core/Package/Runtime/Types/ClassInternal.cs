@@ -169,27 +169,6 @@ namespace ULox
             => inst.Freeze();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ValidateClassMeetsClass(ClassInternal contract)
-        {
-            foreach (var contractMeth in contract.methods)
-            {
-                if (!methods.TryGetValue(contractMeth.Key, out var ourContractMatchingMeth))
-                    throw new VMException($"Meets violation. '{Name.String}' meets '{contract.Name.String}' does not contain matching method '{contractMeth.Key.String}'.");
-
-                var contractChunk = contractMeth.Value.val.asClosure.chunk;
-                var contractMethArity = contractChunk.Arity;
-                var ourContractMatchingChunk = ourContractMatchingMeth.val.asClosure.chunk;
-                var ourArity = ourContractMatchingChunk.Arity;
-                if (ourArity != contractMethArity)
-                    throw new VMException($"Meets violation. '{Name.String}' meets '{contract.Name.String}' has method '{contractMeth.Key.String}' but expected arity of '{contractMethArity}' but has '{ourArity}'.");
-            
-                if(contractChunk.IsLocal && !ourContractMatchingChunk.IsLocal)
-                    throw new VMException($"Meets violation. '{Name.String}' meets '{contract.Name.String}' expected local but is of type '{ourContractMatchingChunk.FunctionType}'.");
-
-                if (contractChunk.IsPure && !ourContractMatchingChunk.IsPure)
-                    throw new VMException($"Meets violation. '{Name.String}' meets '{contract.Name.String}' expected pure but is of type '{ourContractMatchingChunk.FunctionType}'.");
-            }
-        }
         public void AddFieldName(HashedString fieldName)
             => _fieldsNames.Add(fieldName);
     }

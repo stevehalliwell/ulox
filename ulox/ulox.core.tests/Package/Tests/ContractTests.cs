@@ -305,7 +305,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADynamicAndBDynamicMatch_ShouldCompile()
+        public void Meets_WhenADynamicAndBDynamicMismatch_ShouldFail()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -325,7 +325,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADynamicAndBDynamicMismatch_ShouldCompile()
+        public void Meets_WhenADynamicAndBDynamicMatch_ShouldCompile()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -343,5 +343,213 @@ print(res);
             Assert.AreEqual("True", testEngine.InterpreterResult);
         }
         //todo compare fields not just methods/closures
+
+        [Test]
+        public void Meets_WhenADynamicAndBDynamicFieldMatch_ShouldCompile()
+        {
+            testEngine.Run(@"
+var inst = {:};
+inst.a = 3;
+
+var binst = {:};
+binst.a = 7;
+
+var res = inst meets binst;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenADynamicAndBEmptyMatch_ShouldCompile()
+        {
+            testEngine.Run(@"
+var inst = {:};
+inst.a = 3;
+
+var binst = {:};
+
+var res = inst meets binst;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenAEmptyAndBMismatch_ShouldFail()
+        {
+            testEngine.Run(@"
+var inst = {:};
+
+var binst = {:};
+binst.a = 3;
+
+var res = inst meets binst;
+print(res);
+");
+
+            Assert.AreEqual("False", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenAFromJsonAndBDynamicMatch_ShouldTrue()
+        {
+            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
+            testEngine.Run(@"
+var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var inst = Serialise.FromJson(jsonString);
+
+var binst = {:};
+binst.a = 0;
+binst.b = 0;
+binst.c = 0;
+
+var res = inst meets binst;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenADeepAndBDeepButMismatch_ShouldFalse()
+        {
+            testEngine.Run(@"
+var inst = {:};
+inst.a = 1;
+inst.b = {:};
+
+var binst = {:};
+binst.a = 3;
+binst.b = {:};
+binst.b.c = 3;
+
+var res = inst meets binst;
+print(res);
+");
+
+            Assert.AreEqual("False", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenADeepAndBDeepMatch_ShouldTrue()
+        {
+            testEngine.Run(@"
+var inst = {:};
+inst.a = 1;
+inst.b = {:};
+inst.b.c = 3;
+
+var binst = {:};
+binst.a = 3;
+binst.b = {:};
+binst.b.c = 0;
+
+var res = inst meets binst;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenADeepAndBClassMismatch_ShouldTrue()
+        {
+            testEngine.Run(@"
+var inst = {:};
+inst.a = 1;
+inst.b = {:};
+inst.b.c = 3;
+
+class B { }
+
+var res = inst meets B;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenADeepAndBClassMatch_ShouldTrue()
+        {
+            testEngine.Run(@"
+var inst = {:};
+inst.a = 1;
+inst.b = {:};
+inst.b.c = 3;
+
+class B 
+{
+    var a,b;
+}
+
+var res = inst meets B;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenAJsonAndBClassMatch_ShouldTrue()
+        {
+            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
+            testEngine.Run(@"
+var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var inst = Serialise.FromJson(jsonString);
+
+class B 
+{
+    var a,b,c;
+}
+
+var res = inst meets B;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenAJsonAndBClassEmptyMatch_ShouldTrue()
+        {
+            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
+            testEngine.Run(@"
+var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var inst = Serialise.FromJson(jsonString);
+
+class B 
+{
+}
+
+var res = inst meets B;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenAJsonAndBClassMismatch_ShouldFail()
+        {
+            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
+            testEngine.Run(@"
+var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var inst = Serialise.FromJson(jsonString);
+
+class B 
+{
+    var e,f,g;
+}
+
+var res = inst meets B;
+print(res);
+");
+
+            Assert.AreEqual("False", testEngine.InterpreterResult);
+        }
     }
 }

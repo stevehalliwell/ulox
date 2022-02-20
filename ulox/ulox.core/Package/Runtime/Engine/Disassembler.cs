@@ -58,6 +58,7 @@ namespace ULox
             opCodeHandlers[(int)OpCode.SET_PROPERTY] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.GET_SUPER] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.METHOD] = AppendStringConstant;
+            opCodeHandlers[(int)OpCode.FIELD] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.INHERIT] = AppendNothing;
             opCodeHandlers[(int)OpCode.MIXIN] = AppendNothing;
 

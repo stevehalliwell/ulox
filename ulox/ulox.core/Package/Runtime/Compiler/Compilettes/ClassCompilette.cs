@@ -8,8 +8,8 @@
             AddInnerDeclarationCompilette(new TypeInitCompilette());
             AddInnerDeclarationCompilette(new TypeMethodCompilette());
             AddInnerDeclarationCompilette(new TypeMeetsCompilette());
-            AddInnerDeclarationCompilette(new TypeMixinCompilette(this));
-            AddInnerDeclarationCompilette(new TypePropertyCompilette(this));
+            AddInnerDeclarationCompilette(new TypeMixinCompilette());
+            AddInnerDeclarationCompilette(new TypePropertyCompilette());
 
             GenerateCompiletteByStageArray();
         }

@@ -39,6 +39,8 @@ namespace ULox
         public ClassInternal Super { get; protected set; }
         public List<(ClosureInternal, int)> InitChains { get; protected set; } = new List<(ClosureInternal, int)>();
         public IReadOnlyDictionary<HashedString, Value> Methods => methods.AsReadOnly;
+        public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
+        private List<HashedString> _fieldsNames = new List<HashedString>();
 
         public ClassInternal(HashedString name)
         {
@@ -50,7 +52,6 @@ namespace ULox
         {
             return new InstanceInternal(this);
         }
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value GetMethod(HashedString name) => methods[name];
@@ -189,5 +190,7 @@ namespace ULox
                     throw new VMException($"Meets violation. '{Name.String}' meets '{contract.Name.String}' expected pure but is of type '{ourContractMatchingChunk.FunctionType}'.");
             }
         }
+        public void AddFieldName(HashedString fieldName)
+            => _fieldsNames.Add(fieldName);
     }
 }

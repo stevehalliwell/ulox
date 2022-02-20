@@ -53,6 +53,7 @@
         GET_PROPERTY,
         SET_PROPERTY,
         METHOD,
+        FIELD,
         INVOKE,
         INHERIT,
         GET_SUPER,

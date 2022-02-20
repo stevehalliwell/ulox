@@ -7,16 +7,16 @@ namespace ULox
         private Stack<string> _mixinNames = new Stack<string>();
         private TypeCompilette _typeCompilette;
 
-        public TypeMixinCompilette(TypeCompilette typeCompilette)
-            => _typeCompilette = typeCompilette;
-
         public TokenType Match
             => TokenType.MIXIN;
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Mixin;
 
         public void Start(TypeCompilette typeCompilette)
-            => _mixinNames.Clear();
+        {
+            _typeCompilette = typeCompilette;
+            _mixinNames.Clear();
+        }
 
         public void PreBody(Compiler compiler) { }
 

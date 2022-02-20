@@ -338,6 +338,10 @@ namespace ULox
                     DoMethodOp(chunk);
                     break;
 
+                case OpCode.FIELD:
+                    DoFieldOp(chunk);
+                    break;
+
                 case OpCode.MIXIN:
                     DoMixinOp(chunk);
                     break;
@@ -1261,6 +1265,14 @@ namespace ULox
             var klass = Peek(1).val.asClass;
             klass.AddMethod(name, method);
             DiscardPop();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoFieldOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var klass = Pop().val.asClass;
+            klass.AddFieldName(chunk.ReadConstant(constantIndex).val.asString);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

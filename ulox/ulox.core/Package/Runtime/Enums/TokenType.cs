@@ -95,5 +95,6 @@
         PURE,
 
         MEETS,
+        SIGNS,
     }
 }

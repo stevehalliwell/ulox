@@ -7,7 +7,7 @@
             AddInnerDeclarationCompilette(new TypeStaticElementCompilette());
             AddInnerDeclarationCompilette(new TypeInitCompilette());
             AddInnerDeclarationCompilette(new TypeMethodCompilette());
-            AddInnerDeclarationCompilette(new TypeMeetsCompilette());
+            AddInnerDeclarationCompilette(new TypeSignsCompilette());
             AddInnerDeclarationCompilette(new TypeMixinCompilette());
             AddInnerDeclarationCompilette(new TypePropertyCompilette());
 

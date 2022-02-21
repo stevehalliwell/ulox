@@ -79,5 +79,6 @@
         LOCAL,
 
         MEETS,
+        SIGNS,
     }
 }

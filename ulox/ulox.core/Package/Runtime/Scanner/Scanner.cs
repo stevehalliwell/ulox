@@ -83,7 +83,8 @@ namespace ULox
                 ("local", TokenType.LOCAL),
                 ("pure", TokenType.PURE),
 
-                ("meets", TokenType.MEETS)
+                ("meets", TokenType.MEETS),
+                ("signs", TokenType.SIGNS)
                                               );
 
             this.AddSingleCharTokenGenerators(

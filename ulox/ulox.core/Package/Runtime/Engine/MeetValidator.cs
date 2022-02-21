@@ -6,39 +6,33 @@ namespace ULox
     public static class MeetValidator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ValidateClassMeetsClass(ClassInternal lhs, ClassInternal contract)
+        public static (bool meets, string msg) ValidateClassMeetsClass(ClassInternal lhs, ClassInternal contract)
         {
             foreach (var contractMeth in contract.Methods)
             {
                 if (!lhs.Methods.TryGetValue(contractMeth.Key, out var ourContractMatchingMeth))
-                    throw new VMException($"Meets violation. '{lhs.Name.String}' meets '{contract.Name.String}' does not contain matching method '{contractMeth.Key.String}'.");
+                    return (false, $"'{lhs.Name.String}' does not contain matching method '{contractMeth.Key.String}'.");
 
                 var contractChunk = contractMeth.Value.val.asClosure.chunk;
-                var contractMethArity = contractChunk.Arity;
                 var ourContractMatchingChunk = ourContractMatchingMeth.val.asClosure.chunk;
-                var ourArity = ourContractMatchingChunk.Arity;
-                if (ourArity != contractMethArity)
-                    throw new VMException($"Meets violation. '{lhs.Name.String}' meets '{contract.Name.String}' has method '{contractMeth.Key.String}' but expected arity of '{contractMethArity}' but has '{ourArity}'.");
+                var res = ChunkMatcher(ourContractMatchingChunk, contractChunk);
+                if (!res.meets)
+                    return res;
 
-                if (contractChunk.IsLocal && !ourContractMatchingChunk.IsLocal)
-                    throw new VMException($"Meets violation. '{lhs.Name.String}' meets '{contract.Name.String}' expected local but is of type '{ourContractMatchingChunk.FunctionType}'.");
-
-                if (contractChunk.IsPure && !ourContractMatchingChunk.IsPure)
-                    throw new VMException($"Meets violation. '{lhs.Name.String}' meets '{contract.Name.String}' expected pure but is of type '{ourContractMatchingChunk.FunctionType}'.");
             }
 
-            //todo
             foreach (var contractVar in contract.FieldNames)
             {
                 if (lhs.FieldNames.FirstOrDefault(x => x == contractVar) == null)
                 {
-                    throw new VMException($"Meets violation. '{lhs.Name.String}' meets '{contract.Name.String}' has no field of name '{contractVar.String}'.");
+                    return (false, $"'{lhs.Name.String}' has no field of name '{contractVar.String}'.");
                 }
             }
+            return (true, string.Empty);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ValidateInstanceMeetsClass(InstanceInternal lhs, ClassInternal contract)
+        public static (bool meets, string msg) ValidateInstanceMeetsClass(InstanceInternal lhs, ClassInternal contract)
         {
             foreach (var contractMeth in contract.Methods)
             {
@@ -49,87 +43,93 @@ namespace ULox
                     if (contractMeth.Value.type == ValueType.Closure
                         && ourContractMatchingMeth.type == ValueType.Closure)
                     {
-                        if (!ChunkMatcher(ourContractMatchingMeth.val.asClosure.chunk, contractMeth.Value.val.asClosure.chunk))
-                            return false;
+                        var res = ChunkMatcher(ourContractMatchingMeth.val.asClosure.chunk, contractMeth.Value.val.asClosure.chunk);
+                        if (!res.meets)
+                            return res;
                     }
                 }
                 else
                 {
-                    return false;
+                    return (false, $"instance does not contain matching method '{contractMeth.Key.String}'.");
                 }
             }
 
-            //todo
             foreach (var contractVar in contract.FieldNames)
             {
                 if (!lhs.Fields.TryGetValue(contractVar, out var _))
                 {
-                    return false;
+                    return (false, $"instance does not contain matching field '{contractVar.String}'.");
                 }
             }
 
-            return true;
+            return (true, string.Empty);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool ValidateInstanceMeetsInstance(InstanceInternal lhs, InstanceInternal contract)
+        public static (bool meets, string msg) ValidateInstanceMeetsInstance(InstanceInternal lhs, InstanceInternal contract)
         {
-            //todo confirm instance is same type
             if (lhs.GetType() != contract.GetType())
-                return false;
+                return (false, $"instance does not match internal type, expected '{contract.GetType()}' but found '{lhs.GetType()}'.");
 
             if ((lhs.FromClass == null || lhs.FromClass is DynamicClass)
                 && (contract.FromClass == null || contract.FromClass is DynamicClass))
             {
-                foreach (var field in contract.Fields.AsReadOnly)
-                {
-                    Value ourMatch = Value.Null();
-                    if (lhs.Fields.TryGetValue(field.Key, out ourMatch)
-                        || lhs.FromClass.Methods.TryGetValue(field.Key, out ourMatch))
-                    {
-                        if (field.Value.type != ourMatch.type)
-                            return false;
-
-                        switch (field.Value.type)
-                        {
-                        case ValueType.Closure:
-                            var contractMeth = field.Value.val.asClosure.chunk;
-                            if (!ChunkMatcher(ourMatch.val.asClosure.chunk, contractMeth))
-                                return false;
-                            break;
-                        case ValueType.Instance:
-                            if (!ValidateInstanceMeetsInstance(ourMatch.val.asInstance, field.Value.val.asInstance))
-                                return false;
-                            break;
-                        default:
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                }
-                return true;
+                return InstanceContentMatcher(lhs, contract);
             }
 
             return ValidateInstanceMeetsClass(lhs, contract.FromClass);
         }
 
-        private static bool ChunkMatcher(Chunk lhsMatchingChunk, Chunk contractChunk)
+        private static (bool meets, string msg) InstanceContentMatcher(InstanceInternal lhs, InstanceInternal contract)
+        {
+            foreach (var field in contract.Fields.AsReadOnly)
+            {
+                Value ourMatch = Value.Null();
+                if (lhs.Fields.TryGetValue(field.Key, out ourMatch)
+                    || lhs.FromClass.Methods.TryGetValue(field.Key, out ourMatch))
+                {
+                    if (field.Value.type != ourMatch.type)
+                        return (false, $"instance has matching field name '{field.Key.String}' but type does not match, expected '{ourMatch.type}' but found '{field.Value.type}'.");
+
+                    switch (field.Value.type)
+                    {
+                    case ValueType.Closure:
+                        var contractMeth = field.Value.val.asClosure.chunk;
+                        var resClosure = ChunkMatcher(ourMatch.val.asClosure.chunk, contractMeth);
+                        if (!resClosure.meets)
+                            return resClosure;
+                        break;
+                    case ValueType.Instance:
+                        var resInst = ValidateInstanceMeetsInstance(ourMatch.val.asInstance, field.Value.val.asInstance);
+                        if (!resInst.meets)
+                            return resInst;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                else
+                {
+                    return (false, $"instance does not contain matching field '{field.Key.String}'.");
+                }
+            }
+            return (true, string.Empty);
+        }
+
+        private static (bool meets, string msg) ChunkMatcher(Chunk lhsMatchingChunk, Chunk contractChunk)
         {
             var contractMethArity = contractChunk.Arity;
             var ourArity = lhsMatchingChunk.Arity;
             if (ourArity != contractMethArity)
-                return false;
+                return (false, $"Expected arity '{contractMethArity}' but found '{ourArity}'.");
 
             if (contractChunk.IsLocal && !lhsMatchingChunk.IsLocal)
-                return false;
+                return (false, $"Expected local but found '{lhsMatchingChunk.FunctionType}'.");
 
             if (contractChunk.IsPure && !lhsMatchingChunk.IsPure)
-                return false;
+                return (false, $"Expected pure but found '{lhsMatchingChunk.FunctionType}'.");
 
-            return true;
+            return (true, string.Empty);
         }
     }
 }

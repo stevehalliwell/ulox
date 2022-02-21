@@ -2,15 +2,15 @@
 
 namespace ULox
 {
-    public class TypeMeetsCompilette : ITypeBodyCompilette
+    public class TypeSignsCompilette : ITypeBodyCompilette
     {
         private List<string> _contractNames = new List<string>();
         private TypeCompilette _typeCompilette;
 
         public TokenType Match
-            => TokenType.MEETS;
+            => TokenType.SIGNS;
         public TypeCompiletteStage Stage
-            => TypeCompiletteStage.Meets;
+            => TypeCompiletteStage.Signs;
 
         public void Start(TypeCompilette typeCompilette)
             => _typeCompilette = typeCompilette;
@@ -21,11 +21,11 @@ namespace ULox
         {
             do
             {
-                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after meets into class.");
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after signs into class.");
                 _contractNames.Add(compiler.TokenIterator.PreviousToken.Literal as string);
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
-            compiler.ConsumeEndStatement("meets declaration");
+            compiler.ConsumeEndStatement("signs declaration");
         }
 
         public void PostBody(Compiler compiler)
@@ -34,7 +34,7 @@ namespace ULox
             {
                 compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
                 compiler.NamedVariable(contractName, false);
-                compiler.EmitOpCode(OpCode.MEETS);
+                compiler.EmitOpCode(OpCode.SIGNS);
             }
         }
 

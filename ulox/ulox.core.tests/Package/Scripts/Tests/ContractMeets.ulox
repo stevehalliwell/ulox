@@ -1,0 +1,34 @@
+class A
+{
+    var a,b,c;
+}
+
+class B
+{
+    var a,b,c,d;
+}
+
+test ContractMeetsTests
+{
+    testcase AMeetsB_False
+    {
+        var res = null;
+        var a = A();
+        var b = B();
+
+        res = a meets b;
+
+        Assert.IsFalse(res);
+    }
+
+    testcase BMeetsA_True
+    {
+        var res = null;
+        var a = A();
+        var b = B();
+
+        res = b meets a;
+
+        Assert.IsTrue(res);
+    }
+}

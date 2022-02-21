@@ -5,7 +5,7 @@ namespace ULox.Tests
     public class ContractTests : EngineTestBase
     {
         [Test]
-        public void Meets_WhenITAndTMatch_ShouldCompileClean()
+        public void Meets_WhenITAndTMatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -15,7 +15,7 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
     Required(){}
 }");
 
@@ -23,7 +23,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenITAndTDoNotMatch_ShouldError()
+        public void Meets_WhenITAndTDoNotMatch_ShouldThrow()
         {
             testEngine.Run(@"
 class IT
@@ -33,14 +33,14 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
 }");
 
-            Assert.AreEqual("Meets violation. 'T' meets 'IT' does not contain matching method 'Required'.", testEngine.InterpreterResult);
+            Assert.AreEqual("'T' does not contain matching method 'Required'.", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Meets_WhenITAndTDoNotArity_ShouldError()
+        public void Meets_WhenITAndTDoNotArity_ShouldThrow()
         {
             testEngine.Run(@"
 class IT
@@ -50,15 +50,15 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
     Required(a){}
 }");
 
-            Assert.AreEqual("Meets violation. 'T' meets 'IT' has method 'Required' but expected arity of '0' but has '1'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Expected arity '0' but found '1'.", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Meets_WhenITAndTSubMatch_ShouldCompileClean()
+        public void Meets_WhenITAndTSubMatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -73,14 +73,14 @@ class T
 
 class TSub < T 
 {
-    meets IT;
+    signs IT;
 }");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Meets_WhenITAndTMixinMatch_ShouldCompileClean()
+        public void Meets_WhenITAndTMixinMatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -96,14 +96,14 @@ class T
 class TSub
 {
     mixin T;
-    meets IT;
+    signs IT;
 }");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Meets_WhenLocalITAndTMismatch_ShouldFail()
+        public void Meets_WhenLocalITAndTMismatch_ShouldThrow()
         {
             testEngine.Run(@"
 class IT
@@ -113,15 +113,15 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
     Required(){}
 }");
 
-            Assert.AreEqual("Meets violation. 'T' meets 'IT' expected local but is of type 'Method'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Expected local but found 'Method'.", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Meets_WhenITAndTLocalMismatch_ShouldCompileClean()
+        public void Meets_WhenITAndTLocalMismatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -131,7 +131,7 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
     local Required(){}
 }");
 
@@ -139,7 +139,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenLocalITAndTLocalMismatch_ShouldCompileClean()
+        public void Meets_WhenLocalITAndTLocalMismatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -149,7 +149,7 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
     local Required(){}
 }");
 
@@ -157,7 +157,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenPureITAndTMismatch_ShouldFail()
+        public void Meets_WhenPureITAndTMismatch_ShouldThrow()
         {
             testEngine.Run(@"
 class IT
@@ -167,15 +167,15 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
     Required(){}
 }");
 
-            Assert.AreEqual("Meets violation. 'T' meets 'IT' expected pure but is of type 'Method'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Expected pure but found 'Method'.", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Meets_WhenITAndTPureMismatch_ShouldCompileClean()
+        public void Meets_WhenITAndTPureMismatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -185,7 +185,7 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
     pure Required(){}
 }");
 
@@ -193,7 +193,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenPureITAndTPureMismatch_ShouldCompileClean()
+        public void Meets_WhenPureITAndTPureMismatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -203,7 +203,7 @@ class IT
 
 class T 
 {
-    meets IT;
+    signs IT;
     pure Required(){}
 }");
 
@@ -211,7 +211,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenAInstAndBClassMismatch_ShouldFail()
+        public void Meets_WhenAInstAndBClassMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
 class A
@@ -234,7 +234,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenAInstAndBMatch_ShouldCompileClean()
+        public void Meets_WhenAInstAndBMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
 class A
@@ -257,7 +257,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenAInstAndBInstMatch_ShouldCompileClean()
+        public void Meets_WhenAInstAndBInstMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
 class A
@@ -281,7 +281,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenAInstAndBInstMismatch_ShouldFail()
+        public void Meets_WhenAInstAndBInstMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
 class A
@@ -305,7 +305,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADynamicAndBDynamicMismatch_ShouldFail()
+        public void Meets_WhenADynamicAndBDynamicMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -325,7 +325,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADynamicAndBDynamicMatch_ShouldCompile()
+        public void Meets_WhenADynamicAndBDynamicMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -342,10 +342,9 @@ print(res);
 
             Assert.AreEqual("True", testEngine.InterpreterResult);
         }
-        //todo compare fields not just methods/closures
 
         [Test]
-        public void Meets_WhenADynamicAndBDynamicFieldMatch_ShouldCompile()
+        public void Meets_WhenADynamicAndBDynamicFieldMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -362,7 +361,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADynamicAndBEmptyMatch_ShouldCompile()
+        public void Meets_WhenADynamicAndBEmptyMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -378,7 +377,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenAEmptyAndBMismatch_ShouldFail()
+        public void Meets_WhenAEmptyAndBMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -394,7 +393,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenAFromJsonAndBDynamicMatch_ShouldTrue()
+        public void Meets_WhenAFromJsonAndBDynamicMatch_ShouldReturnTrue()
         {
             testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
             testEngine.Run(@"
@@ -414,7 +413,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADeepAndBDeepButMismatch_ShouldFalse()
+        public void Meets_WhenADeepAndBDeepButMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -434,7 +433,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADeepAndBDeepMatch_ShouldTrue()
+        public void Meets_WhenADeepAndBDeepMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -455,7 +454,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADeepAndBClassMismatch_ShouldTrue()
+        public void Meets_WhenADeepAndBClassMismatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -473,7 +472,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenADeepAndBClassMatch_ShouldTrue()
+        public void Meets_WhenADeepAndBClassMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
 var inst = {:};
@@ -494,7 +493,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenAJsonAndBClassMatch_ShouldTrue()
+        public void Meets_WhenAJsonAndBClassMatch_ShouldReturnTrue()
         {
             testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
             testEngine.Run(@"
@@ -514,7 +513,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenAJsonAndBClassEmptyMatch_ShouldTrue()
+        public void Meets_WhenAJsonAndBClassEmptyMatch_ShouldReturnTrue()
         {
             testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
             testEngine.Run(@"
@@ -533,7 +532,7 @@ print(res);
         }
 
         [Test]
-        public void Meets_WhenAJsonAndBClassMismatch_ShouldFail()
+        public void Meets_WhenAJsonAndBClassMismatch_ShouldReturnFalse()
         {
             testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
             testEngine.Run(@"

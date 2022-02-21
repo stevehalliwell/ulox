@@ -6,7 +6,7 @@
         Begin, 
         Static, 
         Mixin,
-        Meets,
+        Signs,
         Var, 
         Init, 
         Method, 

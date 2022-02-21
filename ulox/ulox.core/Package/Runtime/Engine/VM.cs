@@ -392,6 +392,9 @@ namespace ULox
                 case OpCode.MEETS:
                     DoMeetsOp();
                     break;
+                case OpCode.SIGNS:
+                    DoSignsOp();
+                    break;
                 case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
@@ -402,33 +405,41 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMeetsOp()
         {
+            var res = ProcessContract();
+            Push(Value.New(res.meets));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSignsOp()
+        {
+            var res = ProcessContract();
+            if (!res.meets)
+                throw new VMException(res.msg);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private (bool meets, string msg) ProcessContract()
+        {
             var rhs = Pop();
             var lhs = Pop();
 
             switch (lhs.type)
             {
             case ValueType.Class:
-                MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
-                break;
+                return  MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
             case ValueType.Instance:
-                bool res = false;
                 switch (rhs.type)
                 {
                 case ValueType.Class:
-                    res = MeetValidator.ValidateInstanceMeetsClass(lhs.val.asInstance, rhs.val.asClass);
-                    break;
+                    return MeetValidator.ValidateInstanceMeetsClass(lhs.val.asInstance, rhs.val.asClass);
                 case ValueType.Instance:
-                    res = MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
-                    break;
+                    return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
                 default:
                     throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");
                 }
-                Push(Value.New(res));
-                break;
             default:
                 throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");
             }
-
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

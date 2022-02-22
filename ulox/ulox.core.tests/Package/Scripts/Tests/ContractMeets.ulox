@@ -8,6 +8,11 @@ class B
     var a,b,c,d;
 }
 
+class C
+{
+    AMethod(){}
+}
+
 test ContractMeetsTests
 {
     testcase AMeetsB_False
@@ -30,5 +35,58 @@ test ContractMeetsTests
         res = b meets a;
 
         Assert.IsTrue(res);
+    }
+
+    testcase ASignsB_Throws
+    {
+
+        fun Act()
+        {
+            A signs B;
+        }
+
+        Assert.Throws(Act);
+    }
+
+    testcase BSignsA_NoThrow
+    {
+
+        B signs A;
+
+        Assert.Pass();
+    }
+
+    testcase aMeetsC_False
+    {
+        var res = null;
+        var a = A();
+
+        res = a meets C;
+
+        Assert.IsFalse(res);
+    }
+
+    testcase aMeetsNativeList_False
+    {
+        var res = null;
+        var a = A();
+        var list = [];
+
+        res = a meets list;
+
+        Assert.IsFalse(res);
+    }
+
+    testcase DynMeetsDyn_SameFieldButDifferentType_False
+    {
+        var res = null;
+        var a = {:};
+        a.a = 3;
+        var b = {:};
+        b.a = "3";
+
+        res = a meets b;
+
+        Assert.IsFalse(res);
     }
 }

@@ -105,7 +105,8 @@ namespace ULox
                 (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TSName, null, Precedence.None)),
                 (TokenType.INJECT, new ActionParseRule(_diCompiletteParts.Inject, null, Precedence.Term)),
                 (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
-                (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison))
+                (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
+                (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison))
                               );
         }
 
@@ -881,6 +882,12 @@ namespace ULox
         {
             compiler.Expression();
             compiler.EmitOpCode(OpCode.MEETS);
+        }
+
+        public static void Signs(Compiler compiler, bool canAssign)
+        {
+            compiler.Expression();
+            compiler.EmitOpCode(OpCode.SIGNS);
         }
     }
 }

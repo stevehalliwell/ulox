@@ -38,4 +38,32 @@ test DynamicTests
 
         Assert.AreEqual(expected, result);
     }
+
+    testcase HasFieldOnString_Throws
+    {
+
+
+        fun Act()
+        {
+            var s = "hello";
+            var dyn = {:};
+            dyn.HasField(s, "afield");
+        }
+
+        Assert.Throws(Act);
+    }
+
+    testcase RemoveFieldOnString_Throws
+    {
+
+
+        fun Act()
+        {
+            var s = "hello";
+            var dyn = {:};
+            dyn.RemoveField(s, "afield");
+        }
+
+        Assert.Throws(Act);
+    }
 }

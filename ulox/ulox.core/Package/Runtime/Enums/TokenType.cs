@@ -93,5 +93,8 @@
 
         LOCAL,
         PURE,
+
+        MEETS,
+        SIGNS,
     }
 }

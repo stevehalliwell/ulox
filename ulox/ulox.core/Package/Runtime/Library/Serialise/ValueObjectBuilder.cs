@@ -24,7 +24,7 @@ namespace ULox
                 _value = Value.New(NativeListClass.CreateInstance());
                 break;
             default:
-                break;
+                throw new Exception();
             }
         }
 

@@ -143,6 +143,7 @@ namespace ULox
             if (toRun == null)
                 throw new AssertException($"Requires 1 closure param to execute, but was not given one.");
             var ourVM = CreateVM();
+            ourVM.CopyFrom(vm);
             bool didThrow = false;
             try
             {

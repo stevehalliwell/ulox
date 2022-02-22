@@ -28,7 +28,6 @@ namespace ULox
             var prevPropName = string.Empty;
             while (_reader.Read())
             {
-                Console.WriteLine($"{_reader.TokenType}_{_reader.Value}");
                 switch (_reader.TokenType)
                 {
                 case JsonToken.StartObject:

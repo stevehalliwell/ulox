@@ -5,11 +5,7 @@
         public abstract TokenType Match { get; }
         public abstract TypeCompiletteStage Stage { get; }
 
-        public void End()
-        {
-        }
-
-        public void PostBody(Compiler compiler)
+        public void Start(TypeCompilette typeCompilette)
         {
         }
 
@@ -19,7 +15,11 @@
 
         public abstract void Process(Compiler compiler);
 
-        public void Start()
+        public void PostBody(Compiler compiler)
+        {
+        }
+
+        public void End()
         {
         }
     }

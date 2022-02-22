@@ -9,5 +9,7 @@ namespace ULox
         public Table() : base(TableKeyComparer)
         {
         }
+
+        public IReadOnlyDictionary<HashedString, Value> AsReadOnly => this;
     }
 }

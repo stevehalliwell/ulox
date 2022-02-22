@@ -338,6 +338,10 @@ namespace ULox
                     DoMethodOp(chunk);
                     break;
 
+                case OpCode.FIELD:
+                    DoFieldOp(chunk);
+                    break;
+
                 case OpCode.MIXIN:
                     DoMixinOp(chunk);
                     break;
@@ -385,10 +389,56 @@ namespace ULox
                 case OpCode.TYPEOF:
                     DoTypeOfOp();
                     break;
+                case OpCode.MEETS:
+                    DoMeetsOp();
+                    break;
+                case OpCode.SIGNS:
+                    DoSignsOp();
+                    break;
                 case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoMeetsOp()
+        {
+            var res = ProcessContract();
+            Push(Value.New(res.meets));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSignsOp()
+        {
+            var res = ProcessContract();
+            if (!res.meets)
+                throw new VMException(res.msg);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private (bool meets, string msg) ProcessContract()
+        {
+            var rhs = Pop();
+            var lhs = Pop();
+
+            switch (lhs.type)
+            {
+            case ValueType.Class:
+                return  MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
+            case ValueType.Instance:
+                switch (rhs.type)
+                {
+                case ValueType.Class:
+                    return MeetValidator.ValidateInstanceMeetsClass(lhs.val.asInstance, rhs.val.asClass);
+                case ValueType.Instance:
+                    return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
+                default:
+                    throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");
+                }
+            default:
+                throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");
             }
         }
 
@@ -1226,6 +1276,14 @@ namespace ULox
             var klass = Peek(1).val.asClass;
             klass.AddMethod(name, method);
             DiscardPop();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoFieldOp(Chunk chunk)
+        {
+            var constantIndex = ReadByte(chunk);
+            var klass = Pop().val.asClass;
+            klass.AddFieldName(chunk.ReadConstant(constantIndex).val.asString);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

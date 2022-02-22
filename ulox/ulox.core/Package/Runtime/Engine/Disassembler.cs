@@ -58,6 +58,7 @@ namespace ULox
             opCodeHandlers[(int)OpCode.SET_PROPERTY] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.GET_SUPER] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.METHOD] = AppendStringConstant;
+            opCodeHandlers[(int)OpCode.FIELD] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.INHERIT] = AppendNothing;
             opCodeHandlers[(int)OpCode.MIXIN] = AppendNothing;
 
@@ -78,6 +79,9 @@ namespace ULox
             opCodeHandlers[(int)OpCode.SET_INDEX] = AppendNothing;
 
             opCodeHandlers[(int)OpCode.TYPEOF] = AppendNothing;
+
+            opCodeHandlers[(int)OpCode.MEETS] = AppendNothing;
+            opCodeHandlers[(int)OpCode.SIGNS] = AppendNothing;
         }
 
         public string GetString() => stringBuilder.ToString();

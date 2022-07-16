@@ -1,0 +1,17 @@
+//you can ask what type an object is
+
+var boolIsBool = typeof(true) == typeof(false);
+print(boolIsBool);
+var str = "Hello";
+print(typeof(str));
+
+class Foo{}
+var foo = Foo();
+class Bar{}
+var bar = Bar();
+
+//an instance is of type class, and class is type of itself
+print(typeof(foo) == typeof(Foo));
+
+//instances of different ulox definied types are different types
+print(typeof(foo) == typeof(bar));

@@ -43,6 +43,9 @@ namespace ULox
             }
         }
 
-        public void End() { }
+        public void End() 
+        {
+            _mixinNames.Clear();
+        }
     }
 }

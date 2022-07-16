@@ -21,6 +21,27 @@ class T
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+        
+        [Test]
+        public void Meets_WhenITAndTMatchWithVars_ShouldNotThrow()
+        {
+            testEngine.Run(@"
+class IT
+{
+    var a;
+    Required(){}
+}
+
+class T 
+{
+    signs IT;
+    var a;
+    Required(){}
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
 
         [Test]
         public void Meets_WhenITAndTDoNotMatch_ShouldThrow()
@@ -139,7 +160,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenLocalITAndTLocalMismatch_ShouldNotThrow()
+        public void Meets_WhenLocalITAndTLocalMatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -193,7 +214,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenPureITAndTPureMismatch_ShouldNotThrow()
+        public void Meets_WhenPureITAndTPureMatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -231,6 +252,26 @@ print(res);
 ");
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenAClassAndBClassMatch_ShouldReturnTrue()
+        {
+            testEngine.Run(@"
+class A
+{
+    Meth(i){}
+}
+
+class B
+{
+    Meth(i){}
+}
+var res = A meets B;
+print(res);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -550,5 +591,48 @@ print(res);
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Meets_WhenAfterSignInCompileChunk_ShouldNotThrow()
+        {
+            testEngine.Run(@"
+class I 
+{
+    var a;
+    Meth(){}
+}
+class Implementation
+{
+    signs I;
+    var a;
+    Meth() 
+    {
+        //does something cool.
+    }
+}
+
+class NotMatchingImp
+{
+    var a;
+}
+var doesMatchFirst = NotMatchingImp meets I;
+
+class UnrelatedMatchAndMore
+{
+    var a,b,c;
+    Meth(){}
+    Foo(){}
+    Bar(){}
+}
+
+var doesMatchSecond = UnrelatedMatchAndMore meets I;
+
+print(doesMatchFirst);
+print(doesMatchSecond);
+");
+
+            Assert.AreEqual("FalseTrue", testEngine.InterpreterResult);
+        }
+
     }
 }

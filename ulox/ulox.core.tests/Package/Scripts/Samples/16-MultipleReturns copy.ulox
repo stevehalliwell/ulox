@@ -1,0 +1,40 @@
+//Multiple values can be returned from functions
+
+fun MultiReturn()
+{
+    return (1,2,3);
+}
+
+//mismatching the count will result in an error
+var (a,b,c) = MultiReturn();
+
+print(a);
+print(b);
+print(c);
+
+//these can also be auto chained
+fun ReturnMultiReturn()
+{
+    return (MultiReturn());
+}
+
+var (e,f,g) = MultiReturn();
+
+print(e);
+print(f);
+print(g);
+
+//And you can add more elements witin an auto expanded return
+
+//these can also be auto chained
+fun Return1MoreMultiReturn()
+{
+    return (MultiReturn(),4);
+}
+
+var (h,i,j,k) = Return1MoreMultiReturn();
+
+print(h);
+print(i);
+print(j);
+print(k);

@@ -1,6 +1,4 @@
 ﻿using NUnit.Framework;
-using System.Collections;
-using System.IO;
 
 [TestFixture]
 public class TryItOutTests : UloxScriptTestBase

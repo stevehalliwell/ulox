@@ -38,6 +38,9 @@ namespace ULox
             }
         }
 
-        public void End() { }
+        public void End() 
+        { 
+            _contractNames.Clear(); 
+        }
     }
 }

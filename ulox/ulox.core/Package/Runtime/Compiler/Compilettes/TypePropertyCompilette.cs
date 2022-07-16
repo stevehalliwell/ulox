@@ -97,6 +97,10 @@ namespace ULox
             }
         }
 
-        public void End() { }
+        public void End() 
+        {
+            _initFragStartLocation = -1;
+            _previousInitFragJumpLocation = -1;
+        }
     }
 }

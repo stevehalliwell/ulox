@@ -591,5 +591,48 @@ print(res);
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Meets_WhenAfterSignInCompileChunk_ShouldNotThrow()
+        {
+            testEngine.Run(@"
+class I 
+{
+    var a;
+    Meth(){}
+}
+class Implementation
+{
+    signs I;
+    var a;
+    Meth() 
+    {
+        //does something cool.
+    }
+}
+
+class NotMatchingImp
+{
+    var a;
+}
+var doesMatchFirst = NotMatchingImp meets I;
+
+class UnrelatedMatchAndMore
+{
+    var a,b,c;
+    Meth(){}
+    Foo(){}
+    Bar(){}
+}
+
+var doesMatchSecond = UnrelatedMatchAndMore meets I;
+
+print(doesMatchFirst);
+print(doesMatchSecond);
+");
+
+            Assert.AreEqual("FalseTrue", testEngine.InterpreterResult);
+        }
+
     }
 }

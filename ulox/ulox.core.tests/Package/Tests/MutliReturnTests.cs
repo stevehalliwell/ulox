@@ -354,5 +354,22 @@ print(b);");
 
             Assert.AreEqual("12", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Run_WhenReturnWithAdditionalReturnOf2AndTake3_ShouldMatchExpected()
+        {
+            testEngine.Run(@"
+fun Outter(){return (1,2,3);}
+fun ReturnPassThrough(){return (Outter(),4);}
+
+var (a,b,c,d) = ReturnPassThrough();
+
+print(a);
+print(b);
+print(c);
+print(d);");
+            
+            Assert.AreEqual("1234", testEngine.InterpreterResult);
+        }
     }
 }

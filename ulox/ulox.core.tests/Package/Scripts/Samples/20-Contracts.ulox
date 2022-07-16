@@ -1,0 +1,44 @@
+//Contracts are used to compare or require that two types match implementation.
+//There are two keywords used with contracts, 'signs' and 'meets'. The 'signs' keyword is used to 
+// require that all elements of one type or isntance align with another, if they don't it will 
+// result in an error being thrown. The 'meets' keyword runs the same checks but returns a 
+// bool, true if it passes and false if it does not, rather than an error.
+//These operations are not commutative.
+
+class I 
+{
+    var a;
+    Meth(){}
+}
+
+// 'signs' can be used anywhere but makes sense within a class to fail the program if the shape of
+// the class does not match.
+
+class Implementation
+{
+    signs I;
+    var a;
+    Meth() 
+    {
+        //does something cool.
+    }
+}
+
+// Check out the ContractTests.cs for more example cases.
+
+class NotMatchingImp
+{
+    var a;
+}
+//This will be false as it does not have a matching Meth
+var doesMatchFirst = NotMatchingImp meets I;
+
+class UnrelatedMatchAndMore
+{
+    var a,b,c;
+    Meth(){}
+    Foo(){}
+    Bar(){}
+}
+//This will be true has it UnrelatedMatchAndMore has all that I has. Having more than it does to matter.
+var doesMatchSecond = UnrelatedMatchAndMore meets I;

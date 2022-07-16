@@ -1,10 +1,37 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ULox
 {
     public abstract class TypeCompilette : ICompilette
     {
+        private static readonly TypeCompiletteStage[] BodyCompileStageOrder = new[]
+        {
+            TypeCompiletteStage.Invalid,
+            TypeCompiletteStage.Begin,
+            TypeCompiletteStage.Static,
+            TypeCompiletteStage.Mixin,
+            TypeCompiletteStage.Signs,
+            TypeCompiletteStage.Var,
+            TypeCompiletteStage.Init,
+            TypeCompiletteStage.Method,
+            TypeCompiletteStage.Complete
+        };
+
+        private static readonly TypeCompiletteStage[] PostBodyCompileStageOrder = new[]
+        {
+            TypeCompiletteStage.Invalid,
+            TypeCompiletteStage.Begin,
+            TypeCompiletteStage.Static,
+            TypeCompiletteStage.Mixin,
+            TypeCompiletteStage.Var,
+            TypeCompiletteStage.Init,
+            TypeCompiletteStage.Method,
+            TypeCompiletteStage.Signs,
+            TypeCompiletteStage.Complete
+        };
+        
         public abstract TokenType Match { get; }
 
         public abstract void Process(Compiler compiler);
@@ -19,12 +46,16 @@ namespace ULox
         private short _initChainInstruction;
         public short InitChainInstruction => _initChainInstruction;
         private bool _hasSuper;
-        protected ITypeBodyCompilette[] _stageOrderedBodyCompilettes;
+        protected ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
+        protected ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
         protected void GenerateCompiletteByStageArray()
         {
-            _stageOrderedBodyCompilettes = _innerDeclarationCompilettes.Values
-                .OrderBy(x => x.Stage)
+            BodyCompilettesProcessingOrdered = _innerDeclarationCompilettes.Values
+                .OrderBy(x => Array.IndexOf(BodyCompileStageOrder,x.Stage))
+                .ToArray();
+            BodyCompilettesPostBodyOrdered = _innerDeclarationCompilettes.Values
+                .OrderBy(x => Array.IndexOf(PostBodyCompileStageOrder, x.Stage))
                 .ToArray();
         }
 

@@ -22,24 +22,24 @@
 
         private void ClassDeclaration(Compiler compiler)
         {
-            foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
+            foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
                 bodyCompilette.Start(this);
 
             DoBeginDeclareType(compiler);
             DoDeclareLineInher(compiler);
             DoEndDeclareType(compiler);
 
-            foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
+            foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
                 bodyCompilette.PreBody(compiler);
 
             DoClassBody(compiler);
 
-            foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
+            foreach (var bodyCompilette in BodyCompilettesPostBodyOrdered)
                 bodyCompilette.PostBody(compiler);
 
             DoEndType(compiler);
 
-            foreach (var bodyCompilette in _stageOrderedBodyCompilettes)
+            foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
                 bodyCompilette.End();
 
             CurrentTypeName = null;

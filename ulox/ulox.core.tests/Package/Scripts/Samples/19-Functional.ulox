@@ -1,0 +1,53 @@
+//Basic functional style operations are built in.
+
+fun MakeTestArray()
+{
+    var arr = [];
+
+    for(var i = 0;i < 5; i += 1)
+    {
+        arr.Add(i);
+    }
+
+    return arr;
+}
+
+fun accum(cur, running)
+{
+    return running + cur;
+}
+
+// Arrays have .Reduce, this takes a 2 parameter function, the first parameter is the current value, 
+//  the second is the running total.
+// The accum function is applied in order, and returns a single value from the last returned value from the given function.
+var arrToReduce = MakeTestArray();
+var reducedResult = arrToReduce.Reduce(accum);
+print(reducedResult);
+
+// Fold functions in the same manner as Reduce, but it takes a single parameter to use as the 
+// initial value. Where Reduce uses first value in the array, meaning it will fail if the array is empty.
+var arrToFold = MakeTestArray();
+var foldedResult = arrToFold.Fold(accum, 1);
+print(foldedResult);
+
+fun addone(val)
+{
+    return val + 1;
+}
+
+// Arrays have .Map, this takes a single parameter function to be called with each value from the array, 
+//  storing the result in a new array at the same index. This new array is then returned.
+// It takes a function with 1 parameter and 1 return.
+var arrToMap = MakeTestArray();
+arrToMap = arrToMap.Map(addone);
+
+fun isEven(val)
+{
+    return ((val % 2) != 0);
+}
+
+// Arrays have a .Filter, this takes a single parameter function, that returns a bool. A predicate.
+//  If the function returns true, the value is added to the new array. If false, it is ignored.
+//  This new array is then returned.
+var arrToFilter = MakeTestArray();
+arrToFilter = arrToFilter.Filter(isEven);

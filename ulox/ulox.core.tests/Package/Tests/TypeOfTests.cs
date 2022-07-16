@@ -82,6 +82,18 @@ print(t);
         }
 
         [Test]
+        public void TypeOf_WhenCalledOnUserClass_ShouldReturnUserTypeName()
+        {
+            testEngine.Run(@"
+class MyClass {}
+var t = typeof(MyClass);
+print(t);
+");
+
+            Assert.AreEqual("<class MyClass>", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void TypeOf_WhenCalledOnUserType_ShouldReturnUserTypeName()
         {
             testEngine.Run(@"
@@ -101,6 +113,29 @@ print(t);
 class MyClass {}
 var myClassInst = MyClass();
 print(typeof(myClassInst) == MyClass);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TypeOf_WhenCalledOnTypeOfResult_ShouldReturnTrue()
+        {
+            testEngine.Run(@"
+class MyClass {}
+var myClassInst = MyClass();
+var t = typeof(myClassInst);
+print(typeof(t));
+");
+
+            Assert.AreEqual("<class MyClass>", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TypeOf_WhenComparedOnSameType_ShouldReturnTrue()
+        {
+            testEngine.Run(@"
+print(typeof(true) == typeof(false));
 ");
 
             Assert.AreEqual("True", testEngine.InterpreterResult);

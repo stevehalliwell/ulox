@@ -69,7 +69,6 @@ namespace ULox
                 ("class", TokenType.CLASS),
                 ("mixin", TokenType.MIXIN),
                 ("this", TokenType.THIS),
-                ("super", TokenType.SUPER),
                 ("static", TokenType.STATIC),
                 ("init", TokenType.INIT),
                 ("cname", TokenType.CONTEXT_NAME_CLASS),

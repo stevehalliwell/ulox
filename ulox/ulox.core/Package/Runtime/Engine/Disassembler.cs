@@ -56,15 +56,12 @@ namespace ULox
             opCodeHandlers[(int)OpCode.CLASS] = AppendStringConstantThenSpaceThenUshort;
             opCodeHandlers[(int)OpCode.GET_PROPERTY] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.SET_PROPERTY] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.GET_SUPER] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.METHOD] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.FIELD] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.INHERIT] = AppendNothing;
             opCodeHandlers[(int)OpCode.MIXIN] = AppendNothing;
 
             opCodeHandlers[(int)OpCode.FREEZE] = AppendNothing;
 
-            opCodeHandlers[(int)OpCode.SUPER_INVOKE] = AppendStringConstantThenByte;
             opCodeHandlers[(int)OpCode.INVOKE] = AppendStringConstantThenByte;
 
             opCodeHandlers[(int)OpCode.TEST] = HandleTestOpCode;
@@ -150,15 +147,14 @@ namespace ULox
 
             var opAction = opCodeHandlers[(int)opCode];
 
-            if (opAction != null)
-            {
-                i = opAction?.Invoke(chunk, i) ?? i;
+            if (opAction == null)
+                throw new LoxException($"'{opCode}' is unhandled by the disassembler.");
 
-                stringBuilder.AppendLine();
-                return i;
-            }
 
-            throw new LoxException($"'{opCode}' is unhandled by the disassembler.");
+            i = opAction?.Invoke(chunk, i) ?? i;
+
+            stringBuilder.AppendLine();
+            return i;
         }
 
         protected void AppendSpace()

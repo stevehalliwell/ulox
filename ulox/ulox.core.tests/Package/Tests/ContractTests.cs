@@ -79,28 +79,6 @@ class T
         }
 
         [Test]
-        public void Meets_WhenITAndTSubMatch_ShouldNotThrow()
-        {
-            testEngine.Run(@"
-class IT
-{
-    Required(){}
-}
-
-class T 
-{
-    Required(){}
-}
-
-class TSub < T 
-{
-    signs IT;
-}");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Meets_WhenITAndTMixinMatch_ShouldNotThrow()
         {
             testEngine.Run(@"

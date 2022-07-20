@@ -68,7 +68,6 @@
 
         CLASS,
         THIS,
-        SUPER,
         STATIC,
         INIT,
 

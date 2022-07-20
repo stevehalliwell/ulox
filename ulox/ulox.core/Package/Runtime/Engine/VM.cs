@@ -350,18 +350,6 @@ namespace ULox
                     DoInvokeOp(chunk);
                     break;
 
-                case OpCode.INHERIT:
-                    DoInheritOp(chunk);
-                    break;
-
-                case OpCode.GET_SUPER:
-                    DoGetSuperOp(chunk);
-                    break;
-
-                case OpCode.SUPER_INVOKE:
-                    DoSuperInvokeOp(chunk);
-                    break;
-
                 case OpCode.TEST:
                     TestRunner.DoTestOpCode(this, chunk);
                     break;
@@ -377,24 +365,33 @@ namespace ULox
                 case OpCode.FREEZE:
                     DoFreezeOp();
                     break;
+
                 case OpCode.NATIVE_TYPE:
                     DoNativeTypeOp(chunk);
                     break;
+                
                 case OpCode.GET_INDEX:
                     DoGetIndexOp();
                     break;
+                
                 case OpCode.SET_INDEX:
                     DoSetIndexOp();
                     break;
+                
                 case OpCode.TYPEOF:
                     DoTypeOfOp();
                     break;
+                
+                //can merge into validate, this is not perf critical
                 case OpCode.MEETS:
                     DoMeetsOp();
                     break;
+
+                //can merge into validate, this is not perf critical
                 case OpCode.SIGNS:
                     DoSignsOp();
                     break;
+                
                 case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
@@ -426,7 +423,7 @@ namespace ULox
             switch (lhs.type)
             {
             case ValueType.Class:
-                return  MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
+                return MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
             case ValueType.Instance:
                 switch (rhs.type)
                 {
@@ -933,7 +930,7 @@ namespace ULox
                 throw new VMException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
                     $", got '{argCount}' but expected '{closureInternal.chunk.Arity}'");
 
-            if(closureInternal.chunk.FunctionType == FunctionType.PureFunction)
+            if (closureInternal.chunk.FunctionType == FunctionType.PureFunction)
             {
                 for (int i = 0; i < argCount; i++)
                     ValidatePureArg(i, closureInternal);
@@ -1132,26 +1129,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSuperInvokeOp(Chunk chunk)
-        {
-            var constantIndex = ReadByte(chunk);
-            var methName = chunk.ReadConstant(constantIndex).val.asString;
-            var argCount = ReadByte(chunk);
-            var superClass = Pop().val.asClass;
-            InvokeFromClass(superClass, methName, argCount);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetSuperOp(Chunk chunk)
-        {
-            var constantIndex = ReadByte(chunk);
-            var name = chunk.ReadConstant(constantIndex).val.asString;
-            var superClassVal = Pop();
-            var superClass = superClassVal.val.asClass;
-            BindMethod(superClass, name);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetPropertyOp(Chunk chunk)
         {
             //use class to build a cached route to the field, introduce an cannot cache instruction
@@ -1233,34 +1210,34 @@ namespace ULox
             switch (receiver.type)
             {
             case ValueType.Instance:
+            {
+                var inst = receiver.val.asInstance;
+
+                //it could be a field
+                if (inst.TryGetField(methodName, out var fieldFunc))
                 {
-                    var inst = receiver.val.asInstance;
-
-                    //it could be a field
-                    if (inst.TryGetField(methodName, out var fieldFunc))
-                    {
-                        _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
-                        PushCallFrameFromValue(fieldFunc, argCount);
-                    }
-                    else
-                    {
-                        var fromClass = inst.FromClass;
-                        if (!fromClass.TryGetMethod(methodName, out var method))
-                        {
-                            throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
-                        }
-
-                        PushCallFrameFromValue(method, argCount);
-                    }
+                    _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
+                    PushCallFrameFromValue(fieldFunc, argCount);
                 }
-                break;
+                else
+                {
+                    var fromClass = inst.FromClass;
+                    if (!fromClass.TryGetMethod(methodName, out var method))
+                    {
+                        throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
+                    }
+
+                    PushCallFrameFromValue(method, argCount);
+                }
+            }
+            break;
 
             case ValueType.Class:
-                {
-                    var klass = receiver.val.asClass;
-                    PushCallFrameFromValue(klass.GetMethod(methodName), argCount);
-                }
-                break;
+            {
+                var klass = receiver.val.asClass;
+                PushCallFrameFromValue(klass.GetMethod(methodName), argCount);
+            }
+            break;
 
             default:
                 throw new VMException($"Cannot invoke on '{receiver}'.");
@@ -1295,24 +1272,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInheritOp(Chunk chunk)
-        {
-            var superVal = Peek(1);
-            if (superVal.type != ValueType.Class)
-                throw new VMException("Super class must be a class.");
-            var superClass = superVal.val.asClass;
-
-            var subVal = Peek();
-            if (subVal.type != ValueType.Class)
-                throw new VMException("Child class must be a class.");
-            var subClass = subVal.val.asClass;
-
-            subClass.InheritFrom(superClass);
-
-            DiscardPop();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void BindMethod(ClassInternal fromClass, HashedString methodName)
         {
             if (!fromClass.TryGetMethod(methodName, out var method))
@@ -1324,15 +1283,6 @@ namespace ULox
 
             DiscardPop();
             Push(bound);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InvokeFromClass(ClassInternal fromClass, HashedString methodName, int argCount)
-        {
-            if (!fromClass.TryGetMethod(methodName, out var method))
-                throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
-
-            PushCallFrameFromValue(method, argCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1349,23 +1299,17 @@ namespace ULox
             var inst = Value.New(instInternal);
             _valueStack[_valueStack.Count - 1 - argCount] = inst;
 
-            InitNewInstance(asClass, argCount, inst, true);
+            InitNewInstance(asClass, argCount, inst);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InitNewInstance(ClassInternal klass, int argCount, Value inst, bool isleaf)
+        private void InitNewInstance(ClassInternal klass, int argCount, Value inst)
         {
             var stackCount = _valueStack.Count;
             var instLocOnStack = (byte)(stackCount - argCount - 1);
 
-            if (isleaf)
-            {
-                // Freeze is then called on the inst left behindby the
-                //  using custom callframe as we need the location of the inst but no params, as they will all be gone
-                //  by the time we get to execute.
-                DuplicateStackValuesNew(instLocOnStack, argCount);
-                PushFrameCallNativeWithFixedStackStart(ClassFinishCreation, instLocOnStack);
-            }
+            DuplicateStackValuesNew(instLocOnStack, argCount);
+            PushFrameCallNativeWithFixedStackStart(ClassFinishCreation, instLocOnStack);
 
             if (!klass.Initialiser.IsNull)
             {
@@ -1387,25 +1331,18 @@ namespace ULox
 
             foreach (var initChain in klass.InitChains)
             {
-                if (initChain.Item2 != -1)
+                if (initChain.instruction != -1)
                 {
                     if (!klass.Initialiser.IsNull)
                         Push(inst);
 
                     PushNewCallframe(new CallFrame()
                     {
-                        Closure = initChain.Item1,
-                        InstructionPointer = initChain.Item2,
+                        Closure = initChain.closure,
+                        InstructionPointer = initChain.instruction,
                         StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                     });
                 }
-            }
-
-            if (klass.Super != null)
-            {
-                var argsToSuperInit = PrepareSuperInit(klass, argCount, inst, stackCount);
-
-                InitNewInstance(klass.Super, argsToSuperInit, inst, false);
             }
         }
 
@@ -1446,27 +1383,6 @@ namespace ULox
             inst.FromClass.FinishCreation(inst);
             vm.PushReturn(instVal);
             return NativeCallResult.SuccessfulExpression;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int PrepareSuperInit(ClassInternal klass, int argCount, Value inst, int stackCount)
-        {
-            int argsToSuperInit = 0;
-            if (!klass.Super.Initialiser.IsNull || klass.Super.InitChains.Count > 0)
-            {
-                //push inst and push args it expects
-                Push(inst);
-                if (!klass.Super.Initialiser.IsNull)
-                {
-                    argsToSuperInit = klass.Super.Initialiser.val.asClosure.chunk.Arity;
-                    for (int i = 0; i < klass.Super.Initialiser.val.asClosure.chunk.Arity; i++)
-                    {
-                        Push(_valueStack[stackCount - argCount + i]);
-                    }
-                }
-            }
-
-            return argsToSuperInit;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

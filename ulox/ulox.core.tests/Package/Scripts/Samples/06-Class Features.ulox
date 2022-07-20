@@ -33,18 +33,3 @@ class WithVarMatchingInit
 
 foo = WithVarMatchingInit(7);
 print(foo.val);
-
-// auto init of vars also works with inher by matching the names of the parent init
-class ABAutoInitBase
-{
-    var a = 1,b;
-    init(b){}
-}
-
-class CDAutoInitChild < ABAutoInitBase
-{
-    var c = 3,d;
-    init(b,d){}
-}
-
-var cinst = CDAutoInitChild(2,4);

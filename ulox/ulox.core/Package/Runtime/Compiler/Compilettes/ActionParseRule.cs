@@ -17,9 +17,9 @@
         }
 
         public void Prefix(Compiler compiler, bool canAssign)
-            => PrefixAction?.Invoke(compiler, canAssign);
+            => PrefixAction.Invoke(compiler, canAssign);
 
         public void Infix(Compiler compiler, bool canAssign)
-            => InfixAction?.Invoke(compiler, canAssign);
+            => InfixAction.Invoke(compiler, canAssign);
     }
 }

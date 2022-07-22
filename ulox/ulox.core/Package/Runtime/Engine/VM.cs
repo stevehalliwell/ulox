@@ -651,7 +651,7 @@ namespace ULox
             }
             else if (res == NativeCallResult.SuccessfulStatement)
             {
-                FinishReturnOp();
+                PopFrameAndDiscard();
             }
         }
 

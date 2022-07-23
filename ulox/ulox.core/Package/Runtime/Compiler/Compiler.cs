@@ -78,8 +78,7 @@ namespace ULox
                 (TokenType.STAR, new ActionParseRule(null, Binary, Precedence.Factor)),
                 (TokenType.PERCENT, new ActionParseRule(null, Binary, Precedence.Factor)),
                 (TokenType.BANG, new ActionParseRule(Unary, null, Precedence.None)),
-                (TokenType.INT, new ActionParseRule(Literal, null, Precedence.None)),
-                (TokenType.FLOAT, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.NUMBER, new ActionParseRule(Literal, null, Precedence.None)),
                 (TokenType.TRUE, new ActionParseRule(Literal, null, Precedence.None)),
                 (TokenType.FALSE, new ActionParseRule(Literal, null, Precedence.None)),
                 (TokenType.NULL, new ActionParseRule(Literal, null, Precedence.None)),
@@ -813,8 +812,7 @@ namespace ULox
             case TokenType.TRUE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
             case TokenType.FALSE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
             case TokenType.NULL: compiler.EmitOpCode(OpCode.NULL); break;
-            case TokenType.INT:
-            case TokenType.FLOAT:
+            case TokenType.NUMBER:
                 {
                     var number = (double)compiler.TokenIterator.PreviousToken.Literal;
 

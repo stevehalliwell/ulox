@@ -37,9 +37,6 @@ namespace ULox
 
             identScannerGen.Add(
                 ("var", TokenType.VAR),
-                ("string", TokenType.STRING),
-                ("int", TokenType.INT),
-                ("float", TokenType.FLOAT),
                 ("and", TokenType.AND),
                 ("or", TokenType.OR),
                 ("if", TokenType.IF),

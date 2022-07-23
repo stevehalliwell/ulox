@@ -42,8 +42,7 @@
         IDENTIFIER,
         VAR,
         STRING,
-        INT,
-        FLOAT,
+        NUMBER,
 
         FUNCTION,
 

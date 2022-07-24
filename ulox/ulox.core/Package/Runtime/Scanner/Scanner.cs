@@ -37,9 +37,6 @@ namespace ULox
 
             identScannerGen.Add(
                 ("var", TokenType.VAR),
-                ("string", TokenType.STRING),
-                ("int", TokenType.INT),
-                ("float", TokenType.FLOAT),
                 ("and", TokenType.AND),
                 ("or", TokenType.OR),
                 ("if", TokenType.IF),
@@ -69,7 +66,6 @@ namespace ULox
                 ("class", TokenType.CLASS),
                 ("mixin", TokenType.MIXIN),
                 ("this", TokenType.THIS),
-                ("super", TokenType.SUPER),
                 ("static", TokenType.STATIC),
                 ("init", TokenType.INIT),
                 ("cname", TokenType.CONTEXT_NAME_CLASS),

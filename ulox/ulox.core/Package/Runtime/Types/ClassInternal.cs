@@ -36,8 +36,7 @@ namespace ULox
         public HashedString Name { get; protected set; }
 
         public Value Initialiser { get; protected set; } = Value.Null();
-        public ClassInternal Super { get; protected set; }
-        public List<(ClosureInternal, int)> InitChains { get; protected set; } = new List<(ClosureInternal, int)>();
+        public List<(ClosureInternal closure, int instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, int)>();
         public IReadOnlyDictionary<HashedString, Value> Methods => methods.AsReadOnly;
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private List<HashedString> _fieldsNames = new List<HashedString>();
@@ -92,18 +91,6 @@ namespace ULox
         {
             CanWrite();
             InitChains.Add((closure, initChainStartOp));
-        }
-
-        public void InheritFrom(ClassInternal superClass)
-        {
-            CanWrite();
-            Super = superClass;
-            foreach (var item in superClass.methods)
-            {
-                var k = item.Key;
-                var v = item.Value;
-                AddMethod(k, v);
-            }
         }
 
         public void AddMixin(Value flavourValue)

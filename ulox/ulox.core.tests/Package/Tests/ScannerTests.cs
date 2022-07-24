@@ -90,7 +90,7 @@ new TokenType[]
                 TokenType.VAR,
                 TokenType.IDENTIFIER,
                 TokenType.ASSIGN,
-                TokenType.INT,
+                TokenType.NUMBER,
                 TokenType.END_STATEMENT,
                 TokenType.CLOSE_BRACE,
                 TokenType.VAR,
@@ -120,7 +120,7 @@ new TokenType[]
                 TokenType.VAR,
                 TokenType.IDENTIFIER,
                 TokenType.ASSIGN,
-                TokenType.INT,
+                TokenType.NUMBER,
                 TokenType.END_STATEMENT,
                 TokenType.VAR,
                 TokenType.IDENTIFIER,
@@ -136,11 +136,11 @@ new TokenType[]
                 TokenType.PLUS,
                 TokenType.IDENTIFIER,
                 TokenType.MINUS,
-                TokenType.INT,
+                TokenType.NUMBER,
                 TokenType.SLASH,
-                TokenType.INT,
+                TokenType.NUMBER,
                 TokenType.PERCENT,
-                TokenType.INT,
+                TokenType.NUMBER,
                 TokenType.EOF,
             })
                 .SetName("Comments");
@@ -152,13 +152,13 @@ new TokenType[]
             TokenType.VAR,
             TokenType.IDENTIFIER,
             TokenType.ASSIGN,
-            TokenType.INT,
+            TokenType.NUMBER,
             TokenType.LESS,
-            TokenType.INT,
+            TokenType.NUMBER,
             TokenType.QUESTION,
-            TokenType.INT,
+            TokenType.NUMBER,
             TokenType.COLON,
-            TokenType.INT,
+            TokenType.NUMBER,
             TokenType.END_STATEMENT,
             TokenType.EOF,
 })
@@ -195,7 +195,7 @@ new TokenType[]
                 TokenType.VAR,
                 TokenType.IDENTIFIER,
                 TokenType.ASSIGN,
-                TokenType.FLOAT,
+                TokenType.NUMBER,
                 TokenType.END_STATEMENT,
                 TokenType.EOF
             };
@@ -219,7 +219,7 @@ new TokenType[]
                 TokenType.VAR,
                 TokenType.IDENTIFIER,
                 TokenType.ASSIGN,
-                TokenType.INT,
+                TokenType.NUMBER,
                 TokenType.END_STATEMENT,
                 TokenType.EOF
             };

@@ -42,8 +42,7 @@
         IDENTIFIER,
         VAR,
         STRING,
-        INT,
-        FLOAT,
+        NUMBER,
 
         FUNCTION,
 
@@ -68,7 +67,6 @@
 
         CLASS,
         THIS,
-        SUPER,
         STATIC,
         INIT,
 

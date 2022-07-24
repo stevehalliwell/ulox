@@ -20,7 +20,7 @@
 
         public NativeCallResult print(Vm vm, int argCount)
         {
-            _printer?.Invoke(vm.GetArg(1).ToString());
+            _printer.Invoke(vm.GetArg(1).ToString());
             return NativeCallResult.SuccessfulExpression;
         }
 

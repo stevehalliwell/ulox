@@ -27,7 +27,6 @@ namespace ULox
             {
                 scanner.Advance();
                 workingSpaceStringBuilder.Append(scanner.CurrentChar);
-                hasFoundDecimalPoint = true;
                 while (IsDigit(scanner.Peek()))
                 {
                     scanner.Advance();
@@ -37,7 +36,8 @@ namespace ULox
 
             var numStr = workingSpaceStringBuilder.ToString();
 
-            scanner.AddToken(hasFoundDecimalPoint ? TokenType.FLOAT : TokenType.INT,
+            scanner.AddToken(
+                TokenType.NUMBER,
                 numStr,
                 double.Parse(numStr));
         }

@@ -55,9 +55,6 @@
         METHOD,
         FIELD,
         INVOKE,
-        INHERIT,
-        GET_SUPER,
-        SUPER_INVOKE,
 
         FREEZE,
 

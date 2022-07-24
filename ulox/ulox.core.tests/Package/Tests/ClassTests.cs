@@ -81,6 +81,27 @@ var t = T(3);");
         }
 
         [Test]
+        public void Engine_Class_CannotReturnExpFromInit()
+        {
+            testEngine.Run(@"
+class A 
+{
+    init(){return 7;}
+}");
+
+            Assert.AreEqual("Cannot return an expression from an 'init'.", testEngine.InterpreterResult);
+        }
+        
+        [Test]
+        public void Engine_This_OutsideClass()
+        {
+            testEngine.Run(@"
+var a = this.a;");
+
+            Assert.AreEqual("Cannot use this outside of a class declaration.", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void AutoInit_WhenTwoMatchingVarAndInitArgNames_ShouldAssignThrough()
         {
             testEngine.Run(@"

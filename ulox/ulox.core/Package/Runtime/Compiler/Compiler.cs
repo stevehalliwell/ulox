@@ -78,8 +78,7 @@ namespace ULox
                 (TokenType.STAR, new ActionParseRule(null, Binary, Precedence.Factor)),
                 (TokenType.PERCENT, new ActionParseRule(null, Binary, Precedence.Factor)),
                 (TokenType.BANG, new ActionParseRule(Unary, null, Precedence.None)),
-                (TokenType.INT, new ActionParseRule(Literal, null, Precedence.None)),
-                (TokenType.FLOAT, new ActionParseRule(Literal, null, Precedence.None)),
+                (TokenType.NUMBER, new ActionParseRule(Literal, null, Precedence.None)),
                 (TokenType.TRUE, new ActionParseRule(Literal, null, Precedence.None)),
                 (TokenType.FALSE, new ActionParseRule(Literal, null, Precedence.None)),
                 (TokenType.NULL, new ActionParseRule(Literal, null, Precedence.None)),
@@ -99,7 +98,6 @@ namespace ULox
                 (TokenType.OPEN_BRACE, new ActionParseRule(BraceCreateDynamic, null, Precedence.Call)),
                 (TokenType.DOT, new ActionParseRule(null, Dot, Precedence.Call)),
                 (TokenType.THIS, new ActionParseRule(_classCompiler.This, null, Precedence.None)),
-                (TokenType.SUPER, new ActionParseRule(_classCompiler.Super, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(_testcaseCompilette.TCName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TSName, null, Precedence.None)),
@@ -814,8 +812,7 @@ namespace ULox
             case TokenType.TRUE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
             case TokenType.FALSE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
             case TokenType.NULL: compiler.EmitOpCode(OpCode.NULL); break;
-            case TokenType.INT:
-            case TokenType.FLOAT:
+            case TokenType.NUMBER:
                 {
                     var number = (double)compiler.TokenIterator.PreviousToken.Literal;
 

@@ -18,11 +18,6 @@ class Syrup
     var topping = cname;
 }
 
-class Serving < Cone
-{
-    mixin Flavour;
-}
-
 class Bowl 
 {
     mixin Flavour;
@@ -93,21 +88,6 @@ test MixinsSimple
         resultFlavour = b.flav;
 
         Assert.AreEqual(expectedContainer, resultContainer);
-        Assert.AreEqual(expectedFlavour, resultFlavour);
-    }
-
-    testcase ClassWithInherAndMixinHasBoth
-    {
-        var expectedCone = "plain";
-        var expectedFlavour = "Flavour";
-        var resultCone;
-        var resultFlavour;
-        var b = Serving();
-
-        resultCone = b.coneType;
-        resultFlavour = b.flav;
-
-        Assert.AreEqual(expectedCone, resultCone);
         Assert.AreEqual(expectedFlavour, resultFlavour);
     }
 

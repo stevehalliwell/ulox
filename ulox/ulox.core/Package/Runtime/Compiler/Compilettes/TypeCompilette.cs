@@ -45,7 +45,6 @@ namespace ULox
         public string CurrentTypeName { get; protected set; }
         private short _initChainInstruction;
         public short InitChainInstruction => _initChainInstruction;
-        private bool _hasSuper;
         protected ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
         protected ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
@@ -70,11 +69,6 @@ namespace ULox
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
             compiler.EmitOpCode(OpCode.FREEZE);
-
-            if (_hasSuper)
-            {
-                compiler.EndScope();
-            }
         }
 
         protected void DoEndDeclareType(Compiler compiler)
@@ -128,26 +122,6 @@ namespace ULox
             compiler.EmitOpAndBytes(OpCode.CLASS, nameConstant);
             _initChainInstruction = (short)compiler.CurrentChunk.Instructions.Count;
             compiler.EmitUShort(0);
-        }
-
-        protected void DoDeclareLineInher(Compiler compiler)
-        {
-            _hasSuper = false;
-            if (!compiler.TokenIterator.Match(TokenType.LESS)) return;
-
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect superclass name.");
-            var name = (string)compiler.TokenIterator.PreviousToken.Literal;
-            compiler.NamedVariable(name, false);
-            if (CurrentTypeName == (string)compiler.TokenIterator.PreviousToken.Literal)
-                throw new CompilerException($"A class cannot inher from itself. '{CurrentTypeName}' inherits from itself, not allowed.");
-
-            compiler.BeginScope();
-            compiler.CurrentCompilerState.AddLocal("super");
-            compiler.DefineVariable(0);
-
-            compiler.NamedVariable(CurrentTypeName, false);
-            compiler.EmitOpCode(OpCode.INHERIT);
-            _hasSuper = true;
         }
     }
 }

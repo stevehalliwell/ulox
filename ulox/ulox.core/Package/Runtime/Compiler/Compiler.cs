@@ -387,7 +387,7 @@ namespace ULox
             return false;
         }
 
-        private (OpCode getOp, OpCode setOp, byte argId) ResolveNameLookupOpCode(string name)
+        public (OpCode getOp, OpCode setOp, byte argId) ResolveNameLookupOpCode(string name)
         {
             var getOp = OpCode.FETCH_GLOBAL;
             var setOp = OpCode.ASSIGN_GLOBAL;
@@ -674,8 +674,7 @@ namespace ULox
             else if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 var argCount = compiler.ArgumentList();
-                compiler.EmitOpAndBytes(OpCode.INVOKE, name);
-                compiler.EmitBytes(argCount);
+                compiler.EmitOpAndBytes(OpCode.INVOKE, name, argCount);
             }
             else
             {

@@ -61,6 +61,18 @@ print (a);");
         }
 
         [Test]
+        public void UnclosedBlockComment_WhenCompiled_ShouldCompileClean()
+        {
+            testEngine.Run(@"
+/*
+var a = 1;
+a -= 2;
+print (a);");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Cycle_Logic_Not_Expression()
         {
             testEngine.Run("print (!true);");
@@ -249,144 +261,58 @@ print (""End"");");
         }
 
         [Test]
-        public void Engine_Cycle_While()
+        public void Engine_Compile_Func_Do_Nothing()
         {
             testEngine.Run(@"
-var i = 0;
-while(i < 2)
+fun T()
 {
-    print (""hip, "");
-    i = i + 1;
+    var a = 2;
 }
 
-print (""hurray"");");
+print (T);");
 
-            Assert.AreEqual("hip, hip, hurray", testEngine.InterpreterResult);
+            Assert.AreEqual("<closure T upvals:0>", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Engine_Cycle_While_Break()
+        public void Engine_Compile_Func_Call()
         {
             testEngine.Run(@"
-var i = 0;
-while(i < 5)
+fun MyFunc()
 {
-    print (""success?"");
-    break;
-    print (""FAIL"");
-    print(""FAIL"");
-    print(""FAIL"");
-    print(""FAIL"");
-    i = i + 1;
+    print (2);
 }
 
-print (""hurray"");");
+MyFunc();");
 
-            Assert.AreEqual("success?hurray", testEngine.InterpreterResult);
+            Assert.AreEqual("2", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Engine_Cycle_While_Continue()
+        public void Engine_Compile_NativeFunc_Call()
         {
-            testEngine.Run(@"
-var i = 0;
-while(i < 3)
-{
-    i = i + 1;
-    print (i);
-    continue;
-    print (""FAIL"");
-}");
+            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) =>
+            {
+                vm.PushReturn(Value.New("Native"));
+                return NativeCallResult.SuccessfulExpression;
+            }));
 
-            Assert.AreEqual("123", testEngine.InterpreterResult);
+            testEngine.Run(@"print (CallEmptyNative());");
+
+            Assert.AreEqual("Native", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Engine_Cycle_For_Continue()
+        public void Engine_Compile_Return()
         {
             testEngine.Run(@"
-for(var i = 0;i < 3; i += 1)
-{
-    print (i);
-    continue;
-    print (""FAIL"");
-}");
+fun A(){return 1;}
 
-            Assert.AreEqual("012", testEngine.InterpreterResult);
+print (A());");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
-        [Test]
-        public void Engine_Cycle_For_AssignExistingIncrementVar_Continue()
-        {
-            testEngine.Run(@"
-var i = 0;
-for(i = 0;i < 3; i += 1)
-{
-    print (i);
-    continue;
-    print (""FAIL"");
-}");
-
-            Assert.AreEqual("012", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Cycle_For_NoInitialiseStatement_Continue()
-        {
-            testEngine.Run(@"
-var i = 0;
-for(;i < 3; i += 1)
-{
-    print (i);
-    continue;
-    print (""FAIL"");
-}");
-
-            Assert.AreEqual("012", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Cycle_While_Nested()
-        {
-            testEngine.Run(@"
-var i = 0;
-var j = 0;
-while(i < 5)
-{
-    j= 0;
-    while(j < 5)
-    {
-        j = j + 1;
-        print (j);
-        print (i);
-    }
-    i = i + 1;
-    print (i);
-}");
-
-            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Cycle_While_Nested_LocalInner()
-        {
-            testEngine.Run(@"
-var i = 0;
-while(i < 5)
-{
-    var j = 0;
-    while(j < 5)
-    {
-        j = j + 1;
-        print (j);
-        print (i);
-    }
-    i = i + 1;
-    print (i);
-}");
-
-            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
-        }
 
         [Test]
         public void Engine_Cycle_While_Nested_LocalsAndGlobals()
@@ -435,73 +361,6 @@ while(i < 5)
 DoIt();");
 
             Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Cycle_For()
-        {
-            testEngine.Run(@"
-for(var i = 0; i < 2; i = i + 1)
-{
-    print (""hip, "");
-}
-
-print (""hurray"");");
-
-            Assert.AreEqual("hip, hip, hurray", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Compile_Func_Do_Nothing()
-        {
-            testEngine.Run(@"
-fun T()
-{
-    var a = 2;
-}
-
-print (T);");
-
-            Assert.AreEqual("<closure T upvals:0>", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Compile_Func_Call()
-        {
-            testEngine.Run(@"
-fun MyFunc()
-{
-    print (2);
-}
-
-MyFunc();");
-
-            Assert.AreEqual("2", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Compile_NativeFunc_Call()
-        {
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) => 
-            { 
-                vm.PushReturn(Value.New("Native")); 
-                return NativeCallResult.SuccessfulExpression; 
-            }));
-
-            testEngine.Run(@"print (CallEmptyNative());");
-
-            Assert.AreEqual("Native", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Compile_Return()
-        {
-            testEngine.Run(@"
-fun A(){return 1;}
-
-print (A());");
-
-            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
         //TODO single take of a multi return
@@ -905,36 +764,6 @@ Assert.Throws(WillThrow);");
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
-        [Test]
-        public void Engine_Loop()
-        {
-            testEngine.Run(@"
-var i = 0;
-loop
-{
-    print (i);
-    i = i + 1;
-    if(i > 5)
-        break;
-    print (i);
-}");
-
-            Assert.AreEqual("01122334455", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Loop_NoTerminate()
-        {
-            testEngine.Run(@"
-var i = 0;
-loop
-{
-    print (i);
-    i = i + 1;
-}");
-
-            Assert.AreEqual("Loops must contain an termination.", testEngine.InterpreterResult);
-        }
 
         [Test]
         public void Engine_Func_Paramless()

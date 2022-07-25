@@ -40,14 +40,14 @@ class Ball
 		this.go = CreateFromPrefab(ballName);
 	}
 
-  	Tick()
-  	{
+	Tick()
+	{
   		this.posx = this.posx + this.velx * dt;
   		this.posy = this.posy + this.vely * dt;
 
 		this.Contain(limit);
 		this.UpdateGoPosition();
-  	}
+	}
 	
 	Contain(lim)
 	{
@@ -56,24 +56,24 @@ class Ball
 		var vx = this.velx;
 		var vy = this.vely;
 
-  		if((x < -lim and vx < 0) or 
-  		   (x > lim  and vx > 0) )
-  		{
-			  vx *= -1;
-			  this.velx = vx;
+		if((x < -lim and vx < 0) or 
+		  (x > lim  and vx > 0) )
+		{
+			vx *= -1;
+			this.velx = vx;
 		}
-  		
-  		if((y < -lim and vy < 0) or
-  		   (y > lim  and vy > 0) )
-  		{
-			  vy *= -1;
-			  this.vely = vy;
+
+		if((y < -lim and vy < 0) or
+		  (y > lim  and vy > 0) )
+		{
+			vy *= -1;
+			this.vely = vy;
 		}
 	}
 	
 	UpdateGoPosition()
 	{
-  		SetGameObjectPosition(this.go, this.posx, this.posy, 0);
+		SetGameObjectPosition(this.go, this.posx, this.posy, 0);
 	}
 }
 

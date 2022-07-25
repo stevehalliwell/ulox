@@ -278,5 +278,41 @@ loop (arr,jtem)
 
             Assert.AreEqual("abc", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void LoopNested_WhenGivenNumberArrayAndItemName_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var arr = [];
+arr.Add(""a"");
+arr.Add(""b"");
+arr.Add(""c"");
+
+loop (arr,jtem, j)
+{
+    print(jtem);
+    loop(arr)
+    {
+        print(item);
+    }
+}
+");
+
+            Assert.AreEqual("aabcbabccabc", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenNull_ShouldFailToInvoke()
+        {
+            testEngine.Run(@"
+var arr = null;
+
+loop (arr)
+{
+}
+");
+
+            Assert.AreEqual("Cannot invoke on 'null'.", testEngine.InterpreterResult);
+        }
     }
 }

@@ -1,5 +1,4 @@
 // natively provides a simple list type
-
 var list = [];
 var len = 5;
 
@@ -16,3 +15,9 @@ var length = list.Count();
 
 
 print("Length is " + length);
+
+// There's support for loop with native arrays, that can optionally declare names for item and index
+loop(list, item, index)
+{
+    print("Item @" + index + ", is " + item);
+}

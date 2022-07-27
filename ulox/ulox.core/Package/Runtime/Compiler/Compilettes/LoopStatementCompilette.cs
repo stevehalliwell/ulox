@@ -45,6 +45,12 @@
                     throw new CompilerException($"indexName '{indexName}' already exists at this scope, name used for index in loop must be unique at {prevToken.Line}:{prevToken.Character} '{prevToken.Literal}'");
                 }
 
+                //skip the looop if the target is null
+                compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
+                int exitJumpArrayIsNullLocation = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+                loopState.loopExitPatchLocations.Add(exitJumpArrayIsNullLocation);
+                compiler.EmitOpCode(OpCode.POP);
+
                 //refer to output of For_WhenLimitedIterations_ShouldPrint3Times 
                 compiler.CurrentCompilerState.DeclareVariableByName(indexName);
                 compiler.CurrentCompilerState.MarkInitialised();

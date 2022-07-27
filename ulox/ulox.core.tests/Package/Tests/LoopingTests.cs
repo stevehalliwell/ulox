@@ -302,10 +302,104 @@ loop (arr,jtem, j)
         }
 
         [Test]
-        public void Loop_WhenGivenNull_ShouldFailToInvoke()
+        public void Loop_WhenGivenNull_ShouldSkipLoop()
         {
             testEngine.Run(@"
 var arr = null;
+
+loop (arr)
+{
+    print(""inner"");
+}
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenNumber_ShouldFailToInvoke()
+        {
+            testEngine.Run(@"
+var arr = 7;
+
+loop (arr)
+{
+}
+");
+
+            Assert.AreEqual("Cannot invoke on '7'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenString_ShouldFailToInvoke()
+        {
+            testEngine.Run(@"
+var arr = ""str"";
+
+loop (arr)
+{
+}
+");
+
+            Assert.AreEqual("Cannot invoke on 'str'.", testEngine.InterpreterResult);
+        }
+        
+        [Test]
+        public void Loop_WhenGivenEmptyMap_ShouldDoNothing()
+        {
+            testEngine.Run(@"
+var map = [:];
+
+loop (map)
+{
+    print(i);
+}
+
+print(""Pass"");
+");
+
+            Assert.AreEqual("Pass", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenNonEmptyMap_ShouldFail()
+        {
+            testEngine.Run(@"
+var map = [:];
+map[""nothing""] = ""something"";
+
+loop (map)
+{
+    print(i);
+}
+
+print(""Pass"");
+");
+
+            Assert.AreEqual("Cannot invoke on 'null'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenStub_ShouldFailToInvoke()
+        {
+            testEngine.Run(@"
+class Stub {}
+var arr = Stub();
+
+loop (arr)
+{
+}
+");
+
+            Assert.AreEqual("No method of name 'Count' found on 'ULox.ClassInternal'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenFakeList_ShouldFailToInvoke()
+        {
+            testEngine.Run(@"
+class FakeList { Count() { return 1; } }
+var arr = FakeList();
 
 loop (arr)
 {

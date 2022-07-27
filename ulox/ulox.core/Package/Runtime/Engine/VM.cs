@@ -369,19 +369,19 @@ namespace ULox
                 case OpCode.NATIVE_TYPE:
                     DoNativeTypeOp(chunk);
                     break;
-                
+
                 case OpCode.GET_INDEX:
                     DoGetIndexOp();
                     break;
-                
+
                 case OpCode.SET_INDEX:
                     DoSetIndexOp();
                     break;
-                
+
                 case OpCode.TYPEOF:
                     DoTypeOfOp();
                     break;
-                
+
                 //can merge into validate, this is not perf critical
                 case OpCode.MEETS:
                     DoMeetsOp();
@@ -391,7 +391,7 @@ namespace ULox
                 case OpCode.SIGNS:
                     DoSignsOp();
                     break;
-                
+
                 case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
@@ -998,9 +998,12 @@ namespace ULox
             if (lhs.type != rhs.type)
                 throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
 
-            if (DoCustomMathOp(opCode, lhs, rhs))
-                return;
-
+            if (lhs.type == ValueType.Instance)
+            {
+                if(DoCustomOverloadOp(opCode, lhs, rhs))
+                    return;
+            }
+            
             throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
         }
 
@@ -1040,7 +1043,7 @@ namespace ULox
             var lhs = Pop();
 
             if (lhs.type == ValueType.Instance)
-                if (DoCustomComparisonOp(opCode, lhs, rhs))
+                if (DoCustomOverloadOp(opCode, lhs, rhs))
                     return;
 
             if (opCode == OpCode.EQUAL)
@@ -1386,32 +1389,10 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs)
-        {
-            if (lhs.type == ValueType.Instance)
-            {
-                var lhsInst = lhs.val.asInstance;
-                var opClosure = lhsInst.FromClass.GetMathOpClosure(opCode);
-                //identify if lhs has a matching method or field
-                if (!opClosure.IsNull)
-                {
-                    CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
-                    return true;
-                }
-
-                if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
-                {
-                    return HandleDynamicCustomMathOp(opCode, lhs, rhs);
-                }
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs)
+        private bool DoCustomOverloadOp(OpCode opCode, Value lhs, Value rhs)
         {
             var lhsInst = lhs.val.asInstance;
-            var opClosure = lhsInst.FromClass.GetCompareOpClosure(opCode);
+            var opClosure = lhsInst.FromClass.GetOverloadClosure(opCode);
             //identify if lhs has a matching method or field
             if (!opClosure.IsNull)
             {
@@ -1421,7 +1402,22 @@ namespace ULox
 
             if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
             {
-                return HandleDynamicCustomCompOp(opCode, lhs, rhs);
+                return HandleDynamicCustomOverloadOp(opCode, lhs, rhs);
+            }
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool HandleDynamicCustomOverloadOp(OpCode opCode, Value lhs, Value rhs)
+        {
+            var targetName = ClassInternal.OverloadableMethodNames[ClassInternal.OpCodeToOverloadIndex[opCode]];
+            if (lhs.val.asInstance.TryGetField(targetName, out var matchingValue))
+            {
+                if (matchingValue.type == ValueType.Closure)
+                {
+                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
+                    return true;
+                }
             }
             return false;
         }
@@ -1438,36 +1434,6 @@ namespace ULox
                 Closure = opClosure.val.asClosure,
                 StackStart = (byte)(_valueStack.Count - 3),
             });
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleDynamicCustomMathOp(OpCode opCode, Value lhs, Value rhs)
-        {
-            var targetName = ClassInternal.MathOperatorMethodNames[(int)opCode - ClassInternal.FirstMathOp];
-            if (lhs.val.asInstance.TryGetField(targetName, out var matchingValue))
-            {
-                if (matchingValue.type == ValueType.Closure)
-                {
-                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleDynamicCustomCompOp(OpCode opCode, Value lhs, Value rhs)
-        {
-            var targetName = ClassInternal.ComparisonOperatorMethodNames[(int)opCode - ClassInternal.FirstCompOp];
-            if (lhs.val.asInstance.TryGetField(targetName, out var matchingValue))
-            {
-                if (matchingValue.type == ValueType.Closure)
-                {
-                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

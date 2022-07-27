@@ -5,32 +5,34 @@ namespace ULox
 {
     public class ClassInternal : InstanceInternal
     {
-        public const int FirstMathOp = (int)OpCode.ADD;
-        public const int LastMathOp = (int)OpCode.MODULUS;
-
-        public static readonly HashedString[] MathOperatorMethodNames = new HashedString[]
+        public static readonly HashedString[] OverloadableMethodNames = new HashedString[]
         {
             new HashedString("_add"),
             new HashedString("_sub"),
             new HashedString("_mul"),
             new HashedString("_div"),
             new HashedString("_mod"),
-        };
-
-        public const int FirstCompOp = (int)OpCode.EQUAL;
-        public const int LastCompOp = (int)OpCode.GREATER;
-
-        public static readonly HashedString[] ComparisonOperatorMethodNames = new HashedString[]
-        {
             new HashedString("_eq"),
             new HashedString("_ls"),
             new HashedString("_gr"),
         };
 
+
+        public static readonly Dictionary<OpCode, int> OpCodeToOverloadIndex = new Dictionary<OpCode, int>()
+        {
+            {OpCode.ADD,        0 },
+            {OpCode.SUBTRACT,   1 },
+            {OpCode.MULTIPLY,   2 },
+            {OpCode.DIVIDE,     3 },
+            {OpCode.MODULUS,    4 },
+            {OpCode.EQUAL,      5 },
+            {OpCode.LESS,       6 },
+            {OpCode.GREATER,    7 },
+        };
+
         private readonly Table methods = new Table();
         private readonly Table flavours = new Table();
-        private readonly Value[] mathOperators = new Value[LastMathOp - FirstMathOp + 1];
-        private readonly Value[] compOperators = new Value[LastCompOp - FirstCompOp + 1];
+        private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
 
         //TODO these props also need to be write protected by the freeze
         public HashedString Name { get; protected set; }
@@ -66,18 +68,10 @@ namespace ULox
             {
                 Initialiser = method;
             }
-            var opIndex = System.Array.FindIndex(MathOperatorMethodNames, x => key.Hash == x.Hash);
+            var opIndex = System.Array.FindIndex(OverloadableMethodNames, x => key.Hash == x.Hash);
             if (opIndex != -1)
             {
-                mathOperators[opIndex] = method;
-            }
-            else
-            {
-                opIndex = System.Array.FindIndex(ComparisonOperatorMethodNames, x => key.Hash == x.Hash);
-                if (opIndex != -1)
-                {
-                    compOperators[opIndex] = method;
-                }
+                overloadableOperators[opIndex] = method;
             }
         }
 
@@ -138,17 +132,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetMathOpClosure(OpCode opCode)
+        public Value GetOverloadClosure(OpCode opCode)
         {
-            int opIndex = (int)opCode - ClassInternal.FirstMathOp;
-            return mathOperators[opIndex];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetCompareOpClosure(OpCode opCode)
-        {
-            int opIndex = (int)opCode - ClassInternal.FirstCompOp;
-            return compOperators[opIndex];
+            return overloadableOperators[OpCodeToOverloadIndex[opCode]];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -406,7 +406,27 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("Cannot invoke on 'null'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot perform get index on type 'Instance'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenCustomList_ShouldPass()
+        {
+            testEngine.Run(@"
+class FakeList 
+{ 
+    Count() { return 1; }
+    _gi(i) { return ""Hello""; }
+}
+var arr = FakeList();
+
+loop (arr)
+{
+    print(item);
+}
+");
+
+            Assert.AreEqual("Hello", testEngine.InterpreterResult);
         }
     }
 }

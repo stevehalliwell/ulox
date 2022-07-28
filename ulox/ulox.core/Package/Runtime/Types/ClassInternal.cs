@@ -15,6 +15,7 @@ namespace ULox
             new HashedString("_eq"),
             new HashedString("_ls"),
             new HashedString("_gr"),
+            new HashedString("_gi"),
         };
 
 
@@ -28,6 +29,7 @@ namespace ULox
             {OpCode.EQUAL,      5 },
             {OpCode.LESS,       6 },
             {OpCode.GREATER,    7 },
+            {OpCode.GET_INDEX,  8 },
         };
 
         private readonly Table methods = new Table();

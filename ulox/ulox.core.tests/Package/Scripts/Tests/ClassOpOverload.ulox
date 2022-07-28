@@ -44,6 +44,22 @@ class Vec2
     }
 }
 
+class IndexableClass
+{
+    var x,y;
+    init(x,y){}
+
+    _gi(rhs)
+    {
+        if(rhs == "x")
+            return this.x;
+        if(rhs == "y")
+            return this.y;
+
+        return null;
+    }
+}
+
 test OperatorOverloading
 {
     testcase Add
@@ -157,5 +173,20 @@ test OperatorOverloading
         result = a > b;
 
         Assert.AreEqual(expected, result);
+    }
+
+    testcase GetIndex
+    {
+        var expectedX = 1;
+        var expectedY = 2;
+        var resultX = null;
+        var resultY = null;
+        var indexable = IndexableClass(expectedX, expectedY);
+
+        resultX = indexable["x"];
+        resultY = indexable["y"];
+
+        Assert.AreEqual(expectedX, resultX);
+        Assert.AreEqual(expectedY, resultY);
     }
 }

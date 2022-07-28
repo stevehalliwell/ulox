@@ -371,7 +371,7 @@ namespace ULox
                     break;
 
                 case OpCode.GET_INDEX:
-                    DoGetIndexOp();
+                    DoGetIndexOp(opCode);
                     break;
 
                 case OpCode.SET_INDEX:
@@ -452,18 +452,36 @@ namespace ULox
             var newValue = Pop();
             var index = Pop();
             var listValue = Pop();
-            var nativeCol = listValue.val.asInstance as INativeCollection;
-            nativeCol.Set(index, newValue);
-            Push(newValue);
+            if (listValue.val.asInstance is INativeCollection nativeCol)
+            {
+                nativeCol.Set(index, newValue);
+                Push(newValue);
+                return;
+            }
+
+            throw new VMException($"Cannot perform set index on type '{listValue.type}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetIndexOp()
+        private void DoGetIndexOp(OpCode opCode)
         {
             var index = Pop();
             var listValue = Pop();
-            var nativeCol = listValue.val.asInstance as INativeCollection;
-            Push(nativeCol.Get(index));
+
+            if (listValue.val.asInstance is INativeCollection nativeCol)
+            {
+                Push(nativeCol.Get(index));
+                return;
+            }
+
+            //attempt overload method call
+            if (listValue.type == ValueType.Instance)
+            {
+                if (DoCustomOverloadOp(opCode, listValue, index))
+                    return;
+            }
+
+            throw new VMException($"Cannot perform get index on type '{listValue.type}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1000,10 +1018,10 @@ namespace ULox
 
             if (lhs.type == ValueType.Instance)
             {
-                if(DoCustomOverloadOp(opCode, lhs, rhs))
+                if (DoCustomOverloadOp(opCode, lhs, rhs))
                     return;
             }
-            
+
             throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
         }
 
@@ -1423,16 +1441,34 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallOperatorOverloadedbyFunction(Value lhs, Value rhs, Value opClosure)
+        private void CallOperatorOverloadedbyFunction(Value self, Value rhs, Value opClosure)
         {
-            Push(lhs);
-            Push(lhs);
-            Push(rhs);
+            //presently we support 3 forms of overloads
+            //  math and comparison, taking self and rhs
+            //  get index, taking only rhs
+            //  set index taking self, index, value
+            // the arg count tells us which one
+            Push(self);
+
+            var arity = opClosure.val.asClosure.chunk.Arity;
+
+            switch (opClosure.val.asClosure.chunk.Arity)
+            {
+            case 1:
+                Push(rhs);
+                break;
+            case 2:
+                Push(self);
+                Push(rhs);
+                break;
+            case 3:
+                break;
+            }
 
             PushNewCallframe(new CallFrame()
             {
                 Closure = opClosure.val.asClosure,
-                StackStart = (byte)(_valueStack.Count - 3),
+                StackStart = (byte)(_valueStack.Count - 1 - arity),
             });
         }
     }

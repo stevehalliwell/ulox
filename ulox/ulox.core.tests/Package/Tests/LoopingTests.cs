@@ -370,13 +370,29 @@ map[""nothing""] = ""something"";
 
 loop (map)
 {
-    print(i);
+    print(item);
 }
 
 print(""Pass"");
 ");
 
-            Assert.AreEqual("Cannot invoke on 'null'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Map contains no key of '0'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenNonEmptyMapWithValidNumberKey_ShouldPass()
+        {
+            testEngine.Run(@"
+var map = [:];
+map[0] = ""something"";
+
+loop (map)
+{
+    print(item);
+}
+");
+
+            Assert.AreEqual("something", testEngine.InterpreterResult);
         }
 
         [Test]

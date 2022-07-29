@@ -19,7 +19,6 @@ namespace ULox
             new HashedString("_si"),
         };
 
-
         public static readonly Dictionary<OpCode, int> OpCodeToOverloadIndex = new Dictionary<OpCode, int>()
         {
             {OpCode.ADD,        0 },

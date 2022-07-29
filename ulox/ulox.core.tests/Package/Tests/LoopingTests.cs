@@ -416,7 +416,7 @@ loop (arr)
 class FakeList 
 { 
     Count() { return 1; }
-    _gi(i) { return ""Hello""; }
+    _gi(self, i) { return ""Hello""; }
 }
 var arr = FakeList();
 

@@ -375,7 +375,7 @@ namespace ULox
                     break;
 
                 case OpCode.SET_INDEX:
-                    DoSetIndexOp();
+                    DoSetIndexOp(opCode);
                     break;
 
                 case OpCode.TYPEOF:
@@ -447,7 +447,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetIndexOp()
+        private void DoSetIndexOp(OpCode opCode)
         {
             var newValue = Pop();
             var index = Pop();
@@ -457,6 +457,13 @@ namespace ULox
                 nativeCol.Set(index, newValue);
                 Push(newValue);
                 return;
+            }
+            
+            //attempt overload method call
+            if (listValue.type == ValueType.Instance)
+            {
+                if (DoCustomOverloadOp(opCode, listValue, index, newValue))
+                    return;
             }
 
             throw new VMException($"Cannot perform set index on type '{listValue.type}'.");
@@ -477,7 +484,7 @@ namespace ULox
             //attempt overload method call
             if (listValue.type == ValueType.Instance)
             {
-                if (DoCustomOverloadOp(opCode, listValue, index))
+                if (DoCustomOverloadOp(opCode, listValue, index, Value.Null()))
                     return;
             }
 
@@ -1018,7 +1025,7 @@ namespace ULox
 
             if (lhs.type == ValueType.Instance)
             {
-                if (DoCustomOverloadOp(opCode, lhs, rhs))
+                if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
                     return;
             }
 
@@ -1061,7 +1068,7 @@ namespace ULox
             var lhs = Pop();
 
             if (lhs.type == ValueType.Instance)
-                if (DoCustomOverloadOp(opCode, lhs, rhs))
+                if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
                     return;
 
             if (opCode == OpCode.EQUAL)
@@ -1407,67 +1414,60 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoCustomOverloadOp(OpCode opCode, Value lhs, Value rhs)
+        private bool DoCustomOverloadOp(OpCode opCode, Value self, Value arg1, Value arg2)
         {
-            var lhsInst = lhs.val.asInstance;
+            var lhsInst = self.val.asInstance;
             var opClosure = lhsInst.FromClass.GetOverloadClosure(opCode);
             //identify if lhs has a matching method or field
             if (!opClosure.IsNull)
             {
-                CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
+                CallOperatorOverloadedbyFunction(opClosure.val.asClosure, self, arg1, arg2);
                 return true;
             }
 
             if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
             {
-                return HandleDynamicCustomOverloadOp(opCode, lhs, rhs);
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleDynamicCustomOverloadOp(OpCode opCode, Value lhs, Value rhs)
-        {
-            var targetName = ClassInternal.OverloadableMethodNames[ClassInternal.OpCodeToOverloadIndex[opCode]];
-            if (lhs.val.asInstance.TryGetField(targetName, out var matchingValue))
-            {
-                if (matchingValue.type == ValueType.Closure)
+                var targetName = ClassInternal.OverloadableMethodNames[ClassInternal.OpCodeToOverloadIndex[opCode]];
+                if (self.val.asInstance.TryGetField(targetName, out var matchingValue))
                 {
-                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
-                    return true;
+                    if (matchingValue.type == ValueType.Closure)
+                    {
+                        CallOperatorOverloadedbyFunction(matchingValue.val.asClosure, self, arg1, arg2);
+                        return true;
+                    }
                 }
             }
             return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallOperatorOverloadedbyFunction(Value self, Value rhs, Value opClosure)
+        private void CallOperatorOverloadedbyFunction(ClosureInternal opClosure, Value self, Value arg1, Value arg2)
         {
             //presently we support 3 forms of overloads
-            //  math and comparison, taking self and rhs
-            //  get index, taking only rhs
+            //  math and comparison, taking self and other
+            //  get index, taking self and index
             //  set index taking self, index, value
             // the arg count tells us which one
             Push(self);
 
-            var arity = opClosure.val.asClosure.chunk.Arity;
-
-            switch (opClosure.val.asClosure.chunk.Arity)
+            var arity = opClosure.chunk.Arity;
+            
+            switch (opClosure.chunk.Arity)
             {
-            case 1:
-                Push(rhs);
-                break;
             case 2:
                 Push(self);
-                Push(rhs);
+                Push(arg1);
                 break;
             case 3:
+                Push(self);
+                Push(arg1);
+                Push(arg2);
                 break;
             }
 
             PushNewCallframe(new CallFrame()
             {
-                Closure = opClosure.val.asClosure,
+                Closure = opClosure,
                 StackStart = (byte)(_valueStack.Count - 1 - arity),
             });
         }

@@ -1,0 +1,55 @@
+test LoopArrayTests
+{
+    testcase ListOfSizeUsingAutoI
+    {
+        var list = [];
+        var len = 5;
+        list.Resize(len);
+
+        loop (list)
+        {
+            list[i] = i;
+        }
+
+        for (var i = 0; i < list.Count(); i+= 1)
+        {
+            Assert.AreEqual(i, list[i]);
+        }
+    }
+
+    testcase ListOfSizeAccumViaLoop
+    {
+        var accum = 0;
+        var list = [];
+        var len = 5;
+        for (var i = 0; i < len; i+= 1)
+        {
+            list.Add(i);
+        }
+
+        loop (list)
+        {
+            accum += item;
+        }
+
+        Assert.AreEqual(10, accum);
+    }
+
+    testcase ListOfSizeAccumViaLoopCustomName
+    {
+        var accum = 0;
+        var list = [];
+        var len = 5;
+        for (var i = 0; i < len; i+= 1)
+        {
+            list.Add(i);
+        }
+
+        loop (list, jtem)
+        {
+            accum += jtem;
+        }
+
+        Assert.AreEqual(10, accum);
+    }
+}

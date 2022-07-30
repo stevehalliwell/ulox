@@ -369,19 +369,19 @@ namespace ULox
                 case OpCode.NATIVE_TYPE:
                     DoNativeTypeOp(chunk);
                     break;
-                
+
                 case OpCode.GET_INDEX:
-                    DoGetIndexOp();
+                    DoGetIndexOp(opCode);
                     break;
-                
+
                 case OpCode.SET_INDEX:
-                    DoSetIndexOp();
+                    DoSetIndexOp(opCode);
                     break;
-                
+
                 case OpCode.TYPEOF:
                     DoTypeOfOp();
                     break;
-                
+
                 //can merge into validate, this is not perf critical
                 case OpCode.MEETS:
                     DoMeetsOp();
@@ -391,7 +391,7 @@ namespace ULox
                 case OpCode.SIGNS:
                     DoSignsOp();
                     break;
-                
+
                 case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
@@ -447,23 +447,48 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetIndexOp()
+        private void DoSetIndexOp(OpCode opCode)
         {
             var newValue = Pop();
             var index = Pop();
             var listValue = Pop();
-            var nativeCol = listValue.val.asInstance as INativeCollection;
-            nativeCol.Set(index, newValue);
-            Push(newValue);
+            if (listValue.val.asInstance is INativeCollection nativeCol)
+            {
+                nativeCol.Set(index, newValue);
+                Push(newValue);
+                return;
+            }
+            
+            //attempt overload method call
+            if (listValue.type == ValueType.Instance)
+            {
+                if (DoCustomOverloadOp(opCode, listValue, index, newValue))
+                    return;
+            }
+
+            throw new VMException($"Cannot perform set index on type '{listValue.type}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetIndexOp()
+        private void DoGetIndexOp(OpCode opCode)
         {
             var index = Pop();
             var listValue = Pop();
-            var nativeCol = listValue.val.asInstance as INativeCollection;
-            Push(nativeCol.Get(index));
+
+            if (listValue.val.asInstance is INativeCollection nativeCol)
+            {
+                Push(nativeCol.Get(index));
+                return;
+            }
+
+            //attempt overload method call
+            if (listValue.type == ValueType.Instance)
+            {
+                if (DoCustomOverloadOp(opCode, listValue, index, Value.Null()))
+                    return;
+            }
+
+            throw new VMException($"Cannot perform get index on type '{listValue.type}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -998,8 +1023,11 @@ namespace ULox
             if (lhs.type != rhs.type)
                 throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
 
-            if (DoCustomMathOp(opCode, lhs, rhs))
-                return;
+            if (lhs.type == ValueType.Instance)
+            {
+                if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                    return;
+            }
 
             throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
         }
@@ -1040,7 +1068,7 @@ namespace ULox
             var lhs = Pop();
 
             if (lhs.type == ValueType.Instance)
-                if (DoCustomComparisonOp(opCode, lhs, rhs))
+                if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
                     return;
 
             if (opCode == OpCode.EQUAL)
@@ -1386,88 +1414,62 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoCustomMathOp(OpCode opCode, Value lhs, Value rhs)
+        private bool DoCustomOverloadOp(OpCode opCode, Value self, Value arg1, Value arg2)
         {
-            if (lhs.type == ValueType.Instance)
-            {
-                var lhsInst = lhs.val.asInstance;
-                var opClosure = lhsInst.FromClass.GetMathOpClosure(opCode);
-                //identify if lhs has a matching method or field
-                if (!opClosure.IsNull)
-                {
-                    CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
-                    return true;
-                }
-
-                if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
-                {
-                    return HandleDynamicCustomMathOp(opCode, lhs, rhs);
-                }
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoCustomComparisonOp(OpCode opCode, Value lhs, Value rhs)
-        {
-            var lhsInst = lhs.val.asInstance;
-            var opClosure = lhsInst.FromClass.GetCompareOpClosure(opCode);
+            var lhsInst = self.val.asInstance;
+            var opClosure = lhsInst.FromClass.GetOverloadClosure(opCode);
             //identify if lhs has a matching method or field
             if (!opClosure.IsNull)
             {
-                CallOperatorOverloadedbyFunction(lhs, rhs, opClosure);
+                CallOperatorOverloadedbyFunction(opClosure.val.asClosure, self, arg1, arg2);
                 return true;
             }
 
             if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
             {
-                return HandleDynamicCustomCompOp(opCode, lhs, rhs);
+                var targetName = ClassInternal.OverloadableMethodNames[ClassInternal.OpCodeToOverloadIndex[opCode]];
+                if (self.val.asInstance.TryGetField(targetName, out var matchingValue))
+                {
+                    if (matchingValue.type == ValueType.Closure)
+                    {
+                        CallOperatorOverloadedbyFunction(matchingValue.val.asClosure, self, arg1, arg2);
+                        return true;
+                    }
+                }
             }
             return false;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallOperatorOverloadedbyFunction(Value lhs, Value rhs, Value opClosure)
+        private void CallOperatorOverloadedbyFunction(ClosureInternal opClosure, Value self, Value arg1, Value arg2)
         {
-            Push(lhs);
-            Push(lhs);
-            Push(rhs);
+            //presently we support multiple forms of overloads
+            //  math and comparison, taking self and other
+            //  get index, taking self and index
+            //  set index taking self, index, value
+            // the arg count tells us which one
+            Push(self);
+
+            var arity = opClosure.chunk.Arity;
+            
+            switch (opClosure.chunk.Arity)
+            {
+            case 2:
+                Push(self);
+                Push(arg1);
+                break;
+            case 3:
+                Push(self);
+                Push(arg1);
+                Push(arg2);
+                break;
+            }
 
             PushNewCallframe(new CallFrame()
             {
-                Closure = opClosure.val.asClosure,
-                StackStart = (byte)(_valueStack.Count - 3),
+                Closure = opClosure,
+                StackStart = (byte)(_valueStack.Count - 1 - arity),
             });
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleDynamicCustomMathOp(OpCode opCode, Value lhs, Value rhs)
-        {
-            var targetName = ClassInternal.MathOperatorMethodNames[(int)opCode - ClassInternal.FirstMathOp];
-            if (lhs.val.asInstance.TryGetField(targetName, out var matchingValue))
-            {
-                if (matchingValue.type == ValueType.Closure)
-                {
-                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool HandleDynamicCustomCompOp(OpCode opCode, Value lhs, Value rhs)
-        {
-            var targetName = ClassInternal.ComparisonOperatorMethodNames[(int)opCode - ClassInternal.FirstCompOp];
-            if (lhs.val.asInstance.TryGetField(targetName, out var matchingValue))
-            {
-                if (matchingValue.type == ValueType.Closure)
-                {
-                    CallOperatorOverloadedbyFunction(lhs, rhs, matchingValue);
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

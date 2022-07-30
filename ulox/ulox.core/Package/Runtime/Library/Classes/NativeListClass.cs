@@ -16,6 +16,7 @@ namespace ULox
                 (nameof(Resize), Value.New(Resize)),
                 (nameof(Add), Value.New(Add)),
                 (nameof(Remove), Value.New(Remove)),
+                // TODO: RemoveAt
                 (nameof(Map), Value.New(Map)),
                 (nameof(Reduce), Value.New(Reduce)),
                 (nameof(Fold), Value.New(Fold)),

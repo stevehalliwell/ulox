@@ -23,7 +23,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Get(Value ind)
         {
-            return _map[ind];
+            return _map.TryGetValue(ind, out var value)
+                ? value
+                : throw new VMException($"Map contains no key of '{ind}'.");
         }
     }
 }

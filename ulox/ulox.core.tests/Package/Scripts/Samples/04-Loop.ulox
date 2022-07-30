@@ -1,3 +1,4 @@
+// while loops
 var i = 0;
 while(i < 2)
 {
@@ -6,3 +7,25 @@ while(i < 2)
 }
 
 print ("hurray");
+
+// for loops
+for(var i = 0; i < 2; i += 1)
+{
+    print ("hip, ");
+}
+
+print ("hurray");
+
+// loop loops
+var j = 0;
+loop
+{
+    if(j >= 2)
+    {
+        break;
+    }
+    print ("hip, ");
+    j = j + 1;
+}
+
+print("hurray");

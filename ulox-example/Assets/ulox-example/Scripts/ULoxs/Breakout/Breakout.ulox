@@ -48,9 +48,9 @@ fun CreateBall(at)
 
 fun CreateBricksFromPositions(posList)
 {
-    for(var i = 0; i < posList.Count(); i+=1)
+    loop (posList)
     {
-        var newBrick = Brick(posList[i], i % 2);
+        var newBrick = Brick(item, i % 2);
         bricks.Add(newBrick);
     }
 }

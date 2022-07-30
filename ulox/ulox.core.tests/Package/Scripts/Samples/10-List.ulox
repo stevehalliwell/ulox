@@ -1,5 +1,4 @@
 // natively provides a simple list type
-
 var list = [];
 var len = 5;
 
@@ -8,11 +7,25 @@ for (var i = 0; i < len; i+= 1)
     list.Add(i);
 }
 
-var success = list.Remove(3);
-
-if(!success) print("Found no 3 to remove.");
+list.Remove(3);
 
 var length = list.Count();
-
-
 print("Length is " + length);
+
+// There's support for loop with native arrays, that can optionally declare names for item and index
+loop(list, item, index)
+{
+    print("Item @" + index + ", is " + item);
+}
+
+// You can even remove items during the loop and adjust the index to match
+loop (list, val, j)
+{
+    if(val % 2 == 0)
+    {
+        list.Remove(val);
+        j -= 1;
+    }
+}
+
+print("Length is " + list.Count());

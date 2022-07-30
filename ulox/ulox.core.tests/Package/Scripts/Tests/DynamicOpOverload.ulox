@@ -42,6 +42,24 @@ fun MakeVec2(x,y)
         return !_ls(lhs,rhs);
     }
 
+    fun _gi(self, index)
+    {
+        if(index == "x")
+            return self.x;
+        if(index == "y")
+            return self.y;
+
+        return null;
+    }
+
+    fun _si(self, index, value)
+    {
+        if(index == "x")
+            self.x = value;
+        if(index == "y")
+            self.y = value;
+    }
+
     res._add = _add;
     res._sub = _sub;
     res._mul = _mul;
@@ -51,6 +69,9 @@ fun MakeVec2(x,y)
     res._eq = _eq;
     res._ls = _ls;
     res._gr = _gr;
+    
+    res._gi = _gi;
+    res._si = _si;
     
     res.x = x;
     res.y = y;
@@ -170,5 +191,39 @@ test OperatorOverloading
         result = a > b;
 
         Assert.AreEqual(expected, result);
+    }
+    
+    testcase GetIndex
+    {
+        var expectedX = 1;
+        var expectedY = 2;
+        var resultX = null;
+        var resultY = null;
+        var indexable = MakeVec2(expectedX, expectedY);
+
+        resultX = indexable["x"];
+        resultY = indexable["y"];
+
+        Assert.AreEqual(expectedX, resultX);
+        Assert.AreEqual(expectedY, resultY);
+    }
+
+    testcase SetIndex
+    {
+        var initalX = -1;
+        var initalY = -2;
+        var expectedX = 1;
+        var expectedY = 2;
+        var resultX = null;
+        var resultY = null;
+        var indexable = MakeVec2(initalX, initalY);
+
+        indexable["x"] = expectedX;
+        indexable["y"] = expectedY;
+        resultX = indexable.x;
+        resultY = indexable.y;
+
+        Assert.AreEqual(expectedX, resultX);
+        Assert.AreEqual(expectedY, resultY);
     }
 }

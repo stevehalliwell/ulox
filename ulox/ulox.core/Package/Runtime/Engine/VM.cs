@@ -1443,7 +1443,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CallOperatorOverloadedbyFunction(ClosureInternal opClosure, Value self, Value arg1, Value arg2)
         {
-            //presently we support 3 forms of overloads
+            //presently we support multiple forms of overloads
             //  math and comparison, taking self and other
             //  get index, taking self and index
             //  set index taking self, index, value

@@ -37,12 +37,12 @@
                 if (compiler.CurrentCompilerState.ResolveLocal(itemName) != -1)
                 {
                     var prevToken = compiler.TokenIterator.PreviousToken;
-                    throw new CompilerException($"itemName '{itemName}' already exists at this scope, name given to loop must be unique at {prevToken.Line}:{prevToken.Character} '{prevToken.Literal}'");
+                    throw new CompilerException($"Loop error: itemName '{itemName}' already exists at this scope, name given to loop must be unique at {prevToken.Line}:{prevToken.Character} '{prevToken.Literal}'.");
                 }
                 if (compiler.CurrentCompilerState.ResolveLocal(indexName) != -1)
                 {
                     var prevToken = compiler.TokenIterator.PreviousToken;
-                    throw new CompilerException($"indexName '{indexName}' already exists at this scope, name used for index in loop must be unique at {prevToken.Line}:{prevToken.Character} '{prevToken.Literal}'");
+                    throw new CompilerException($"Loop error: indexName '{indexName}' already exists at this scope, name used for index in loop must be unique at {prevToken.Line}:{prevToken.Character} '{prevToken.Literal}'.");
                 }
 
                 //skip the looop if the target is null

@@ -444,5 +444,103 @@ loop (arr)
 
             Assert.AreEqual("Hello", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Remove_WhenWithinLoop_ShouldRemoveItem()
+        {
+            testEngine.Run(@"
+var arr = [];
+arr.Add(1);
+arr.Add(2);
+arr.Add(3);
+
+print(arr.Count());
+
+loop (arr)
+{
+    if(item % 2 == 0)
+    {
+        arr.Remove(item);
+        i -= 1;
+    }
+    else
+    {
+        print(item);
+    }
+}
+
+print(arr.Count());
+");
+
+            Assert.AreEqual("3132", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenIndexAlreadyInScope_ShouldThrow()
+        {
+            testEngine.Run(@"
+{
+var arr = [];
+arr.Add(1);
+var i = 7;
+
+loop (arr)
+{
+}
+}");
+
+            Assert.AreEqual("Loop error: indexName 'i' already exists at this scope, name used for index in loop must be unique at 7:10 'arr'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenItemAlreadyInScope_ShouldThrow()
+        {
+            testEngine.Run(@"
+{
+var arr = [];
+arr.Add(1);
+var item = 7;
+
+loop (arr)
+{
+}
+}");
+
+            Assert.AreEqual("Loop error: itemName 'item' already exists at this scope, name given to loop must be unique at 7:10 'arr'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenCustomIndexAlreadyInScope_ShouldThrow()
+        {
+            testEngine.Run(@"
+{
+var arr = [];
+arr.Add(1);
+var j = 7;
+
+loop (arr, jtem, j)
+{
+}
+}");
+
+            Assert.AreEqual("Loop error: indexName 'j' already exists at this scope, name used for index in loop must be unique at 7:21 'j'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenCustomItemAlreadyInScope_ShouldThrow()
+        {
+            testEngine.Run(@"
+{
+var arr = [];
+arr.Add(1);
+var jtem = 7;
+
+loop (arr, jtem)
+{
+}
+}");
+
+            Assert.AreEqual("Loop error: itemName 'jtem' already exists at this scope, name given to loop must be unique at 7:17 'jtem'.", testEngine.InterpreterResult);
+        }
     }
 }

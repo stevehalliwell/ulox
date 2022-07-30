@@ -297,5 +297,15 @@ fun foo(p)
                 Assert.AreEqual(tokenResults[i], resultingTokenTypes[i]);
             }
         }
+
+        [Test]
+        public void Scanner_WhenUnterminatedString_ShouldThrow()
+        {
+            var testString = @"var a = ""hello";
+
+            void Act () => scanner.Scan(testString);
+
+            Assert.Throws<ScannerException>(Act);
+        }
     }
 }

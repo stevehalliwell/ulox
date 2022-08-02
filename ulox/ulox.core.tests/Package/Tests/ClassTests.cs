@@ -315,8 +315,6 @@ maker.brew();");
         [Test]
         public void Engine_Class_Fields()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 class T{ }
 
@@ -572,8 +570,6 @@ a.Speak();");
         [Test]
         public void Engine_Method_Paramless()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 class T
 {

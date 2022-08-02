@@ -9,7 +9,7 @@ namespace ULox.Tests
 
         public bool ReThrow { get; set; }
 
-        public ByteCodeInterpreterTestEngine(System.Action<string> logger)
+        public ByteCodeInterpreterTestEngine(Action<string> logger)
         {
             _logger = logger;
             MyEngine = Engine.CreateDefault();

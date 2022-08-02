@@ -35,7 +35,6 @@ public class UloxScriptTestBase
     public virtual void Setup()
     {
         engine = new ByteCodeInterpreterTestEngine(Console.WriteLine);
-        engine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
         engine.MyEngine.Context.DeclareLibrary(new DebugLibrary());
         engine.MyEngine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
         engine.MyEngine.Context.DeclareLibrary(new DiLibrary());

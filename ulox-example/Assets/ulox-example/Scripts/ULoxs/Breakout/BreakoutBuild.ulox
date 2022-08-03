@@ -1,7 +1,4 @@
-build bind 
-    "CoreLibrary",
-    "UnityLibrary",
-    "AssertLibrary";
+build bind "UnityLibrary";
     
 build queue 
     "Vec2", 

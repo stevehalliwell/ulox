@@ -54,7 +54,6 @@ var foldRes = arr.Reduce(accum);
 Assert.AreEqual(4, foldRes);
 ";
 
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
             testEngine.Run(script);
 
             Assert.AreEqual("", testEngine.InterpreterResult);
@@ -179,7 +178,6 @@ test FunctionalCollectionTests
 }
 ";
 
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
             testEngine.Run(script);
 
             Assert.AreEqual("", testEngine.InterpreterResult);

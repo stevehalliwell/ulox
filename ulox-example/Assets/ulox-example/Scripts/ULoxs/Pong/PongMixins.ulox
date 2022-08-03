@@ -10,7 +10,9 @@ class Scale
 
 class GameObject
 {
-    mixin Position, Scale;
+    mixin Position,
+        Scale;
+
     var go;
 
     FromPrefab(name)
@@ -28,6 +30,7 @@ class GameObject
 class Dynamic
 {
     mixin Position;
+    
     var rb;
     var vel = Vec2();
 
@@ -43,7 +46,8 @@ class Dynamic
 
 class PongBall
 {
-    mixin GameObject, Dynamic;
+    mixin GameObject,
+        Dynamic;
 
     init(pos, vel)
     {
@@ -67,7 +71,9 @@ class PongWall
 
 class PongPaddle
 {
-    mixin GameObject, Dynamic;
+    mixin GameObject,
+        Dynamic;
+    
     var speed;
     var upKey, downKey;
     
@@ -80,6 +86,7 @@ class PongPaddle
     Update()
     {
         var curSpeed = 0;
+        
         if(GetKey(this.upKey))
             curSpeed = this.speed;
         if(GetKey(this.downKey))

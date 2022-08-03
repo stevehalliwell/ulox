@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ULox
 {
@@ -12,6 +11,7 @@ namespace ULox
         {
             Context = executionContext;
             Context.VM.SetEngine(this);
+            Context.AddLibrary(new AssertLibrary(() => new Vm()));
         }
 
         public void RunScript(string script)

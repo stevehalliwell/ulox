@@ -7,8 +7,6 @@ namespace ULox.Tests
         [Test]
         public void Engine_Class_StaticFields()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 class T
 {
@@ -22,8 +20,6 @@ print(T.a);");
         [Test]
         public void Engine_Class_StaticFields_WhenClassModified_ShouldThrow()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 class T
 {

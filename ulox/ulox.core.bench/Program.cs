@@ -1,11 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 using ULox;
 
 namespace ulox.core.bench
@@ -205,7 +199,6 @@ Assert.AreEqual(3+6+9, forkReduceRes);
         public void UloxMethods()
         {
             var engine = Engine.CreateDefault();
-            engine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
             engine.RunScript(FunctionalUlox);
         }
 
@@ -213,7 +206,6 @@ Assert.AreEqual(3+6+9, forkReduceRes);
         public void NativeMethods()
         {
             var engine = Engine.CreateDefault();
-            engine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
             engine.RunScript(FunctionalNative);
         }
 

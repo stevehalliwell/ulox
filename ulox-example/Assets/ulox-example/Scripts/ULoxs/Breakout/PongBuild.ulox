@@ -1,9 +1,0 @@
-build bind 
-    "CoreLibrary",
-    "UnityLibrary",
-    "AssertLibrary";
-    
-build queue 
-    "Vec2", 
-    "PongMixins",  
-    "Pong";

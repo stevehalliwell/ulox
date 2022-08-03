@@ -726,8 +726,6 @@ print(c);");
         [Test]
         public void Engine_Assert()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 Assert.AreEqual(1,1);
 Assert.AreEqual(1,2);
@@ -739,8 +737,6 @@ Assert.AreEqual(1,1);");
         [Test]
         public void Engine_Approx_Assert()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 Assert.AreApproxEqual(1,1);
 Assert.AreApproxEqual(1,1.000000001);
@@ -752,8 +748,6 @@ Assert.AreApproxEqual(1,2);");
         [Test]
         public void Engine_Assert_Throws()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 fun WillThrow()
 {
@@ -768,8 +762,6 @@ Assert.Throws(WillThrow);");
         [Test]
         public void Engine_Func_Paramless()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 fun T
 {
@@ -784,8 +776,6 @@ print(T());");
         [Test]
         public void Engine_TestCase_Empty()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 test T
 {
@@ -800,8 +790,6 @@ test T
         [Test]
         public void Engine_TestCase_Simple1()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 test T
 {
@@ -817,8 +805,6 @@ test T
         [Test]
         public void Engine_TestCase_Simple2()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 test T
 {
@@ -834,8 +820,6 @@ test T
         [Test]
         public void Engine_TestCase_Simple3()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 test T
 {
@@ -853,8 +837,6 @@ test T
         [Test]
         public void Engine_TestCase_Simple4()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 test T
 {
@@ -874,8 +856,6 @@ test T
         [Test]
         public void Engine_TestCase_MultipleEmpty()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 test T
 {
@@ -893,8 +873,6 @@ test T
         [Test]
         public void Engine_TestCase_ReportAll()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 test T
 {
@@ -921,8 +899,6 @@ test T
         [Test]
         public void Engine_TestCase_MultipleSimple()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
-
             testEngine.Run(@"
 test T
 {
@@ -948,7 +924,6 @@ test T
         [Test]
         public void Engine_TestCase_Simple4_Skipped()
         {
-            testEngine.MyEngine.Context.AddLibrary(new AssertLibrary(() => new Vm()));
             testEngine.MyEngine.Context.VM.TestRunner.Enabled = false;
 
             testEngine.Run(@"
@@ -1259,90 +1234,10 @@ print(str(a)+str(b));");
         [Test]
         public void Engine_ContextAssertLibrary_IsFound()
         {
-            testEngine.MyEngine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
-            testEngine.MyEngine.Context.BindLibrary(nameof(AssertLibrary));
-
             testEngine.Run(@"
 Assert.AreNotEqual(1,2);");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_ManualLibraryBindViaFunc_IsFound()
-        {
-            testEngine.MyEngine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("bind"), Value.New((vm, argc) =>
-            {
-                var libName = vm.GetArg(1).val.asString.String;
-                testEngine.MyEngine.Context.BindLibrary(libName);
-
-                vm.PushReturn(Value.Null());
-                return NativeCallResult.SuccessfulExpression;
-            }));
-
-            testEngine.Run(@"
-bind(""AssertLibrary"");
-
-Assert.AreNotEqual(1,2);");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_ManualLibraryBindAndBuildViaFunc_IsFound()
-        {
-            testEngine.MyEngine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("bind"), Value.New((vm, argc) =>
-            {
-                var libName = vm.GetArg(1).val.asString.String;
-                testEngine.MyEngine.Context.BindLibrary(libName);
-
-                vm.PushReturn(Value.Null());
-                return NativeCallResult.SuccessfulExpression;
-            }));
-
-            testEngine.MyEngine.Context.ScriptLocator.Add("assertbody", "Assert.AreNotEqual(1, 2); print(1);");
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("compile"), Value.New((vm, argc) =>
-            {
-                var name = vm.GetArg(1).val.asString.String;
-                testEngine.MyEngine.LocateAndQueue(name);
-
-                vm.PushReturn(Value.Null());
-                return NativeCallResult.SuccessfulExpression;
-            }));
-
-            testEngine.Run(@"
-bind(""AssertLibrary"");
-compile(""assertbody"");");
-
-            Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_BuildRequestAssertLibrary_IsFound()
-        {
-            testEngine.MyEngine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
-
-            testEngine.Run(@"
-build bind ""AssertLibrary"";
-
-Assert.AreNotEqual(1,2);");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_BuildLibraryBindAndBuild_IsFound()
-        {
-            testEngine.MyEngine.Context.DeclareLibrary(new AssertLibrary(() => new Vm()));
-            testEngine.MyEngine.Context.ScriptLocator.Add("assertbody", "Assert.AreNotEqual(1, 2); print(1);");
-
-            testEngine.Run(@"
-build bind ""AssertLibrary"";
-build queue ""assertbody"";");
-
-            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
     }
 }

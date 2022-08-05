@@ -14,6 +14,7 @@ namespace ULox
             Context.AddLibrary(new AssertLibrary(() => new Vm()));
             Context.AddLibrary(new SerialiseLibrary());
             Context.AddLibrary(new DebugLibrary());
+            Context.AddLibrary(new DiLibrary());
         }
 
         public void RunScript(string script)

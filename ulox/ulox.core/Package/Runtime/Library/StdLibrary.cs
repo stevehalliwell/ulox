@@ -1,19 +1,15 @@
 ﻿using System;
+using System.IO;
 
 namespace ULox
 {
-    public class AssertLibrary : IULoxLibrary
+    public class StdLibrary : IULoxLibrary
     {
         private const double SquareDividedTolerance = 0.01d;
 
-        public string Name => nameof(AssertLibrary);
+        public string Name => nameof(StdLibrary);
 
-        public AssertLibrary(Func<Vm> createVM)
-        {
-            CreateVM = createVM;
-        }
-        
-        public AssertLibrary()
+        public StdLibrary()
         {
             CreateVM = () => new Vm();
         }
@@ -38,11 +34,44 @@ namespace ULox
                 (nameof(Fail), Value.New(Fail))
                                           );
             assertInst.Freeze();
-            
+
+            var serialiseInst = new InstanceInternal();
+            serialiseInst.AddFieldsToInstance(
+                (nameof(ToJson), Value.New(ToJson)),
+                (nameof(FromJson), Value.New(FromJson))
+                                          );
+            serialiseInst.Freeze();
+
+
             return this.GenerateBindingTable(
                 ("VM", Value.New(new VMClass(CreateVM))),
-                ("Assert", Value.New(assertInst))
+                ("Assert", Value.New(assertInst)),
+                ("Serialise", Value.New(serialiseInst)),
+                (nameof(Duplicate), Value.New(Duplicate)),
+                (nameof(str), Value.New(str))
                                             );
+        }
+
+        private static NativeCallResult ToJson(Vm vm, int argCount)
+        {
+            var obj = vm.GetArg(1);
+            var jsonWriter = new JsonValueHeirarchyWriter();
+            var walker = new ValueHeirarchyWalker(jsonWriter);
+            walker.Walk(obj);
+            var result = jsonWriter.GetString();
+            vm.PushReturn(Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult FromJson(Vm vm, int argCount)
+        {
+            var jsonString = vm.GetArg(1);
+            var reader = new StringReader(jsonString.val.asString.String);
+            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
+            creator.Process();
+            var obj = creator.Finish();
+            vm.PushReturn(obj);
+            return NativeCallResult.SuccessfulExpression;
         }
 
         private static NativeCallResult AreApproxEqual(Vm vm, int argCount)
@@ -174,6 +203,19 @@ namespace ULox
         {
             var msg = vm.GetArg(1);
             throw new AssertException($"Fail. '{msg}'");
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult str(Vm vm, int argCount)
+        {
+            var v = vm.GetArg(1);
+            vm.PushReturn(Value.New(v.str()));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult Duplicate(Vm vm, int argCount)
+        {
+            vm.PushReturn(Value.Copy(vm.GetArg(1)));
             return NativeCallResult.SuccessfulExpression;
         }
     }

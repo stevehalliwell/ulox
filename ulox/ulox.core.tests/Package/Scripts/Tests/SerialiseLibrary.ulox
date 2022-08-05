@@ -1,5 +1,3 @@
-build bind "SerialiseLibrary";
-
 test SerialiseLibraryTests
 {
     testcase ToEmpty

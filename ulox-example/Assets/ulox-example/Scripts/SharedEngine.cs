@@ -77,7 +77,6 @@ namespace ULox.Demo
             Func<Vm> createVM)
         {
             Engine.Context.AddLibrary(new CoreLibrary(logger));
-            Engine.Context.DeclareLibrary(new VmLibrary(createVM));
         }
 
         private void BindAllLibraries()

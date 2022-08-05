@@ -22,10 +22,7 @@ namespace ULox
 
         public Table GetBindings()
         {
-            var resTable = new Table();
             var assertInst = new InstanceInternal();
-            resTable.Add(new HashedString("Assert"), Value.New(assertInst));
-
             assertInst.AddFieldsToInstance(
                 (nameof(AreEqual), Value.New(AreEqual)),
                 (nameof(AreNotEqual), Value.New(AreNotEqual)),
@@ -40,9 +37,12 @@ namespace ULox
                 (nameof(Pass), Value.New(Pass)),
                 (nameof(Fail), Value.New(Fail))
                                           );
-            
             assertInst.Freeze();
-            return resTable;
+            
+            return this.GenerateBindingTable(
+                ("VM", Value.New(new VMClass(CreateVM))),
+                ("Assert", Value.New(assertInst))
+                                            );
         }
 
         private static NativeCallResult AreApproxEqual(Vm vm, int argCount)

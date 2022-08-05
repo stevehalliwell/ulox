@@ -1,7 +1,3 @@
-build bind 
-    "DiLibrary",
-    "VmLibrary";
-
 register DummyService null;
 
 fun InnerMainInjectedScale()

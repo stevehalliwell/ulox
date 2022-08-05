@@ -974,8 +974,6 @@ print(a);");
         [Test]
         public void Engine_InternalSandbox_CanPassIn()
         {
-            testEngine.MyEngine.Context.AddLibrary(new VmLibrary(() => new Vm()));
-
             testEngine.Run(@"
 fun InnerMain()
 {
@@ -996,8 +994,6 @@ innerVM.Start(InnerMain);");
         [Test]
         public void Engine_InternalSandbox_CanWriteGlobalOut()
         {
-            testEngine.MyEngine.Context.AddLibrary(new VmLibrary(() => new Vm()));
-
             testEngine.Run(@"
 fun InnerMain()
 {
@@ -1019,8 +1015,6 @@ print(innerVM.GetGlobal(""globalOut""));");
         [Test]
         public void Engine_InternalSandbox_CanReturnOut()
         {
-            testEngine.MyEngine.Context.AddLibrary(new VmLibrary(() => new Vm()));
-
             testEngine.Run(@"
 fun InnerMain()
 {
@@ -1053,8 +1047,6 @@ print(a);");
         [Test]
         public void Engine_ChildVM_Run()
         {
-            testEngine.MyEngine.Context.AddLibrary(new VmLibrary(() => new Vm()));
-
             testEngine.Run(@"
 fun InnerMain()
 {
@@ -1073,8 +1065,6 @@ innerVM.Start(InnerMain);");
         [Test]
         public void Engine_Sandbox_CannotAccess()
         {
-            testEngine.MyEngine.Context.AddLibrary(new VmLibrary(() => new Vm()));
-
             testEngine.Run(@"
 var a = 10;
 fun InnerMain()
@@ -1091,8 +1081,6 @@ innerVM.Start(InnerMain);");
         [Test]
         public void Engine_Sandbox_AsGenerator()
         {
-            testEngine.MyEngine.Context.AddLibrary(new VmLibrary(() => new Vm()));
-
             testEngine.Run(@"
 fun InnerMain()
 {

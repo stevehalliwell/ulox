@@ -13,6 +13,7 @@ namespace ULox
             Context.VM.SetEngine(this);
             Context.AddLibrary(new AssertLibrary(() => new Vm()));
             Context.AddLibrary(new SerialiseLibrary());
+            Context.AddLibrary(new DebugLibrary());
         }
 
         public void RunScript(string script)

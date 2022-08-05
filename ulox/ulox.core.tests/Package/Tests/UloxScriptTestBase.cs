@@ -35,7 +35,6 @@ public class UloxScriptTestBase
     public virtual void Setup()
     {
         engine = new ByteCodeInterpreterTestEngine(Console.WriteLine);
-        engine.MyEngine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
     }
 
     protected static TestCaseData[] ScriptGeneratorHelper(string subfolderName)

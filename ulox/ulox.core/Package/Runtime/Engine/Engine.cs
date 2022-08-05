@@ -11,11 +11,12 @@ namespace ULox
         {
             Context = executionContext;
             Context.VM.SetEngine(this);
-            Context.AddLibrary(new AssertLibrary(() => new Vm()));
+            Context.AddLibrary(new AssertLibrary());
             Context.AddLibrary(new SerialiseLibrary());
             Context.AddLibrary(new DebugLibrary());
             Context.AddLibrary(new DiLibrary());
             Context.AddLibrary(new FreezeLibrary());
+            Context.AddLibrary(new VmLibrary());
         }
 
         public void RunScript(string script)

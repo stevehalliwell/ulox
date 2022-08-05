@@ -12,6 +12,11 @@ namespace ULox
         {
             CreateVM = createVM;
         }
+        
+        public AssertLibrary()
+        {
+            CreateVM = () => new Vm();
+        }
 
         public Func<Vm> CreateVM { get; private set; }
 

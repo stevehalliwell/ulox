@@ -1,8 +1,6 @@
 // Classes and instances are frozen by default, meaning new fields cannot be added to them
 //  Dynamic instances are not frozen by default but can be frozen via keyword
 
-build bind "FreezeLibrary";
-
 class Foo
 {
 }

@@ -42,15 +42,73 @@ namespace ULox
                                           );
             serialiseInst.Freeze();
 
+            var diLibInst = new InstanceInternal();
+            diLibInst.AddFieldsToInstance(
+                (nameof(Count), Value.New(Count)),
+                (nameof(GenerateDump), Value.New(GenerateDump)),
+                (nameof(Freeze), Value.New(Freeze))
+                                         );
+            diLibInst.Freeze();
+
+
 
             return this.GenerateBindingTable(
                 ("VM", Value.New(new VMClass(CreateVM))),
                 ("Assert", Value.New(assertInst)),
                 ("Serialise", Value.New(serialiseInst)),
+                ("DI", Value.New(diLibInst)),
                 (nameof(Duplicate), Value.New(Duplicate)),
-                (nameof(str), Value.New(str))
+                (nameof(str), Value.New(str)),
+                (nameof(IsFrozen), Value.New(IsFrozen)),
+                (nameof(Unfreeze), Value.New(Unfreeze))
                                             );
         }
+
+        public NativeCallResult IsFrozen(Vm vm, int argCount)
+        {
+            var target = vm.GetArg(1);
+            if (target.type == ValueType.Instance)
+                vm.PushReturn(Value.New(target.val.asInstance.IsFrozen));
+            else if (target.type == ValueType.Class)
+                vm.PushReturn(Value.New(target.val.asClass.IsFrozen));
+
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult Unfreeze(Vm vm, int argCount)
+        {
+            var target = vm.GetArg(1);
+            if (target.type == ValueType.Instance)
+                target.val.asInstance.Unfreeze();
+            if (target.type == ValueType.Class)
+                target.val.asClass.Unfreeze();
+
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult Count(Vm vm, int argCount)
+        {
+            var di = FromVm(vm);
+            vm.PushReturn(Value.New(di.Count));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult GenerateDump(Vm vm, int argCount)
+        {
+            var di = FromVm(vm);
+            vm.PushReturn(Value.New(di.GenerateDump()));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult Freeze(Vm vm, int argCount)
+        {
+            var di = FromVm(vm);
+            di.Freeze();
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private DiContainer FromVm(Vm vMBase)
+            => vMBase.DiContainer;
 
         private static NativeCallResult ToJson(Vm vm, int argCount)
         {

@@ -36,7 +36,6 @@ public class UloxScriptTestBase
     {
         engine = new ByteCodeInterpreterTestEngine(Console.WriteLine);
         engine.MyEngine.Context.DeclareLibrary(new VmLibrary(() => new Vm()));
-        engine.MyEngine.Context.DeclareLibrary(new FreezeLibrary());
     }
 
     protected static TestCaseData[] ScriptGeneratorHelper(string subfolderName)

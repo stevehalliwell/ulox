@@ -75,8 +75,6 @@ Foo.a = 10;";
         [Test]
         public void Instance_WhenUnfrozen_ShouldActAsDynamic()
         {
-            testEngine.MyEngine.Context.AddLibrary(new FreezeLibrary());
-
             testEngine.Run(@"
 class Pair {}
 

@@ -15,6 +15,7 @@ namespace ULox
             Context.AddLibrary(new SerialiseLibrary());
             Context.AddLibrary(new DebugLibrary());
             Context.AddLibrary(new DiLibrary());
+            Context.AddLibrary(new FreezeLibrary());
         }
 
         public void RunScript(string script)

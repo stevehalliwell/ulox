@@ -1,5 +1,3 @@
-build bind "FreezeLibrary";
-
 class Foo
 {
 

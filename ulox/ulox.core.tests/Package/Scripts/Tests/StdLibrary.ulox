@@ -1,12 +1,5 @@
-build bind "CoreLibrary";
-
-test CoreLibraryTests
+test StdLibraryTests
 {
-    // testcase Print
-    // {
-    //     Assert.Fail();
-    // }
-
     testcase DuplicateMatches
     {
         var a = 1;

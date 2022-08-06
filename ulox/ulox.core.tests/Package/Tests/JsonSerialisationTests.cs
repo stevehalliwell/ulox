@@ -176,7 +176,6 @@ obj.a.a = l;";
     ""b"": 2.0, 
     ""c"": 3.0 
 }";
-            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
 
             testEngine.Run(@"
 class T { var a = 1, b = 2, c = 3;}
@@ -196,8 +195,7 @@ print(res);
     ""b"": 2.0, 
     ""c"": 3.0 
 }";
-            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
-
+           
             testEngine.Run(@"
 var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var res = Serialise.FromJson(jsonString);

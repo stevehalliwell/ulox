@@ -11,7 +11,7 @@ namespace ULox
         {
             Context = executionContext;
             Context.VM.SetEngine(this);
-            Context.AddLibrary(new AssertLibrary(() => new Vm()));
+            Context.AddLibrary(new StdLibrary());
         }
 
         public void RunScript(string script)
@@ -37,7 +37,7 @@ namespace ULox
         {
             var context = new Context(new ScriptLocator(), new Program(), new Vm());
             var engine = new Engine(context);
-            engine.Context.AddLibrary(new CoreLibrary(x => context.Log(x)));
+            engine.Context.AddLibrary(new PrintLibrary(x => context.Log(x)));
             return engine;
         }
     }

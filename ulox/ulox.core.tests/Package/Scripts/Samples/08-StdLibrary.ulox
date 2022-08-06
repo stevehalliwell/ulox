@@ -1,5 +1,5 @@
 //In TryItOut all libraries are already available to you but for completeness
-build bind "CoreLibrary";
+build bind "PrintLibrary";
 
 var a = 7;
 var b = Duplicate(a);

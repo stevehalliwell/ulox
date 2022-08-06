@@ -1,7 +1,3 @@
-build bind 
-    "VmLibrary",
-    "VmLibrary";
-
 test VMLibraryTests
 {
     testcase InnerVmInsertAndExtract

@@ -414,7 +414,6 @@ print(res);
         [Test]
         public void Meets_WhenAFromJsonAndBDynamicMatch_ShouldReturnTrue()
         {
-            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
             testEngine.Run(@"
 var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);
@@ -514,7 +513,6 @@ print(res);
         [Test]
         public void Meets_WhenAJsonAndBClassMatch_ShouldReturnTrue()
         {
-            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
             testEngine.Run(@"
 var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);
@@ -534,7 +532,6 @@ print(res);
         [Test]
         public void Meets_WhenAJsonAndBClassEmptyMatch_ShouldReturnTrue()
         {
-            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
             testEngine.Run(@"
 var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);
@@ -553,7 +550,6 @@ print(res);
         [Test]
         public void Meets_WhenAJsonAndBClassMismatch_ShouldReturnFalse()
         {
-            testEngine.MyEngine.Context.AddLibrary(new SerialiseLibrary());
             testEngine.Run(@"
 var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);

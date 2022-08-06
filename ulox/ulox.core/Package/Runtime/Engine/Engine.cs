@@ -12,7 +12,6 @@ namespace ULox
             Context = executionContext;
             Context.VM.SetEngine(this);
             Context.AddLibrary(new StdLibrary());
-            Context.AddLibrary(new DebugLibrary());
         }
 
         public void RunScript(string script)

@@ -1,5 +1,3 @@
-build bind "DebugLibrary";
-
 test DebugLibraryTests
 {
     testcase GenerateStackDump

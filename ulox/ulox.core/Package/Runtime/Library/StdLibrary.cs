@@ -31,26 +31,21 @@ namespace ULox
                 (nameof(DoesNotContain), Value.New(DoesNotContain)),
                 (nameof(Throws), Value.New(Throws)),
                 (nameof(Pass), Value.New(Pass)),
-                (nameof(Fail), Value.New(Fail))
-                                          );
+                (nameof(Fail), Value.New(Fail)));
             assertInst.Freeze();
 
             var serialiseInst = new InstanceInternal();
             serialiseInst.AddFieldsToInstance(
                 (nameof(ToJson), Value.New(ToJson)),
-                (nameof(FromJson), Value.New(FromJson))
-                                          );
+                (nameof(FromJson), Value.New(FromJson)));
             serialiseInst.Freeze();
 
             var diLibInst = new InstanceInternal();
             diLibInst.AddFieldsToInstance(
                 (nameof(Count), Value.New(Count)),
                 (nameof(GenerateDump), Value.New(GenerateDump)),
-                (nameof(Freeze), Value.New(Freeze))
-                                         );
+                (nameof(Freeze), Value.New(Freeze)));
             diLibInst.Freeze();
-
-
 
             return this.GenerateBindingTable(
                 ("VM", Value.New(new VMClass(CreateVM))),
@@ -60,8 +55,29 @@ namespace ULox
                 (nameof(Duplicate), Value.New(Duplicate)),
                 (nameof(str), Value.New(str)),
                 (nameof(IsFrozen), Value.New(IsFrozen)),
-                (nameof(Unfreeze), Value.New(Unfreeze))
+                (nameof(Unfreeze), Value.New(Unfreeze)),
+                (nameof(GenerateStackDump), Value.New(GenerateStackDump)),
+                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump)),
+                (nameof(GenerateReturnDump), Value.New(GenerateReturnDump))
                                             );
+        }
+
+        public NativeCallResult GenerateStackDump(Vm vm, int argCount)
+        {
+            vm.PushReturn(Value.New(vm.GenerateStackDump()));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult GenerateGlobalsDump(Vm vm, int argCount)
+        {
+            vm.PushReturn(Value.New(vm.GenerateGlobalsDump()));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult GenerateReturnDump(Vm vm, int argCount)
+        {
+            vm.PushReturn(Value.New(vm.GenerateReturnDump()));
+            return NativeCallResult.SuccessfulExpression;
         }
 
         public NativeCallResult IsFrozen(Vm vm, int argCount)

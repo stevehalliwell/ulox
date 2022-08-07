@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,7 +27,7 @@ namespace ULox.Demo
             if (textAssetCollectionSO != null)
                 builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name, x => x.text);
 
-            var scriptLocator = new ScriptLocator(builtinDict, new DirectoryInfo(Application.streamingAssetsPath));
+            var scriptLocator = new ScriptLocator(builtinDict, Application.streamingAssetsPath);
             Engine = new Engine(new Context(scriptLocator, new Program(), new Vm()));
 
             DeclareAllLibraries(

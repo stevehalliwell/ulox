@@ -6,7 +6,7 @@ namespace ULox
     {
         private readonly Dictionary<string, string> _builtinScripts = new Dictionary<string, string>();
 #if !UNITY_WEBGL
-        private readonly DirectoryInfo _directory;
+        private readonly System.IO.DirectoryInfo _directory;
 #endif
         public ScriptLocator(
             Dictionary<string, string> builtinScripts,
@@ -14,14 +14,14 @@ namespace ULox
         {
             _builtinScripts = builtinScripts;
 #if !UNITY_WEBGL 
-            _directory = new DirectoryInfo(directory);
+            _directory = new System.IO.DirectoryInfo(directory);
 #endif
         }
 
         public ScriptLocator()
             : this(new Dictionary<string, string>(),
 #if !UNITY_WEBGL 
-                  Environment.CurrentDirectory
+                  System.Environment.CurrentDirectory
 #else
                   ""
 #endif
@@ -38,9 +38,9 @@ namespace ULox
                 return val;
 
 #if !UNITY_WEBGL 
-            var externalMatches = Directory.GetFiles(_directory.FullName, $"{name}*");
+            var externalMatches = System.IO.Directory.GetFiles(_directory.FullName, $"{name}*");
             if (externalMatches != null && externalMatches.Length > 0)
-                return File.ReadAllText(externalMatches[0]);
+                return System.IO.File.ReadAllText(externalMatches[0]);
 #endif
             return null;
         }

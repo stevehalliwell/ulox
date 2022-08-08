@@ -35,7 +35,7 @@ namespace ULox
 
         public static Engine CreateDefault()
         {
-            var context = new Context(new ScriptLocator(), new Program(), new Vm());
+            var context = new Context(new LocalFileScriptLocator(), new Program(), new Vm());
             var engine = new Engine(context);
             engine.Context.AddLibrary(new PrintLibrary(x => context.Log(x)));
             return engine;

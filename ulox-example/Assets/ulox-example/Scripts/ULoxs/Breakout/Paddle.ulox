@@ -20,6 +20,7 @@ class Paddle
     {
         var p = this.pos;
         var wall = this.wallDist;
+        
         if(GetKey("left"))
             p = p + Vec2.Create(-this.moveSpeed * dt,0);
         if(GetKey("right"))

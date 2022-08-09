@@ -1,0 +1,16 @@
+fun CreateLevelBricks()
+{
+    var generator = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
+    var posList = generator.FromRowCol(3,10);
+    
+    CreateBricksFromPositions(posList);
+}
+
+fun CreateBricksFromPositions(posList)
+{
+    loop (posList)
+    {
+        var newBrick = Brick(item, i % 2);
+        bricks.Add(newBrick);
+    }
+}

@@ -8,14 +8,16 @@ class GridGenerator
     FromRowCol(rows, cols)
     {
         var retval = [];
-        var corner = this.stepSize * Vec2.Create(-cols, -rows);
-        corner = Vec2.Scale(corner, 0.5) + Vec2.Scale(this.stepSize, 0.5);
+
+        var step = this.stepSize;
+        var halfCols = (cols-1) * 0.5 * step.x;
+        var corner = this.startingPoint - Vec2.Create(halfCols, 0);
 
         for(var x = 0; x < cols; x+=1)
         {
             for(var y = 0; y < rows; y+=1)
             {
-                retval.Add(Vec2.Create(x,y) * this.stepSize +  this.startingPoint + corner);
+                retval.Add(Vec2.Create(x,-y) * step + corner);
             }
         }
         return retval;

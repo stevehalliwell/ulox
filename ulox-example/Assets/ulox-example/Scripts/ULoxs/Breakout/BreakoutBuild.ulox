@@ -9,3 +9,5 @@ build queue
     "Wall", 
     "Gutter", 
     "Breakout";
+
+build queue "DefaultLevel";

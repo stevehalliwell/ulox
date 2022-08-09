@@ -21,7 +21,7 @@ fun CreateLevel()
     
     CreateLevelBricks();
     
-    paddle = Paddle(Vec2.Create(0,-30), 30);
+    paddle = Paddle(Vec2.Create(0,-30), 32);
 }
 
 fun CreateWalls()
@@ -32,27 +32,10 @@ fun CreateWalls()
     walls.Add(Wall(Vec2.Create(0,40), Vec2.Create(80,10)));
 }
 
-fun CreateLevelBricks()
-{
-    var generator = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
-    var posList = generator.FromRowCol(3,10);
-    
-    CreateBricksFromPositions(posList);
-}
-
 fun CreateBall(at)
 {
     ball = Ball(at);
     SetRigidBody2DVelocity(ball.rb, 15,18);
-}
-
-fun CreateBricksFromPositions(posList)
-{
-    loop (posList)
-    {
-        var newBrick = Brick(item, i % 2);
-        bricks.Add(newBrick);
-    }
 }
 
 var dt;
@@ -61,6 +44,7 @@ fun Update()
     UpdateGame(dt);
     var outputText = "Points: " + str(points) + "\n" +
         "Lives: " + str(lives);
+    
     if(lives <= 0)
     {
         outputText = outputText + "\n\nGame over.\nPress esc to restart.";

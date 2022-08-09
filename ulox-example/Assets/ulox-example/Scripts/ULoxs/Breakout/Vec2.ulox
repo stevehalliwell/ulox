@@ -20,6 +20,11 @@ class Vec2
 		return Vec2.Create(lhs.x + rhs.x, lhs.y + rhs.y);
 	}
 
+	_sub(lhs, rhs)
+	{
+		return Vec2.Create(lhs.x - rhs.x, lhs.y - rhs.y);
+	}
+
 	_mul(lhs, rhs)
 	{
 		return Vec2.Create(lhs.x * rhs.x, lhs.y * rhs.y);
@@ -41,6 +46,18 @@ test Vec2Tests
 		var b = Vec2.Create(3,4);
 
 		result = a+b;
+
+		Assert.IsTrue(expected == result);
+	}
+
+	testcase Sub
+	{
+		var expected = Vec2.Create(-2,-2);
+		var result;
+		var a = Vec2.Create(1,2);
+		var b = Vec2.Create(3,4);
+
+		result = a-b;
 
 		Assert.IsTrue(expected == result);
 	}

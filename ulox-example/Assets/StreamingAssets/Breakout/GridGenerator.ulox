@@ -13,9 +13,9 @@ class GridGenerator
         var halfCols = (cols-1) * 0.5 * step.x;
         var corner = this.startingPoint - Vec2.Create(halfCols, 0);
 
-        for(var x = 0; x < cols; x+=1)
+        for(var y = 0; y < rows; y+=1)
         {
-            for(var y = 0; y < rows; y+=1)
+            for(var x = 0; x < cols; x+=1)
             {
                 retval.Add(Vec2.Create(x,-y) * step + corner);
             }

@@ -9,7 +9,6 @@ namespace ULox.Demo
     public class SharedEngine : MonoBehaviour
     {
         [SerializeField] private PrefabCollectionSO prefabCollectionSO;
-        [SerializeField] private TextAssetCollectionSO textAssetCollectionSO;
         [SerializeField] private Text outputText;
         [SerializeField] private bool bindAllLibraries = false;
         [SerializeField] private List<string> scriptsNamesToLoad;
@@ -23,11 +22,7 @@ namespace ULox.Demo
 
         public void Reset()
         {
-            Dictionary<string, string> builtinDict = null;
-            if (textAssetCollectionSO != null)
-                builtinDict = textAssetCollectionSO.Collection.ToDictionary(x => x.name, x => x.text);
-
-            var scriptLocator = new ScriptLocator(builtinDict, Application.streamingAssetsPath);
+            var scriptLocator = new ScriptLocator(null, Application.streamingAssetsPath);
             Engine = new Engine(new Context(scriptLocator, new Program(), new Vm()));
 
             DeclareAllLibraries(

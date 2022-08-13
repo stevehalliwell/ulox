@@ -212,6 +212,7 @@ Transform:
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -295,6 +296,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -391,6 +393,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -3.04, z: 0}
   m_LocalScale: {x: 46.92, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -428,7 +431,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 772c4726a2f862646a6b6830d7792180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  script: {fileID: 9027929339269108002, guid: 850e898ca7bf1984f82d2b6500f03eec, type: 3}
+  scriptFile: {fileID: 9027929339269108002, guid: 850e898ca7bf1984f82d2b6500f03eec, type: 3}
+  scriptString: 
+  useInstanceVm: 1
 --- !u!54 &1437351265
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -518,6 +523,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 2, y: -0.381, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -555,7 +561,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 772c4726a2f862646a6b6830d7792180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  script: {fileID: 9027929339269108002, guid: 850e898ca7bf1984f82d2b6500f03eec, type: 3}
+  scriptFile: {fileID: 9027929339269108002, guid: 850e898ca7bf1984f82d2b6500f03eec, type: 3}
+  scriptString: 
+  useInstanceVm: 1
 --- !u!54 &1959688636
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -645,6 +653,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -2.984, y: 5.792, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
@@ -679,7 +688,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabCollectionSO: {fileID: 0}
-  textAssetCollectionSO: {fileID: 0}
   outputText: {fileID: 0}
   bindAllLibraries: 1
   scriptsNamesToLoad: []
@@ -693,6 +701,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 3

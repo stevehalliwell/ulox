@@ -6,6 +6,8 @@ var paddle;
 var points = 0;
 var lives = 3;
 
+//todo make a class for the game itself
+
 fun SetupGame()
 {
     CreateLevel();
@@ -42,6 +44,18 @@ var dt;
 fun Update()
 {
     UpdateGame(dt);
+    UpdateOutputText();
+}
+
+fun UpdateGame(dt)
+{
+	if(GetKey("escape")){ReloadScene();}
+
+	paddle.Update(dt);
+}
+
+fun UpdateOutputText()
+{
     var outputText = "Points: " + str(points) + "\n" +
         "Lives: " + str(lives);
     
@@ -55,13 +69,6 @@ fun Update()
     }
 
     SetUIText(outputText);
-}
-
-fun UpdateGame(dt)
-{
-	if(GetKey("escape")){ReloadScene();}
-
-	paddle.Update(dt);
 }
 
 fun GivePointsForBrick(brick, brickStrength)
@@ -82,11 +89,13 @@ fun GivePointsForBrick(brick, brickStrength)
 fun BallLost()
 {
     LiveLoss();
+
     if(ball != null)
     {
         DestroyUnityObject(ball.go);
         ball = null;
     }
+    
     if(lives > 0)
     {
         CreateBall(Vec2.Create(0,-20));

@@ -1,0 +1,13 @@
+build bind "UnityLibrary";
+    
+build queue 
+    "Vec2", 
+    "Breakout/GridGenerator", 
+    "Breakout/Brick",
+    "Breakout/Paddle",
+    "Breakout/Ball",
+    "Breakout/Wall", 
+    "Breakout/Gutter",
+    "Breakout/Level",
+    "Breakout/Breakout",
+    "Breakout/CurrentLevel";

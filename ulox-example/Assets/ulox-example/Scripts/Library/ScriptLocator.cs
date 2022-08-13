@@ -34,12 +34,17 @@ namespace ULox
 
         public Script Find(string name)
         {
-            if (_builtinScripts.TryGetValue(name, out var val))
+            if (_builtinScripts != null
+                && _builtinScripts.TryGetValue(name, out var val))
                 return new Script(name,val);
 
 #if !UNITY_WEBGL 
-            var externalMatches = System.IO.Directory.GetFiles(_directory.FullName, $"{name}*");
-            if (externalMatches != null && externalMatches.Length > 0)
+            var nameSearch = $"{name}*";
+            var externalMatches = System.IO.Directory.GetFiles(_directory.FullName, nameSearch);
+            if (externalMatches == null
+                || externalMatches.Length == 0)
+                throw new System.IO.FileNotFoundException(nameSearch);
+
                 return new Script(name,System.IO.File.ReadAllText(externalMatches[0]));
 #endif
             return new Script(name, null);

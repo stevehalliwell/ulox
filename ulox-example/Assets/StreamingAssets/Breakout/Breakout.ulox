@@ -1,108 +1,99 @@
-var bricks = [];
-var walls = [];
-var gutter;
-var ball;
-var paddle;
-var points = 0;
-var lives = 3;
-
-//todo make a class for the game itself
-
-fun SetupGame()
+class Breakout
 {
-    CreateLevel();
-}
+    var bricks = [];
+    var walls = [];
+    var gutter;
+    var ball;
+    var paddle;
+    var points = 0;
+    var lives = 3;
 
-fun CreateLevel()
-{
-    CreateWalls();
-
-    gutter = Gutter(Vec2.Create(0,-35), Vec2.Create(80,10));
-    
-    CreateBall(Vec2.Create(0,-20));
-    
-    CreateLevelBricks();
-    
-    paddle = Paddle(Vec2.Create(0,-30), 32);
-}
-
-fun CreateWalls()
-{
-    walls.Add(Wall(Vec2.Create(-40,0), Vec2.Create(10,80)));
-    walls.Add(Wall(Vec2.Create(40,0), Vec2.Create(10,80)));
-    walls.Add(Wall(Vec2.Create(0,-40), Vec2.Create(80,10)));
-    walls.Add(Wall(Vec2.Create(0,40), Vec2.Create(80,10)));
-}
-
-fun CreateBall(at)
-{
-    ball = Ball(at);
-    SetRigidBody2DVelocity(ball.rb, 15,18);
-}
-
-var dt;
-fun Update()
-{
-    UpdateGame(dt);
-    UpdateOutputText();
-}
-
-fun UpdateGame(dt)
-{
-	if(GetKey("escape")){ReloadScene();}
-
-	paddle.Update(dt);
-}
-
-fun UpdateOutputText()
-{
-    var outputText = "Points: " + str(points) + "\n" +
-        "Lives: " + str(lives);
-    
-    if(lives <= 0)
+    CreateLevel()
     {
-        outputText = outputText + "\n\nGame over.\nPress esc to restart.";
-    }
-    else if(bricks.Count() == 0)
-    {
-        outputText = outputText + "\n\nYou have Won!";
+        this.CreateWalls();
+
+        this.gutter = Gutter(Vec2.Create(0,-35), Vec2.Create(80,10));
+        
+        this.CreateBall(Vec2.Create(0,-20));
+        
+        CreateLevelBricks();
+        
+        this.paddle = Paddle(Vec2.Create(0,-30), 32);
     }
 
-    SetUIText(outputText);
-}
-
-fun GivePointsForBrick(brick, brickStrength)
-{
-    points += (brickStrength+1) * 10;
-    bricks.Remove(brick);
-
-    if(bricks.Count() == 0)
+    CreateWalls()
     {
-        if(ball != null)
+        this.walls.Add(Wall(Vec2.Create(-40,0), Vec2.Create(10,80)));
+        this.walls.Add(Wall(Vec2.Create(40,0), Vec2.Create(10,80)));
+        this.walls.Add(Wall(Vec2.Create(0,-40), Vec2.Create(80,10)));
+        this.walls.Add(Wall(Vec2.Create(0,40), Vec2.Create(80,10)));
+    }
+
+    CreateBall(at)
+    {
+        this.ball = Ball(at);
+        SetRigidBody2DVelocity(this.ball.rb, 15,18);
+    }
+
+    UpdateGame(dt)
+    {
+        this.paddle.Update(dt);
+    }
+
+    UpdateOutputText()
+    {
+        var outputText = "Points: " + str(this.points) + "\n" +
+            "Lives: " + str(this.lives);
+        
+        if(this.lives <= 0)
         {
-            DestroyUnityObject(ball.go);
-            ball = null;
+            outputText = outputText + "\n\nGame over.\nPress esc to restart.";
+        }
+        else if(this.bricks.Count() == 0)
+        {
+            outputText = outputText + "\n\nYou have Won!";
+        }
+
+        SetUIText(outputText);
+    }
+    
+    CreateBricksFromPositions(posList)
+    {
+        loop (posList)
+        {
+            var newBrick = Brick(item, i % 2);
+            this.bricks.Add(newBrick);
         }
     }
-}
 
-fun BallLost()
-{
-    LiveLoss();
-
-    if(ball != null)
+    GivePointsForBrick(brick, brickStrength)
     {
-        DestroyUnityObject(ball.go);
-        ball = null;
-    }
-    
-    if(lives > 0)
-    {
-        CreateBall(Vec2.Create(0,-20));
-    }
-}
+        this.points = this.points + (brickStrength+1) * 10;
+        this.bricks.Remove(brick);
 
-fun LiveLoss()
-{
-    lives -= 1;
+        if(this.bricks.Count() == 0)
+        {
+            if(this.ball != null)
+            {
+                DestroyUnityObject(this.ball.go);
+                this.ball = null;
+            }
+        }
+    }
+
+    BallLost()
+    {
+        this.lives = this.lives - 1;
+
+        if(this.ball != null)
+        {
+            DestroyUnityObject(this.ball.go);
+            this.ball = null;
+        }
+        
+        if(this.lives > 0)
+        {
+            this.CreateBall(Vec2.Create(0,-20));
+        }
+    }
 }

@@ -1,8 +1,0 @@
-fun CreateBricksFromPositions(posList)
-{
-    loop (posList)
-    {
-        var newBrick = Brick(item, i % 2);
-        bricks.Add(newBrick);
-    }
-}

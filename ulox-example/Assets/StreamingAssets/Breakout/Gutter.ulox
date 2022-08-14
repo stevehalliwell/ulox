@@ -13,6 +13,6 @@ class Gutter
 
     OnHitByBall()
     {
-        BallLost();
+        (inject BreakoutInst).BallLost();
     }
 }

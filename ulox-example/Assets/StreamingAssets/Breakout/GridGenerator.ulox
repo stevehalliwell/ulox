@@ -23,3 +23,15 @@ class GridGenerator
         return retval;
     }
 }
+
+test GridGeneratorTests
+{
+    testcase TenByTen
+    {
+        var grid = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
+        
+        var posList = grid.FromRowCol(10,10);
+        
+        Assert.AreEqual(100, posList.Count());
+    }
+}

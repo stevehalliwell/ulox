@@ -66,5 +66,7 @@ namespace ULox
             }
             IsFrozen = inst.IsFrozen;
         }
+
+        public override string ToString() => $"<{nameof(InstanceInternal)}:{FromClass?.Name}>";
     }
 }

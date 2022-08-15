@@ -104,7 +104,8 @@ namespace ULox
                 (TokenType.INJECT, new ActionParseRule(_diCompiletteParts.Inject, null, Precedence.Term)),
                 (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
-                (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison))
+                (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
+                (TokenType.FUNCTION, new ActionParseRule(FunExp, null, Precedence.Call))
                               );
         }
 
@@ -866,6 +867,21 @@ namespace ULox
         public static void Grouping(Compiler compiler, bool canAssign)
         {
             compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
+        }
+        
+        public static void FunExp(Compiler compiler, bool canAssign)
+        {
+            if(compiler.TokenIterator.Check(TokenType.IDENTIFIER))
+            {
+                var global = compiler.ParseVariable("Expect function name.");
+                compiler.CurrentCompilerState.MarkInitialised();
+
+                compiler.Function(compiler.TokenIterator.PreviousToken.Lexeme, FunctionType.Function);//todo support local and pure
+                compiler.DefineVariable(global);
+
+                var (getOp, _, argId) = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant(global).val.asString.String);
+                compiler.EmitOpAndBytes(getOp, argId);
+            }
         }
 
         public static void Call(Compiler compiler, bool canAssign)

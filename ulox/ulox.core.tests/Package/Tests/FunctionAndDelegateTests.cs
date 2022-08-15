@@ -98,5 +98,22 @@ print(res);
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Fun_WhenNamedAndRhsOfAssign_ShouldAssignAndBeGlobal()
+        {
+            testEngine.Run(@"
+var foo = {:};
+foo.bar = fun Bar(a)
+{
+    print(a);
+};
+
+foo.bar(1);
+Bar(2);
+");
+
+            Assert.AreEqual("12", testEngine.InterpreterResult);
+        }
     }
 }

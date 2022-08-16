@@ -31,7 +31,7 @@ class Breakout
 
     CreateBall(at)
     {
-        this.ball = Ball(at);
+        this.ball = Factory.CreateBall(at);
         SetRigidBody2DVelocity(this.ball.rb, 15,18);
     }
 

@@ -1,15 +1,49 @@
 class Ball
 {
     var pos = Vec2();
-    var go = CreateFromPrefab("Ball");
+    var go;
     var rb;
 
-    init(pos)
+    init(pos, go, rb)
     {
-        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
-        this.rb = GetRigidBody2DFromGameObject(this.go);    //TODO would prefer to be able to do this during init chain 
-        SetSpriteColour(this.go, 1,0,0,1);
-        SetGameObjectTag(this.go, "Ball");
-        SetRigidBody2DVelocity(this.rb, 0,0);
+    }
+
+    OnHitGutter()
+    {
+        (inject BreakoutInst).BallLost();
+    }
+}
+
+var Factory = {:};
+Factory.CreateBall = fun (pos)
+{
+    var go = CreateFromPrefab("Ball");
+    SetGameObjectPosition(go, pos.x, pos.y, 0);
+    SetSpriteColour(go, 1,0,0,1);
+    SetGameObjectTag(go, "Ball");
+    var rb = GetRigidBody2DFromGameObject(go);
+    SetRigidBody2DVelocity(rb, 0,0);
+    
+    var ball = Ball(pos, go, rb);
+    SetCollisionCallback(ball.go, "Gutter", ball.OnHitGutter);
+    return ball;
+};
+
+test BallTests
+{
+    testcase OnHitGutter
+    {
+        var mock = {:};
+        var called = false;
+        mock.BallLost = fun ()
+        {
+            called = true;
+        };
+        register BreakoutInst mock;
+        var ball = Ball(Vec2(), null, null);
+
+        ball.OnHitGutter();
+        
+        Assert.IsTrue(called);
     }
 }

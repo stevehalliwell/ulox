@@ -8,3 +8,26 @@ var b = 3;
 var res = Add(a,b);
 
 print(res);
+
+// functions are first class citizens
+var aFunc = Add;
+
+var res2 = aFunc(a,b);
+
+// functions can be defined as expressions
+var someOtherFunc = fun Sub(lhs, rhs)
+{
+	return lhs - rhs;
+};
+
+var res3 = someOtherFunc(a,b);
+// given it was named we can also
+var res4 = Sub(a,b);
+
+//anonymous functions are also possible
+var yetAnotherFunc = fun (lhs,rhs)
+{
+	return lhs * rhs;
+};
+
+var res5 = yetAnotherFunc(a,b);

@@ -458,7 +458,7 @@ namespace ULox
                 Push(newValue);
                 return;
             }
-            
+
             //attempt overload method call
             if (listValue.type == ValueType.Instance)
             {
@@ -1023,13 +1023,13 @@ namespace ULox
             if (lhs.type != rhs.type)
                 throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
 
-            if (lhs.type == ValueType.Instance)
-            {
-                if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                    return;
-            }
+            if (lhs.type != ValueType.Instance)
+                throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
 
-            throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
+            if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                return;
+            
+            throw new VMException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromClass}' and '{rhs.val.asInstance.FromClass}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1451,7 +1451,7 @@ namespace ULox
             Push(self);
 
             var arity = opClosure.chunk.Arity;
-            
+
             switch (opClosure.chunk.Arity)
             {
             case 2:

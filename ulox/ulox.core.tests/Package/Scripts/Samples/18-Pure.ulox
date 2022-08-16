@@ -17,7 +17,7 @@ fun NonLocal()
 }
 
 //This function is local. Only access that which it is passed in.
-local fun CallArg(func)
+fun local CallArg(func)
 {
     return func();
 }
@@ -27,7 +27,7 @@ print(CallArg(NonLocal));
 
 //This function is pure. Only access that which it is passed in and they must also be pure.
 //  If not pure, an error is thrown.
-pure fun PureCallArg(func)
+fun pure PureCallArg(func)
 {
     return func();
 }

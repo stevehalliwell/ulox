@@ -8,7 +8,7 @@ namespace ULox.Tests
         public void Local_WhenFetchGlobal_ShouldThrow()
         {
             testEngine.Run(@"
-local fun Foo()
+fun local Foo()
 {
     a = 7;
 }
@@ -47,7 +47,7 @@ fun Foo()
 {
     var a = 10;
 
-    local fun Bar()
+    fun local Bar()
     {
         a = 7;
     }
@@ -64,7 +64,7 @@ fun Foo()
         public void Local_WhenParamNamed_ShouldCompile()
         {
             testEngine.Run(@"
-local fun Foo(a)
+fun local Foo(a)
 {
     a = 7;
 }
@@ -115,7 +115,7 @@ class T
     {
         var a = 10;
 
-        local fun Bar()
+        fun local Bar()
         {
             a = 7;
         }
@@ -154,7 +154,7 @@ print(t.Foo());
         public void Pure_WhenFetchGlobal_ShouldThrow()
         {
             testEngine.Run(@"
-pure fun Foo()
+fun pure Foo()
 {
     a = 7;
 }
@@ -167,7 +167,7 @@ pure fun Foo()
         public void Pure_WhenGetParamNamed_ShouldCompile()
         {
             testEngine.Run(@"
-pure fun Foo(a)
+fun pure Foo(a)
 {
     var b = a;
 }
@@ -180,7 +180,7 @@ pure fun Foo(a)
         public void Pure_WhenSetParamNamed_ShouldThrow()
         {
             testEngine.Run(@"
-pure fun Foo(a)
+fun pure Foo(a)
 {
     a = 7;
 }
@@ -198,7 +198,7 @@ fun Meth()
     print(""Side Effect"");
 }
 
-pure fun Foo(a)
+fun pure Foo(a)
 {
     a();
 }
@@ -213,12 +213,12 @@ Foo(Meth);
         public void Pure_WhenPureFunctionArg_ShouldCompile()
         {
             testEngine.Run(@"
-pure fun Meth(lhs,rhs)
+fun pure Meth(lhs,rhs)
 {
     return lhs+rhs;
 }
 
-pure fun Foo(a,b,c)
+fun pure Foo(a,b,c)
 {
     return a(b,c);
 }
@@ -272,7 +272,7 @@ class T
     {
         var a = 10;
 
-        pure fun Bar()
+        fun pure Bar()
         {
             a = 7;
         }

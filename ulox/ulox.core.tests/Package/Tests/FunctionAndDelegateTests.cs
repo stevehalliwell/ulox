@@ -98,5 +98,54 @@ print(res);
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Fun_WhenNamedAndRhsOfAssign_ShouldAssignAndBeGlobal()
+        {
+            testEngine.Run(@"
+var foo = {:};
+foo.bar = fun Bar(a)
+{
+    print(a);
+};
+
+foo.bar(1);
+Bar(2);
+");
+
+            Assert.AreEqual("12", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenAnonAndRhsOfAssign_ShouldAssignAndNotBeGlobal()
+        {
+            testEngine.Run(@"
+var foo = {:};
+foo.bar = fun (a)
+{
+    print(a);
+};
+
+foo.bar(1);
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenPureViolatingAnonAndRhsOfAssign_ShouldFail()
+        {
+            testEngine.Run(@"
+var foo = {:};
+foo.bar = fun pure (a)
+{
+    print(a);
+};
+
+foo.bar(1);
+");
+
+            Assert.AreEqual("Identifiier 'print' could not be found locally in local function 'anonymous'.", testEngine.InterpreterResult);
+        }
     }
 }

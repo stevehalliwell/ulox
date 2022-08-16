@@ -147,5 +147,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddFieldName(HashedString fieldName)
             => _fieldsNames.Add(fieldName);
+
+        public override string ToString() => $"<{nameof(ClassInternal)}:{Name}>";
     }
 }

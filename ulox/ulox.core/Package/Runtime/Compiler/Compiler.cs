@@ -48,9 +48,7 @@ namespace ULox
                 _buildCompilette
                                          );
             this.AddDeclarationCompilette(
-                (TokenType.FUNCTION, FunctionDeclaration),
-                (TokenType.LOCAL, LocalFunctionDeclaration),
-                (TokenType.PURE, PureFunctionDeclaration)
+                (TokenType.FUNCTION, FunctionDeclaration)
                                          );
 
             this.AddStatementCompilette(
@@ -104,7 +102,8 @@ namespace ULox
                 (TokenType.INJECT, new ActionParseRule(_diCompiletteParts.Inject, null, Precedence.Term)),
                 (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
-                (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison))
+                (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
+                (TokenType.FUNCTION, new ActionParseRule(FunExp, null, Precedence.Call))
                               );
         }
 
@@ -758,31 +757,49 @@ namespace ULox
 
         public static void BlockStatement(Compiler compiler)
             => compiler.BlockStatement();
-
-        public static void LocalFunctionDeclaration(Compiler compiler)
-        {
-            compiler.TokenIterator.Consume(TokenType.FUNCTION, "Expect 'fun' after 'local'.");
-            InnerFunctionDeclaration(compiler, FunctionType.LocalFunction);
-        }
-
-        public static void PureFunctionDeclaration(Compiler compiler)
-        {
-            compiler.TokenIterator.Consume(TokenType.FUNCTION, "Expect 'fun' after 'pure'.");
-            InnerFunctionDeclaration(compiler, FunctionType.PureFunction);
-        }
-
+                
         public static void FunctionDeclaration(Compiler compiler)
         {
-            InnerFunctionDeclaration(compiler, FunctionType.Function);
+            InnerFunctionDeclaration(compiler, true);
         }
 
-        private static void InnerFunctionDeclaration(Compiler compiler, FunctionType funcType)
+        private static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)
         {
-            var global = compiler.ParseVariable("Expect function name.");
-            compiler.CurrentCompilerState.MarkInitialised();
+            var functionType = FunctionType.Function;
 
-            compiler.Function(compiler.TokenIterator.PreviousToken.Lexeme, funcType);
-            compiler.DefineVariable(global);
+            if(compiler.TokenIterator.Match(TokenType.PURE))
+            {
+                functionType = FunctionType.PureFunction;
+            }
+            if(compiler.TokenIterator.Match(TokenType.LOCAL))
+            {
+                functionType = FunctionType.LocalFunction;
+            }
+
+            var isNamed = compiler.TokenIterator.Check(TokenType.IDENTIFIER);
+            var globalName = -1;
+            if (isNamed)
+            {
+                globalName = compiler.ParseVariable("Expect function name.");
+                compiler.CurrentCompilerState.MarkInitialised();
+            }
+            
+            compiler.Function(
+                globalName != -1 
+                ? compiler.TokenIterator.PreviousToken.Lexeme 
+                : "anonymous", 
+                functionType);
+            
+            if (globalName != -1)
+            {
+                compiler.DefineVariable((byte)globalName);
+
+                if (!requirePop)
+                {
+                    var (getOp, _, argId) = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
+                    compiler.EmitOpAndBytes(getOp, argId);
+                }
+            }
         }
 
         public static void NoOpStatement(Compiler compiler)
@@ -866,6 +883,11 @@ namespace ULox
         public static void Grouping(Compiler compiler, bool canAssign)
         {
             compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
+        }
+
+        public static void FunExp(Compiler compiler, bool canAssign)
+        {
+            InnerFunctionDeclaration(compiler, false);
         }
 
         public static void Call(Compiler compiler, bool canAssign)

@@ -407,7 +407,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("No method of name 'Count' found on 'ULox.ClassInternal'.", testEngine.InterpreterResult);
+            Assert.AreEqual("No method of name 'Count' found on '<ClassInternal:Stub>'.", testEngine.InterpreterResult);
         }
 
         [Test]

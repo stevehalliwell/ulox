@@ -131,5 +131,21 @@ foo.bar(1);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Fun_WhenPureViolatingAnonAndRhsOfAssign_ShouldFail()
+        {
+            testEngine.Run(@"
+var foo = {:};
+foo.bar = fun pure (a)
+{
+    print(a);
+};
+
+foo.bar(1);
+");
+
+            Assert.AreEqual("Identifiier 'print' could not be found locally in local function 'anonymous'.", testEngine.InterpreterResult);
+        }
     }
 }

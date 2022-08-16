@@ -868,18 +868,24 @@ namespace ULox
         {
             compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
         }
-        
+
         public static void FunExp(Compiler compiler, bool canAssign)
         {
-            if(compiler.TokenIterator.Check(TokenType.IDENTIFIER))
+            var isNamed = compiler.TokenIterator.Check(TokenType.IDENTIFIER);
+            byte globalName = 0;
+            if (isNamed)
             {
-                var global = compiler.ParseVariable("Expect function name.");
+                globalName = compiler.ParseVariable("Expect function name.");
                 compiler.CurrentCompilerState.MarkInitialised();
+            }
 
-                compiler.Function(compiler.TokenIterator.PreviousToken.Lexeme, FunctionType.Function);//todo support local and pure
-                compiler.DefineVariable(global);
+            compiler.Function(compiler.TokenIterator.PreviousToken.Lexeme, FunctionType.Function);//todo support local and pure
 
-                var (getOp, _, argId) = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant(global).val.asString.String);
+            if (isNamed)
+            {
+                compiler.DefineVariable(globalName);
+
+                var (getOp, _, argId) = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant(globalName).val.asString.String);
                 compiler.EmitOpAndBytes(getOp, argId);
             }
         }

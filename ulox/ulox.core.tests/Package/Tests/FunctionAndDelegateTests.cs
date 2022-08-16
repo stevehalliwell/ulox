@@ -115,5 +115,21 @@ Bar(2);
 
             Assert.AreEqual("12", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Fun_WhenAnonAndRhsOfAssign_ShouldAssignAndNotBeGlobal()
+        {
+            testEngine.Run(@"
+var foo = {:};
+foo.bar = fun (a)
+{
+    print(a);
+};
+
+foo.bar(1);
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
     }
 }

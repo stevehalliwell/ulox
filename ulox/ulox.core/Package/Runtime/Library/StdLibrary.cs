@@ -18,6 +18,67 @@ namespace ULox
 
         public Table GetBindings()
         {
+            return this.GenerateBindingTable(
+                ("VM", Value.New(new VMClass(CreateVM))),
+                ("Factory", Value.New(MakeFactoryInstance())),
+                ("Assert", Value.New(MakeAssertInstance())),
+                ("Serialise", Value.New(MakeSerialiseInstance())),
+                ("DI", Value.New(MakeDIInstance())),
+                (nameof(Duplicate), Value.New(Duplicate)),
+                (nameof(str), Value.New(str)),
+                (nameof(IsFrozen), Value.New(IsFrozen)),
+                (nameof(Unfreeze), Value.New(Unfreeze)),
+                (nameof(GenerateStackDump), Value.New(GenerateStackDump)),
+                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump)),
+                (nameof(GenerateReturnDump), Value.New(GenerateReturnDump))
+                                            );
+        }
+
+        private InstanceInternal MakeFactoryInstance()
+        {
+            var factoryInst = new InstanceInternal();
+            factoryInst.AddFieldsToInstance(
+                (nameof(Line), Value.New(Line)),
+                (nameof(SetLine), Value.New(SetLine))
+                );
+            factoryInst.Freeze();
+            return factoryInst;
+        }
+
+        public NativeCallResult Line(Vm vm, int argCount)
+        {
+            var arg = vm.GetArg(1);
+            var line = vm.Factory.GetLine(arg);
+            vm.PushReturn(line);
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult SetLine(Vm vm, int argCount)
+        {
+            var key = vm.GetArg(1);
+            if (key.IsNull)
+                throw new VMException($"'{nameof(SetLine)}' must have non null key argument.");
+            var line = vm.GetArg(2);
+            if(line.IsNull)
+                throw new VMException($"'{nameof(SetLine)}' must have non null line argument.");
+            
+            vm.Factory.SetLine(key, line);
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private InstanceInternal MakeDIInstance()
+        {
+            var diLibInst = new InstanceInternal();
+            diLibInst.AddFieldsToInstance(
+                (nameof(Count), Value.New(Count)),
+                (nameof(GenerateDump), Value.New(GenerateDump)),
+                (nameof(Freeze), Value.New(Freeze)));
+            diLibInst.Freeze();
+            return diLibInst;
+        }
+
+        private InstanceInternal MakeAssertInstance()
+        {
             var assertInst = new InstanceInternal();
             assertInst.AddFieldsToInstance(
                 (nameof(AreEqual), Value.New(AreEqual)),
@@ -33,33 +94,17 @@ namespace ULox
                 (nameof(Pass), Value.New(Pass)),
                 (nameof(Fail), Value.New(Fail)));
             assertInst.Freeze();
+            return assertInst;
+        }
 
+        private static InstanceInternal MakeSerialiseInstance()
+        {
             var serialiseInst = new InstanceInternal();
             serialiseInst.AddFieldsToInstance(
                 (nameof(ToJson), Value.New(ToJson)),
                 (nameof(FromJson), Value.New(FromJson)));
             serialiseInst.Freeze();
-
-            var diLibInst = new InstanceInternal();
-            diLibInst.AddFieldsToInstance(
-                (nameof(Count), Value.New(Count)),
-                (nameof(GenerateDump), Value.New(GenerateDump)),
-                (nameof(Freeze), Value.New(Freeze)));
-            diLibInst.Freeze();
-
-            return this.GenerateBindingTable(
-                ("VM", Value.New(new VMClass(CreateVM))),
-                ("Assert", Value.New(assertInst)),
-                ("Serialise", Value.New(serialiseInst)),
-                ("DI", Value.New(diLibInst)),
-                (nameof(Duplicate), Value.New(Duplicate)),
-                (nameof(str), Value.New(str)),
-                (nameof(IsFrozen), Value.New(IsFrozen)),
-                (nameof(Unfreeze), Value.New(Unfreeze)),
-                (nameof(GenerateStackDump), Value.New(GenerateStackDump)),
-                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump)),
-                (nameof(GenerateReturnDump), Value.New(GenerateReturnDump))
-                                            );
+            return serialiseInst;
         }
 
         public NativeCallResult GenerateStackDump(Vm vm, int argCount)

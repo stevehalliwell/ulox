@@ -1,0 +1,17 @@
+class Foo
+{
+    var a = 1;
+}
+
+Factory.SetLine(Foo, {:});
+Factory.Line(Foo).Create = fun (){ return Foo(); };
+
+test FactoryTests
+{
+    testcase OutterFactory
+    {
+        var foo = Factory.Line(Foo).Create();
+
+        Assert.AreEqual(1, foo.a);
+    }
+}

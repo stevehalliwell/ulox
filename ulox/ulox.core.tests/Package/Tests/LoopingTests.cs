@@ -327,7 +327,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("Cannot invoke on '7'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot invoke 'Count' on '7'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -341,7 +341,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("Cannot invoke on 'str'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot invoke 'Count' on 'str'.", testEngine.InterpreterResult);
         }
         
         [Test]

@@ -18,7 +18,7 @@ class Breakout
         
         CreateLevelBricks();
         
-        this.paddle = Paddle(Vec2.Create(0,-30), 32);
+        this.paddle = Factory.Line(Paddle).Create(Vec2.Create(0,-30), 32);
     }
 
     CreateWalls()

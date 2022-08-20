@@ -1,17 +1,13 @@
 class Brick
 {
     var pos = Vec2();
-    var go = CreateFromPrefab("Brick");
+    var go;
     var hitCount;
     var origHitCount;
 
-    init(pos, hitCount)
+    init(go, pos, hitCount)
     {
         this.origHitCount = hitCount; 
-        this.SyncPos();
-        this.SyncColour();
-        SetCollisionCallback(this.go, "Ball", this.OnHitByBall);
-        SetGameObjectTag(this.go, "Brick");
     }
 
     SyncPos()
@@ -48,3 +44,15 @@ class Brick
         (inject BreakoutInst).GivePointsForBrick(this, this.origHitCount);
     }
 }
+
+Factory.SetLine(Brick, {:});
+Factory.Line(Brick).Create = fun (pos, hitCount)
+{
+    var go = CreateFromPrefab("Brick");
+    var brick = Brick(go, pos, hitCount);
+    SetCollisionCallback(go, "Ball", brick.OnHitByBall);
+    SetGameObjectTag(go, "Brick");
+    brick.SyncPos();
+    brick.SyncColour();
+    return brick;
+};

@@ -60,9 +60,11 @@ class Breakout
     
     CreateBricksFromPositions(posList)
     {
+        var brickFac = Factory.Line(Brick).Create;
+
         loop (posList)
         {
-            var newBrick = Brick(item, i % 2);
+            var newBrick = brickFac(item, i % 2);
             this.bricks.Add(newBrick);
         }
     }

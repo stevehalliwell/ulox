@@ -14,21 +14,6 @@ class Ball
     }
 }
 
-var Factory = {:};
-Factory.CreateBall = fun (pos)
-{
-    var go = CreateFromPrefab("Ball");
-    SetGameObjectPosition(go, pos.x, pos.y, 0);
-    SetSpriteColour(go, 1,0,0,1);
-    SetGameObjectTag(go, "Ball");
-    var rb = GetRigidBody2DFromGameObject(go);
-    SetRigidBody2DVelocity(rb, 0,0);
-    
-    var ball = Ball(pos, go, rb);
-    SetCollisionCallback(ball.go, "Gutter", ball.OnHitGutter);
-    return ball;
-};
-
 test BallTests
 {
     testcase OnHitGutter
@@ -47,3 +32,18 @@ test BallTests
         Assert.IsTrue(called);
     }
 }
+
+Factory.SetLine(Ball, {:});
+Factory.Line(Ball).Create = fun (pos)
+{
+    var go = CreateFromPrefab("Ball");
+    SetGameObjectPosition(go, pos.x, pos.y, 0);
+    SetSpriteColour(go, 1,0,0,1);
+    SetGameObjectTag(go, "Ball");
+    var rb = GetRigidBody2DFromGameObject(go);
+    SetRigidBody2DVelocity(rb, 0,0);
+    
+    var ball = Ball(pos, go, rb);
+    SetCollisionCallback(ball.go, "Gutter", ball.OnHitGutter);
+    return ball;
+};

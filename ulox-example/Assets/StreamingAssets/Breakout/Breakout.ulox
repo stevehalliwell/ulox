@@ -23,15 +23,16 @@ class Breakout
 
     CreateWalls()
     {
-        this.walls.Add(Wall(Vec2.Create(-40,0), Vec2.Create(10,80)));
-        this.walls.Add(Wall(Vec2.Create(40,0), Vec2.Create(10,80)));
-        this.walls.Add(Wall(Vec2.Create(0,-40), Vec2.Create(80,10)));
-        this.walls.Add(Wall(Vec2.Create(0,40), Vec2.Create(80,10)));
+        var wallLine = Factory.Line(Wall);
+        this.walls.Add(wallLine.Create(Vec2.Create(-40,0), Vec2.Create(10,80)));
+        this.walls.Add(wallLine.Create(Vec2.Create(40,0), Vec2.Create(10,80)));
+        this.walls.Add(wallLine.Create(Vec2.Create(0,-40), Vec2.Create(80,10)));
+        this.walls.Add(wallLine.Create(Vec2.Create(0,40), Vec2.Create(80,10)));
     }
 
     CreateBall(at)
     {
-        this.ball = Factory.CreateBall(at);
+        this.ball = Factory.Line(Ball).Create(at);
         SetRigidBody2DVelocity(this.ball.rb, 15,18);
     }
 

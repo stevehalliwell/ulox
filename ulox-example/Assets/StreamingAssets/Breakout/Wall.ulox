@@ -2,8 +2,15 @@ class Wall
 {
     init(pos, scale)
     {
-        var newWall = CreateFromPrefab("Wall");
-        SetGameObjectPosition(newWall, pos.x, pos.y,0);
-        SetGameObjectScale(newWall, scale.x, scale.y,1);
     }
 }
+
+Factory.SetLine(Wall, {:});
+Factory.Line(Wall).Create = fun (pos, scale)
+{
+    var newWall = CreateFromPrefab("Wall");
+    SetGameObjectPosition(newWall, pos.x, pos.y,0);
+    SetGameObjectScale(newWall, scale.x, scale.y,1);
+    var retval = Wall(pos, scale);
+    return retval;
+};

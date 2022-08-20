@@ -1,12 +1,15 @@
 class Gutter
 {
-    var go = CreateFromPrefab("Wall");
-
-    init(pos, scale)
-    {
-        SetSpriteColour(this.go, 0,0,0,0);
-        SetGameObjectTag(this.go, "Gutter");
-        SetGameObjectPosition(this.go, pos.x, pos.y,0);
-        SetGameObjectScale(this.go, scale.x, scale.y,1);
-    }
+    var go;
+    init(go){}
 }
+
+Factory.SetLine(Gutter, {:});
+Factory.Line(Gutter).Create = fun (pos, scale)
+{
+    var newWall = CreateAndInitGameObject("Wall", pos, scale);
+    SetSpriteColour(newWall, 0,0,0,0);
+    SetGameObjectTag(newWall, "Gutter");
+    var retval = Wall(newWall);
+    return retval;
+};

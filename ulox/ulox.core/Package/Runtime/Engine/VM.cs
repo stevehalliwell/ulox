@@ -41,6 +41,7 @@ namespace ULox
         private readonly Table _globals = new Table();
         public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
         public DiContainer DiContainer { get; private set; } = new DiContainer();
+        public Factory Factory { get; private set; } = new Factory();
 
         public Vm()
         {
@@ -114,6 +115,7 @@ namespace ULox
 
                 TestRunner = asVmBase.TestRunner;
                 DiContainer = asVmBase.DiContainer.ShallowCopy();
+                Factory = asVmBase.Factory.ShallowCopy();
             }
         }
 
@@ -1250,6 +1252,11 @@ namespace ULox
                 else
                 {
                     var fromClass = inst.FromClass;
+                    if (fromClass == null)
+                    {
+                        throw new VMException($"Cannot invoke '{methodName}' on '{receiver}' with no class.");
+                    }
+                    
                     if (!fromClass.TryGetMethod(methodName, out var method))
                     {
                         throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
@@ -1268,7 +1275,7 @@ namespace ULox
             break;
 
             default:
-                throw new VMException($"Cannot invoke on '{receiver}'.");
+                throw new VMException($"Cannot invoke '{methodName}' on '{receiver}'.");
             }
         }
 

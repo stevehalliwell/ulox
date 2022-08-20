@@ -1,22 +1,39 @@
 ﻿using System;
-using System.IO;
 
 namespace ULox
 {
     public class StdLibrary : IULoxLibrary
     {
         private const double SquareDividedTolerance = 0.01d;
-
+        
         public string Name => nameof(StdLibrary);
+
+        public Func<Vm> CreateVM { get; private set; }
 
         public StdLibrary()
         {
             CreateVM = () => new Vm();
         }
 
-        public Func<Vm> CreateVM { get; private set; }
-
         public Table GetBindings()
+        {
+            return this.GenerateBindingTable(
+                ("VM", Value.New(new VMClass(CreateVM))),
+                ("Factory", Value.New(FactoryStdLibrary.MakeFactoryInstance())),
+                ("Assert", Value.New(MakeAssertInstance())),
+                ("Serialise", Value.New(SerialiseStdLibrary.MakeSerialiseInstance())),
+                ("DI", Value.New(DIStdLibrary.MakeDIInstance())),
+                (nameof(Duplicate), Value.New(Duplicate)),
+                (nameof(str), Value.New(str)),
+                (nameof(IsFrozen), Value.New(IsFrozen)),
+                (nameof(Unfreeze), Value.New(Unfreeze)),
+                (nameof(GenerateStackDump), Value.New(GenerateStackDump)),
+                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump)),
+                (nameof(GenerateReturnDump), Value.New(GenerateReturnDump))
+                                            );
+        }
+
+        internal InstanceInternal MakeAssertInstance()
         {
             var assertInst = new InstanceInternal();
             assertInst.AddFieldsToInstance(
@@ -33,119 +50,7 @@ namespace ULox
                 (nameof(Pass), Value.New(Pass)),
                 (nameof(Fail), Value.New(Fail)));
             assertInst.Freeze();
-
-            var serialiseInst = new InstanceInternal();
-            serialiseInst.AddFieldsToInstance(
-                (nameof(ToJson), Value.New(ToJson)),
-                (nameof(FromJson), Value.New(FromJson)));
-            serialiseInst.Freeze();
-
-            var diLibInst = new InstanceInternal();
-            diLibInst.AddFieldsToInstance(
-                (nameof(Count), Value.New(Count)),
-                (nameof(GenerateDump), Value.New(GenerateDump)),
-                (nameof(Freeze), Value.New(Freeze)));
-            diLibInst.Freeze();
-
-            return this.GenerateBindingTable(
-                ("VM", Value.New(new VMClass(CreateVM))),
-                ("Assert", Value.New(assertInst)),
-                ("Serialise", Value.New(serialiseInst)),
-                ("DI", Value.New(diLibInst)),
-                (nameof(Duplicate), Value.New(Duplicate)),
-                (nameof(str), Value.New(str)),
-                (nameof(IsFrozen), Value.New(IsFrozen)),
-                (nameof(Unfreeze), Value.New(Unfreeze)),
-                (nameof(GenerateStackDump), Value.New(GenerateStackDump)),
-                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump)),
-                (nameof(GenerateReturnDump), Value.New(GenerateReturnDump))
-                                            );
-        }
-
-        public NativeCallResult GenerateStackDump(Vm vm, int argCount)
-        {
-            vm.PushReturn(Value.New(vm.GenerateStackDump()));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        public NativeCallResult GenerateGlobalsDump(Vm vm, int argCount)
-        {
-            vm.PushReturn(Value.New(vm.GenerateGlobalsDump()));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        public NativeCallResult GenerateReturnDump(Vm vm, int argCount)
-        {
-            vm.PushReturn(Value.New(vm.GenerateReturnDump()));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        public NativeCallResult IsFrozen(Vm vm, int argCount)
-        {
-            var target = vm.GetArg(1);
-            if (target.type == ValueType.Instance)
-                vm.PushReturn(Value.New(target.val.asInstance.IsFrozen));
-            else if (target.type == ValueType.Class)
-                vm.PushReturn(Value.New(target.val.asClass.IsFrozen));
-
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        public NativeCallResult Unfreeze(Vm vm, int argCount)
-        {
-            var target = vm.GetArg(1);
-            if (target.type == ValueType.Instance)
-                target.val.asInstance.Unfreeze();
-            if (target.type == ValueType.Class)
-                target.val.asClass.Unfreeze();
-
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        private NativeCallResult Count(Vm vm, int argCount)
-        {
-            var di = FromVm(vm);
-            vm.PushReturn(Value.New(di.Count));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        private NativeCallResult GenerateDump(Vm vm, int argCount)
-        {
-            var di = FromVm(vm);
-            vm.PushReturn(Value.New(di.GenerateDump()));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        private NativeCallResult Freeze(Vm vm, int argCount)
-        {
-            var di = FromVm(vm);
-            di.Freeze();
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        private DiContainer FromVm(Vm vMBase)
-            => vMBase.DiContainer;
-
-        private static NativeCallResult ToJson(Vm vm, int argCount)
-        {
-            var obj = vm.GetArg(1);
-            var jsonWriter = new JsonValueHeirarchyWriter();
-            var walker = new ValueHeirarchyWalker(jsonWriter);
-            walker.Walk(obj);
-            var result = jsonWriter.GetString();
-            vm.PushReturn(Value.New(result));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        private static NativeCallResult FromJson(Vm vm, int argCount)
-        {
-            var jsonString = vm.GetArg(1);
-            var reader = new StringReader(jsonString.val.asString.String);
-            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
-            creator.Process();
-            var obj = creator.Finish();
-            vm.PushReturn(obj);
-            return NativeCallResult.SuccessfulExpression;
+            return assertInst;
         }
 
         private static NativeCallResult AreApproxEqual(Vm vm, int argCount)
@@ -277,6 +182,47 @@ namespace ULox
         {
             var msg = vm.GetArg(1);
             throw new AssertException($"Fail. '{msg}'");
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+
+        public NativeCallResult GenerateStackDump(Vm vm, int argCount)
+        {
+            vm.PushReturn(Value.New(vm.GenerateStackDump()));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult GenerateGlobalsDump(Vm vm, int argCount)
+        {
+            vm.PushReturn(Value.New(vm.GenerateGlobalsDump()));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult GenerateReturnDump(Vm vm, int argCount)
+        {
+            vm.PushReturn(Value.New(vm.GenerateReturnDump()));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult IsFrozen(Vm vm, int argCount)
+        {
+            var target = vm.GetArg(1);
+            if (target.type == ValueType.Instance)
+                vm.PushReturn(Value.New(target.val.asInstance.IsFrozen));
+            else if (target.type == ValueType.Class)
+                vm.PushReturn(Value.New(target.val.asClass.IsFrozen));
+
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult Unfreeze(Vm vm, int argCount)
+        {
+            var target = vm.GetArg(1);
+            if (target.type == ValueType.Instance)
+                target.val.asInstance.Unfreeze();
+            if (target.type == ValueType.Class)
+                target.val.asClass.Unfreeze();
+
             return NativeCallResult.SuccessfulExpression;
         }
 

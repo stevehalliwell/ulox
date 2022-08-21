@@ -9,11 +9,6 @@ class Paddle
     {
     }
 
-    SyncPos()
-    {
-        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
-    }
-
     Update(dt)
     {
         var p = this.pos;
@@ -30,6 +25,6 @@ class Paddle
             p.x = wall;
 
         this.pos = p;
-        this.SyncPos();
+        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
     }
 }

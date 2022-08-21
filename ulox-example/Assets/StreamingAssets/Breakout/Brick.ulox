@@ -10,11 +10,6 @@ class Brick
         this.origHitCount = hitCount; 
     }
 
-    SyncPos()
-    {
-        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
-    }
-
     SyncColour()
     {
         if(this.hitCount == 0)

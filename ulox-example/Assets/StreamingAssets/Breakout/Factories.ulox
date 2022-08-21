@@ -1,10 +1,12 @@
-fun CreateAndInitGameObject(name, pos, scale)
+Factory.SetLine(Wall, {:});
+Factory.Line(Wall).Create = fun (pos, scale)
 {
-    var retval = CreateFromPrefab(name);
-    SetGameObjectPosition(retval, pos.x, pos.y,0);
-    SetGameObjectScale(retval, scale.x, scale.y,1);
+    var newWall = CreateFromPrefab("Wall");
+    SetGameObjectPosition(newWall, pos.x, pos.y,0);
+    SetGameObjectScale(newWall, scale.x, scale.y,1);
+    var retval = Wall(newWall);
     return retval;
-}
+};
 
 Factory.SetLine(Brick, {:});
 Factory.Line(Brick).Create = fun (pos, hitCount)
@@ -13,7 +15,7 @@ Factory.Line(Brick).Create = fun (pos, hitCount)
     var brick = Brick(go, pos, hitCount);
     SetCollisionCallback(go, "Ball", brick.OnHitByBall);
     SetGameObjectTag(go, "Brick");
-    brick.SyncPos();
+    SetGameObjectPosition(go, pos.x, pos.y, 0);
     brick.SyncColour();
     return brick;
 };
@@ -21,7 +23,9 @@ Factory.Line(Brick).Create = fun (pos, hitCount)
 Factory.SetLine(Gutter, {:});
 Factory.Line(Gutter).Create = fun (pos, scale)
 {
-    var newWall = CreateAndInitGameObject("Wall", pos, scale);
+    var newWall = CreateFromPrefab("Wall");
+    SetGameObjectPosition(newWall, pos.x, pos.y,0);
+    SetGameObjectScale(newWall, scale.x, scale.y,1);
     SetSpriteColour(newWall, 0,0,0,0);
     SetGameObjectTag(newWall, "Gutter");
     var retval = Wall(newWall);
@@ -48,15 +52,7 @@ Factory.Line(Paddle).Create = fun(pos, wallDist)
 {
     var go = CreateFromPrefab("Brick");
     var paddle = Paddle(go, pos, wallDist);
-    paddle.SyncPos();
+    SetGameObjectPosition(go, pos.x, pos.y, 0);
     SetGameObjectTag(go, "Paddle");
     return paddle;
-};
-
-Factory.SetLine(Wall, {:});
-Factory.Line(Wall).Create = fun (pos, scale)
-{
-    var newWall = CreateAndInitGameObject("Wall", pos, scale);
-    var retval = Wall(newWall);
-    return retval;
 };

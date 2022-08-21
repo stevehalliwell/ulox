@@ -1,0 +1,62 @@
+fun CreateAndInitGameObject(name, pos, scale)
+{
+    var retval = CreateFromPrefab(name);
+    SetGameObjectPosition(retval, pos.x, pos.y,0);
+    SetGameObjectScale(retval, scale.x, scale.y,1);
+    return retval;
+}
+
+Factory.SetLine(Brick, {:});
+Factory.Line(Brick).Create = fun (pos, hitCount)
+{
+    var go = CreateFromPrefab("Brick");
+    var brick = Brick(go, pos, hitCount);
+    SetCollisionCallback(go, "Ball", brick.OnHitByBall);
+    SetGameObjectTag(go, "Brick");
+    brick.SyncPos();
+    brick.SyncColour();
+    return brick;
+};
+
+Factory.SetLine(Gutter, {:});
+Factory.Line(Gutter).Create = fun (pos, scale)
+{
+    var newWall = CreateAndInitGameObject("Wall", pos, scale);
+    SetSpriteColour(newWall, 0,0,0,0);
+    SetGameObjectTag(newWall, "Gutter");
+    var retval = Wall(newWall);
+    return retval;
+};
+
+Factory.SetLine(Ball, {:});
+Factory.Line(Ball).Create = fun (pos)
+{
+    var go = CreateFromPrefab("Ball");
+    SetGameObjectPosition(go, pos.x, pos.y, 0);
+    SetSpriteColour(go, 1,0,0,1);
+    SetGameObjectTag(go, "Ball");
+    var rb = GetRigidBody2DFromGameObject(go);
+    SetRigidBody2DVelocity(rb, 0,0);
+    
+    var ball = Ball(pos, go, rb);
+    SetCollisionCallback(ball.go, "Gutter", ball.OnHitGutter);
+    return ball;
+};
+
+Factory.SetLine(Paddle, {:});
+Factory.Line(Paddle).Create = fun(pos, wallDist)
+{
+    var go = CreateFromPrefab("Brick");
+    var paddle = Paddle(go, pos, wallDist);
+    paddle.SyncPos();
+    SetGameObjectTag(go, "Paddle");
+    return paddle;
+};
+
+Factory.SetLine(Wall, {:});
+Factory.Line(Wall).Create = fun (pos, scale)
+{
+    var newWall = CreateAndInitGameObject("Wall", pos, scale);
+    var retval = Wall(newWall);
+    return retval;
+};

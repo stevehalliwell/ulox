@@ -3,13 +3,3 @@ class Gutter
     var go;
     init(go){}
 }
-
-Factory.SetLine(Gutter, {:});
-Factory.Line(Gutter).Create = fun (pos, scale)
-{
-    var newWall = CreateAndInitGameObject("Wall", pos, scale);
-    SetSpriteColour(newWall, 0,0,0,0);
-    SetGameObjectTag(newWall, "Gutter");
-    var retval = Wall(newWall);
-    return retval;
-};

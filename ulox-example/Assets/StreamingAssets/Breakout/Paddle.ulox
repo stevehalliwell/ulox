@@ -33,13 +33,3 @@ class Paddle
         this.SyncPos();
     }
 }
-
-Factory.SetLine(Paddle, {:});
-Factory.Line(Paddle).Create = fun(pos, wallDist)
-{
-    var go = CreateFromPrefab("Brick");
-    var paddle = Paddle(go, pos, wallDist);
-    paddle.SyncPos();
-    SetGameObjectTag(go, "Paddle");
-    return paddle;
-};

@@ -3,19 +3,3 @@ class Wall
     var go;
     init(go){}
 }
-
-fun CreateAndInitGameObject(name, pos, scale)
-{
-    var retval = CreateFromPrefab(name);
-    SetGameObjectPosition(retval, pos.x, pos.y,0);
-    SetGameObjectScale(retval, scale.x, scale.y,1);
-    return retval;
-}
-
-Factory.SetLine(Wall, {:});
-Factory.Line(Wall).Create = fun (pos, scale)
-{
-    var newWall = CreateAndInitGameObject("Wall", pos, scale);
-    var retval = Wall(newWall);
-    return retval;
-};

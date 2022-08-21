@@ -8,6 +8,7 @@ build queue
     "Breakout/Ball",
     "Breakout/Wall", 
     "Breakout/Gutter",
+    "Breakout/Factories",
     "Breakout/Breakout",
     "Breakout/Game",
     "Breakout/CurrentLevel";

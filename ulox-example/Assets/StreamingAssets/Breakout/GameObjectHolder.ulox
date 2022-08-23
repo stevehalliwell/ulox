@@ -1,4 +1,4 @@
-class Gutter
+class GameObjectHolder
 {
     var go;
     init(go){}

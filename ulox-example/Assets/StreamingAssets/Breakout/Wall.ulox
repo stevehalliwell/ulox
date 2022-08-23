@@ -1,5 +1,0 @@
-class Wall
-{
-    var go;
-    init(go){}
-}

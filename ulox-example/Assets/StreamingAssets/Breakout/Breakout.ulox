@@ -12,7 +12,7 @@ class Breakout
     {
         this.CreateWalls();
 
-        this.gutter = Factory.Line(Gutter).Create(Vec2.Create(0,-35), Vec2.Create(80,10));
+        this.gutter = Factory.Line("Gutter").Create(Vec2.Create(0,-35), Vec2.Create(80,10));
         
         this.CreateBall(Vec2.Create(0,-20));
         
@@ -23,7 +23,7 @@ class Breakout
 
     CreateWalls()
     {
-        var wallLine = Factory.Line(Wall);
+        var wallLine = Factory.Line("Wall");
         this.walls.Add(wallLine.Create(Vec2.Create(-40,0), Vec2.Create(10,80)));
         this.walls.Add(wallLine.Create(Vec2.Create(40,0), Vec2.Create(10,80)));
         this.walls.Add(wallLine.Create(Vec2.Create(0,-40), Vec2.Create(80,10)));
@@ -38,7 +38,12 @@ class Breakout
 
     UpdateGame(dt)
     {
-        this.paddle.Update(dt);
+        var move = 0;
+        if(GetKey("left"))
+            move -= 1;
+        if(GetKey("right"))
+            move += 1;
+        this.paddle.Move(move*dt);
     }
 
     UpdateOutputText()

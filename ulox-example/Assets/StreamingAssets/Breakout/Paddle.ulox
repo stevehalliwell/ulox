@@ -9,15 +9,11 @@ class Paddle
     {
     }
 
-    Update(dt)
+    Move(amt)
     {
         var p = this.pos;
         var wall = this.wallDist;
-        
-        if(GetKey("left"))
-            p = p + Vec2.Create(-this.moveSpeed * dt,0);
-        if(GetKey("right"))
-            p = p + Vec2.Create(this.moveSpeed * dt,0);
+        p = p + Vec2.Create(this.moveSpeed * amt,0);
 
         if(p.x < -wall)
             p.x = -wall;

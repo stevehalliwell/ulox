@@ -13,7 +13,7 @@ class Vec2
         return Vec2.Create(v2.x* scalar, v2.y*scalar);
     }
 
-	var x, y;
+	var x = 0, y = 0;
 
 	_add(lhs, rhs)
 	{
@@ -38,6 +38,18 @@ class Vec2
 
 test Vec2Tests
 {
+	testcase Default
+	{
+		var expected = 0;
+		var result = Vec2();
+
+		var x = result.x;
+		var y = result.y;
+
+		Assert.AreEqual(expected, x);
+		Assert.AreEqual(expected, y);
+	}
+
 	testcase Add
 	{
 		var expected = Vec2.Create(4,6);

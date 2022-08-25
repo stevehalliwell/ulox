@@ -578,6 +578,16 @@ namespace ULox
             EmitOpAndBytes(OpCode.DEFINE_GLOBAL, global);
         }
 
+        public byte DeclareAndDefineCustomVariable(string varName)
+        {
+            //do equiv of ParseVariable, DefineVariable
+            CurrentCompilerState.DeclareVariableByName(varName);
+            CurrentCompilerState.MarkInitialised();
+            var id = AddCustomStringConstant(varName);
+            DefineVariable(id);
+            return id;
+        }
+
         //TODO can move to compiler state?
         public void DeclareVariable()
         {

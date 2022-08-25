@@ -53,7 +53,7 @@ namespace ULox
             {
             case TestOpType.CaseStart:
                 StartTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
-                vm.ReadByte(chunk);//byte we don't use
+                var hasData = vm.ReadByte(chunk);//byte we don't use
                 break;
 
             case TestOpType.CaseEnd:

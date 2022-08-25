@@ -47,7 +47,7 @@
 
                 //skip the looop if the target is null
                 compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
-                int exitJumpArrayIsNullLocation = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+                int exitJumpArrayIsNullLocation = compiler.EmitJumpIf();
                 loopState.loopExitPatchLocations.Add(exitJumpArrayIsNullLocation);
                 compiler.EmitOpCode(OpCode.POP);
 
@@ -76,12 +76,12 @@
                     compiler.EmitOpAndBytes(OpCode.LESS);
 
                     //run the condition 
-                    var exitJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+                    var exitJump = compiler.EmitJumpIf();
                     loopState.loopExitPatchLocations.Add(exitJump);
                     compiler.EmitOpCode(OpCode.POP); // Condition.
                 }
                 //increment
-                int bodyJump = compiler.EmitJump(OpCode.JUMP);
+                int bodyJump = compiler.EmitJump();
                 {
                     int incrementStart = compiler.CurrentChunkInstructinCount;
                     loopState.loopContinuePoint = incrementStart;

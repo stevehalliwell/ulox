@@ -25,7 +25,7 @@
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
             //emit jump // to skip this during imperative
-            int testFragmentJump = compiler.EmitJump(OpCode.JUMP);
+            int testFragmentJump = compiler.EmitJump();
 
             _testDeclarationCompilette.AddTestCaseInstruction((ushort)compiler.CurrentChunkInstructinCount);
 

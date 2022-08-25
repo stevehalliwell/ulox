@@ -25,7 +25,7 @@ namespace ULox
 
             if (!compiler.TokenIterator.Check(TokenType.CLOSE_PAREN))
             {
-                int bodyJump = compiler.EmitJump(OpCode.JUMP);
+                int bodyJump = compiler.EmitJump();
 
                 int incrementStart = compiler.CurrentChunkInstructinCount;
                 loopState.loopContinuePoint = incrementStart;
@@ -49,7 +49,7 @@ namespace ULox
             compiler.ConsumeEndStatement("loop condition");
 
             // Jump out of the loop if the condition is false.
-            var exitJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+            var exitJump = compiler.EmitJumpIf();
             loopState.loopExitPatchLocations.Add(exitJump);
             compiler.EmitOpCode(OpCode.POP); // Condition.
         }

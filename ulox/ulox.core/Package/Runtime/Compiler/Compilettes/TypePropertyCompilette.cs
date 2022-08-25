@@ -36,7 +36,7 @@ namespace ULox
                 _classVarConstantNames.Add(nameConstant);
 
                 //emit jump // to skip this during imperative
-                int initFragmentJump = compiler.EmitJump(OpCode.JUMP);
+                int initFragmentJump = compiler.EmitJump();
                 //patch jump previous init fragment if it exists
                 if (_previousInitFragJumpLocation != -1)
                 {
@@ -64,7 +64,7 @@ namespace ULox
                 compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
                 compiler.EmitOpCode(OpCode.POP);
                 //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                _previousInitFragJumpLocation = compiler.EmitJump(OpCode.JUMP);
+                _previousInitFragJumpLocation = compiler.EmitJump();
 
                 //patch jump from skip imperative
                 compiler.PatchJump(initFragmentJump);
@@ -81,7 +81,7 @@ namespace ULox
                 compiler.WriteUShortAt(_typeCompilette.InitChainInstruction, (ushort)_initFragStartLocation);
 
             //return stub used by init and test chains
-            var classReturnEnd = compiler.EmitJump(OpCode.JUMP);
+            var classReturnEnd = compiler.EmitJump();
 
             if (_previousInitFragJumpLocation != -1)
                 compiler.PatchJump(_previousInitFragJumpLocation);

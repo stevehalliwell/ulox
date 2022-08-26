@@ -380,6 +380,10 @@ namespace ULox
                     DoSetIndexOp(opCode);
                     break;
 
+                case OpCode.EXPAND_COPY_TO_STACK:
+                    DoExpandCopyToStackOp(opCode);
+                    break;
+
                 case OpCode.TYPEOF:
                     DoTypeOfOp();
                     break;
@@ -471,6 +475,25 @@ namespace ULox
             throw new VMException($"Cannot perform set index on type '{listValue.type}'.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoExpandCopyToStackOp(OpCode opCode)
+        {
+            var v = Pop();
+            if (v.type == ValueType.Instance
+                && v.val.asInstance is NativeListInstance nativeList)
+            {
+                var l = nativeList.List;
+                for (int i = 0; i < l.Count; i++)
+                {
+                    Push(l[i]);
+                }
+            }
+            else
+            {
+                Push(v);
+            }
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetIndexOp(OpCode opCode)
         {
@@ -1030,7 +1053,7 @@ namespace ULox
 
             if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
                 return;
-            
+
             throw new VMException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromClass}' and '{rhs.val.asInstance.FromClass}'.");
         }
 
@@ -1256,7 +1279,7 @@ namespace ULox
                     {
                         throw new VMException($"Cannot invoke '{methodName}' on '{receiver}' with no class.");
                     }
-                    
+
                     if (!fromClass.TryGetMethod(methodName, out var method))
                     {
                         throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");

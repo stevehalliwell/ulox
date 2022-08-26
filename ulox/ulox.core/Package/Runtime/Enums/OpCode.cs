@@ -70,6 +70,7 @@
         NATIVE_TYPE,
         GET_INDEX,
         SET_INDEX,
+        EXPAND_COPY_TO_STACK,
 
         TYPEOF,
 

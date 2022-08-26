@@ -773,7 +773,7 @@ print(T());");
 
             Assert.AreEqual("7", testEngine.InterpreterResult);
         }
-        
+
         [Test]
         public void Engine_SelfAssign()
         {
@@ -1038,6 +1038,24 @@ print(str(a)+str(b));");
         {
             testEngine.Run(@"
 Assert.AreNotEqual(1,2);");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void GenerateByteCodeForLocalAssignment()
+        {
+            testEngine.Run(@"
+fun T(e)
+{
+    var a;
+    var b = null;
+    var c = 1;
+    var d = a;
+    var f = e;
+}
+"
+            );
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }

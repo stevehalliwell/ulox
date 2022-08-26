@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 
 namespace ULox.Tests
 {
@@ -194,6 +195,170 @@ test Foo
 }");
 
             Assert.AreEqual("FooBar", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestCase_WithArgsNoData_ShouldFailCannotAddNulls()
+        {
+            testEngine.Run(@"
+test T
+{
+    testcase Add(lhs, rhs, expected)
+    {
+        var result = lhs + rhs;
+        Assert.AreEqual(expected, result);
+    }
+}"
+            );
+            
+            StringAssert.Contains("Cannot perform math op on non math types 'Null' and 'Null'", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestCase_WithArgsSingleDataSet_ShouldPass()
+        {
+            testEngine.Run(@"
+var AddDataSource = [];
+var first = [];
+first.Add(1);
+first.Add(2);
+first.Add(3);
+AddDataSource.Add(first);
+
+test T
+{
+    testcase (AddDataSource) Add(lhs, rhs, expected)
+    {
+        var result = lhs + rhs;
+        Assert.AreEqual(expected, result);
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestCase_WithDataSetAndManuallyGrabbed_ShouldPass()
+        {
+            testEngine.Run(@"
+var AddDataSource = [];
+var first = [];
+first.Add(1);
+first.Add(2);
+first.Add(3);
+AddDataSource.Add(first);
+
+test T
+{
+    testcase Add()
+    {
+        var testDataRow = AddDataSource[0];
+        var lhs = testDataRow[0];
+        var rhs = testDataRow[1];
+        var expected = testDataRow[2];
+        var result = lhs + rhs;
+        Assert.AreEqual(expected, result);
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestCase_WithArgsEmptyDataSet_ShouldFail()
+        {
+            void Act() => testEngine.Run(@"
+var AddDataSource = [];
+
+test T
+{
+    testcase (AddDataSource) Add(lhs, rhs, expected)
+    {
+        var result = lhs + rhs;
+        Assert.AreEqual(expected, result);
+    }
+}"
+            );
+
+            Assert.Throws<ArgumentOutOfRangeException>(Act);
+            StringAssert.Contains("T:Add Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+        }
+
+        [Test]
+        public void TestCase_WithSourceButNoArg_ShouldPassNoEffect()
+        {
+            testEngine.Run(@"
+var source = [];
+source.Add(1);
+
+test T
+{
+    testcase (source) IsOne()
+    {
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestCase_WithSourceAndSingleArg_ShouldPass()
+        {
+            testEngine.Run(@"
+var source = [];
+source.Add(1);
+
+test T
+{
+    testcase (source) IsOne(val)
+    {
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestCase_WithNoSourceAndNoArg_ShouldPass()
+        {
+            testEngine.Run(@"
+var source = [];
+source.Add(1);
+
+test T
+{
+    testcase IsOne
+    {
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestCase_WithManualDataSourceSingle_ShouldPass()
+        {
+            testEngine.Run(@"
+var source = [];
+source.Add(1);
+
+test T
+{
+    testcase IsOne()
+    {
+        var testDataRow = null;
+        var testDataSource = source;
+        testDataRow = testDataSource[0];
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
         }
     }
 }

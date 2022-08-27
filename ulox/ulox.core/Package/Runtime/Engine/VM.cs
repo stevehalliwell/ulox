@@ -60,7 +60,7 @@ namespace ULox
         protected void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected Value Peek(int ind = 0) => _valueStack.Peek(ind);
+        public Value Peek(int ind = 0) => _valueStack.Peek(ind);
 
         public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
 

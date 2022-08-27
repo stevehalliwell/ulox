@@ -69,11 +69,7 @@
                 loopState.loopContinuePoint = loopStart;
                 {
                     //confirm that the index isn't over the length of the array
-                    compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
-                    compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
-                    byte lengthNameID = compiler.AddCustomStringConstant("Count");
-                    compiler.EmitOpAndBytes(OpCode.INVOKE, lengthNameID, 0);
-                    compiler.EmitOpAndBytes(OpCode.LESS);
+                    IsIndexLessThanArrayCount(compiler, arrayGetOp, arrayArgId, indexArgID);
 
                     //run the condition 
                     var exitJump = compiler.EmitJumpIf();
@@ -85,11 +81,7 @@
                 {
                     int incrementStart = compiler.CurrentChunkInstructinCount;
                     loopState.loopContinuePoint = incrementStart;
-                    compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
-                    compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 1);
-                    compiler.EmitOpCode(OpCode.ADD);
-                    compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
-                    compiler.EmitOpCode(OpCode.POP);
+                    IncrementLocalByOne(compiler, indexArgID);
                     compiler.EmitLoop(loopStart);
                     loopStart = incrementStart;
                     compiler.PatchJump(bodyJump);
@@ -109,6 +101,24 @@
             }
 
             return loopStart;
+        }
+
+        public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)
+        {
+            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
+            compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
+            byte lengthNameID = compiler.AddCustomStringConstant("Count");
+            compiler.EmitOpAndBytes(OpCode.INVOKE, lengthNameID, 0);
+            compiler.EmitOpAndBytes(OpCode.LESS);
+        }
+
+        public static void IncrementLocalByOne(Compiler compiler, byte indexArgID)
+        {
+            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
+            compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 1);
+            compiler.EmitOpCode(OpCode.ADD);
+            compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
+            compiler.EmitOpCode(OpCode.POP);
         }
     }
 }

@@ -211,7 +211,7 @@ test T
 }"
             );
             
-            StringAssert.Contains("Cannot perform math op on non math types 'Null' and 'Null'", testEngine.InterpreterResult);
+            Assert.AreEqual("Testcase 'Add' has arguments but no data expression.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -267,9 +267,9 @@ test T
         }
 
         [Test]
-        public void TestCase_WithArgsEmptyDataSet_ShouldFail()
+        public void TestCase_WithArgsEmptyDataSet_ShouldPass()
         {
-            void Act() => testEngine.Run(@"
+            testEngine.Run(@"
 var AddDataSource = [];
 
 test T
@@ -282,8 +282,8 @@ test T
 }"
             );
 
-            Assert.Throws<ArgumentOutOfRangeException>(Act);
-            StringAssert.Contains("T:Add Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            Assert.AreEqual("", testEngine.InterpreterResult);
+            StringAssert.DoesNotContain("T:Add", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -301,7 +301,7 @@ test T
 }"
             );
 
-            Assert.AreEqual("", testEngine.InterpreterResult);
+            Assert.AreEqual("Testcase 'IsOne' has data expression but no arguments.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -359,6 +359,59 @@ test T
             );
 
             Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestCase_WithArgsMultiDataSet_ShouldPass()
+        {
+            testEngine.Run(@"
+var AddDataSource = [];
+var first = [];
+first.Add(1);
+first.Add(2);
+first.Add(3);
+AddDataSource.Add(first);
+var second = [];
+second.Add(1);
+second.Add(1);
+second.Add(2);
+AddDataSource.Add(second);
+
+test T
+{
+    testcase (AddDataSource) Add(lhs, rhs, expected)
+    {
+        print(expected);
+        var result = lhs + rhs;
+        Assert.AreEqual(expected, result);
+    }
+}"
+            );
+
+            Assert.AreEqual("32", testEngine.InterpreterResult);
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+        }
+
+        [Test]
+        public void TestCase_WithPrintSingleData_ShouldPass()
+        {
+            testEngine.Run(@"
+var source = [];
+source.Add(1);
+source.Add(2);
+source.Add(3);
+
+test T
+{
+    testcase (source) One(val)
+    {
+        print(val);
+    }
+}"
+            );
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
         }
     }
 }

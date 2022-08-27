@@ -10,6 +10,7 @@ namespace ULox
     {
         private readonly Dictionary<string, bool> _testStatus = new Dictionary<string, bool>();
         private string _lastId;
+        private ushort _fixtureLoc;
 
         public TestRunner(Func<Vm> createVM)
         {
@@ -96,8 +97,19 @@ namespace ULox
                 CurrentTestSetName = new HashedString(string.Empty);
                 vm.ReadByte(chunk);//byte we don't use
                 vm.ReadByte(chunk);//byte we don't use
+                SetFixtureLoc(ushort.MaxValue);
+                break;
+            case TestOpType.TestFixtureBodyInstruction:
+                var loc = vm.ReadUShort(chunk);
+                SetFixtureLoc(loc);
                 break;
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SetFixtureLoc(ushort loc)
+        {
+            _fixtureLoc = loc;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -130,13 +142,17 @@ namespace ULox
             }
         }
 
-        protected virtual void RunTestCase(Vm vm, Chunk chunk, ushort loc)
+        protected virtual void RunTestCase(Vm vm, Chunk chunk, ushort instructionLoc)
         {
             try
             {
                 var childVM = CreateVM();
                 childVM.CopyFrom(vm);
-                childVM.Interpret(chunk, loc);
+                childVM.CopyStackFrom(vm);
+                childVM.MoveInstructionPointerTo(_fixtureLoc);
+                childVM.Run();
+                childVM.MoveInstructionPointerTo(instructionLoc);
+                childVM.Run();
             }
             catch (PanicException)
             {

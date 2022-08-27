@@ -132,6 +132,57 @@ test T
         }
 
         [Test]
+        public void TestFxiture_WhenPrintInBodyAndTwoCases_ShouldPrintTwice()
+        {
+            testEngine.Run(@"
+test T
+{
+    print(1);
+    
+    testcase A
+    {
+    }
+    testcase B
+    {
+    }
+}"
+            );
+
+            Assert.AreEqual("11", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestFxiture_WhenPrintInBodyAndNoCases_ShouldNotPrint()
+        {
+            testEngine.Run(@"
+test T
+{
+    print(1);
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TestLocal_WhenPrinted_ShouldMatch()
+        {
+            testEngine.Run(@"
+test T
+{
+    var foo = 1;
+    
+    testcase A
+    {
+        print(foo);
+    }
+}"
+            );
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_TestCase_MultipleSimple()
         {
             testEngine.Run(@"
@@ -403,6 +454,28 @@ source.Add(3);
 
 test T
 {
+    testcase (source) One(val)
+    {
+        print(val);
+    }
+}"
+            );
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+        }
+
+        [Test]
+        public void TestCase_WithFixtureDataPrintSingleData_ShouldPass()
+        {
+            testEngine.Run(@"
+test T
+{
+    var source = [];
+    source.Add(1);
+    source.Add(2);
+    source.Add(3);
+
     testcase (source) One(val)
     {
         print(val);

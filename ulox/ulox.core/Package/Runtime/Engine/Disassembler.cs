@@ -303,6 +303,9 @@ namespace ULox
                 i = AppendByte(chunk, i);
                 i = AppendByte(chunk, i);
                 break;
+            case TestOpType.TestFixtureBodyInstruction:
+                i = AppendUShort(chunk, i);
+                break;
             }
 
             return i;

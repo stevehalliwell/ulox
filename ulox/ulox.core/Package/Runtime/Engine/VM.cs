@@ -119,6 +119,23 @@ namespace ULox
             }
         }
 
+        public virtual void CopyStackFrom(Vm vm)
+        {
+            _valueStack.Reset();
+
+            for (int i = 0; i < vm._valueStack.Count; i++)
+            {
+                _valueStack.Push(vm._valueStack[i]);
+            }
+
+            for (int i = 0; i < vm._callFrames.Count; i++)
+            {
+                _callFrames.Push(vm._callFrames[i]);
+            }
+            
+            _currentCallFrame = vm._currentCallFrame;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(Chunk chunk)
             => chunk.Instructions[_currentCallFrame.InstructionPointer++];
@@ -162,16 +179,10 @@ namespace ULox
 
         public InterpreterResult Interpret(Chunk chunk)
         {
-            return Interpret(chunk, 0);
-        }
-
-        public InterpreterResult Interpret(Chunk chunk, int ip)
-        {
             //push this empty string to match the expectation of the function compiler
             Push(Value.New(""));
             Push(Value.New(new ClosureInternal() { chunk = chunk }));
             PushCallFrameFromValue(Peek(), 0);
-            _currentCallFrame.InstructionPointer = ip;
 
             return Run();
         }
@@ -1500,6 +1511,12 @@ namespace ULox
                 Closure = opClosure,
                 StackStart = (byte)(_valueStack.Count - 1 - arity),
             });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void MoveInstructionPointerTo(ushort loc)
+        {
+            _currentCallFrame.InstructionPointer = loc;
         }
     }
 }

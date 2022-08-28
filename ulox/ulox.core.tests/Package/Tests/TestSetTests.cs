@@ -486,5 +486,41 @@ test T
             Assert.AreEqual("123", testEngine.InterpreterResult);
             StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
         }
+
+        [Test]
+        public void TestCase_WithFixtureDataPrintSingleInlineData_ShouldPass()
+        {
+            testEngine.Run(@"
+test T
+{
+    testcase ([1,2,3]) One(val)
+    {
+        print(val);
+    }
+}"
+            );
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+        }
+
+        [Test]
+        public void TestCase_WithArgsAndInlineMultiDataSet_ShouldPass()
+        {
+            testEngine.Run(@"
+test T
+{
+    testcase ([ [1,2,3,], [1,1,2] ]) Add(lhs, rhs, expected)
+    {
+        print(expected);
+        var result = lhs + rhs;
+        Assert.AreEqual(expected, result);
+    }
+}"
+            );
+
+            Assert.AreEqual("32", testEngine.InterpreterResult);
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+        }
     }
 }

@@ -658,15 +658,26 @@ namespace ULox
 
         public static void BracketCreate(Compiler compiler, bool canAssign)
         {
-            if (compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
-            {
-                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
-            }
-            else if (compiler.TokenIterator.Match(TokenType.COLON)
+            if (compiler.TokenIterator.Match(TokenType.COLON)
                 && compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
             {
                 compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Map);
+                return;
             }
+                
+            compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
+            
+            while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
+            {
+                compiler.Expression();
+
+                var addNameID = compiler.AddCustomStringConstant("Add");
+                compiler.EmitOpAndBytes(OpCode.INVOKE, addNameID, 1);
+
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            }
+
+            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");
         }
 
         public static void BracketSubScript(Compiler compiler, bool canAssign)

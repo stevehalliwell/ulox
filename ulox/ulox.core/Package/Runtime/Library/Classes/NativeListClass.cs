@@ -45,7 +45,10 @@ namespace ULox
         private NativeCallResult Add(Vm vm, int argCount)
         {
             var top = vm.GetArg(1);
-            GetArg0NativeListInstance(vm).Add(top);
+            var inst = vm.GetArg(0);
+            var nativeListinst = inst.val.asInstance as NativeListInstance;
+            nativeListinst.List.Add(top);
+            vm.PushReturn(inst);
             return NativeCallResult.SuccessfulExpression;
         }
 

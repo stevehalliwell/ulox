@@ -116,10 +116,10 @@ namespace ULox
         private string ArgDescriptionString(Vm vm, byte argCount)
         {
             var sb = new StringBuilder();
-            for (var i = 0; i < argCount; i++)
+            for (int i = argCount - 1; i >= 0; i--)
             {
                 sb.Append(vm.Peek(i));
-                if (i < argCount - 1)
+                if (i != 0)
                     sb.Append(", ");
             }
             return sb.ToString();

@@ -28,6 +28,7 @@ namespace ULox
                 Advance();
             else
                 throw new CompilerException(msg + $" at {PreviousToken.Line}:{PreviousToken.Character} '{PreviousToken.Literal}'");
+            //TODO generalise this compiler exception so we can reuse
         }
 
         public bool Check(TokenType type)

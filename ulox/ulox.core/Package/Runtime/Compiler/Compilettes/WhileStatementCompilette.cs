@@ -13,7 +13,7 @@
 
             compiler.Expression();
 
-            int exitJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+            int exitJump = compiler.EmitJumpIf();
             loopState.loopExitPatchLocations.Add(exitJump);
 
             compiler.EmitOpCode(OpCode.POP);

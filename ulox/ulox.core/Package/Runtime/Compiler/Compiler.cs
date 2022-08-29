@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -169,9 +170,15 @@ namespace ULox
             }
         }
 
-        public int EmitJump(OpCode op)
+        public int EmitJump()
         {
-            EmitBytes((byte)op, 0xff, 0xff);
+            EmitBytes((byte)OpCode.JUMP, 0xff, 0xff);
+            return CurrentChunk.Instructions.Count - 2;
+        }
+
+        public int EmitJumpIf()
+        {
+            EmitBytes((byte)OpCode.JUMP_IF_FALSE, 0xff, 0xff);
             return CurrentChunk.Instructions.Count - 2;
         }
 
@@ -500,6 +507,12 @@ namespace ULox
 
         public void FunctionParamListOptional()
         {
+            VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
+        }
+
+        public byte VariableNameListDeclareOptional(Action postDefinePerVar)
+        {
+            byte argCount = 0;
             if (TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 // Compile the parameter list.
@@ -512,11 +525,13 @@ namespace ULox
                         DefineVariable(paramConstant);
 
                         //if it isn't already a constant we want one
-                        IncreaseArity(AddStringConstant());
+                        postDefinePerVar?.Invoke();
+                        argCount++;
                     } while (TokenIterator.Match(TokenType.COMMA));
                 }
                 TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after parameters.");
             }
+            return argCount;
         }
 
         public void IncreaseArity(byte argNameConstant)
@@ -561,6 +576,15 @@ namespace ULox
             }
 
             EmitOpAndBytes(OpCode.DEFINE_GLOBAL, global);
+        }
+
+        public void DeclareAndDefineCustomVariable(string varName)
+        {
+            //do equiv of ParseVariable, DefineVariable
+            CurrentCompilerState.DeclareVariableByName(varName);
+            CurrentCompilerState.MarkInitialised();
+            var id = AddCustomStringConstant(varName);
+            DefineVariable(id);
         }
 
         //TODO can move to compiler state?
@@ -634,15 +658,26 @@ namespace ULox
 
         public static void BracketCreate(Compiler compiler, bool canAssign)
         {
-            if (compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
-            {
-                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
-            }
-            else if (compiler.TokenIterator.Match(TokenType.COLON)
+            if (compiler.TokenIterator.Match(TokenType.COLON)
                 && compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
             {
                 compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Map);
+                return;
             }
+                
+            compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
+            
+            while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
+            {
+                compiler.Expression();
+
+                var addNameID = compiler.AddCustomStringConstant("Add");
+                compiler.EmitOpAndBytes(OpCode.INVOKE, addNameID, 1);
+
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            }
+
+            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");
         }
 
         public static void BracketSubScript(Compiler compiler, bool canAssign)
@@ -719,12 +754,12 @@ namespace ULox
             compiler.Expression();
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
 
-            int thenjump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+            int thenjump = compiler.EmitJumpIf();
             compiler.EmitOpCode(OpCode.POP);
-
+            
             compiler.Statement();
 
-            int elseJump = compiler.EmitJump(OpCode.JUMP);
+            int elseJump = compiler.EmitJump();
 
             compiler.PatchJump(thenjump);
             compiler.EmitOpCode(OpCode.POP);
@@ -739,9 +774,9 @@ namespace ULox
             var comp = compiler.CurrentCompilerState;
             if (comp.LoopStates.Count == 0)
                 throw new CompilerException("Cannot break when not inside a loop.");
-
+            
             compiler.EmitOpCode(OpCode.NULL);
-            int exitJump = compiler.EmitJump(OpCode.JUMP);
+            int exitJump = compiler.EmitJump();
 
             compiler.ConsumeEndStatement();
 
@@ -859,7 +894,7 @@ namespace ULox
 
         public static void And(Compiler compiler, bool canAssign)
         {
-            int endJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
+            int endJump = compiler.EmitJumpIf();
 
             compiler.EmitOpCode(OpCode.POP);
             compiler.ParsePrecedence(Precedence.And);
@@ -869,8 +904,8 @@ namespace ULox
 
         public static void Or(Compiler compiler, bool canAssign)
         {
-            int elseJump = compiler.EmitJump(OpCode.JUMP_IF_FALSE);
-            int endJump = compiler.EmitJump(OpCode.JUMP);
+            int elseJump = compiler.EmitJumpIf();
+            int endJump = compiler.EmitJump();
 
             compiler.PatchJump(elseJump);
             compiler.EmitOpCode(OpCode.POP);

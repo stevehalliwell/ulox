@@ -74,6 +74,7 @@ namespace ULox
             opCodeHandlers[(int)OpCode.NATIVE_TYPE] = AppendByte;
             opCodeHandlers[(int)OpCode.GET_INDEX] = AppendNothing;
             opCodeHandlers[(int)OpCode.SET_INDEX] = AppendNothing;
+            opCodeHandlers[(int)OpCode.EXPAND_COPY_TO_STACK] = AppendNothing;
 
             opCodeHandlers[(int)OpCode.TYPEOF] = AppendNothing;
 
@@ -301,6 +302,9 @@ namespace ULox
             case TestOpType.TestSetEnd:
                 i = AppendByte(chunk, i);
                 i = AppendByte(chunk, i);
+                break;
+            case TestOpType.TestFixtureBodyInstruction:
+                i = AppendUShort(chunk, i);
                 break;
             }
 

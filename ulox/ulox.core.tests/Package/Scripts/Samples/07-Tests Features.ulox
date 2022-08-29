@@ -1,0 +1,52 @@
+// Tests have a body fixure, it is executed once before each testcase
+//  to allow for local setup of the test environment.
+// In the following fixture, hello will be printed twice, as there are two test cases.
+// Test cases are executed in the order they are defined in, but since the fixture
+//	is repeated, you can ignore the order.
+test Fixture
+{
+	print("hello");
+
+	testcase One
+	{
+
+	}
+
+	testcase Two
+	{
+		
+	}
+}
+
+// Testcases can optionally take a data source and arguments.
+// The data source is an expression given in () after the testcase keyword
+//	and before the testcase name.
+// The data soucre must be a native array.
+// The number of arguments to the test must match the number of entries at each index 
+//	of the data source. They are applied in order, and the testcase is repeated for 
+//	Count of the data source.
+test DataTests
+{
+	var data = [1,2,3,4,5];
+
+	// Here we use a text fixture body variable as the data source. 
+	// The test will run data.Count times.
+	testcase (data) IsNumber(val)
+	{
+		//if you really want to you can access the data source in the testcase body as
+		var dataSourceIs = testDataSource;
+		//if you really want to you can access the row of data currently being used for the test as
+		var dataRowIs = testDataRow;
+
+		Assert.IsTrue(typeof(val) == typeof(0));
+	}
+
+	// Here we use an inline array as the data source.
+	// The test will run 2 times. as the data source as two elements.
+	testcase ([ [1,2,3], [1,1,2] ]) Addition(a,b, expected)
+    {
+        var result = a+b;
+
+        Assert.AreEqual(expected,result);
+    }
+}

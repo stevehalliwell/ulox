@@ -139,5 +139,58 @@ print(arr[5]);
 
             Assert.AreEqual("8", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void ListLiteral_WhenSingleItemAndAssigned_ShouldMatchValues()
+        {
+            testEngine.Run(@"
+var arr = [1];
+print(arr[0]);
+");
+            
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ListLiteral_WhenThreeItemsAndAssigned_ShouldMatchValues()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+print(arr[0]);
+print(arr[1]);
+print(arr[2]);
+");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ListLiteral_WhenThreeItemsAndAssignedAndTrialingComma_ShouldMatchValues()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3,];
+print(arr[0]);
+print(arr[1]);
+print(arr[2]);
+");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ListLiteral_WhenThreeNonTrivialItemsAndAssigned_ShouldMatchValues()
+        {
+            testEngine.Run(@"
+
+fun GetThree {return 3;}
+
+var arr = [1,(1+1),GetThree()];
+print(arr[0]);
+print(arr[1]);
+print(arr[2]);
+");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
     }
 }

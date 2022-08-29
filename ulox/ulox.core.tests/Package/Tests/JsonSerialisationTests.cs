@@ -190,12 +190,6 @@ print(res);
         [Test]
         public void DeserialiseViaLibrary_WhenGivenKnownObject_ShouldReturnExpectedOutput()
         {
-            const string Expected = @"{ 
-    ""a"": 1.0, 
-    ""b"": 2.0, 
-    ""c"": 3.0 
-}";
-           
             testEngine.Run(@"
 var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var res = Serialise.FromJson(jsonString);
@@ -205,6 +199,17 @@ print(res.c);
 ");
 
             Assert.AreEqual("123",testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void DeserialiseViaLibrary_WhenGivenKnownArray_ShouldReturnExpectedOutput()
+        {
+            testEngine.Run(@"
+var jsonString = ""{ \""a\"": [ 1.0, 2.0, 3.0 ] }"";
+var res = Serialise.FromJson(jsonString);
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
         }
     }
 }

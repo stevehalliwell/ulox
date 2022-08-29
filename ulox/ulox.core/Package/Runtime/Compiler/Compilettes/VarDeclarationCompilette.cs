@@ -57,11 +57,7 @@ namespace ULox
             for (int i = 0; i < varNames.Count; i++)
             {
                 var varName = varNames[i];
-                //do equiv of ParseVariable, DefineVariable
-                compiler.CurrentCompilerState.DeclareVariableByName(varName);
-                compiler.CurrentCompilerState.MarkInitialised();
-                var id = compiler.AddCustomStringConstant(varName);
-                compiler.DefineVariable(id);
+                compiler.DeclareAndDefineCustomVariable(varName);
             }
         }
 

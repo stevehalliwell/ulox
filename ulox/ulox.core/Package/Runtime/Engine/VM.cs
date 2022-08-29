@@ -60,7 +60,7 @@ namespace ULox
         protected void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected Value Peek(int ind = 0) => _valueStack.Peek(ind);
+        public Value Peek(int ind = 0) => _valueStack.Peek(ind);
 
         public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
 
@@ -119,6 +119,23 @@ namespace ULox
             }
         }
 
+        public virtual void CopyStackFrom(Vm vm)
+        {
+            _valueStack.Reset();
+
+            for (int i = 0; i < vm._valueStack.Count; i++)
+            {
+                _valueStack.Push(vm._valueStack[i]);
+            }
+
+            for (int i = 0; i < vm._callFrames.Count; i++)
+            {
+                _callFrames.Push(vm._callFrames[i]);
+            }
+            
+            _currentCallFrame = vm._currentCallFrame;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ReadByte(Chunk chunk)
             => chunk.Instructions[_currentCallFrame.InstructionPointer++];
@@ -162,16 +179,10 @@ namespace ULox
 
         public InterpreterResult Interpret(Chunk chunk)
         {
-            return Interpret(chunk, 0);
-        }
-
-        public InterpreterResult Interpret(Chunk chunk, int ip)
-        {
             //push this empty string to match the expectation of the function compiler
             Push(Value.New(""));
             Push(Value.New(new ClosureInternal() { chunk = chunk }));
             PushCallFrameFromValue(Peek(), 0);
-            _currentCallFrame.InstructionPointer = ip;
 
             return Run();
         }
@@ -380,6 +391,10 @@ namespace ULox
                     DoSetIndexOp(opCode);
                     break;
 
+                case OpCode.EXPAND_COPY_TO_STACK:
+                    DoExpandCopyToStackOp(opCode);
+                    break;
+
                 case OpCode.TYPEOF:
                     DoTypeOfOp();
                     break;
@@ -471,6 +486,25 @@ namespace ULox
             throw new VMException($"Cannot perform set index on type '{listValue.type}'.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoExpandCopyToStackOp(OpCode opCode)
+        {
+            var v = Pop();
+            if (v.type == ValueType.Instance
+                && v.val.asInstance is NativeListInstance nativeList)
+            {
+                var l = nativeList.List;
+                for (int i = 0; i < l.Count; i++)
+                {
+                    Push(l[i]);
+                }
+            }
+            else
+            {
+                Push(v);
+            }
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetIndexOp(OpCode opCode)
         {
@@ -1030,7 +1064,7 @@ namespace ULox
 
             if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
                 return;
-            
+
             throw new VMException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromClass}' and '{rhs.val.asInstance.FromClass}'.");
         }
 
@@ -1256,7 +1290,7 @@ namespace ULox
                     {
                         throw new VMException($"Cannot invoke '{methodName}' on '{receiver}' with no class.");
                     }
-                    
+
                     if (!fromClass.TryGetMethod(methodName, out var method))
                     {
                         throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
@@ -1477,6 +1511,12 @@ namespace ULox
                 Closure = opClosure,
                 StackStart = (byte)(_valueStack.Count - 1 - arity),
             });
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void MoveInstructionPointerTo(ushort loc)
+        {
+            _currentCallFrame.InstructionPointer = loc;
         }
     }
 }

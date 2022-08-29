@@ -8,7 +8,9 @@ namespace ULox
 {
     public class TestRunner
     {
-        private readonly Dictionary<string, bool> tests = new Dictionary<string, bool>();
+        private readonly Dictionary<string, bool> _testStatus = new Dictionary<string, bool>();
+        private string _lastId;
+        private ushort _fixtureLoc;
 
         public TestRunner(Func<Vm> createVM)
         {
@@ -16,28 +18,42 @@ namespace ULox
         }
 
         public bool Enabled { get; set; } = true;
-        public bool AllPassed => !tests.Any(x => !x.Value);
-        public int TestsFound => tests.Count;
+        public bool AllPassed => !_testStatus.Any(x => !x.Value);
+        public int TestsFound => _testStatus.Count;
         public HashedString CurrentTestSetName { get; set; } = new HashedString(string.Empty);
         public Func<Vm> CreateVM { get; private set; }
 
-        public void StartTest(HashedString name)
+        public void StartTest(string name)
         {
-            var id = $"{CurrentTestSetName}:{name}";
-            if (tests.ContainsKey(id))
+            var id = MakeId(name);
+            if (_testStatus.ContainsKey(id))
                 throw new TestRunnerException($"{nameof(TestRunner)} found a duplicate test '{id}'.");
 
-            tests[id] = false;
+            _testStatus[id] = false;
+            _lastId = id;
         }
 
-        public void EndTest(HashedString name) 
-            => tests[$"{CurrentTestSetName}:{name}"] = true;
+        public void EndTest(string name)
+        {
+            var id = MakeId(name);
+            if (_testStatus.ContainsKey(id))
+                _testStatus[id] = true;
+            else if(_lastId.StartsWith(id))
+                _testStatus[_lastId] = true;
 
+            _lastId = null;
+        }
+        
+        private string MakeId(string name)
+        {
+            return $"{CurrentTestSetName}:{name}";
+        }
+        
         public string GenerateDump()
         {
             var sb = new StringBuilder();
 
-            foreach (var item in tests)
+            foreach (var item in _testStatus)
             {
                 sb.AppendLine($"{item.Key} {(item.Value ? "Completed" : "Incomplete")}");
             }
@@ -52,14 +68,26 @@ namespace ULox
             switch (testOpType)
             {
             case TestOpType.CaseStart:
-                StartTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
-                vm.ReadByte(chunk);//byte we don't use
-                break;
+            {
+                var nameId = vm.ReadByte(chunk);
+                var argCount = vm.ReadByte(chunk);
+                var stringName = chunk.ReadConstant(nameId).val.asString.String;
+                if (argCount != 0)
+                {
+                    stringName += $"({ArgDescriptionString(vm, argCount)})";
+                }
+                StartTest(stringName);
+            }
+            break;
 
             case TestOpType.CaseEnd:
-                EndTest(chunk.ReadConstant(vm.ReadByte(chunk)).val.asString);
-                vm.ReadByte(chunk);//byte we don't use
-                break;
+            {
+                var nameId = vm.ReadByte(chunk);
+                var argCount = vm.ReadByte(chunk);
+                var stringName = chunk.ReadConstant(nameId).val.asString.String;
+                EndTest(stringName);
+            }
+            break;
 
             case TestOpType.TestSetStart:
                 DoTestSet(vm, chunk);
@@ -69,11 +97,34 @@ namespace ULox
                 CurrentTestSetName = new HashedString(string.Empty);
                 vm.ReadByte(chunk);//byte we don't use
                 vm.ReadByte(chunk);//byte we don't use
+                SetFixtureLoc(ushort.MaxValue);
+                break;
+            case TestOpType.TestFixtureBodyInstruction:
+                var loc = vm.ReadUShort(chunk);
+                SetFixtureLoc(loc);
                 break;
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SetFixtureLoc(ushort loc)
+        {
+            _fixtureLoc = loc;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private string ArgDescriptionString(Vm vm, byte argCount)
+        {
+            var sb = new StringBuilder();
+            for (int i = argCount - 1; i >= 0; i--)
+            {
+                sb.Append(vm.Peek(i));
+                if (i != 0)
+                    sb.Append(", ");
+            }
+            return sb.ToString();
+        }
+
         private void DoTestSet(Vm vm, Chunk chunk)
         {
             var name = chunk.ReadConstant(vm.ReadByte(chunk)).val.asString;
@@ -91,13 +142,17 @@ namespace ULox
             }
         }
 
-        protected virtual void RunTestCase(Vm vm, Chunk chunk, ushort loc)
+        protected virtual void RunTestCase(Vm vm, Chunk chunk, ushort instructionLoc)
         {
             try
             {
                 var childVM = CreateVM();
                 childVM.CopyFrom(vm);
-                childVM.Interpret(chunk, loc);
+                childVM.CopyStackFrom(vm);
+                childVM.MoveInstructionPointerTo(_fixtureLoc);
+                childVM.Run();
+                childVM.MoveInstructionPointerTo(instructionLoc);
+                childVM.Run();
             }
             catch (PanicException)
             {

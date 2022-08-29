@@ -7,6 +7,9 @@ for (var i = 0; i < len; i+= 1)
     list.Add(i);
 }
 
+// You can define the contents of a list inline
+var thatList = [ 0, 1, 2, 3, 4 ];
+
 list.Remove(3);
 
 var length = list.Count();

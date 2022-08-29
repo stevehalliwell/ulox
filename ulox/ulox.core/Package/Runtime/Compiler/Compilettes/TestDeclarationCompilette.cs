@@ -6,7 +6,7 @@ namespace ULox
     {
         private readonly List<ushort> _currentTestcaseInstructions = new List<ushort>();
 
-        public TokenType Match 
+        public TokenType Match
             => TokenType.TEST;
 
         public string CurrentTestSetName { get; internal set; }
@@ -26,12 +26,22 @@ namespace ULox
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before test set body.");
 
-            compiler.BlockStatement();
+            //testbody
+            compiler.BeginScope();
+            var testFixtureBodyJumpLoc = compiler.EmitJump();
+            var testFixtureBodyFirstInstruction = (ushort)compiler.CurrentChunkInstructinCount;
+
+            compiler.Block();
+            compiler.EmitOpCode(OpCode.YIELD);
+            compiler.EndScope();
+            compiler.PatchJump(testFixtureBodyJumpLoc);
 
             var testcaseCount = _currentTestcaseInstructions.Count;
             if (testcaseCount > byte.MaxValue)
                 throw new VMException($"{testcaseCount} has more than {byte.MaxValue} testcases, this is not allowed.");
 
+            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestFixtureBodyInstruction);
+            compiler.EmitUShort(testFixtureBodyFirstInstruction);
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestSetStart, testSetNameID, (byte)testcaseCount);
 
             for (int i = 0; i < _currentTestcaseInstructions.Count; i++)
@@ -40,7 +50,6 @@ namespace ULox
             }
 
             _currentTestcaseInstructions.Clear();
-
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestSetEnd, 0, 0);
 
             CurrentTestSetName = null;

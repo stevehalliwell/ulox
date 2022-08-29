@@ -38,9 +38,9 @@
                 compiler.DeclareAndDefineCustomVariable("testDataIndex");
                 compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
                 compiler.Expression();
-                var (_,_, res) = compiler.ResolveNameLookupOpCode("testDataSource");
+                var (_, _, res) = compiler.ResolveNameLookupOpCode("testDataSource");
                 testDataSourceLocalId = res;
-                compiler.EmitOpAndBytes(OpCode.SET_LOCAL,  testDataSourceLocalId);
+                compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataSourceLocalId);
                 compiler.EmitOpCode(OpCode.POP);
 
                 //jump for moving back to start
@@ -68,7 +68,7 @@
             int testFragmentJump = compiler.EmitJump();
 
             _testDeclarationCompilette.AddTestCaseInstruction((ushort)compiler.CurrentChunkInstructinCount);
-            
+
             compiler.BeginScope();
             var numArgs = compiler.VariableNameListDeclareOptional(null);
             if (numArgs != 0 && dataExpExecuteLocation == -1)
@@ -77,7 +77,7 @@
                 throw new CompilerException($"Testcase '{testcaseName}' has data expression but no arguments.");
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before testcase body.");
-            
+
             //jump back
             if (dataExpExecuteLocation != -1)
             {
@@ -90,7 +90,7 @@
                 testDataIndexLocalId = testDataIndexLocalIdRes;
 
                 preRowCountCheck = compiler.CurrentChunkInstructinCount;
-                
+
                 LoopStatementCompilette.IsIndexLessThanArrayCount(compiler, OpCode.GET_LOCAL, testDataSourceLocalId, testDataIndexLocalId);
                 exitDataLoopJumpLoc = compiler.EmitJumpIf();
                 compiler.EmitOpCode(OpCode.POP); // Condition.
@@ -102,10 +102,9 @@
                 var (_, _, testDataRowLocalId) = compiler.ResolveNameLookupOpCode("testDataRow");
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataRowLocalId);
                 compiler.EmitOpCode(OpCode.POP);
-                //appy row as inputs to the test 
+                //appy row as inputs to the test
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataRowLocalId);
                 compiler.EmitOpCode(OpCode.EXPAND_COPY_TO_STACK);
-
             }
 
             // The body.
@@ -124,12 +123,11 @@
             compiler.EmitOpCode(OpCode.NULL);
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
 
-
             if (dataExpExecuteLocation != -1)
             {
                 compiler.EndScope();
             }
-            
+
             //emit jump to step to next and save it
             compiler.PatchJump(testFragmentJump);
             TestCaseName = null;

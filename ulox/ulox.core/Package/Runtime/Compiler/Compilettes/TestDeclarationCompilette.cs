@@ -6,7 +6,7 @@ namespace ULox
     {
         private readonly List<ushort> _currentTestcaseInstructions = new List<ushort>();
 
-        public TokenType Match 
+        public TokenType Match
             => TokenType.TEST;
 
         public string CurrentTestSetName { get; internal set; }

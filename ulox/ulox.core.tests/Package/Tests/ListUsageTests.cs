@@ -165,6 +165,19 @@ print(arr[2]);
         }
 
         [Test]
+        public void ListLiteral_WhenThreeItemsAndAssignedAndTrialingComma_ShouldMatchValues()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3,];
+print(arr[0]);
+print(arr[1]);
+print(arr[2]);
+");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void ListLiteral_WhenThreeNonTrivialItemsAndAssigned_ShouldMatchValues()
         {
             testEngine.Run(@"

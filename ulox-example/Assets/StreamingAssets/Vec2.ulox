@@ -50,24 +50,34 @@ test Vec2Tests
 		Assert.AreEqual(expected, y);
 	}
 
-	testcase Add
+	testcase ([
+		[1,1,1,1,2,2],
+		[1,0,1,2,2,2],
+		[1,-1,1,-1,2,-2],
+		[1,2,3,4,4,6],
+	]) Add(ax, ay, bx, by, ex, ey)
 	{
-		var expected = Vec2.Create(4,6);
+		var expected = Vec2.Create(ex,ey);
 		var result;
-		var a = Vec2.Create(1,2);
-		var b = Vec2.Create(3,4);
+		var a = Vec2.Create(ax,ay);
+		var b = Vec2.Create(bx,by);
 
 		result = a+b;
 
 		Assert.IsTrue(expected == result);
 	}
 
-	testcase Sub
+	testcase ([
+		[1,1,1,1,0,0],
+		[1,0,1,2,0,-2],
+		[1,-1,1,-1,0,0],
+		[1,2,3,4,-2,-2],
+	]) Sub(ax, ay, bx, by, ex, ey)
 	{
-		var expected = Vec2.Create(-2,-2);
+		var expected = Vec2.Create(ex,ey);
 		var result;
-		var a = Vec2.Create(1,2);
-		var b = Vec2.Create(3,4);
+		var a = Vec2.Create(ax,ay);
+		var b = Vec2.Create(bx,by);
 
 		result = a-b;
 
@@ -86,16 +96,20 @@ test Vec2Tests
 		Assert.IsTrue(expected == result);
 	}
 
-	testcase Equal
+	testcase ([
+		[1,1,1,1,true],
+		[1,0,1,2,false],
+		[1,-1,1,-1,true],
+		[1,2,3,4,false],
+	]) Equal(ax, ay, bx, by, expected)
 	{
-		var expected = true;
 		var result;
-		var a = Vec2.Create(1,2);
-		var b = Vec2.Create(1,2);
+		var a = Vec2.Create(ax,ay);
+		var b = Vec2.Create(bx,by);
 
 		result = a == b;
 
-		Assert.IsTrue(result);
+		Assert.AreEqual(expected, result);
 	}
 
 	testcase Scale

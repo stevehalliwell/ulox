@@ -85,7 +85,7 @@ namespace ULox
                 vm.Push(fn);
                 vm.Push(list[i]);
                 vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOngReturn();
+                vm.SetCurrentCallFrameToYieldOnReturn();
                 vm.Run();
                 retvalList.Add(vm.Pop());
             }
@@ -106,7 +106,7 @@ namespace ULox
                 vm.Push(list[i]);
                 vm.Push(runningVal);
                 vm.PushCallFrameFromValue(fn, 2);
-                vm.SetCurrentCallFrameToYieldOngReturn();
+                vm.SetCurrentCallFrameToYieldOnReturn();
                 vm.Run();
                 runningVal = vm.Pop();
             }
@@ -127,7 +127,7 @@ namespace ULox
                 vm.Push(list[i]);
                 vm.Push(runningVal);
                 vm.PushCallFrameFromValue(fn, 2);
-                vm.SetCurrentCallFrameToYieldOngReturn();
+                vm.SetCurrentCallFrameToYieldOnReturn();
                 vm.Run();
                 runningVal = vm.Pop();
             }
@@ -151,7 +151,7 @@ namespace ULox
                 vm.Push(fn);
                 vm.Push(testVal);
                 vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOngReturn();
+                vm.SetCurrentCallFrameToYieldOnReturn();
                 vm.Run();
                 
                 var filterRes = vm.Pop();
@@ -177,7 +177,7 @@ namespace ULox
                 vm.Push(fn);
                 vm.Push(valAtIndex);
                 vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOngReturn();
+                vm.SetCurrentCallFrameToYieldOnReturn();
                 vm.Run();
 
                 var orderBy = vm.Pop();
@@ -210,7 +210,7 @@ namespace ULox
                 vm.Push(fn);
                 vm.Push(testVal);
                 vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOngReturn();
+                vm.SetCurrentCallFrameToYieldOnReturn();
                 vm.Run();
 
                 var filterRes = vm.Pop();
@@ -241,7 +241,7 @@ namespace ULox
                 vm.Push(fn);
                 vm.Push(sharedVarToRunOn);
                 vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOngReturn();
+                vm.SetCurrentCallFrameToYieldOnReturn();
                 vm.Run();
 
                 var result = vm.Pop();
@@ -263,7 +263,7 @@ namespace ULox
                 vm.Push(fn);
                 vm.Push(sharedVarToRunOn);
                 vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOngReturn();
+                vm.SetCurrentCallFrameToYieldOnReturn();
                 vm.Run();
 
                 var result = vm.Pop();

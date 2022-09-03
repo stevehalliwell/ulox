@@ -78,5 +78,7 @@
 
         MEETS,
         SIGNS,
+
+        COUNT_OF,
     }
 }

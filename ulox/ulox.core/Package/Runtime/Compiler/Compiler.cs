@@ -104,7 +104,8 @@ namespace ULox
                 (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
                 (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
-                (TokenType.FUNCTION, new ActionParseRule(FunExp, null, Precedence.Call))
+                (TokenType.FUNCTION, new ActionParseRule(FunExp, null, Precedence.Call)),
+                (TokenType.COUNT_OF, new ActionParseRule(CountOf, null, Precedence.None))
                               );
         }
 
@@ -923,6 +924,12 @@ namespace ULox
         public static void FunExp(Compiler compiler, bool canAssign)
         {
             InnerFunctionDeclaration(compiler, false);
+        }
+
+        public static void CountOf(Compiler compiler, bool canAssign)
+        {
+            compiler.Expression();
+            compiler.EmitOpCode(OpCode.COUNT_OF);
         }
 
         public static void Call(Compiler compiler, bool canAssign)

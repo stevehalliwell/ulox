@@ -26,5 +26,11 @@ namespace ULox
         {
             return _list[(int)ind.val.asDouble];
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Value Count()
+        {
+            return Value.New(_list.Count);
+        }
     }
 }

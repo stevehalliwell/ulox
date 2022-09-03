@@ -409,7 +409,11 @@ namespace ULox
                     DoSignsOp();
                     break;
 
-                case OpCode.NONE:
+                case OpCode.COUNT_OF:
+                    DoCountOfOp();
+                    break;
+
+                    case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
@@ -429,6 +433,19 @@ namespace ULox
             var res = ProcessContract();
             if (!res.meets)
                 throw new VMException(res.msg);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoCountOfOp()
+        {
+            var target = Pop();
+            if(target.val.asInstance is INativeCollection col)
+            {
+                Push(col.Count());
+                return;
+            }
+
+            Push(Value.New(0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

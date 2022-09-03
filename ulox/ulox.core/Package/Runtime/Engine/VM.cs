@@ -97,7 +97,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetCurrentCallFrameToYieldOngReturn()
+        public void SetCurrentCallFrameToYieldOnReturn()
         {
             _currentCallFrame.YieldOnReturn = true;
         }
@@ -439,13 +439,23 @@ namespace ULox
         private void DoCountOfOp()
         {
             var target = Pop();
-            if(target.val.asInstance is INativeCollection col)
+            if (target.type == ValueType.Instance)
             {
-                Push(col.Count());
-                return;
+                if (target.val.asInstance is INativeCollection col)
+                {
+                    Push(col.Count());
+                    return;
+                }
+                else
+                {
+                    if(DoCustomOverloadOp(OpCode.COUNT_OF, target, Value.Null(), Value.Null()))
+                    {
+                        return;
+                    }
+                }
             }
-
-            Push(Value.New(0));
+            
+            throw new VMException($"Cannot perform countof on '{target}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1512,6 +1522,9 @@ namespace ULox
 
             switch (opClosure.chunk.Arity)
             {
+            case 1:
+                Push(self);
+                break;
             case 2:
                 Push(self);
                 Push(arg1);

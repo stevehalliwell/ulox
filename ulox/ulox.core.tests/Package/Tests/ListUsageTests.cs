@@ -63,14 +63,14 @@ print(countof arr);
         }
 
         [Test]
-        public void Count_WhenNull_ShouldBe0()
+        public void Count_WhenNull_ShouldFail()
         {
             testEngine.Run(@"
 var arr = null;
 print(countof arr);
 ");
 
-            Assert.AreEqual("0", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot perform countof on 'null'.", testEngine.InterpreterResult);
         }
 
         [Test]

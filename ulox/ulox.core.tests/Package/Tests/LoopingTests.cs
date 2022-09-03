@@ -327,7 +327,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("Cannot invoke 'Count' on '7'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot perform countof on '7'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -341,7 +341,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("Cannot invoke 'Count' on 'str'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot perform countof on 'str'.", testEngine.InterpreterResult);
         }
         
         [Test]
@@ -407,22 +407,37 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("No method of name 'Count' found on '<ClassInternal:Stub>'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot perform countof on '<inst Stub>'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void CountOf_WhenGivenFakeList_ShouldMatch()
+        {
+            testEngine.Run(@"
+class FakeList { _co(self) { return 1; } }
+var arr = FakeList();
+
+print(countof arr);
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Loop_WhenGivenFakeList_ShouldFailToInvoke()
         {
             testEngine.Run(@"
-class FakeList { Count() { return 1; } }
+class FakeList { _co(self) { return 1; } }
 var arr = FakeList();
+
+print(countof arr);
 
 loop (arr)
 {
 }
 ");
 
-            Assert.AreEqual("Cannot perform get index on type 'Instance'.", testEngine.InterpreterResult);
+            Assert.AreEqual("1Cannot perform get index on type 'Instance'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -431,7 +446,7 @@ loop (arr)
             testEngine.Run(@"
 class FakeList 
 { 
-    Count() { return 1; }
+    _co(self) { return 1; }
     _gi(self, i) { return ""Hello""; }
 }
 var arr = FakeList();

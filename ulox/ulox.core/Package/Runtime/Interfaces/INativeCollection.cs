@@ -8,5 +8,7 @@ namespace ULox
         Value Get(Value ind);
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         void Set(Value ind, Value val);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        Value Count();
     }
 }

@@ -80,7 +80,9 @@ namespace ULox
                 ("pure", TokenType.PURE),
 
                 ("meets", TokenType.MEETS),
-                ("signs", TokenType.SIGNS)
+                ("signs", TokenType.SIGNS),
+
+                ("countof", TokenType.COUNT_OF)
                                               );
 
             this.AddSingleCharTokenGenerators(

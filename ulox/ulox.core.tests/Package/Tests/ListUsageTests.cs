@@ -52,6 +52,39 @@ print(arr.Count());
         }
 
         [Test]
+        public void Count_WhenEmpty_ShouldBe0()
+        {
+            testEngine.Run(@"
+var arr = [];
+print(countof arr);
+");
+
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Count_WhenNull_ShouldFail()
+        {
+            testEngine.Run(@"
+var arr = null;
+print(countof arr);
+");
+
+            Assert.AreEqual("Cannot perform countof on 'null'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Count_WhenNotEmpty_SohuldBe3()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+print(countof arr);
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_NativeList_Add_CountInc()
         {
             testEngine.Run(@"

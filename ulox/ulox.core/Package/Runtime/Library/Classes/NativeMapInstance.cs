@@ -27,5 +27,11 @@ namespace ULox
                 ? value
                 : throw new VMException($"Map contains no key of '{ind}'.");
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Value Count()
+        {
+            return Value.New(_map.Count);
+        }
     }
 }

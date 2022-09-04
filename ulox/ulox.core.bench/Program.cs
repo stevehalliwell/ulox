@@ -10,14 +10,7 @@ namespace ulox.core.bench
 
 fun MakeTestArray()
 {
-    var arr = [];
-
-    for(var i = 0;i < 5; i += 1)
-    {
-        arr.Add(i);
-    }
-
-    return arr;
+    return [0,1,2,3,4,];
 }
 
 fun accum(cur, running)
@@ -82,7 +75,7 @@ Assert.AreEqual(3+6+9, forkReduceRes);
 fun reduce(arr, fn)
 {
     var res = arr[0];
-    var len = arr.Count();
+    var len = countof arr;
     for(var i = 1; i < len; i += 1)
     {
         res = fn(arr[i], res);
@@ -93,8 +86,7 @@ fun reduce(arr, fn)
 fun fold(arr, fn, initVal)
 {
     var res = initVal;
-    var len = arr.Count();
-    for(var i = 0; i < len; i += 1)
+    loop(arr)
     {
         res = fn(arr[i], res);
     }
@@ -104,9 +96,9 @@ fun fold(arr, fn, initVal)
 fun map(arr, fn)
 {
     var res = [];
-    var len = arr.Count();
+    var len = countof arr;
     res.Resize(len, null);
-    for(var i = 0; i < len; i += 1)
+    loop(arr)
     {
         res[i] = fn(arr[i]);
     }
@@ -116,8 +108,7 @@ fun map(arr, fn)
 fun filter(arr, fn)
 {
     var res = [];
-    var len = arr.Count();
-    for(var i = 0; i < len; i += 1)
+    loop(arr)
     {
         var val = arr[i];
         if(fn(val))
@@ -129,8 +120,7 @@ fun filter(arr, fn)
 fun filter(arr, fn)
 {
     var res = [];
-    var len = arr.Count();
-    for(var i = 0; i < len; i += 1)
+    loop(arr)
     {
         var val = arr[i];
         if(fn(val))
@@ -141,12 +131,10 @@ fun filter(arr, fn)
 
 fun first(arr, fn)
 {
-    var len = arr.Count();
-    for(var i = 0; i < len; i += 1)
+    loop(arr)
     {
-        var val = arr[i];
-        if(fn(val))
-            return val;
+        if(fn(item))
+            return item;
     }
     return null;
 }
@@ -154,8 +142,7 @@ fun first(arr, fn)
 fun fork(arr, runOn)
 {
     var res = [];
-    var len = arr.Count();
-    for(var i = 0; i < len; i += 1)
+    loop(arr)
     {
         var fn = arr[i];
         res.Add(fn(runOn));

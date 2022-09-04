@@ -17,6 +17,7 @@ namespace ULox
             new HashedString("_gr"),
             new HashedString("_gi"),
             new HashedString("_si"),
+            new HashedString("_co"),
         };
 
         public static readonly Dictionary<OpCode, int> OpCodeToOverloadIndex = new Dictionary<OpCode, int>()
@@ -31,6 +32,7 @@ namespace ULox
             {OpCode.GREATER,    7 },
             {OpCode.GET_INDEX,  8 },
             {OpCode.SET_INDEX,  9 },
+            {OpCode.COUNT_OF,   10 },
         };
 
         private readonly Table methods = new Table();

@@ -97,7 +97,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetCurrentCallFrameToYieldOngReturn()
+        public void SetCurrentCallFrameToYieldOnReturn()
         {
             _currentCallFrame.YieldOnReturn = true;
         }
@@ -409,7 +409,11 @@ namespace ULox
                     DoSignsOp();
                     break;
 
-                case OpCode.NONE:
+                case OpCode.COUNT_OF:
+                    DoCountOfOp();
+                    break;
+
+                    case OpCode.NONE:
                 default:
                     throw new VMException($"Unhandled OpCode '{opCode}'.");
                 }
@@ -429,6 +433,29 @@ namespace ULox
             var res = ProcessContract();
             if (!res.meets)
                 throw new VMException(res.msg);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoCountOfOp()
+        {
+            var target = Pop();
+            if (target.type == ValueType.Instance)
+            {
+                if (target.val.asInstance is INativeCollection col)
+                {
+                    Push(col.Count());
+                    return;
+                }
+                else
+                {
+                    if(DoCustomOverloadOp(OpCode.COUNT_OF, target, Value.Null(), Value.Null()))
+                    {
+                        return;
+                    }
+                }
+            }
+            
+            throw new VMException($"Cannot perform countof on '{target}'.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1495,6 +1522,9 @@ namespace ULox
 
             switch (opClosure.chunk.Arity)
             {
+            case 1:
+                Push(self);
+                break;
             case 2:
                 Push(self);
                 Push(arg1);

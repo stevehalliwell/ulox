@@ -66,6 +66,11 @@ class IndexableClass
         if(index == "y")
             self.y = value;
     }
+
+    _co(self)
+    {
+	    return 2;
+    }
 }
 
 test OperatorOverloading
@@ -215,5 +220,18 @@ test OperatorOverloading
 
         Assert.AreEqual(expectedX, resultX);
         Assert.AreEqual(expectedY, resultY);
+    }
+
+    testcase CountOf
+    {
+        var initalX = -1;
+        var initalY = -2;
+        var expected = 2;
+		var res = -1;
+        var indexable = IndexableClass(initalX, initalY);
+		
+		res = countof indexable;
+
+        Assert.AreEqual(expected, res);
     }
 }

@@ -107,8 +107,7 @@
         {
             compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
             compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
-            byte lengthNameID = compiler.AddCustomStringConstant("Count");
-            compiler.EmitOpAndBytes(OpCode.INVOKE, lengthNameID, 0);
+            compiler.EmitOpCode(OpCode.COUNT_OF);
             compiler.EmitOpAndBytes(OpCode.LESS);
         }
 

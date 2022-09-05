@@ -69,6 +69,8 @@ class Breakout
 
         loop (posList)
         {
+            //TODO move this logic around is it 1 or two hits out to the creation process
+            //  and take in a list of brick orders 
             var newBrick = brickFac(item, i % 2);
             this.bricks.Add(newBrick);
         }

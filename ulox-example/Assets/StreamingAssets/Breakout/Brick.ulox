@@ -35,7 +35,7 @@ class Brick
 
     OnBrickDestroy()
     {
-        DestroyUnityObject(this.go);
         (inject BreakoutInst).GivePointsForBrick(this, this.origHitCount);
+        DestroyUnityObject(this.go);
     }
 }

@@ -6,12 +6,6 @@
       "source": "local",
       "dependencies": {}
     },
-    "com.ulox.core.tests": {
-      "version": "file:../../ulox/ulox.core.tests/Package",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {}
-    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,

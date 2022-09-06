@@ -1,8 +1,10 @@
 ﻿namespace ULox
 {
-    public class CompilerException : LoxException
+    public class CompilerException : UloxException
     {
-        public CompilerException(string msg) : base(msg)
+        //TODO add demand for prev token and next token
+        public CompilerException(string msg)
+            : base(msg)
         {
         }
     }

@@ -1,6 +1,7 @@
 ﻿namespace ULox
 {
-    public class VMException : LoxException
+    //TODO rename uloxruntimeexception
+    public class VMException : UloxException
     {
         public VMException(string msg) : base(msg)
         {

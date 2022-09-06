@@ -25,7 +25,7 @@ namespace ULox.Tests
             {
                 MyEngine.RunScript(testString);
             }
-            catch (LoxException e)
+            catch (UloxException e)
             {
                 AppendResult(e.Message);
                 if (ReThrow)

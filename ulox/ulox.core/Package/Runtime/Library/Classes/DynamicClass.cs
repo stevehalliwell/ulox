@@ -1,5 +1,6 @@
 ﻿namespace ULox
 {
+    //TODO using wrong exception types in here
     public class DynamicClass : ClassInternal
     {
         public static readonly HashedString DynamicClassName = new HashedString("Dynamic");

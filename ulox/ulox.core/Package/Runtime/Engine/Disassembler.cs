@@ -151,7 +151,7 @@ namespace ULox
             var opAction = opCodeHandlers[(int)opCode];
 
             if (opAction == null)
-                throw new LoxException($"'{opCode}' is unhandled by the disassembler.");
+                throw new UloxException($"'{opCode}' is unhandled by the disassembler.");
 
 
             i = opAction?.Invoke(chunk, i) ?? i;

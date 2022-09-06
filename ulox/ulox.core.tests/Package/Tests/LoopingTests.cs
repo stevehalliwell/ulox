@@ -557,5 +557,33 @@ loop (arr, jtem)
 
             Assert.AreEqual("Loop error: itemName 'jtem' already exists at this scope, name given to loop must be unique at 7:17 'jtem'.", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Loop_WhenNested_ShouldPrintExpected()
+        {
+            testEngine.Run(@"
+{
+var arrays = [
+            [1,2,3,4,5,],
+            [6,7,8,9,0,],
+        ];
+
+
+var arr = [];
+arr.Add(1);
+var jtem = 7;
+
+loop (arrays,ytem,y)
+{
+    loop(ytem, xtem, x)
+    {
+        print(xtem);
+    }
+}
+}
+");
+
+            Assert.AreEqual("1234567890", testEngine.InterpreterResult);
+        }
     }
 }

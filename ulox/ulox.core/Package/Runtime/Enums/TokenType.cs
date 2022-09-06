@@ -10,8 +10,8 @@
         CLOSE_PAREN,
         OPEN_BRACE, //{
         CLOSE_BRACE, //}
-        OPEN_BRACKET,
-        CLOSE_BRACKET,
+        OPEN_BRACKET, //[
+        CLOSE_BRACKET, //]
         COMMA,
         DOT,
         END_STATEMENT,

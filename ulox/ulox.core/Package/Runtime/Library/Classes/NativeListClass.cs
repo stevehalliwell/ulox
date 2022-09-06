@@ -24,7 +24,10 @@ namespace ULox
                 (nameof(OrderBy), Value.New(OrderBy)),
                 (nameof(First), Value.New(First)),
                 (nameof(Fork), Value.New(Fork)),
-                (nameof(Until), Value.New(Until))
+                (nameof(Until), Value.New(Until)),
+                
+                (nameof(Grow), Value.New(Grow)),
+                (nameof(Shrink), Value.New(Shrink))
                                   );
         }
 
@@ -68,6 +71,27 @@ namespace ULox
         {
             var top = vm.GetArg(1);
             GetArg0NativeListInstance(vm).Remove(top);
+            return NativeCallResult.SuccessfulExpression;
+        }
+        
+        private NativeCallResult Grow(Vm vm, int argCount)
+        {
+            var size = vm.GetArg(1).val.asDouble;
+            var val = vm.GetArg(2);
+            var inst = vm.GetArg(0);
+            var nativeListinst = inst.val.asInstance as NativeListInstance;
+            while (nativeListinst.List.Count < size) nativeListinst.List.Add(Value.Copy(val));
+            vm.PushReturn(inst);
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult Shrink(Vm vm, int argCount)
+        {
+            var size = vm.GetArg(1).val.asDouble;
+            var inst = vm.GetArg(0);
+            var nativeListinst = inst.val.asInstance as NativeListInstance;
+            while (nativeListinst.List.Count > size) nativeListinst.List.RemoveAt(nativeListinst.List.Count-1);
+            vm.PushReturn(inst);
             return NativeCallResult.SuccessfulExpression;
         }
 

@@ -32,3 +32,11 @@ loop (list, val, j)
 }
 
 print("Length is " + list.Count());
+
+
+// Lists can be expanded and shrunk
+//gives a list of 5 elements all a 0
+var fiver = [].Grow(5,0);
+
+//the list is now only 2 elements, the front two
+var twoer = fiver.Shrink(2);

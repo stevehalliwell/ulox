@@ -225,5 +225,89 @@ print(arr[2]);
 
             Assert.AreEqual("123", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Grow_When0_ShouldGiveEmpty()
+        {
+            testEngine.Run(@"
+var list = [].Grow(0, 0);
+
+print(list.Count());
+");
+
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Grow_WhenFiveOnes_ShouldGiveFiveElementsOfOne()
+        {
+            testEngine.Run(@"
+var list = [].Grow(5, 1);
+
+print(list.Count());
+
+
+fun accum(cur, running)
+{
+    return running + cur;
+}
+
+print(list.Reduce(accum));
+");
+
+            Assert.AreEqual("55", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Grow_WhenAlreadyLarger_ShouldDoNothing()
+        {
+            testEngine.Run(@"
+var list = [1,2,3].Grow(2, null);
+
+print(list.Count());
+
+
+fun accum(cur, running)
+{
+    return running + cur;
+}
+
+print(list.Reduce(accum));
+");
+
+            Assert.AreEqual("36", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Shrink_When0_ShouldGiveEmpty()
+        {
+            testEngine.Run(@"
+var list = [].Shrink(0);
+
+print(list.Count());
+");
+
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Shrink_When5To2_ShouldBeTwoFront()
+        {
+            testEngine.Run(@"
+var list = [1,2,3,4,5,].Shrink(2);
+
+print(list.Count());
+
+
+fun accum(cur, running)
+{
+    return running + cur;
+}
+
+print(list.Reduce(accum));
+");
+
+            Assert.AreEqual("23", testEngine.InterpreterResult);
+        }
     }
 }

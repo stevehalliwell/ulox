@@ -33,7 +33,7 @@ namespace ULox
         public void BindLibrary(string name)
         {
             if (!_libraries.TryGetValue(name, out var lib))
-                throw new VMException($"No library of name '{name}' found.");
+                throw new RuntimeUloxException($"No library of name '{name}' found.");
 
             var toAdd = lib.GetBindings();
 

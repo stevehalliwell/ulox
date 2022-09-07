@@ -15,7 +15,7 @@ namespace ULox
         {
             return _lines.TryGetValue(key, out var value)
                 ? value
-                : throw new VMException($"Factory contains no line of key '{key}'.");
+                : throw new RuntimeUloxException($"Factory contains no line of key '{key}'.");
         }
 
         public Factory ShallowCopy()

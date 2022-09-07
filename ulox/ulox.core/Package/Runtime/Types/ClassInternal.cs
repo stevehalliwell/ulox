@@ -83,7 +83,7 @@ namespace ULox
         public void CanWrite()
         {
             if (IsFrozen)
-                throw new FreezeException($"Attempted to modify frozen class '{Name}'.");
+                throw new RuntimeUloxException($"Attempted to modify frozen class '{Name}'.");
         }
 
         public void AddInitChain(ClosureInternal closure, ushort initChainStartOp)

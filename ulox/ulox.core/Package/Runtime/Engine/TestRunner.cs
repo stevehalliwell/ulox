@@ -27,7 +27,7 @@ namespace ULox
         {
             var id = MakeId(name);
             if (_testStatus.ContainsKey(id))
-                throw new TestRunnerException($"{nameof(TestRunner)} found a duplicate test '{id}'.");
+                throw new RuntimeUloxException($"{nameof(TestRunner)} found a duplicate test '{id}'.");
 
             _testStatus[id] = false;
             _lastId = id;

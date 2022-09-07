@@ -25,10 +25,10 @@
         {
             var key = vm.GetArg(1);
             if (key.IsNull)
-                throw new VMException($"'{nameof(SetLine)}' must have non null key argument.");
+                throw new RuntimeUloxException($"'{nameof(SetLine)}' must have non null key argument.");
             var line = vm.GetArg(2);
             if (line.IsNull)
-                throw new VMException($"'{nameof(SetLine)}' must have non null line argument.");
+                throw new RuntimeUloxException($"'{nameof(SetLine)}' must have non null line argument.");
 
             vm.Factory.SetLine(key, line);
             return NativeCallResult.SuccessfulExpression;

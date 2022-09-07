@@ -196,7 +196,7 @@ namespace ULox
                     return lhs.val.asObject.Equals(rhs.val.asObject);
 
                 default:
-                    throw new VMException($"Cannot perform compare on type '{lhs.type}'.");
+                    throw new RuntimeUloxException($"Cannot perform compare on type '{lhs.type}'.");
                 }
             }
         }

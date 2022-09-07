@@ -28,7 +28,7 @@ namespace ULox
             if (!IsFrozen || Fields.ContainsKey(key))
                 Fields[key] = val;
             else
-                throw new FreezeException($"Attempted to Create a new field '{key}' via SetField on a frozen object. This is not allowed.");
+                throw new RuntimeUloxException($"Attempted to Create a new field '{key}' via SetField on a frozen object. This is not allowed.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

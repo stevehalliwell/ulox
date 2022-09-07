@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class PanicException : System.Exception
+    public class PanicException : RuntimeUloxException
     {
         public PanicException(string message = "") : base(message)
         {

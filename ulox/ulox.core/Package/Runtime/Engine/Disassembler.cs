@@ -152,8 +152,7 @@ namespace ULox
 
             if (opAction == null)
                 throw new UloxException($"'{opCode}' is unhandled by the disassembler.");
-
-
+            
             i = opAction?.Invoke(chunk, i) ?? i;
 
             stringBuilder.AppendLine();

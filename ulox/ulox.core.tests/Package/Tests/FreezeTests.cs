@@ -7,7 +7,7 @@ namespace ULox.Tests
         [Test]
         public void InstanceFromClass_WhenFrozenAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
         {
-            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.";
+            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object.";
             var script = @"
 class Foo
 {
@@ -24,7 +24,7 @@ inst.a = 10;";
         [Test]
         public void InstanceFromClass_WhenHasInitAndInitChainAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
         {
-            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.";
+            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object.";
             var script = @"
 class Foo
 {
@@ -58,7 +58,7 @@ print(maker.a);");
         [Test]
         public void Class_WhenFrozenAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
         {
-            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.";
+            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object.";
             var script = @"
 class Foo
 {

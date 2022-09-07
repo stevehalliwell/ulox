@@ -28,7 +28,7 @@ class T
 
 T.b = 5;");
 
-            Assert.AreEqual("Attempted to Create a new field 'b' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'b' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]

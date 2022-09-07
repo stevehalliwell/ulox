@@ -44,7 +44,7 @@ class T
 var t = T();
 t.c = 10;");
 
-            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -59,7 +59,7 @@ class T
 
 T.c = 10;");
 
-            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -322,7 +322,7 @@ T.a = 2;
 
 print(T.a);");
 
-            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]

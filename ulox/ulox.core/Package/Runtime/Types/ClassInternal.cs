@@ -65,9 +65,11 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetMethod(HashedString name, out Value method) => methods.TryGetValue(name, out method);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddMethod(HashedString key, Value method)
         {
-            CanWrite();
+            // This is used internally by the vm only does not need to check for frozen
+            
             methods[key] = method;
             if (key == TypeCompilette.InitMethodName)
             {
@@ -80,21 +82,17 @@ namespace ULox
             }
         }
 
-        public void CanWrite()
+        public void AddInitChain(IVm vm, ClosureInternal closure, ushort initChainStartOp)
         {
-            if (IsFrozen)
-                throw new RuntimeUloxException($"Attempted to modify frozen class '{Name}'.");
-        }
-
-        public void AddInitChain(ClosureInternal closure, ushort initChainStartOp)
-        {
-            CanWrite();
+            // This is used internally by the vm only does not need to check for frozen
+            
             InitChains.Add((closure, initChainStartOp));
         }
 
         public void AddMixin(Value flavourValue)
         {
-            CanWrite();
+            // This is used internally by the vm only does not need to check for frozen
+            
             var flavour = flavourValue.val.asClass;
             flavours[flavour.Name] = flavourValue;
 

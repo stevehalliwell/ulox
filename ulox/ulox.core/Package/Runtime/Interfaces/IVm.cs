@@ -23,5 +23,6 @@
 
         void CopyFrom(IVm otherVM);
         InterpreterResult Run();
+        void ThrowRuntimeException(string msg);
     }
 }

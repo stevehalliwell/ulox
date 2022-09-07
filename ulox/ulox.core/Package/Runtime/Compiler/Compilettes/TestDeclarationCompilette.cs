@@ -38,7 +38,7 @@ namespace ULox
 
             var testcaseCount = _currentTestcaseInstructions.Count;
             if (testcaseCount > byte.MaxValue)
-                throw new RuntimeUloxException($"{testcaseCount} has more than {byte.MaxValue} testcases, this is not allowed.");
+                compiler.ThrowCompilerException($"{testcaseCount} has more than {byte.MaxValue} testcases, this is not allowed.");
 
             compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestFixtureBodyInstruction);
             compiler.EmitUShort(testFixtureBodyFirstInstruction);

@@ -732,7 +732,7 @@ Assert.AreEqual(1,1);
 Assert.AreEqual(1,2);
 Assert.AreEqual(1,1);");
 
-            Assert.AreEqual("'1' does not equal '2'.", testEngine.InterpreterResult);
+            Assert.AreEqual("'1' does not equal '2' at ip:'0' in chunk:'AreEqual'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -907,7 +907,7 @@ fun InnerMain()
 var innerVM = VM();
 innerVM.Start(InnerMain);");
 
-            Assert.AreEqual("Global var of name 'a' was not found.", testEngine.InterpreterResult, testEngine.InterpreterResult);
+            Assert.AreEqual("Global var of name 'a' was not found at ip:'0' in chunk:'InnerMain'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
         }
 
         [Test]
@@ -969,7 +969,7 @@ register Seven 7;");
             testEngine.Run(@"
 var s = inject Seven;");
 
-            Assert.AreEqual("Inject failure. Nothing has been registered (yet) with name 'Seven'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'0' in chunk:'unnamed_chunk'.", testEngine.InterpreterResult);
         }
 
         [Test]

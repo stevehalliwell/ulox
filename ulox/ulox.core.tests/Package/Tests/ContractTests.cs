@@ -57,7 +57,7 @@ class T
     signs IT;
 }");
 
-            Assert.AreEqual("'T' does not contain matching method 'Required'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Sign failure with msg ''T' does not contain matching method 'Required'.' at ip:'0' in chunk:'unnamed_chunk'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -75,7 +75,7 @@ class T
     Required(a){}
 }");
 
-            Assert.AreEqual("Expected arity '0' but found '1'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Sign failure with msg 'Expected arity '0' but found '1'.' at ip:'0' in chunk:'unnamed_chunk'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -116,7 +116,7 @@ class T
     Required(){}
 }");
 
-            Assert.AreEqual("Expected local but found 'Method'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Sign failure with msg 'Expected local but found 'Method'.' at ip:'0' in chunk:'unnamed_chunk'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -170,7 +170,7 @@ class T
     Required(){}
 }");
 
-            Assert.AreEqual("Expected pure but found 'Method'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Sign failure with msg 'Expected pure but found 'Method'.' at ip:'0' in chunk:'unnamed_chunk'.", testEngine.InterpreterResult);
         }
 
         [Test]

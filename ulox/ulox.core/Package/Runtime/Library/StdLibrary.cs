@@ -58,7 +58,7 @@ namespace ULox
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                throw new AssertException($"Cannot perform AreApproxEqual on non-double types, '{lhs}', '{rhs}'.");
+                vm.ThrowRuntimeException($"Cannot perform AreApproxEqual on non-double types, '{lhs}', '{rhs}'");
 
             var lhsd = lhs.val.asDouble;
             var rhsd = rhs.val.asDouble;
@@ -67,9 +67,9 @@ namespace ULox
             var largerSquare = Math.Max(lhsd * lhsd, rhsd * rhsd);
             var difsqOverLargersq = squareDif / largerSquare;
             if (difsqOverLargersq > SquareDividedTolerance)
-                throw new AssertException($"'{lhs}' and '{rhs}' are '{dif}' apart. " +
+                vm.ThrowRuntimeException($"'{lhs}' and '{rhs}' are '{dif}' apart. " +
                     $"Expect diff of squres to be less than '{SquareDividedTolerance}' " +
-                    $"but '{squareDif}' and '{largerSquare}' are greater '{difsqOverLargersq}'.");
+                    $"but '{squareDif}' and '{largerSquare}' are greater '{difsqOverLargersq}'");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -79,7 +79,7 @@ namespace ULox
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (!lhs.Compare(ref lhs, ref rhs))
-                throw new AssertException($"'{lhs}' does not equal '{rhs}'.");
+                vm.ThrowRuntimeException($"'{lhs}' does not equal '{rhs}'");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -89,7 +89,7 @@ namespace ULox
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (lhs.Compare(ref lhs, ref rhs))
-                throw new AssertException($"'{lhs}' does not NOT equal '{rhs}'.");
+                vm.ThrowRuntimeException($"'{lhs}' does not NOT equal '{rhs}'");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -98,7 +98,7 @@ namespace ULox
         {
             var lhs = vm.GetArg(1);
             if (lhs.IsFalsey)
-                throw new AssertException($"'{lhs}' is not truthy.");
+                vm.ThrowRuntimeException($"'{lhs}' is not truthy");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -107,7 +107,7 @@ namespace ULox
         {
             var lhs = vm.GetArg(1);
             if (!lhs.IsFalsey)
-                throw new AssertException($"'{lhs}' is not falsy.");
+                vm.ThrowRuntimeException($"'{lhs}' is not falsy");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -116,7 +116,7 @@ namespace ULox
         {
             var lhs = vm.GetArg(1);
             if (!lhs.IsNull)
-                throw new AssertException($"'{lhs}' is not null.");
+                vm.ThrowRuntimeException($"'{lhs}' is not null");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -125,7 +125,7 @@ namespace ULox
         {
             var lhs = vm.GetArg(1);
             if (lhs.IsNull)
-                throw new AssertException($"'{lhs}' is null.");
+                vm.ThrowRuntimeException($"'{lhs}' is null");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -135,7 +135,7 @@ namespace ULox
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (!rhs.val.asString.String.Contains(lhs.val.asString.String))
-                throw new AssertException($"'{rhs}' did not contain '{lhs}'.");
+                vm.ThrowRuntimeException($"'{rhs}' did not contain '{lhs}'");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -145,7 +145,7 @@ namespace ULox
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
             if (rhs.val.asString.String.Contains(lhs.val.asString.String))
-                throw new AssertException($"'{rhs}' did contain '{lhs}', should not have.");
+                vm.ThrowRuntimeException($"'{rhs}' did contain '{lhs}', should not have");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -154,7 +154,7 @@ namespace ULox
         {
             var toRun = vm.GetArg(1).val.asClosure.chunk;
             if (toRun == null)
-                throw new AssertException($"Requires 1 closure param to execute, but was not given one.");
+                vm.ThrowRuntimeException($"Requires 1 closure param to execute, but was not given one");
             var ourVM = CreateVM();
             ourVM.CopyFrom(vm);
             bool didThrow = false;
@@ -168,7 +168,7 @@ namespace ULox
             }
 
             if (!didThrow)
-                throw new AssertException($"'{toRun.Name}' did not throw, but should have.");
+                vm.ThrowRuntimeException($"'{toRun.Name}' did not throw, but should have");
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -181,7 +181,7 @@ namespace ULox
         private static NativeCallResult Fail(Vm vm, int argCount)
         {
             var msg = vm.GetArg(1);
-            throw new AssertException($"Fail. '{msg}'");
+            vm.ThrowRuntimeException($"Fail. '{msg}'");
             return NativeCallResult.SuccessfulExpression;
         }
 

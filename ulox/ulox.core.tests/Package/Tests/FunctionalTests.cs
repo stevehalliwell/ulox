@@ -14,7 +14,7 @@ fun local Foo()
 }
 ");
 
-            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Foo'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Foo' at 4:9 'a'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -57,7 +57,7 @@ fun Foo()
 }
 ");
 
-            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Bar'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Bar' at 8:17 'a'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -102,7 +102,7 @@ class T
 }
 ");
 
-            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Foo'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Foo' at 6:17 'a'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -126,7 +126,7 @@ class T
 }
 ");
 
-            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Bar'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Bar' at 10:25 'a'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -160,7 +160,7 @@ fun pure Foo()
 }
 ");
 
-            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Foo'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Foo' at 4:9 'a'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -186,7 +186,7 @@ fun pure Foo(a)
 }
 ");
 
-            Assert.AreEqual("Attempted to write to function param 'a', this is not allowed in a 'pure' function.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to write to function param 'a', this is not allowed in a 'pure' function at 4:15 '7'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -243,7 +243,7 @@ class T
 }
 ");
 
-            Assert.AreEqual("Attempted to write to function param 'a', this is not allowed in a 'pure' function.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to write to function param 'a', this is not allowed in a 'pure' function at 6:23 '7'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -259,7 +259,7 @@ class T
 }
 ");
 
-            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Foo'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Foo' at 6:17 'a'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -283,7 +283,7 @@ class T
 }
 ");
 
-            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Bar'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'a' could not be found locally in local function 'Bar' at 10:25 'a'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -299,7 +299,7 @@ class T
 }
 ");
 
-            Assert.AreEqual("Identifiier 'this' could not be found locally in local function 'Foo'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'this' could not be found locally in local function 'Foo' at 6:28 'this'.", testEngine.InterpreterResult);
         }
     }
 }

@@ -34,15 +34,15 @@
                     indexName = compiler.TokenIterator.PreviousToken.Lexeme;
                 }
 
-                if (compiler.CurrentCompilerState.ResolveLocal(itemName) != -1)
+                if (compiler.CurrentCompilerState.ResolveLocal(compiler, itemName) != -1)
                 {
                     var prevToken = compiler.TokenIterator.PreviousToken;
-                    throw new CompilerException($"Loop error: itemName '{itemName}' already exists at this scope, name given to loop must be unique at {prevToken.Line}:{prevToken.Character} '{prevToken.Literal}'.");
+                    compiler.ThrowCompilerException($"Loop error: itemName '{itemName}' already exists at this scope, name given to loop must be unique at");
                 }
-                if (compiler.CurrentCompilerState.ResolveLocal(indexName) != -1)
+                if (compiler.CurrentCompilerState.ResolveLocal(compiler, indexName) != -1)
                 {
                     var prevToken = compiler.TokenIterator.PreviousToken;
-                    throw new CompilerException($"Loop error: indexName '{indexName}' already exists at this scope, name used for index in loop must be unique at {prevToken.Line}:{prevToken.Character} '{prevToken.Literal}'.");
+                    compiler.ThrowCompilerException($"Loop error: indexName '{indexName}' already exists at this scope, name used for index in loop must be unique");
                 }
 
                 //skip the looop if the target is null
@@ -52,12 +52,12 @@
                 compiler.EmitOpCode(OpCode.POP);
 
                 //refer to output of For_WhenLimitedIterations_ShouldPrint3Times 
-                compiler.CurrentCompilerState.DeclareVariableByName(indexName);
+                compiler.CurrentCompilerState.DeclareVariableByName(compiler, indexName);
                 compiler.CurrentCompilerState.MarkInitialised();
-                var indexArgID = (byte)compiler.CurrentCompilerState.ResolveLocal(indexName);
-                compiler.CurrentCompilerState.DeclareVariableByName(itemName);
+                var indexArgID = (byte)compiler.CurrentCompilerState.ResolveLocal(compiler, indexName);
+                compiler.CurrentCompilerState.DeclareVariableByName(compiler, itemName);
                 compiler.CurrentCompilerState.MarkInitialised();
-                var itemArgID = (byte)compiler.CurrentCompilerState.ResolveLocal(itemName);
+                var itemArgID = (byte)compiler.CurrentCompilerState.ResolveLocal(compiler, itemName);
                 
                 //prep i
                 compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 0);

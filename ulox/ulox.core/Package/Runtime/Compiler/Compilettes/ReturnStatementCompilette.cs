@@ -8,7 +8,7 @@
         {
             //TODO refactor out
             if (compiler.CurrentCompilerState.functionType == FunctionType.Init)
-                throw new CompilerException("Cannot return an expression from an 'init'.");
+                compiler.ThrowCompilerException("Cannot return an expression from an 'init'");
 
             if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
                 MultiReturnBody(compiler);

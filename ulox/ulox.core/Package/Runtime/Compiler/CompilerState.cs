@@ -53,15 +53,15 @@ namespace ULox
         private Local LastLocal => locals[localCount - 1];
 
 
-        public void AddLocal(string name, int depth = -1)
+        public void AddLocal(Compiler compiler, string name, int depth = -1)
         {
             if (localCount == byte.MaxValue)
-                throw new CompilerException("Too many local variables.");
+                compiler.ThrowCompilerException("Too many local variables.");
 
             locals[localCount++] = new Local(name, depth);
         }
 
-        public int ResolveLocal(string name)
+        public int ResolveLocal(Compiler compiler, string name)
         {
             for (int i = localCount - 1; i >= 0; i--)
             {
@@ -69,7 +69,7 @@ namespace ULox
                 if (name == local.Name)
                 {
                     if (local.Depth == -1)
-                        throw new CompilerException($"{name}. Cannot referenece a variable in it's own initialiser.");  //todo all of these throws need to report names and locations
+                        compiler.ThrowCompilerException($"{name}. Cannot referenece a variable in it's own initialiser.");  //todo all of these throws need to report names and locations
                     return i;
                 }
             }
@@ -77,7 +77,7 @@ namespace ULox
             return -1;
         }
 
-        public int AddUpvalue(byte index, bool isLocal)
+        public int AddUpvalue(Compiler compiler, byte index, bool isLocal)
         {
             int upvalueCount = chunk.UpvalueCount;
 
@@ -93,33 +93,33 @@ namespace ULox
             }
 
             if (upvalueCount == byte.MaxValue)
-                throw new CompilerException("Too many closure variables in function.");
+                compiler.ThrowCompilerException("Too many closure variables in function.");
 
             upvalues[upvalueCount] = new Upvalue(index, isLocal);
             return chunk.UpvalueCount++;
         }
 
-        public int ResolveUpvalue(string name)
+        public int ResolveUpvalue(Compiler compiler, string name)
         {
             if (enclosing == null) return -1;
 
-            int local = enclosing.ResolveLocal(name);
+            int local = enclosing.ResolveLocal(compiler, name);
             if (local != -1)
             {
                 enclosing.locals[local].IsCaptured = true;
-                return AddUpvalue((byte)local, true);
+                return AddUpvalue(compiler, (byte)local, true);
             }
 
-            int upvalue = enclosing.ResolveUpvalue(name);
+            int upvalue = enclosing.ResolveUpvalue(compiler, name);
             if (upvalue != -1)
             {
-                return AddUpvalue((byte)upvalue, false);
+                return AddUpvalue(compiler, (byte)upvalue, false);
             }
 
             return -1;
         }
 
-        public void DeclareVariableByName(string declName)
+        public void DeclareVariableByName(Compiler compiler, string declName)
         {
             if (scopeDepth == 0) return;
 
@@ -130,10 +130,10 @@ namespace ULox
                     break;
 
                 if (declName == local.Name)
-                    throw new CompilerException($"Already a variable with name '{declName}' in this scope.");
+                    compiler.ThrowCompilerException($"Already a variable with name '{declName}' in this scope.");
             }
 
-            AddLocal(declName);
+            AddLocal(compiler, declName);
         }
 
         public void MarkInitialised()

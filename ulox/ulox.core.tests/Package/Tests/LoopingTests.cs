@@ -33,7 +33,7 @@ loop
     i = i + 1;
 }");
 
-            Assert.AreEqual("Loops must contain an termination.", testEngine.InterpreterResult);
+            Assert.AreEqual("Loops must contain a termination at 7:1.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -521,7 +521,7 @@ loop (arr)
 }
 }");
 
-            Assert.AreEqual("Loop error: itemName 'item' already exists at this scope, name given to loop must be unique at 7:10 'arr'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Loop error: itemName 'item' already exists at this scope, name given to loop must be unique at at 7:10 'arr'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -555,7 +555,7 @@ loop (arr, jtem)
 }
 }");
 
-            Assert.AreEqual("Loop error: itemName 'jtem' already exists at this scope, name given to loop must be unique at 7:17 'jtem'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Loop error: itemName 'jtem' already exists at this scope, name given to loop must be unique at at 7:17 'jtem'.", testEngine.InterpreterResult);
         }
 
         [Test]

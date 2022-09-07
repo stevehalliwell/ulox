@@ -117,6 +117,9 @@ namespace ULox
             PushCompilerState(string.Empty, FunctionType.Script);
         }
 
+        public void ThrowCompilerException(string msg)
+            => throw new CompilerException(msg, TokenIterator.PreviousToken);
+
         public void AddDeclarationCompilette(ICompilette compilette)
             => declarationCompilettes[compilette.Match] = compilette;
 
@@ -139,10 +142,10 @@ namespace ULox
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
         public void AddConstantAndWriteOp(Value value)
-            => CurrentChunk.AddConstantAndWriteInstruction(value, TokenIterator.PreviousToken.Line);
+            => CurrentChunk.AddConstantAndWriteInstruction(this, value, TokenIterator.PreviousToken.Line);
 
         public byte AddCustomStringConstant(string str)
-            => CurrentChunk.AddConstant(Value.New(str));
+            => CurrentChunk.AddConstant(this, Value.New(str));
 
         public void EmitOpAndBytes(OpCode op, params byte[] b)
         {
@@ -155,7 +158,10 @@ namespace ULox
             int jump = CurrentChunkInstructinCount - thenjump - 2;
 
             if (jump > ushort.MaxValue)
-                throw new CompilerException($"Cannot jump '{jump}'. Max jump is '{ushort.MaxValue}'");
+            {
+                ThrowCompilerException($"Cannot jump '{jump}'. Max jump is '{ushort.MaxValue}'");
+                return;
+            }
 
             WriteBytesAt(thenjump, (byte)((jump >> 8) & 0xff), (byte)(jump & 0xff));
         }
@@ -290,12 +296,12 @@ namespace ULox
                 || functionType == FunctionType.LocalMethod
                 || functionType == FunctionType.Init)
             {
-                CurrentCompilerState.AddLocal("this", 0);
+                CurrentCompilerState.AddLocal(this, "this", 0);
             }
             else
             {
                 //calls have local 0 as a reference to the closure but are not able to ref it themselves.
-                CurrentCompilerState.AddLocal("", 0);
+                CurrentCompilerState.AddLocal(this, "", 0);
             }
         }
 
@@ -334,7 +340,7 @@ namespace ULox
             if (CurrentCompilerState.functionType == FunctionType.PureFunction)
             {
                 if (argId <= CurrentCompilerState.chunk.Arity)
-                    throw new CompilerException($"Attempted to write to function param '{name}', this is not allowed in a 'pure' function.");
+                    ThrowCompilerException($"Attempted to write to function param '{name}', this is not allowed in a 'pure' function");
             }
         }
 
@@ -344,7 +350,7 @@ namespace ULox
             {
                 if (getOp != OpCode.GET_LOCAL
                     || setOp != OpCode.SET_LOCAL)
-                    throw new CompilerException($"Identifiier '{name}' could not be found locally in local function '{CurrentCompilerState.chunk.Name}'.");
+                    ThrowCompilerException($"Identifiier '{name}' could not be found locally in local function '{CurrentCompilerState.chunk.Name}'");
             }
         }
 
@@ -398,7 +404,7 @@ namespace ULox
         {
             var getOp = OpCode.FETCH_GLOBAL;
             var setOp = OpCode.ASSIGN_GLOBAL;
-            var argId = CurrentCompilerState.ResolveLocal(name);
+            var argId = CurrentCompilerState.ResolveLocal(this, name);
             if (argId != -1)
             {
                 getOp = OpCode.GET_LOCAL;
@@ -406,7 +412,7 @@ namespace ULox
             }
             else
             {
-                argId = CurrentCompilerState.ResolveUpvalue(name);
+                argId = CurrentCompilerState.ResolveUpvalue(this, name);
                 if (argId != -1)
                 {
                     getOp = OpCode.GET_UPVALUE;
@@ -414,7 +420,7 @@ namespace ULox
                 }
                 else
                 {
-                    argId = CurrentChunk.AddConstant(Value.New(name));
+                    argId = CurrentChunk.AddConstant(this, Value.New(name));
                 }
             }
 
@@ -461,7 +467,7 @@ namespace ULox
                     Expression();
                     argCount++;
                     if (argCount == 255)
-                        throw new CompilerException("Can't have more than 255 arguments.");
+                        ThrowCompilerException($"Can't have more than 255 arguments.");
                 } while (TokenIterator.Match(TokenType.COMMA));
             }
 
@@ -478,7 +484,7 @@ namespace ULox
             int offset = CurrentChunk.Instructions.Count - loopStart + 2;
 
             if (offset > ushort.MaxValue)
-                throw new CompilerException($"Cannot loop '{offset}'. Max loop is '{ushort.MaxValue}'");
+                ThrowCompilerException($"Cannot loop '{offset}'. Max loop is '{ushort.MaxValue}'");
 
             EmitBytes((byte)((offset >> 8) & 0xff), (byte)(offset & 0xff));
         }
@@ -539,7 +545,7 @@ namespace ULox
         {
             CurrentChunk.ArgumentConstantIds.Add(argNameConstant);
             if (CurrentChunk.Arity > 255)
-                throw new CompilerException("Can't have more than 255 parameters.");
+                ThrowCompilerException($"Can't have more than 255 parameters.");
         }
 
         public void EndFunction()
@@ -547,7 +553,7 @@ namespace ULox
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
             var function = EndCompile();
-            EmitOpAndBytes(OpCode.CLOSURE, CurrentChunk.AddConstant(Value.New(function)));
+            EmitOpAndBytes(OpCode.CLOSURE, CurrentChunk.AddConstant(this, Value.New(function)));
 
             for (int i = 0; i < function.UpvalueCount; i++)
             {
@@ -582,7 +588,7 @@ namespace ULox
         public void DeclareAndDefineCustomVariable(string varName)
         {
             //do equiv of ParseVariable, DefineVariable
-            CurrentCompilerState.DeclareVariableByName(varName);
+            CurrentCompilerState.DeclareVariableByName(this, varName);
             CurrentCompilerState.MarkInitialised();
             var id = AddCustomStringConstant(varName);
             DefineVariable(id);
@@ -596,7 +602,7 @@ namespace ULox
             if (comp.scopeDepth == 0) return;
 
             var declName = comp.chunk.ReadConstant(AddStringConstant()).val.asString.String;
-            comp.DeclareVariableByName(declName);
+            comp.DeclareVariableByName(this, declName);
         }
 
         public void BlockStatement()
@@ -742,7 +748,7 @@ namespace ULox
         {
             var comp = compiler.CurrentCompilerState;
             if (comp.LoopStates.Count == 0)
-                throw new CompilerException("Cannot continue when not inside a loop.");
+                compiler.ThrowCompilerException($"Cannot continue when not inside a loop.");
 
             compiler.EmitLoop(comp.LoopStates.Peek().loopContinuePoint);
 
@@ -774,7 +780,7 @@ namespace ULox
         {
             var comp = compiler.CurrentCompilerState;
             if (comp.LoopStates.Count == 0)
-                throw new CompilerException("Cannot break when not inside a loop.");
+                compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
             
             compiler.EmitOpCode(OpCode.NULL);
             int exitJump = compiler.EmitJump();

@@ -2,10 +2,19 @@
 {
     public class CompilerException : UloxException
     {
-        //TODO add demand for prev token and next token
-        public CompilerException(string msg)
-            : base(msg)
+        public CompilerException(string msg, Token previousToken)
+            : base(msg + $" at {previousToken.Line}:{previousToken.Character}{LiteralStringPartial(previousToken.Literal)}.")
         {
+        }
+
+        private static string LiteralStringPartial(object literal)
+        {
+            if (literal == null) return string.Empty;
+
+            var str = literal.ToString();
+
+            if (string.IsNullOrEmpty(str)) return string.Empty;
+            return $" '{str}'";
         }
     }
 }

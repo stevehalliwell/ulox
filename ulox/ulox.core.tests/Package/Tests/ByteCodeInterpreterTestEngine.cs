@@ -25,6 +25,7 @@ namespace ULox.Tests
             {
                 MyEngine.RunScript(testString);
             }
+            catch (PanicException) { throw; }
             catch (UloxException e)
             {
                 AppendResult(e.Message);

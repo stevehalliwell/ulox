@@ -142,10 +142,10 @@ namespace ULox
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
         public void AddConstantAndWriteOp(Value value)
-            => CurrentChunk.AddConstantAndWriteInstruction(this, value, TokenIterator.PreviousToken.Line);
+            => CurrentChunk.AddConstantAndWriteInstruction(value, TokenIterator.PreviousToken.Line);
 
         public byte AddCustomStringConstant(string str)
-            => CurrentChunk.AddConstant(this, Value.New(str));
+            => CurrentChunk.AddConstant(Value.New(str));
 
         public void EmitOpAndBytes(OpCode op, params byte[] b)
         {
@@ -420,7 +420,7 @@ namespace ULox
                 }
                 else
                 {
-                    argId = CurrentChunk.AddConstant(this, Value.New(name));
+                    argId = CurrentChunk.AddConstant(Value.New(name));
                 }
             }
 
@@ -553,7 +553,7 @@ namespace ULox
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
             var function = EndCompile();
-            EmitOpAndBytes(OpCode.CLOSURE, CurrentChunk.AddConstant(this, Value.New(function)));
+            EmitOpAndBytes(OpCode.CLOSURE, CurrentChunk.AddConstant(Value.New(function)));
 
             for (int i = 0; i < function.UpvalueCount; i++)
             {

@@ -82,7 +82,7 @@ namespace ULox
             }
         }
 
-        public void AddInitChain(IVm vm, ClosureInternal closure, ushort initChainStartOp)
+        public void AddInitChain(ClosureInternal closure, ushort initChainStartOp)
         {
             // This is used internally by the vm only does not need to check for frozen
             

@@ -10,11 +10,11 @@ namespace ULox.Tests
         {
             var chunk = new Chunk("main", "native", FunctionType.Script);
 
-            chunk.AddConstantAndWriteInstruction(null, Value.New(0.5), 1);
-            chunk.AddConstantAndWriteInstruction(null, Value.New(1), 1);
+            chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
+            chunk.AddConstantAndWriteInstruction(Value.New(1), 1);
             chunk.WriteSimple(OpCode.NEGATE, 1);
             chunk.WriteSimple(OpCode.ADD, 1);
-            chunk.AddConstantAndWriteInstruction(null, Value.New(2), 1);
+            chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
             chunk.WriteSimple(OpCode.MULTIPLY, 1);
             chunk.WriteSimple(OpCode.RETURN, 2);
             chunk.WriteByte((byte)ReturnMode.One, 2);

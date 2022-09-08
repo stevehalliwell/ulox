@@ -51,10 +51,10 @@ namespace ULox
             AddLine(line);
         }
 
-        public byte AddConstantAndWriteInstruction(Compiler compiler, Value val, int line)
+        public byte AddConstantAndWriteInstruction(Value val, int line)
         {
             Instructions.Add((byte)OpCode.CONSTANT);
-            var at = AddConstant(compiler, val);
+            var at = AddConstant(val);
             Instructions.Add(at);
             AddLine(line);
             return at;
@@ -66,13 +66,13 @@ namespace ULox
             AddLine(line);
         }
 
-        public byte AddConstant(Compiler compiler, Value val)
+        public byte AddConstant(Value val)
         {
-            var existingLox = ExistingSimpleConstant(compiler, val);
+            var existingLox = ExistingSimpleConstant(val);
             if (existingLox != -1) return (byte)existingLox;
 
             if (constants.Count >= byte.MaxValue)
-                compiler.ThrowCompilerException($"Cannot have more than '{byte.MaxValue}' constants per chunk.");
+                throw new UloxException($"Cannot have more than '{byte.MaxValue}' constants per chunk.");
 
             constants.Add(val);
             return (byte)(constants.Count - 1);
@@ -80,13 +80,12 @@ namespace ULox
 
         public Value ReadConstant(byte index) => constants[index];
 
-        private int ExistingSimpleConstant(Compiler compiler, Value val)
+        private int ExistingSimpleConstant(Value val)
         {
             switch (val.type)
             {
             case ValueType.Null:
-                compiler.ThrowCompilerException("Attempted to add a null constant");
-                return -1;
+                throw new UloxException("Attempted to add a null constant");
             case ValueType.Double:
                 return constants.FindIndex(x => x.type == val.type && val.val.asDouble == x.val.asDouble);
 

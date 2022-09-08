@@ -1270,7 +1270,7 @@ namespace ULox
             var initChain = ReadUShort(chunk);
             if (initChain != 0)
             {
-                klass.AddInitChain(this, _currentCallFrame.Closure, initChain);
+                klass.AddInitChain(_currentCallFrame.Closure, initChain);
             }
         }
 

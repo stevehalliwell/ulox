@@ -62,7 +62,7 @@
             if (string.IsNullOrEmpty(testDeclName))
                 compiler.ThrowCompilerException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
 
-            var nameConstantID = compiler.CurrentChunk.AddConstant(compiler, Value.New(testcaseName));
+            var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
             //emit jump // to skip this during imperative
             int testFragmentJump = compiler.EmitJump();

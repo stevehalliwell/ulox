@@ -21,7 +21,7 @@ namespace ULox
             //grab name
             var testClassName = (string)compiler.TokenIterator.CurrentToken.Literal;
             CurrentTestSetName = testClassName;
-            var testSetNameID = compiler.CurrentChunk.AddConstant(compiler, Value.New(testClassName));
+            var testSetNameID = compiler.CurrentChunk.AddConstant(Value.New(testClassName));
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect test set name.");
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before test set body.");

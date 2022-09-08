@@ -7,7 +7,7 @@
 
         string GenerateGlobalsDump();
 
-        string GenerateStackDump();
+        string GenerateValueStackDump();
 
         Value GetGlobal(HashedString name);
 

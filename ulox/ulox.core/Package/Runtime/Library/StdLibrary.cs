@@ -188,7 +188,7 @@ namespace ULox
 
         public NativeCallResult GenerateStackDump(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(vm.GenerateStackDump()));
+            vm.PushReturn(Value.New(vm.GenerateValueStackDump()));
             return NativeCallResult.SuccessfulExpression;
         }
 

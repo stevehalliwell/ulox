@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace ULox
 {
@@ -62,11 +65,34 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Peek(int ind = 0) => _valueStack.Peek(ind);
 
-        public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
+        public string GenerateValueStackDump() => DumpStack(_valueStack);
 
-        public string GenerateReturnDump() => new DumpStack().Generate(_returnStack);
+        public string GenerateReturnDump() => DumpStack(_returnStack);
 
-        public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
+        public string GenerateGlobalsDump()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var item in _globals)
+            {
+                sb.Append($"{item.Key} : {item.Value}");
+            }
+
+            return sb.ToString();
+        }
+
+        public string GenerateCallStackDump()
+        {
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < _callFrames.Count; i++)
+            {
+                var cf = _callFrames.Peek(i);
+                sb.AppendLine(GetLocationNameFromFrame(cf));
+            }
+
+            return sb.ToString();
+        }
 
         public Value GetGlobal(HashedString name) => _globals[name];
 
@@ -324,7 +350,12 @@ namespace ULox
                 {
                     var frame = _callFrames.Peek();
                     var currentInstruction = frame.InstructionPointer;
-                    throw new PanicException(Pop().ToString(), currentInstruction, GetLocationNameFromFrame(frame));
+                    throw new PanicException(
+                        Pop().ToString(), 
+                        currentInstruction, 
+                        GetLocationNameFromFrame(frame),
+                        GenerateValueStackDump(),
+                        GenerateCallStackDump());
                 }
                 case OpCode.BUILD:
                     DoBuildOp(chunk);
@@ -426,11 +457,25 @@ namespace ULox
 
         public void ThrowRuntimeException(string msg)
         {
-            var frame = _callFrames.Peek();
+            var frame = _currentCallFrame;
             var currentInstruction = frame.InstructionPointer;
-            string locationName = GetLocationNameFromFrame(frame);
+            var locationName = GetLocationNameFromFrame(frame);
 
-            throw new RuntimeUloxException(msg, currentInstruction, locationName);
+            throw new RuntimeUloxException(msg,
+                currentInstruction,
+                locationName,
+                GenerateValueStackDump(),
+                GenerateCallStackDump());
+        }
+
+        private static string DumpStack(FastStack<Value> valueStack)
+        {
+            var stackVars = valueStack
+                .Select(x => x.ToString())
+                .Take(valueStack.Count)
+                .Reverse();
+
+            return string.Join(Environment.NewLine, stackVars);
         }
 
         private static string GetLocationNameFromFrame(CallFrame frame)

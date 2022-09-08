@@ -70,7 +70,7 @@ var arr = null;
 print(countof arr);
 ");
 
-            Assert.AreEqual("Cannot perform countof on 'null' at ip:'0' in chunk:'unnamed_chunk'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on 'null' at ip:'8' in chunk:'unnamed_chunk'.", testEngine.InterpreterResult);
         }
 
         [Test]

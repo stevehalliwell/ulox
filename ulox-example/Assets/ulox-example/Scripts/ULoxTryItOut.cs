@@ -59,7 +59,7 @@ namespace ULox.Demo
             Application.logMessageReceived += Application_logMessageReceived;
             try
             {
-                sharedVM.Engine.RunScript(scriptInput.text);
+                sharedVM.Engine.RunScript(new Script(scriptInput.name, scriptInput.text));
             }
             catch (Exception)
             {

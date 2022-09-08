@@ -18,15 +18,17 @@ namespace ULox
         public List<byte> ArgumentConstantIds { get; private set; } = new List<byte>();
         public IReadOnlyList<Value> Constants => constants.AsReadOnly();
         public string Name { get; set; }
+        public string SourceName { get; private set; }
         public FunctionType FunctionType { get; internal set; }
         public bool IsLocal => FunctionType == FunctionType.LocalFunction || FunctionType == FunctionType.LocalMethod;
         public bool IsPure => FunctionType == FunctionType.PureFunction;
         public int Arity => ArgumentConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 
-        public Chunk(string name, FunctionType functionType)
+        public Chunk(string chunkName, string sourceName, FunctionType functionType)
         {
-            Name = name;
+            Name = chunkName;
+            SourceName = sourceName;
             FunctionType = functionType;
         }
 

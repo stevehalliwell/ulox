@@ -218,9 +218,9 @@ namespace ULox
             }
         }
 
-        public Chunk Compile(List<Token> inTokens)
+        public Chunk Compile(TokenIterator tokenIter)
         {
-            TokenIterator = new TokenIterator(inTokens);
+            TokenIterator = tokenIter;
             TokenIterator.Advance();
 
             while (CurrentTokenType != TokenType.EOF)
@@ -281,7 +281,7 @@ namespace ULox
         {
             var newCompState = new CompilerState(compilerStates.Peek(), functionType)
             {
-                chunk = new Chunk(name, functionType),
+                chunk = new Chunk(name, TokenIterator?.SourceName, functionType),
             };
             compilerStates.Push(newCompState);
 

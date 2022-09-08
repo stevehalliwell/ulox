@@ -206,7 +206,7 @@ fun pure Foo(a)
 Foo(Meth);
 ");
 
-            StringAssert.StartsWith("Pure call 'Foo' with non-pure confirming argument '<closure Meth upvals:0>' at ip:'14' in chunk:'unnamed_chunk'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Pure call 'Foo' with non-pure confirming argument '<closure Meth upvals:0>' at ip:'14' in chunk:'unnamed_chunk':12.", testEngine.InterpreterResult);
         }
 
         [Test]

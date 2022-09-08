@@ -48,7 +48,7 @@ namespace ULox
 
         public Vm()
         {
-            var nativeChunk = new Chunk("NativeCallChunkWrapper", FunctionType.Function);
+            var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native", FunctionType.Function);
             nativeChunk.WriteByte((byte)OpCode.NATIVE_CALL, 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }
@@ -158,7 +158,7 @@ namespace ULox
             {
                 _callFrames.Push(vm._callFrames[i]);
             }
-            
+
             _currentCallFrame = vm._currentCallFrame;
         }
 
@@ -351,9 +351,10 @@ namespace ULox
                     var frame = _callFrames.Peek();
                     var currentInstruction = frame.InstructionPointer;
                     throw new PanicException(
-                        Pop().ToString(), 
-                        currentInstruction, 
+                        Pop().ToString(),
+                        currentInstruction,
                         GetLocationNameFromFrame(frame),
+                        GetLineForInstruction(frame, currentInstruction),
                         GenerateValueStackDump(),
                         GenerateCallStackDump());
                 }
@@ -459,13 +460,18 @@ namespace ULox
         {
             var frame = _currentCallFrame;
             var currentInstruction = frame.InstructionPointer;
-            var locationName = GetLocationNameFromFrame(frame);
 
             throw new RuntimeUloxException(msg,
                 currentInstruction,
-                locationName,
+                GetLocationNameFromFrame(frame),
+                GetLineForInstruction(frame, currentInstruction),
                 GenerateValueStackDump(),
                 GenerateCallStackDump());
+        }
+
+        private static int GetLineForInstruction(CallFrame frame, int currentInstruction)
+        {
+            return frame.Closure?.chunk?.GetLineForInstruction(currentInstruction) ?? 0;
         }
 
         private static string DumpStack(FastStack<Value> valueStack)
@@ -486,9 +492,16 @@ namespace ULox
                     return frame.nativeFunc.Target.GetType().Name + "." + frame.nativeFunc.Method.Name;
                 return frame.nativeFunc.Method.Name;
             }
-            
-            var chunkName = frame.Closure?.chunk?.Name;
+
+            var chunk = frame.Closure?.chunk;
+            var chunkName = chunk?.Name;
             var locationName = !string.IsNullOrEmpty(chunkName) ? chunkName : "unnamed_chunk";
+
+            var scriptOrgin = chunk?.SourceName;
+            if(!string.IsNullOrEmpty(scriptOrgin))
+            {
+                locationName += $"({scriptOrgin})";
+            }
 
             return locationName;
         }
@@ -521,7 +534,7 @@ namespace ULox
                 }
                 else
                 {
-                    if(DoCustomOverloadOp(OpCode.COUNT_OF, target, Value.Null(), Value.Null()))
+                    if (DoCustomOverloadOp(OpCode.COUNT_OF, target, Value.Null(), Value.Null()))
                     {
                         return;
                     }
@@ -608,7 +621,7 @@ namespace ULox
                 Push(v);
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetIndexOp(OpCode opCode)
         {
@@ -1349,7 +1362,7 @@ namespace ULox
             var targetVal = Peek(1);
 
             InstanceInternal instance = null;
-            
+
             switch (targetVal.type)
             {
             default:

@@ -24,7 +24,7 @@ namespace ULox
             }
         }
 
-        public CompiledScript Compile(string script)
+        public CompiledScript Compile(Script script)
         {
             var hash = script.GetHashCode();
 
@@ -35,8 +35,8 @@ namespace ULox
             _scanner.Reset();
             _compiler.Reset();
 
-            var tokens = _scanner.Scan(script);
-            var chunk = _compiler.Compile(tokens);
+            var tokens = _scanner.Scan(script.Source);
+            var chunk = _compiler.Compile(new TokenIterator(tokens, script.Name));
             var compiled = new CompiledScript(chunk, hash);
             CompiledScripts.Add(compiled);
             return compiled;

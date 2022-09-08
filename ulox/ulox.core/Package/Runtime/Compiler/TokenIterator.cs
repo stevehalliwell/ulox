@@ -8,11 +8,15 @@ namespace ULox
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
         private readonly List<Token> _tokens;
+
+        public string SourceName { get; }
+
         private int tokenIndex;
 
-        public TokenIterator(List<Token> tokens)
+        public TokenIterator(List<Token> tokens, string sourceName)
         {
             _tokens = tokens;
+            SourceName = sourceName;
         }
 
         public void Advance()

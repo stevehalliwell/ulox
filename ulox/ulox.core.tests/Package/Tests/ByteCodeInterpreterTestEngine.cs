@@ -23,7 +23,7 @@ namespace ULox.Tests
         {
             try
             {
-                MyEngine.RunScript(testString);
+                MyEngine.RunScript(new Script( "test", testString));
             }
             catch (PanicException) { throw; }
             catch (UloxException e)

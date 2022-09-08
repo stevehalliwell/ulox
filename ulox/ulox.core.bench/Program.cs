@@ -186,14 +186,14 @@ Assert.AreEqual(3+6+9, forkReduceRes);
         public void UloxMethods()
         {
             var engine = Engine.CreateDefault();
-            engine.RunScript(FunctionalUlox);
+            engine.RunScript(new Script("", FunctionalUlox));
         }
 
         [Benchmark]
         public void NativeMethods()
         {
             var engine = Engine.CreateDefault();
-            engine.RunScript(FunctionalNative);
+            engine.RunScript(new Script("", FunctionalNative));
         }
 
     }

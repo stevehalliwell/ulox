@@ -49,7 +49,7 @@ namespace ULox
             BindLibrary(lib.Name);
         }
 
-        public CompiledScript CompileScript(string script)
+        public CompiledScript CompileScript(Script script)
         {
             var res = Program.Compile(script);
             _compiledChunks.Add(res);

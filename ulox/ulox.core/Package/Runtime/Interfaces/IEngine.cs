@@ -5,6 +5,6 @@
         IContext Context { get; }
 
         void LocateAndQueue(string name);
-        void RunScript(string script);
+        void RunScript(Script script);
     }
 }

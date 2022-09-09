@@ -18,7 +18,7 @@
             var obj = vm.GetArg(1);
             var fieldName = vm.GetArg(2);
             if (obj.type != ValueType.Instance || fieldName.type != ValueType.String)
-                throw new AssertException($"Cannot perform {nameof(HasField)} on given types, '{obj}', '{fieldName}'.");
+                vm.ThrowRuntimeException($"Cannot perform {nameof(HasField)} on given types, '{obj}', '{fieldName}'");
 
             var inst = obj.val.asInstance;
             var b = inst.HasField(fieldName.val.asString);
@@ -32,7 +32,7 @@
             var obj = vm.GetArg(1);
             var fieldName = vm.GetArg(2);
             if (obj.type != ValueType.Instance || fieldName.type != ValueType.String)
-                throw new AssertException($"Cannot perform {nameof(RemoveField)} on given types, '{obj}', '{fieldName}'.");
+                vm.ThrowRuntimeException($"Cannot perform {nameof(RemoveField)} on given types, '{obj}', '{fieldName}'");
 
             var inst = obj.val.asInstance;
             var fieldNameStr = fieldName.val.asString;

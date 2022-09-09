@@ -4,7 +4,7 @@ namespace ULox
 {
     public interface ICompiler
     {
-        Chunk Compile(List<Token> inTokens);
+        Chunk Compile(TokenIterator tokenIter);
         void Reset();
     }
 }

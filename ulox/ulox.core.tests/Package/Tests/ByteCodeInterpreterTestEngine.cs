@@ -23,9 +23,10 @@ namespace ULox.Tests
         {
             try
             {
-                MyEngine.RunScript(testString);
+                MyEngine.RunScript(new Script( "test", testString));
             }
-            catch (LoxException e)
+            catch (PanicException) { throw; }
+            catch (UloxException e)
             {
                 AppendResult(e.Message);
                 if (ReThrow)
@@ -41,7 +42,7 @@ namespace ULox.Tests
                 _logger(InterpreterResult);
                 _logger(MyEngine.Context.Program.Disassembly);
                 _logger(MyEngine.Context.VM.GenerateGlobalsDump());
-                _logger(MyEngine.Context.VM.GenerateStackDump());
+                _logger(MyEngine.Context.VM.GenerateValueStackDump());
             }
         }
 

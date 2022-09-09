@@ -47,7 +47,7 @@ namespace ULox.Demo
 
         private void BindToScript()
         {
-            _engine.Engine.RunScript(script.text);
+            _engine.Engine.RunScript(new Script(script.name, script.text));
             _ourVM = _engine.Engine.Context.VM;
             if (useInstanceVm)
             {

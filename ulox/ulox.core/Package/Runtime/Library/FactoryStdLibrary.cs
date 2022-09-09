@@ -16,7 +16,7 @@
         private static NativeCallResult Line(Vm vm, int argCount)
         {
             var arg = vm.GetArg(1);
-            var line = vm.Factory.GetLine(arg);
+            var line = vm.Factory.GetLine(vm, arg);
             vm.PushReturn(line);
             return NativeCallResult.SuccessfulExpression;
         }
@@ -25,10 +25,10 @@
         {
             var key = vm.GetArg(1);
             if (key.IsNull)
-                throw new VMException($"'{nameof(SetLine)}' must have non null key argument.");
+                vm.ThrowRuntimeException($"'{nameof(SetLine)}' must have non null key argument");
             var line = vm.GetArg(2);
             if (line.IsNull)
-                throw new VMException($"'{nameof(SetLine)}' must have non null line argument.");
+                vm.ThrowRuntimeException($"'{nameof(SetLine)}' must have non null line argument");
 
             vm.Factory.SetLine(key, line);
             return NativeCallResult.SuccessfulExpression;

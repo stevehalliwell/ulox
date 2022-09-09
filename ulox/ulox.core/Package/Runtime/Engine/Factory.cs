@@ -4,18 +4,22 @@ namespace ULox
 {
     public class Factory
     {
-        private Dictionary<Value, Value> _lines = new Dictionary<Value, Value>();
+        private readonly Dictionary<Value, Value> _lines = new Dictionary<Value, Value>();
 
         public void SetLine(Value key, Value creator)
         {
             _lines[key] = creator;
         }
 
-        public Value GetLine(Value key)
+        public Value GetLine(IVm vm, Value key)
         {
-            return _lines.TryGetValue(key, out var value)
-                ? value
-                : throw new VMException($"Factory contains no line of key '{key}'.");
+            if(_lines.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            vm.ThrowRuntimeException($"Factory contains no line of key '{key}'");
+            return default;
         }
 
         public Factory ShallowCopy()
@@ -27,6 +31,5 @@ namespace ULox
             }
             return ret;
         }
-
     }
 }

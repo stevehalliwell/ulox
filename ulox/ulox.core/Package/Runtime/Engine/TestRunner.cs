@@ -23,11 +23,11 @@ namespace ULox
         public HashedString CurrentTestSetName { get; set; } = new HashedString(string.Empty);
         public Func<Vm> CreateVM { get; private set; }
 
-        public void StartTest(string name)
+        public void StartTest(IVm vm, string name)
         {
             var id = MakeId(name);
             if (_testStatus.ContainsKey(id))
-                throw new TestRunnerException($"{nameof(TestRunner)} found a duplicate test '{id}'.");
+                vm.ThrowRuntimeException($"{nameof(TestRunner)} found a duplicate test '{id}'");
 
             _testStatus[id] = false;
             _lastId = id;
@@ -76,7 +76,7 @@ namespace ULox
                 {
                     stringName += $"({ArgDescriptionString(vm, argCount)})";
                 }
-                StartTest(stringName);
+                StartTest(vm, stringName);
             }
             break;
 

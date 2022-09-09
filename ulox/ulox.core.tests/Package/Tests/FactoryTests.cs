@@ -21,7 +21,7 @@ Assert.IsNotNull(Factory);
 Factory.Line(1);
 ");
 
-            Assert.AreEqual("Factory contains no line of key '1'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Factory contains no line of key '1' at ip:'1' in chunk:'Line':0.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -31,7 +31,7 @@ Factory.Line(1);
 Factory.SetLine(null, null);
 ");
 
-            Assert.AreEqual("'SetLine' must have non null key argument.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("'SetLine' must have non null key argument at ip:'1' in chunk:'SetLine':0.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -45,7 +45,7 @@ class Foo
 Factory.SetLine(Foo, null);
 ");
 
-            Assert.AreEqual("'SetLine' must have non null line argument.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("'SetLine' must have non null line argument at ip:'1' in chunk:'SetLine':0.", testEngine.InterpreterResult);
         }
 
         [Test]

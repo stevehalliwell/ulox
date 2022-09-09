@@ -33,7 +33,7 @@ loop
     i = i + 1;
 }");
 
-            Assert.AreEqual("Loops must contain an termination.", testEngine.InterpreterResult);
+            Assert.AreEqual("Loops must contain a termination at 7:1.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -327,7 +327,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("Cannot perform countof on '7'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on '7' at ip:'22' in chunk:'unnamed_chunk':4.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -341,7 +341,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("Cannot perform countof on 'str'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on 'str' at ip:'22' in chunk:'unnamed_chunk':4.", testEngine.InterpreterResult);
         }
         
         [Test]
@@ -407,7 +407,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("Cannot perform countof on '<inst Stub>'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on '<inst Stub>' at ip:'38' in chunk:'unnamed_chunk':5.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -437,7 +437,7 @@ loop (arr)
 }
 ");
 
-            Assert.AreEqual("1Cannot perform get index on type 'Instance'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("1Cannot perform get index on type 'Instance' at ip:'74' in chunk:'unnamed_chunk':7.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -521,7 +521,7 @@ loop (arr)
 }
 }");
 
-            Assert.AreEqual("Loop error: itemName 'item' already exists at this scope, name given to loop must be unique at 7:10 'arr'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Loop error: itemName 'item' already exists at this scope, name given to loop must be unique at at 7:10 'arr'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -555,7 +555,7 @@ loop (arr, jtem)
 }
 }");
 
-            Assert.AreEqual("Loop error: itemName 'jtem' already exists at this scope, name given to loop must be unique at 7:17 'jtem'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Loop error: itemName 'jtem' already exists at this scope, name given to loop must be unique at at 7:17 'jtem'.", testEngine.InterpreterResult);
         }
 
         [Test]

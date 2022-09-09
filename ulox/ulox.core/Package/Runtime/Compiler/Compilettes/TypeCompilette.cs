@@ -99,18 +99,18 @@ namespace ULox
                     compilette = matchingCompilette;
                 }
 
-                ValidStage(compilette.Stage);
+                ValidStage(compiler, compilette.Stage);
                 compilette.Process(compiler);
             }
 
             _stage = TypeCompiletteStage.Complete;
         }
 
-        protected void ValidStage(TypeCompiletteStage stage)
+        protected void ValidStage(Compiler compiler, TypeCompiletteStage stage)
         {
             if (_stage > stage)
             {
-                throw new CompilerException($"Type '{CurrentTypeName}', encountered element of stage '{stage}' too late, type is at stage '{_stage}'. This is not allowed.");
+                compiler.ThrowCompilerException($"Stage out of order. Type '{CurrentTypeName}' is at stage '{_stage}' has encountered a late '{stage}' stage element");
             }
             _stage = stage;
         }

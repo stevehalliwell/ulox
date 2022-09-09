@@ -262,7 +262,7 @@ test T
 }"
             );
             
-            Assert.AreEqual("Testcase 'Add' has arguments but no data expression.", testEngine.InterpreterResult);
+            Assert.AreEqual("Testcase 'Add' has arguments but no data expression at 4:43.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -352,7 +352,7 @@ test T
 }"
             );
 
-            Assert.AreEqual("Testcase 'IsOne' has data expression but no arguments.", testEngine.InterpreterResult);
+            Assert.AreEqual("Testcase 'IsOne' has data expression but no arguments at 7:35.", testEngine.InterpreterResult);
         }
 
         [Test]

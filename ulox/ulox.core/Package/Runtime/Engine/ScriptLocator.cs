@@ -12,13 +12,13 @@ namespace ULox
             _directory = new DirectoryInfo(Environment.CurrentDirectory);
         }
 
-        public string Find(string name)
+        public Script Find(string name)
         {
             var externalMatches = Directory.GetFiles(_directory.FullName, $"{name}*");
             if (externalMatches != null && externalMatches.Length > 0)
-                return File.ReadAllText(externalMatches[0]);
+                return new Script(name, File.ReadAllText(externalMatches[0]));
             
-            return null;
+            return new Script(name,String.Empty);
         }
     }
 }

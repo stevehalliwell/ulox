@@ -35,7 +35,7 @@ namespace ULox
             }
 
             if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
-                throw new CompilerException("Invalid assignment target.");
+                compiler.ThrowCompilerException("Invalid assignment target.");
         }
     }
 }

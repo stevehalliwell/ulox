@@ -2,6 +2,6 @@
 {
     public interface IScriptLocator
     {
-        string Find(string name);
+        Script Find(string name);
     }
 }

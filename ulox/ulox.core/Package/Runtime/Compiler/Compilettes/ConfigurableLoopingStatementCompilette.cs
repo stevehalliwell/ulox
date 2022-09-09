@@ -44,7 +44,7 @@ namespace ULox
         protected void PatchLoopExits(Compiler compiler, LoopState loopState)
         {
             if (loopState.loopExitPatchLocations.Count == 0)
-                throw new CompilerException("Loops must contain an termination.");
+                compiler.ThrowCompilerException("Loops must contain a termination");
 
             for (int i = 0; i < loopState.loopExitPatchLocations.Count; i++)
             {

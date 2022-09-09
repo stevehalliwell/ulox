@@ -53,7 +53,7 @@
         public void This(Compiler compiler, bool canAssign)
         {
             if (CurrentTypeName == null)
-                throw new CompilerException("Cannot use this outside of a class declaration.");
+                compiler.ThrowCompilerException("Cannot use the 'this' keyword outside of a class");
 
             compiler.NamedVariable("this", canAssign);
         }

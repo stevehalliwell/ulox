@@ -6,7 +6,7 @@ namespace ULox
     {
         List<CompiledScript> CompiledScripts { get; }
         string Disassembly { get; }
-
-        CompiledScript Compile(string script);
+        
+        CompiledScript Compile(Script script);
     }
 }

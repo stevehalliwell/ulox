@@ -25,7 +25,8 @@
                 break;
 
             default:
-                throw new CompilerException($"'build' keyword followed by unexpected identifier '{lexeme}'.");
+                compiler.ThrowCompilerException($"'build' keyword followed by unexpected identifier '{lexeme}'.");
+                break;
             }
 
             //read the rest of the constants and write out build opcodes

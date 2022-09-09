@@ -8,11 +8,15 @@ namespace ULox
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
         private readonly List<Token> _tokens;
+
+        public string SourceName { get; }
+
         private int tokenIndex;
 
-        public TokenIterator(List<Token> tokens)
+        public TokenIterator(List<Token> tokens, string sourceName)
         {
             _tokens = tokens;
+            SourceName = sourceName;
         }
 
         public void Advance()
@@ -27,8 +31,7 @@ namespace ULox
             if (CurrentToken.TokenType == tokenType)
                 Advance();
             else
-                throw new CompilerException(msg + $" at {PreviousToken.Line}:{PreviousToken.Character} '{PreviousToken.Literal}'");
-            //TODO generalise this compiler exception so we can reuse
+                throw new CompilerException(msg, PreviousToken);
         }
 
         public bool Check(TokenType type)

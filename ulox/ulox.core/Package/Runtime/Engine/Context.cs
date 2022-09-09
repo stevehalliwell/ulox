@@ -33,7 +33,7 @@ namespace ULox
         public void BindLibrary(string name)
         {
             if (!_libraries.TryGetValue(name, out var lib))
-                throw new VMException($"No library of name '{name}' found.");
+                VM.ThrowRuntimeException($"No library of name '{name}' found.");
 
             var toAdd = lib.GetBindings();
 
@@ -49,7 +49,7 @@ namespace ULox
             BindLibrary(lib.Name);
         }
 
-        public CompiledScript CompileScript(string script)
+        public CompiledScript CompileScript(Script script)
         {
             var res = Program.Compile(script);
             _compiledChunks.Add(res);

@@ -60,7 +60,7 @@
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if (string.IsNullOrEmpty(testDeclName))
-                throw new CompilerException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
+                compiler.ThrowCompilerException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
@@ -72,9 +72,9 @@
             compiler.BeginScope();
             var numArgs = compiler.VariableNameListDeclareOptional(null);
             if (numArgs != 0 && dataExpExecuteLocation == -1)
-                throw new CompilerException($"Testcase '{testcaseName}' has arguments but no data expression.");
+                compiler.ThrowCompilerException($"Testcase '{testcaseName}' has arguments but no data expression");
             if (numArgs == 0 && dataExpExecuteLocation != -1)
-                throw new CompilerException($"Testcase '{testcaseName}' has data expression but no arguments.");
+                compiler.ThrowCompilerException($"Testcase '{testcaseName}' has data expression but no arguments");
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before testcase body.");
 

@@ -5,7 +5,7 @@ namespace ULox
     public class Engine : IEngine
     {
         public IContext Context { get; private set; }
-        public readonly Queue<string> _buildQueue = new Queue<string>();
+        public readonly Queue<Script> _buildQueue = new Queue<Script>();
 
         public Engine(IContext executionContext)
         {
@@ -14,7 +14,7 @@ namespace ULox
             Context.AddLibrary(new StdLibrary());
         }
 
-        public void RunScript(string script)
+        public void RunScript(Script script)
         {
             _buildQueue.Enqueue(script);
             BuildAndRun();

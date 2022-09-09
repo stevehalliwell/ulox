@@ -7,7 +7,7 @@
 
         string GenerateGlobalsDump();
 
-        string GenerateStackDump();
+        string GenerateValueStackDump();
 
         Value GetGlobal(HashedString name);
 
@@ -23,5 +23,6 @@
 
         void CopyFrom(IVm otherVM);
         InterpreterResult Run();
+        void ThrowRuntimeException(string msg);
     }
 }

@@ -16,7 +16,7 @@ namespace ULox
 
         void BindLibrary(string name);
 
-        CompiledScript CompileScript(string script);
+        CompiledScript CompileScript(Script script);
 
         void DeclareLibrary(IULoxLibrary lib);
     }

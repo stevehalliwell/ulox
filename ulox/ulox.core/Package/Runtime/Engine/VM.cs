@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace ULox
 {
@@ -45,7 +48,7 @@ namespace ULox
 
         public Vm()
         {
-            var nativeChunk = new Chunk("NativeCallChunkWrapper", FunctionType.Function);
+            var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native", FunctionType.Function);
             nativeChunk.WriteByte((byte)OpCode.NATIVE_CALL, 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }
@@ -62,11 +65,34 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Peek(int ind = 0) => _valueStack.Peek(ind);
 
-        public string GenerateStackDump() => new DumpStack().Generate(_valueStack);
+        public string GenerateValueStackDump() => DumpStack(_valueStack);
 
-        public string GenerateReturnDump() => new DumpStack().Generate(_returnStack);
+        public string GenerateReturnDump() => DumpStack(_returnStack);
 
-        public string GenerateGlobalsDump() => new DumpGlobals().Generate(_globals);
+        public string GenerateGlobalsDump()
+        {
+            var sb = new StringBuilder();
+
+            foreach (var item in _globals)
+            {
+                sb.Append($"{item.Key} : {item.Value}");
+            }
+
+            return sb.ToString();
+        }
+
+        public string GenerateCallStackDump()
+        {
+            var sb = new StringBuilder();
+
+            for (int i = 0; i < _callFrames.Count; i++)
+            {
+                var cf = _callFrames.Peek(i);
+                sb.AppendLine(GetLocationNameFromFrame(cf));
+            }
+
+            return sb.ToString();
+        }
 
         public Value GetGlobal(HashedString name) => _globals[name];
 
@@ -132,7 +158,7 @@ namespace ULox
             {
                 _callFrames.Push(vm._callFrames[i]);
             }
-            
+
             _currentCallFrame = vm._currentCallFrame;
         }
 
@@ -321,8 +347,17 @@ namespace ULox
                     break;
 
                 case OpCode.THROW:
-                    throw new PanicException(Pop().ToString());
-
+                {
+                    var frame = _callFrames.Peek();
+                    var currentInstruction = frame.InstructionPointer;
+                    throw new PanicException(
+                        Pop().ToString(),
+                        currentInstruction,
+                        GetLocationNameFromFrame(frame),
+                        GetLineForInstruction(frame, currentInstruction),
+                        GenerateValueStackDump(),
+                        GenerateCallStackDump());
+                }
                 case OpCode.BUILD:
                     DoBuildOp(chunk);
                     break;
@@ -413,11 +448,62 @@ namespace ULox
                     DoCountOfOp();
                     break;
 
-                    case OpCode.NONE:
+                case OpCode.NONE:
                 default:
-                    throw new VMException($"Unhandled OpCode '{opCode}'.");
+                    ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
+                    break;
                 }
             }
+        }
+
+        public void ThrowRuntimeException(string msg)
+        {
+            var frame = _currentCallFrame;
+            var currentInstruction = frame.InstructionPointer;
+
+            throw new RuntimeUloxException(msg,
+                currentInstruction,
+                GetLocationNameFromFrame(frame),
+                GetLineForInstruction(frame, currentInstruction),
+                GenerateValueStackDump(),
+                GenerateCallStackDump());
+        }
+
+        private static int GetLineForInstruction(CallFrame frame, int currentInstruction)
+        {
+            return frame.Closure?.chunk?.GetLineForInstruction(currentInstruction) ?? 0;
+        }
+
+        private static string DumpStack(FastStack<Value> valueStack)
+        {
+            var stackVars = valueStack
+                .Select(x => x.ToString())
+                .Take(valueStack.Count)
+                .Reverse();
+
+            return string.Join(Environment.NewLine, stackVars);
+        }
+
+        private static string GetLocationNameFromFrame(CallFrame frame)
+        {
+            if (frame.nativeFunc != null)
+            {
+                if (frame.nativeFunc.Target != null)
+                    return frame.nativeFunc.Target.GetType().Name + "." + frame.nativeFunc.Method.Name;
+                return frame.nativeFunc.Method.Name;
+            }
+
+            var chunk = frame.Closure?.chunk;
+            var chunkName = chunk?.Name;
+            var locationName = !string.IsNullOrEmpty(chunkName) ? chunkName : "unnamed_chunk";
+
+            var scriptOrgin = chunk?.SourceName;
+            if(!string.IsNullOrEmpty(scriptOrgin))
+            {
+                locationName += $"({scriptOrgin})";
+            }
+
+            return locationName;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -432,7 +518,7 @@ namespace ULox
         {
             var res = ProcessContract();
             if (!res.meets)
-                throw new VMException(res.msg);
+                ThrowRuntimeException($"Sign failure with msg '{res.msg}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -448,14 +534,14 @@ namespace ULox
                 }
                 else
                 {
-                    if(DoCustomOverloadOp(OpCode.COUNT_OF, target, Value.Null(), Value.Null()))
+                    if (DoCustomOverloadOp(OpCode.COUNT_OF, target, Value.Null(), Value.Null()))
                     {
                         return;
                     }
                 }
             }
-            
-            throw new VMException($"Cannot perform countof on '{target}'.");
+
+            ThrowRuntimeException($"Cannot perform countof on '{target}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -476,11 +562,15 @@ namespace ULox
                 case ValueType.Instance:
                     return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
                 default:
-                    throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");
+                    ThrowRuntimeException($"Unsupported meets operation, got left hand side of type '{lhs.type}'");
+                    break;
                 }
+                break;
             default:
-                throw new VMException($"Unsupported meets operation, got left hand side of type '{lhs.type}'.");
+                ThrowRuntimeException($"Unsupported meets operation, got left hand side of type '{lhs.type}'");
+                break;
             }
+            return default;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -510,7 +600,7 @@ namespace ULox
                     return;
             }
 
-            throw new VMException($"Cannot perform set index on type '{listValue.type}'.");
+            ThrowRuntimeException($"Cannot perform set index on type '{listValue.type}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -531,7 +621,7 @@ namespace ULox
                 Push(v);
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetIndexOp(OpCode opCode)
         {
@@ -551,7 +641,7 @@ namespace ULox
                     return;
             }
 
-            throw new VMException($"Cannot perform get index on type '{listValue.type}'.");
+            ThrowRuntimeException($"Cannot perform get index on type '{listValue.type}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -570,7 +660,8 @@ namespace ULox
                 Push(DynamicClass.SharedDynamicClassValue);
                 break;
             default:
-                throw new VMException($"Unhanlded native type creation '{nativeTypeRequested}'.");
+                ThrowRuntimeException($"Unhanlded native type creation '{nativeTypeRequested}'");
+                break;
             }
 
             PushCallFrameFromValue(Peek(0), 0);
@@ -692,7 +783,7 @@ namespace ULox
                 var requestedResults = (int)requestedResultsValue.val.asDouble;
                 var availableResults = _returnStack.Count;
                 if (requestedResults != availableResults)
-                    throw new VMException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'.");
+                    ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
                 break;
 
             default:
@@ -717,7 +808,8 @@ namespace ULox
                 break;
 
             default:
-                throw new VMException($"Unhanlded BuildOpType '{buildOpType}'");
+                ThrowRuntimeException($"Unhanlded BuildOpType '{buildOpType}'");
+                break;
             }
         }
 
@@ -725,7 +817,7 @@ namespace ULox
         private void DoNativeCall(OpCode opCode)
         {
             if (_currentCallFrame.nativeFunc == null)
-                throw new VMException($"{opCode} without nativeFunc encountered. This is not allowed.");
+                ThrowRuntimeException($"{opCode} without nativeFunc encountered. This is not allowed");
 
             var argCount = CurrentFrameStackValues;
             var res = _currentCallFrame.nativeFunc.Invoke(this, argCount);
@@ -761,7 +853,7 @@ namespace ULox
             var actualName = globalName.val.asString;
             if (!_globals.ContainsKey(actualName))
             {
-                throw new VMException($"Global var of name '{actualName}' was not found.");
+                ThrowRuntimeException($"Global var of name '{actualName}' was not found");
             }
             _globals[actualName] = Peek();
         }
@@ -779,7 +871,7 @@ namespace ULox
             }
             else
             {
-                throw new VMException($"No global of name {actualName} could be found.");
+                ThrowRuntimeException($"No global of name {actualName} could be found");
             }
         }
 
@@ -847,7 +939,8 @@ namespace ULox
                 break;
 
             default:
-                throw new VMException($"Unhandled return mode '{returnMode}'.");
+                ThrowRuntimeException($"Unhandled return mode '{returnMode}'");
+                break;
             }
 
             return _callFrames.Count == 0
@@ -993,7 +1086,8 @@ namespace ULox
                 break;
 
             default:
-                throw new VMException($"Invalid Call, value type {callee.type} is not handled.");
+                ThrowRuntimeException($"Invalid Call, value type {callee.type} is not handled");
+                break;
             }
         }
 
@@ -1015,7 +1109,7 @@ namespace ULox
         private void Call(ClosureInternal closureInternal, int argCount)
         {
             if (argCount != closureInternal.chunk.Arity)
-                throw new VMException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
+                ThrowRuntimeException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
                     $", got '{argCount}' but expected '{closureInternal.chunk.Arity}'");
 
             if (closureInternal.chunk.FunctionType == FunctionType.PureFunction)
@@ -1037,7 +1131,7 @@ namespace ULox
             var value = Peek(peekVal);
             if (!value.IsPure)
             {
-                throw new VMException($"Pure call '{closureInternal.chunk.Name}' with non-pure confirming argument '{value}'.");
+                ThrowRuntimeException($"Pure call '{closureInternal.chunk.Name}' with non-pure confirming argument '{value}'");
             }
         }
 
@@ -1084,15 +1178,15 @@ namespace ULox
             }
 
             if (lhs.type != rhs.type)
-                throw new VMException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'.");
+                ThrowRuntimeException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'");
 
             if (lhs.type != ValueType.Instance)
-                throw new VMException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'.");
+                ThrowRuntimeException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'");
 
             if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
                 return;
 
-            throw new VMException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromClass}' and '{rhs.val.asInstance.FromClass}'.");
+            ThrowRuntimeException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromClass}' and '{rhs.val.asInstance.FromClass}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1141,7 +1235,7 @@ namespace ULox
             }
 
             if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                throw new VMException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'.");
+                ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
 
             //do we need specific handling of NaNs on either side
             switch (opCode)
@@ -1195,7 +1289,8 @@ namespace ULox
                 break;
 
             default:
-                throw new VMException($"Freeze attempted on unsupported type '{instVal.type}'.");
+                ThrowRuntimeException($"Freeze attempted on unsupported type '{instVal.type}'");
+                break;
             }
         }
 
@@ -1207,7 +1302,7 @@ namespace ULox
             if (DiContainer.TryGetValue(name, out var found))
                 Push(found);
             else
-                throw new VMException($"Inject failure. Nothing has been registered (yet) with name '{name}'.");
+                ThrowRuntimeException($"Inject failure. Nothing has been registered (yet) with name '{name}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1237,7 +1332,8 @@ namespace ULox
             switch (targetVal.type)
             {
             default:
-                throw new VMException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'.");
+                ThrowRuntimeException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'");
+                break;
             case ValueType.Class:
                 instance = targetVal.val.asClass;
                 break;
@@ -1270,7 +1366,8 @@ namespace ULox
             switch (targetVal.type)
             {
             default:
-                throw new VMException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'.");
+                ThrowRuntimeException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'");
+                break;
             case ValueType.Class:
                 instance = targetVal.val.asClass;
                 break;
@@ -1315,12 +1412,12 @@ namespace ULox
                     var fromClass = inst.FromClass;
                     if (fromClass == null)
                     {
-                        throw new VMException($"Cannot invoke '{methodName}' on '{receiver}' with no class.");
+                        ThrowRuntimeException($"Cannot invoke '{methodName}' on '{receiver}' with no class");
                     }
 
                     if (!fromClass.TryGetMethod(methodName, out var method))
                     {
-                        throw new VMException($"No method of name '{methodName}' found on '{fromClass}'.");
+                        ThrowRuntimeException($"No method of name '{methodName}' found on '{fromClass}'");
                     }
 
                     PushCallFrameFromValue(method, argCount);
@@ -1336,7 +1433,8 @@ namespace ULox
             break;
 
             default:
-                throw new VMException($"Cannot invoke '{methodName}' on '{receiver}'.");
+                ThrowRuntimeException($"Cannot invoke '{methodName}' on '{receiver}'");
+                break;
             }
         }
 
@@ -1371,7 +1469,7 @@ namespace ULox
         private void BindMethod(ClassInternal fromClass, HashedString methodName)
         {
             if (!fromClass.TryGetMethod(methodName, out var method))
-                throw new VMException($"Undefined property {methodName}");
+                ThrowRuntimeException($"Undefined property {methodName}");
 
             var receiver = Peek();
             var meth = method.val.asClosure;
@@ -1422,7 +1520,7 @@ namespace ULox
             }
             else if (argCount != 0)
             {
-                throw new VMException("Args given for a class that does not have an 'init' method");
+                ThrowRuntimeException($"Args given for a class that does not have an 'init' method");
             }
 
             foreach (var initChain in klass.InitChains)

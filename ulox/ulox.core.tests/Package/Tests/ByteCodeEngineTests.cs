@@ -8,7 +8,7 @@ namespace ULox.Tests
     {
         public static Chunk GenerateManualChunk()
         {
-            var chunk = new Chunk("main", FunctionType.Script);
+            var chunk = new Chunk("main", "native", FunctionType.Script);
 
             chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(1), 1);
@@ -732,7 +732,7 @@ Assert.AreEqual(1,1);
 Assert.AreEqual(1,2);
 Assert.AreEqual(1,1);");
 
-            Assert.AreEqual("'1' does not equal '2'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("'1' does not equal '2' at ip:'1' in chunk:'AreEqual':0.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -907,7 +907,7 @@ fun InnerMain()
 var innerVM = VM();
 innerVM.Start(InnerMain);");
 
-            Assert.AreEqual("Global var of name 'a' was not found.", testEngine.InterpreterResult, testEngine.InterpreterResult);
+            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'4' in chunk:'InnerMain(test)':5.", testEngine.InterpreterResult, testEngine.InterpreterResult);
         }
 
         [Test]
@@ -969,7 +969,7 @@ register Seven 7;");
             testEngine.Run(@"
 var s = inject Seven;");
 
-            Assert.AreEqual("Inject failure. Nothing has been registered (yet) with name 'Seven'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'2' in chunk:'unnamed_chunk':2.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1058,6 +1058,52 @@ fun T(e)
             );
 
             Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void RuntimeException_WhenAddNullGlobal_ShouldThrow()
+        {
+            testEngine.Run(@"
+var a = null;
+var b = 1;
+var c = b + a;
+"
+            );
+
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'12' in chunk:'unnamed_chunk':4.
+===Stack===
+<closure  upvals:0>
+
+===CallStack===
+unnamed_chunk
+
+", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void RuntimeException_WhenAddNullLocal_ShouldThrow()
+        {
+            testEngine.Run(@"
+fun f(a,b)
+{
+var c = b + a;
+}
+
+f(null,1);"
+            );
+
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'5' in chunk:'f(test)':5.
+===Stack===
+1
+null
+<closure f upvals:0>
+<closure  upvals:0>
+
+===CallStack===
+f(test)
+unnamed_chunk
+
+", testEngine.InterpreterResult);
         }
     }
 }

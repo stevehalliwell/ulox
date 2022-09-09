@@ -32,17 +32,17 @@ namespace ULox
         public void Add(string name, string content)
             => _builtinScripts[name] = content;
 
-        public string Find(string name)
+        public Script Find(string name)
         {
             if (_builtinScripts.TryGetValue(name, out var val))
-                return val;
+                return new Script(name,val);
 
 #if !UNITY_WEBGL 
             var externalMatches = System.IO.Directory.GetFiles(_directory.FullName, $"{name}*");
             if (externalMatches != null && externalMatches.Length > 0)
-                return System.IO.File.ReadAllText(externalMatches[0]);
+                return new Script(name,System.IO.File.ReadAllText(externalMatches[0]));
 #endif
-            return null;
+            return new Script(name, null);
         }
     }
 }

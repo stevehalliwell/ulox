@@ -44,7 +44,7 @@ class T
 var t = T();
 t.c = 10;");
 
-            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -59,7 +59,7 @@ class T
 
 T.c = 10;");
 
-            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'c' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -89,7 +89,7 @@ class A
     init(){return 7;}
 }");
 
-            Assert.AreEqual("Cannot return an expression from an 'init'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot return an expression from an 'init' at 4:21 'return'.", testEngine.InterpreterResult);
         }
         
         [Test]
@@ -98,7 +98,7 @@ class A
             testEngine.Run(@"
 var a = this.a;");
 
-            Assert.AreEqual("Cannot use this outside of a class declaration.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot use the 'this' keyword outside of a class at 2:15 'this'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -322,7 +322,7 @@ T.a = 2;
 
 print(T.a);");
 
-            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -375,7 +375,7 @@ class T
 
 var t = T();");
 
-            Assert.AreEqual("Type 'T', encountered element of stage 'Init' too late, type is at stage 'Method'. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Method' has encountered a late 'Init' stage element at 5:12 'init'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -423,7 +423,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Type 'T', encountered element of stage 'Var' too late, type is at stage 'Init'. This is not allowed.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element at 5:11 'var'.", testEngine.InterpreterResult);
         }
 
         [Test]

@@ -8,16 +8,11 @@ class Breakout
     var points = 0;
     var lives = 3;
 
-    CreateLevel()
+    CreateBreakoutCore()
     {
         this.CreateWalls();
-
         this.gutter = Factory.Line("Gutter").Create(Vec2.Create(0,-35), Vec2.Create(80,10));
-        
         this.CreateBall(Vec2.Create(0,-20));
-        
-        CreateLevelBricks();
-        
         this.paddle = Factory.Line(Paddle).Create(Vec2.Create(0,-30), 32);
     }
 
@@ -62,16 +57,10 @@ class Breakout
 
         SetUIText(outputText);
     }
-    
-    CreateBricksFromPositions(posList)
-    {
-        var brickFac = Factory.Line(Brick).Create;
 
-        loop (posList)
-        {
-            var newBrick = brickFac(item.position, item.level);
-            this.bricks.Add(newBrick);
-        }
+    AddBrick(brick)
+    {
+        this.bricks.Add(brick);
     }
 
     GivePointsForBrick(brick, brickStrength)

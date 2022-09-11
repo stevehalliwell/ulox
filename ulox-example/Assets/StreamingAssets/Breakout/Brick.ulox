@@ -12,11 +12,13 @@ class Brick
 
     SyncColour()
     {
-        if(this.hitCount == 0)
+        if(this.go == null) return;
+
+        if(this.hitCount == 1)
         {
             SetSpriteColour(this.go, 0,1,0,1);
         }
-        else if(this.hitCount == 1)
+        else if(this.hitCount == 2)
         {
             SetSpriteColour(this.go, 0,0,1,1);
         } 
@@ -27,7 +29,7 @@ class Brick
         this.hitCount = this.hitCount - 1;
         this.SyncColour();
 
-        if(this.hitCount < 0)
+        if(this.hitCount <= 0)
         {
             this.OnBrickDestroy();
         }
@@ -37,5 +39,34 @@ class Brick
     {
         (inject BreakoutInst).GivePointsForBrick(this, this.origHitCount);
         DestroyUnityObject(this.go);
+    }
+}
+
+test BrickTests
+{
+    testcase OneHitWithTwoCountShouldNotGivePoints
+    {
+        var brick = Brick(null, null, 2);
+
+        brick.OnHitByBall();
+        
+        Assert.AreEqual(1, brick.hitCount);
+    }
+    
+    testcase TwoHitWithTwoCountShouldGivePoints
+    {
+        var brick = Brick(null, null, 2);
+        var gavePoints = false;
+        var mock = {:};
+        mock.GivePointsForBrick = fun (brick, hitCount)
+        {
+            gavePoints = true;
+        };
+        register BreakoutInst mock;
+
+        brick.OnHitByBall();
+        brick.OnHitByBall();
+        
+        Assert.AreEqual(true, gavePoints);
     }
 }

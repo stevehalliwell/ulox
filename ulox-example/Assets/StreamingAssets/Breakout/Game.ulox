@@ -5,7 +5,8 @@ fun SetupGame()
 {
     breakout = Breakout();
     register BreakoutInst breakout;
-    breakout.CreateLevel();
+    breakout.CreateBreakoutCore();
+    CreateLevel();
 }
 
 fun Update()

@@ -5,14 +5,14 @@ using System.Linq;
 
 namespace ULox
 {
-    public class Scanner : IScanner
+    public sealed class Scanner : IScanner
     {
         public List<Token> Tokens { get; private set; }
         public int Line { get; set; }
         public int CharacterNumber { get; set; }
         public Char CurrentChar { get; private set; }
          
-        protected List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+        private List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
 
         private StringReader _stringReader;
 

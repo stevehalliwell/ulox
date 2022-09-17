@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class Chunk
+    public sealed class Chunk
     {
         internal struct RunLengthLineNumber
         {
@@ -25,6 +26,7 @@ namespace ULox
         public int Arity => ArgumentConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Chunk(string chunkName, string sourceName, FunctionType functionType)
         {
             Name = chunkName;
@@ -32,6 +34,7 @@ namespace ULox
             FunctionType = functionType;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetLineForInstruction(int instructionNumber)
         {
             if (_runLengthLineNumbers.Count == 0) return -1;
@@ -45,12 +48,14 @@ namespace ULox
             return _runLengthLineNumbers[_runLengthLineNumbers.Count - 1].line;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteByte(byte b, int line)
         {
             Instructions.Add(b);
             AddLine(line);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddConstantAndWriteInstruction(Value val, int line)
         {
             Instructions.Add((byte)OpCode.CONSTANT);
@@ -60,12 +65,14 @@ namespace ULox
             return at;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteSimple(OpCode opCode, int line)
         {
             Instructions.Add((byte)opCode);
             AddLine(line);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddConstant(Value val)
         {
             var existingLox = ExistingSimpleConstant(val);
@@ -78,8 +85,10 @@ namespace ULox
             return (byte)(constants.Count - 1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value ReadConstant(byte index) => constants[index];
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int ExistingSimpleConstant(Value val)
         {
             switch (val.type)
@@ -108,6 +117,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddLine(int line)
         {
             instructionCount++;

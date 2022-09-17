@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class Context : IContext
+    public sealed class Context : IContext
     {
         private readonly Dictionary<string, IULoxLibrary> _libraries = new Dictionary<string, IULoxLibrary>();
         private readonly List<CompiledScript> _compiledChunks = new List<CompiledScript>();
@@ -25,11 +26,13 @@ namespace ULox
 
         public event Action<string> OnLog;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DeclareLibrary(IULoxLibrary lib)
         {
             _libraries[lib.Name] = lib;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void BindLibrary(string name)
         {
             if (!_libraries.TryGetValue(name, out var lib))
@@ -43,12 +46,14 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddLibrary(IULoxLibrary lib)
         {
             DeclareLibrary(lib);
             BindLibrary(lib.Name);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CompiledScript CompileScript(Script script)
         {
             var res = Program.Compile(script);
@@ -56,6 +61,7 @@ namespace ULox
             return res;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Log(string x)
             => OnLog?.Invoke(x);
     }

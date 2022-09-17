@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class Engine : IEngine
+    public sealed class Engine : IEngine
     {
         public IContext Context { get; private set; }
         public readonly Queue<Script> _buildQueue = new Queue<Script>();
@@ -14,12 +15,14 @@ namespace ULox
             Context.AddLibrary(new StdLibrary());
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RunScript(Script script)
         {
             _buildQueue.Enqueue(script);
             BuildAndRun();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void BuildAndRun()
         {
             while (_buildQueue.Count > 0)
@@ -30,9 +33,11 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void LocateAndQueue(string name)
             => _buildQueue.Enqueue(Context.ScriptLocator.Find(name));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Engine CreateDefault()
         {
             var context = new Context(new LocalFileScriptLocator(), new Program(), new Vm());

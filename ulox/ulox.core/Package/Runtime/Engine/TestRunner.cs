@@ -6,7 +6,7 @@ using System.Text;
 
 namespace ULox
 {
-    public class TestRunner
+    public sealed class TestRunner
     {
         private readonly Dictionary<string, bool> _testStatus = new Dictionary<string, bool>();
         private string _lastId;
@@ -23,6 +23,7 @@ namespace ULox
         public HashedString CurrentTestSetName { get; set; } = new HashedString(string.Empty);
         public Func<Vm> CreateVM { get; private set; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void StartTest(IVm vm, string name)
         {
             var id = MakeId(name);
@@ -33,6 +34,7 @@ namespace ULox
             _lastId = id;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndTest(string name)
         {
             var id = MakeId(name);
@@ -43,12 +45,14 @@ namespace ULox
 
             _lastId = null;
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string MakeId(string name)
         {
             return $"{CurrentTestSetName}:{name}";
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GenerateDump()
         {
             var sb = new StringBuilder();
@@ -125,6 +129,7 @@ namespace ULox
             return sb.ToString();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoTestSet(Vm vm, Chunk chunk)
         {
             var name = chunk.ReadConstant(vm.ReadByte(chunk)).val.asString;
@@ -142,7 +147,8 @@ namespace ULox
             }
         }
 
-        protected virtual void RunTestCase(Vm vm, Chunk chunk, ushort instructionLoc)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void RunTestCase(Vm vm, Chunk chunk, ushort instructionLoc)
         {
             try
             {

@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public class IndexableStack<T> : List<T>
+    public sealed class IndexableStack<T> : List<T>
     {
         public void Push(T t) 
             => Add(t);

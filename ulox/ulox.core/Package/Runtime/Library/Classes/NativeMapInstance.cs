@@ -3,10 +3,11 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class NativeMapInstance : InstanceInternal, INativeCollection
+    public sealed class NativeMapInstance : InstanceInternal, INativeCollection
     {
-        private Dictionary<Value, Value> _map = new Dictionary<Value, Value>();
+        private readonly Dictionary<Value, Value> _map = new Dictionary<Value, Value>();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeMapInstance(ClassInternal fromClass)
             : base(fromClass)
         {

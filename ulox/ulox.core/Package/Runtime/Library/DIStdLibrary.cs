@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
     internal static class DIStdLibrary
     {
@@ -13,6 +15,7 @@
             return diLibInst;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Count(Vm vm, int argCount)
         {
             var di = FromVm(vm);
@@ -20,6 +23,7 @@
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult GenerateDump(Vm vm, int argCount)
         {
             var di = FromVm(vm);
@@ -27,6 +31,7 @@
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Freeze(Vm vm, int argCount)
         {
             var di = FromVm(vm);
@@ -34,6 +39,7 @@
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static DiContainer FromVm(Vm vMBase)
             => vMBase.DiContainer;
     }

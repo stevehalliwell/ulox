@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
     internal static class FactoryStdLibrary
     {
@@ -13,6 +15,7 @@
             return factoryInst;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Line(Vm vm, int argCount)
         {
             var arg = vm.GetArg(1);
@@ -21,13 +24,14 @@
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult SetLine(Vm vm, int argCount)
         {
             var key = vm.GetArg(1);
-            if (key.IsNull)
+            if (key.IsNull())
                 vm.ThrowRuntimeException($"'{nameof(SetLine)}' must have non null key argument");
             var line = vm.GetArg(2);
-            if (line.IsNull)
+            if (line.IsNull())
                 vm.ThrowRuntimeException($"'{nameof(SetLine)}' must have non null line argument");
 
             vm.Factory.SetLine(key, line);

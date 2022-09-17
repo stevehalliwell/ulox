@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class UpvalueInternal
+    public sealed class UpvalueInternal
     {
         public int index = -1;
         public bool isClosed = false;

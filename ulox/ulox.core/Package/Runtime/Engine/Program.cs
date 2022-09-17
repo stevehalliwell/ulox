@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class Program : IProgram
+    public sealed class Program : IProgram
     {
         private readonly IScanner _scanner = new Scanner();
         private readonly ICompiler _compiler = new Compiler();
@@ -24,6 +25,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CompiledScript Compile(Script script)
         {
             var hash = script.GetHashCode();

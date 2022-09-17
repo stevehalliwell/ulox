@@ -80,6 +80,7 @@ namespace ULox
             return ValidateInstanceMeetsClass(lhs, contract.FromClass);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static (bool meets, string msg) InstanceContentMatcher(InstanceInternal lhs, InstanceInternal contract)
         {
             foreach (var field in contract.Fields.AsReadOnly)
@@ -116,6 +117,7 @@ namespace ULox
             return (true, string.Empty);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static (bool meets, string msg) ChunkMatcher(Chunk lhsMatchingChunk, Chunk contractChunk)
         {
             var contractMethArity = contractChunk.Arity;

@@ -30,9 +30,9 @@ class GridGenerator
         {
             loop(ytem, xtem, x)
             {
-                if(xtem == 1)
+                if(xtem != 0)
                 {
-                    retval.Add(BrickInstruction(Vec2.Create(x,-y) * step + corner,1));
+                    retval.Add(BrickInstruction(Vec2.Create(x,-y) * step + corner,xtem));
                 }
             }
         }

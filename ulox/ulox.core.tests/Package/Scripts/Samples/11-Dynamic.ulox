@@ -18,3 +18,7 @@ fun Method(self){return self.val;}
 obj.Meth = Method;
 
 print(obj.Meth(obj));
+
+// dynamic objects can also be made inline
+var obj2 = {a:1, b:2, c:3, d:-1, val:"expected", Meth:Method};
+obj2.d = obj2.a + obj2.b + obj2.c;

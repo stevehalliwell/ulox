@@ -25,6 +25,32 @@ print(obj.d);
         }
 
         [Test]
+        public void Field_WhenSingleDynamicInline_ShouldSucceed()
+        {
+            testEngine.Run(@"
+var obj = {a:1,};
+print(obj.a);
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fields_WhenAddedToDynamicInline_ShouldSucceed()
+        {
+            testEngine.Run(@"
+var obj = {a:1, b:2, c:3, d:-1,};
+
+var d = obj.a + obj.b + obj.c;
+obj.d = d;
+
+print(obj.d);
+");
+
+            Assert.AreEqual("6", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Dynamic_WhenCreated_ShouldPrintInstType()
         {
             testEngine.Run(@"
@@ -34,6 +60,21 @@ print(obj);
 ");
 
             Assert.AreEqual("<inst Dynamic>", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Dynamic_WhenInlineNested_ShouldPrint()
+        {
+            testEngine.Run(@"
+var obj = {a:1, b:{innerA:2,}, c:3,};
+
+print(obj.a);
+print(obj.b);
+print(obj.b.innerA);
+print(obj.c);
+");
+
+            Assert.AreEqual("1<inst Dynamic>23", testEngine.InterpreterResult);
         }
 
         //        [Test]

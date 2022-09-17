@@ -269,8 +269,17 @@ namespace ULox
         }
 
         public void Expression()
-            => ParsePrecedence(Precedence.Assignment);
-
+        {
+            try
+            {
+                ParsePrecedence(Precedence.Assignment);
+            }
+            catch (UloxException) { throw; }
+            catch (Exception)
+            {
+                ThrowCompilerException("Expected to compile Expression, but encountered error");
+            }
+        }
         public void ParsePrecedence(Precedence pre)
             => _prattParser.ParsePrecedence(this, pre);
 
@@ -653,6 +662,33 @@ namespace ULox
             {
                 compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Dynamic);
             }
+            else if (compiler.TokenIterator.Check(TokenType.IDENTIFIER))
+            {
+                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Dynamic);
+
+                while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
+                {
+                    //we need to copy the dynamic inst
+                    compiler.EmitOpCode(OpCode.DUPLICATE);
+                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier.");
+                    //add the constant
+                    var identConstantID = compiler.AddStringConstant();
+                    //read the colon
+                    compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after identifiier.");
+                    //do expression
+                    compiler.Expression();
+                    //we need a set property
+                    compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, identConstantID);
+                    compiler.EmitOpCode(OpCode.POP);
+
+                    //if comma consume
+                    compiler.TokenIterator.Match(TokenType.COMMA);
+                }
+            }
+            else
+            {
+                compiler.ThrowCompilerException("Expect identifier or ':' after '{'.");
+            }
         }
 
         public static void TypeOf(Compiler compiler, bool canAssign)
@@ -671,17 +707,41 @@ namespace ULox
                 compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Map);
                 return;
             }
-                
+
+            var nativeTypeInstruction = compiler.CurrentChunkInstructinCount;
             compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
-            
+
+            var firstLoop = true;
+            var isList = true;
+
             while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
             {
+                compiler.EmitOpCode(OpCode.DUPLICATE);
                 compiler.Expression();
 
-                var addNameID = compiler.AddCustomStringConstant("Add");
-                compiler.EmitOpAndBytes(OpCode.INVOKE, addNameID, 1);
+                if (firstLoop
+                    && compiler.TokenIterator.Check(TokenType.COLON))
+                {
+                    //switch to map
+                    isList = false;
+                    compiler.WriteBytesAt(nativeTypeInstruction, (byte)OpCode.NATIVE_TYPE, (byte)NativeType.Map);
+                }
+
+                if (isList)
+                {
+                    var addNameID = compiler.AddCustomStringConstant("Add");
+                    compiler.EmitOpAndBytes(OpCode.INVOKE, addNameID, 1);
+                }
+                else
+                {
+                    compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after key.");
+                    compiler.Expression();
+                    compiler.EmitOpCode(OpCode.SET_INDEX);
+                }
+                compiler.EmitOpCode(OpCode.POP);
 
                 compiler.TokenIterator.Match(TokenType.COMMA);
+                firstLoop = false;
             }
 
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");
@@ -763,7 +823,7 @@ namespace ULox
 
             int thenjump = compiler.EmitJumpIf();
             compiler.EmitOpCode(OpCode.POP);
-            
+
             compiler.Statement();
 
             int elseJump = compiler.EmitJump();
@@ -781,7 +841,7 @@ namespace ULox
             var comp = compiler.CurrentCompilerState;
             if (comp.LoopStates.Count == 0)
                 compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
-            
+
             compiler.EmitOpCode(OpCode.NULL);
             int exitJump = compiler.EmitJump();
 
@@ -799,7 +859,7 @@ namespace ULox
 
         public static void BlockStatement(Compiler compiler)
             => compiler.BlockStatement();
-                
+
         public static void FunctionDeclaration(Compiler compiler)
         {
             InnerFunctionDeclaration(compiler, true);
@@ -809,11 +869,11 @@ namespace ULox
         {
             var functionType = FunctionType.Function;
 
-            if(compiler.TokenIterator.Match(TokenType.PURE))
+            if (compiler.TokenIterator.Match(TokenType.PURE))
             {
                 functionType = FunctionType.PureFunction;
             }
-            if(compiler.TokenIterator.Match(TokenType.LOCAL))
+            if (compiler.TokenIterator.Match(TokenType.LOCAL))
             {
                 functionType = FunctionType.LocalFunction;
             }
@@ -825,13 +885,13 @@ namespace ULox
                 globalName = compiler.ParseVariable("Expect function name.");
                 compiler.CurrentCompilerState.MarkInitialised();
             }
-            
+
             compiler.Function(
-                globalName != -1 
-                ? compiler.TokenIterator.PreviousToken.Lexeme 
-                : "anonymous", 
+                globalName != -1
+                ? compiler.TokenIterator.PreviousToken.Lexeme
+                : "anonymous",
                 functionType);
-            
+
             if (globalName != -1)
             {
                 compiler.DefineVariable((byte)globalName);
@@ -871,25 +931,25 @@ namespace ULox
             case TokenType.FALSE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
             case TokenType.NULL: compiler.EmitOpCode(OpCode.NULL); break;
             case TokenType.NUMBER:
-                {
-                    var number = (double)compiler.TokenIterator.PreviousToken.Literal;
+            {
+                var number = (double)compiler.TokenIterator.PreviousToken.Literal;
 
-                    var isInt = number == System.Math.Truncate(number);
+                var isInt = number == System.Math.Truncate(number);
 
-                    if (isInt && number < 255 && number >= 0)
-                        compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
-                    else
-                        //todo push to compiler
-                        compiler.AddConstantAndWriteOp(Value.New(number));
-                }
-                break;
+                if (isInt && number < 255 && number >= 0)
+                    compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
+                else
+                    //todo push to compiler
+                    compiler.AddConstantAndWriteOp(Value.New(number));
+            }
+            break;
 
             case TokenType.STRING:
-                {
-                    var str = (string)compiler.TokenIterator.PreviousToken.Literal;
-                    compiler.AddConstantAndWriteOp(Value.New(str));
-                }
-                break;
+            {
+                var str = (string)compiler.TokenIterator.PreviousToken.Literal;
+                compiler.AddConstantAndWriteOp(Value.New(str));
+            }
+            break;
             }
         }
 

@@ -11,6 +11,7 @@
 
         POP,
         SWAP,
+        DUPLICATE,
 
         DEFINE_GLOBAL,
         FETCH_GLOBAL,

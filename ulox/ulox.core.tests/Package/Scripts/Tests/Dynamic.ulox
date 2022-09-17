@@ -29,11 +29,19 @@ test DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = {:};
-        o.val = expected;
-        fun Method(self){return self.val;}
-        o.Meth = Method;
+        var o = {val:expected, Meth: fun (self) {return self.val;},};
+       
+        result = o.Meth(o);
 
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase DynamicInstanceAccessViaInline
+    {
+        var expected = 3;
+        var result = 0;
+        var o = {val:expected, Meth: fun (self) {return self.val;},};
+       
         result = o.Meth(o);
 
         Assert.AreEqual(expected, result);
@@ -41,8 +49,6 @@ test DynamicTests
 
     testcase HasFieldOnString_Throws
     {
-
-
         fun Act()
         {
             var s = "hello";
@@ -55,8 +61,6 @@ test DynamicTests
 
     testcase RemoveFieldOnString_Throws
     {
-
-
         fun Act()
         {
             var s = "hello";

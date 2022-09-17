@@ -19,8 +19,8 @@ print(map.Count());
         public void Engine_NativeMap_Create()
         {
             testEngine.Run(@"
-var arr = [:];
-print(arr);
+var map = [:];
+print(map);
 ");
 
             Assert.AreEqual("<inst NativeMap>", testEngine.InterpreterResult);
@@ -61,6 +61,41 @@ print(map[""a""]);
 ");
 
             Assert.AreEqual("5", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Map_WhenInlineCreate_ShouldMatchesValue()
+        {
+            testEngine.Run(@"
+var map = [""a"":2, ""b"":5, ""c"":{a:1},];
+print(map[""a""]);
+print(map[""b""]);
+print(map[""c""].a);
+");
+
+            Assert.AreEqual("251", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invalid_WhenMixingMapThenlist_ShouldFail()
+        {
+            testEngine.Run(@"
+var map = [""a"":2,3,4];
+print(map[""a""]);
+");
+
+            Assert.AreEqual("Expect ':' after key. at 2:21 '3'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invalid_WhenMixingListThenMap_ShouldFail()
+        {
+            testEngine.Run(@"
+var map = [3,4,""a"":2,];
+print(map[""a""]);
+");
+
+            Assert.AreEqual("Expected to compile Expression, but encountered error at 2:22.", testEngine.InterpreterResult);
         }
     }
 }

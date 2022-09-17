@@ -53,7 +53,6 @@ namespace ULox
             var inst = vm.GetArg(0);
             var nativeListinst = inst.val.asInstance as NativeListInstance;
             nativeListinst.List.Add(top);
-            vm.PushReturn(inst);
             return NativeCallResult.SuccessfulExpression;
         }
 

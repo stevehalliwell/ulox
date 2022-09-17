@@ -294,6 +294,10 @@ namespace ULox
                     DoSwapOp();
                     break;
 
+                case OpCode.DUPLICATE:
+                    DoDuplicateOp();
+                    break;
+
                 case OpCode.JUMP_IF_FALSE:
                     DoJumpIfFalseOp(chunk);
                     break;
@@ -845,6 +849,15 @@ namespace ULox
             Push(n1);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoDuplicateOp()
+        {
+            var v = Pop();
+
+            Push(v);
+            Push(v);
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoAssignGlobalOp(Chunk chunk)
         {

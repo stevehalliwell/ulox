@@ -18,7 +18,7 @@ namespace ULox
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
     //todo self asign needs safety to prevent their use in declarations.
-    public class Vm : IVm
+    public sealed class Vm : IVm
     {
         public delegate NativeCallResult NativeCallDelegate(Vm vm, int argc);
 
@@ -34,15 +34,15 @@ namespace ULox
 
         private readonly ClosureInternal NativeCallClosure;
 
-        protected readonly FastStack<Value> _valueStack = new FastStack<Value>();
-        protected readonly FastStack<Value> _returnStack = new FastStack<Value>();
+        private readonly FastStack<Value> _valueStack = new FastStack<Value>();
+        private readonly FastStack<Value> _returnStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         private CallFrame _currentCallFrame;
         private IEngine _engine;
         public IEngine Engine => _engine;
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private readonly Table _globals = new Table();
-        public TestRunner TestRunner { get; protected set; } = new TestRunner(() => new Vm());
+        public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
         public DiContainer DiContainer { get; private set; } = new DiContainer();
         public Factory Factory { get; private set; } = new Factory();
 
@@ -60,7 +60,7 @@ namespace ULox
         public Value Pop() => _valueStack.Pop();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
+        private void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Peek(int ind = 0) => _valueStack.Peek(ind);
@@ -128,7 +128,7 @@ namespace ULox
             _currentCallFrame.YieldOnReturn = true;
         }
 
-        public virtual void CopyFrom(IVm otherVM)
+        public void CopyFrom(IVm otherVM)
         {
             _engine = otherVM.Engine;
 
@@ -145,7 +145,7 @@ namespace ULox
             }
         }
 
-        public virtual void CopyStackFrom(Vm vm)
+        public void CopyStackFrom(Vm vm)
         {
             _valueStack.Reset();
 
@@ -735,7 +735,7 @@ namespace ULox
         private void DoJumpIfFalseOp(Chunk chunk)
         {
             ushort jump = ReadUShort(chunk);
-            if (Peek().IsFalsey)
+            if (Peek().IsFalsey())
                 _currentCallFrame.InstructionPointer += jump;
         }
 
@@ -762,7 +762,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoNotOp()
         {
-            Push(Value.New(Pop().IsFalsey));
+            Push(Value.New(Pop().IsFalsey()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1251,7 +1251,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected void DuplicateStackValuesNew(int startAt, int count)
+        private void DuplicateStackValuesNew(int startAt, int count)
         {
             for (int i = 0; i <= count; i++)
             {
@@ -1505,7 +1505,7 @@ namespace ULox
             DuplicateStackValuesNew(instLocOnStack, argCount);
             PushFrameCallNativeWithFixedStackStart(ClassFinishCreation, instLocOnStack);
 
-            if (!klass.Initialiser.IsNull)
+            if (!klass.Initialiser.IsNull())
             {
                 //with an init list we don't return this
                 PushCallFrameFromValue(klass.Initialiser, argCount);
@@ -1527,7 +1527,7 @@ namespace ULox
             {
                 if (initChain.instruction != -1)
                 {
-                    if (!klass.Initialiser.IsNull)
+                    if (!klass.Initialiser.IsNull())
                         Push(inst);
 
                     PushNewCallframe(new CallFrame()
@@ -1585,7 +1585,7 @@ namespace ULox
             var lhsInst = self.val.asInstance;
             var opClosure = lhsInst.FromClass.GetOverloadClosure(opCode);
             //identify if lhs has a matching method or field
-            if (!opClosure.IsNull)
+            if (!opClosure.IsNull())
             {
                 CallOperatorOverloadedbyFunction(opClosure.val.asClosure, self, arg1, arg2);
                 return true;

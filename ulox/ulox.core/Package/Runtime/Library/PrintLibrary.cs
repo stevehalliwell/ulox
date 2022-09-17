@@ -1,6 +1,8 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
-    public class PrintLibrary : IULoxLibrary
+    public sealed class PrintLibrary : IULoxLibrary
     {
         private readonly System.Action<string> _printer;
 
@@ -16,6 +18,7 @@
                 (nameof(print), Value.New(print))
                                         );
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult print(Vm vm, int argCount)
         {
             _printer.Invoke(vm.GetArg(1).ToString());

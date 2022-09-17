@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class StdLibrary : IULoxLibrary
+    public sealed class StdLibrary : IULoxLibrary
     {
         private const double SquareDividedTolerance = 0.01d;
         
@@ -53,6 +54,7 @@ namespace ULox
             return assertInst;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult AreApproxEqual(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
@@ -74,6 +76,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult AreEqual(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
@@ -84,6 +87,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult AreNotEqual(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
@@ -94,42 +98,47 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult IsTrue(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
-            if (lhs.IsFalsey)
+            if (lhs.IsFalsey())
                 vm.ThrowRuntimeException($"'{lhs}' is not truthy");
 
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult IsFalse(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
-            if (!lhs.IsFalsey)
+            if (!lhs.IsFalsey())
                 vm.ThrowRuntimeException($"'{lhs}' is not falsy");
 
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult IsNull(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
-            if (!lhs.IsNull)
+            if (!lhs.IsNull())
                 vm.ThrowRuntimeException($"'{lhs}' is not null");
 
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult IsNotNull(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
-            if (lhs.IsNull)
+            if (lhs.IsNull())
                 vm.ThrowRuntimeException($"'{lhs}' is null");
 
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult DoesContain(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
@@ -140,6 +149,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult DoesNotContain(Vm vm, int argCount)
         {
             var lhs = vm.GetArg(1);
@@ -150,6 +160,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private NativeCallResult Throws(Vm vm, int argCount)
         {
             var toRun = vm.GetArg(1).val.asClosure.chunk;
@@ -173,11 +184,13 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Pass(Vm vm, int argCount)
         {
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Fail(Vm vm, int argCount)
         {
             var msg = vm.GetArg(1);
@@ -185,25 +198,28 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult GenerateStackDump(Vm vm, int argCount)
         {
             vm.PushReturn(Value.New(vm.GenerateValueStackDump()));
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult GenerateGlobalsDump(Vm vm, int argCount)
         {
             vm.PushReturn(Value.New(vm.GenerateGlobalsDump()));
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult GenerateReturnDump(Vm vm, int argCount)
         {
             vm.PushReturn(Value.New(vm.GenerateReturnDump()));
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult IsFrozen(Vm vm, int argCount)
         {
             var target = vm.GetArg(1);
@@ -215,6 +231,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult Unfreeze(Vm vm, int argCount)
         {
             var target = vm.GetArg(1);
@@ -226,6 +243,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult str(Vm vm, int argCount)
         {
             var v = vm.GetArg(1);
@@ -233,6 +251,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult Duplicate(Vm vm, int argCount)
         {
             vm.PushReturn(Value.Copy(vm.GetArg(1)));

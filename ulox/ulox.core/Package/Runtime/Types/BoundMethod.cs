@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class BoundMethod
+    public sealed class BoundMethod
     {
         public BoundMethod(
             Value receiver,

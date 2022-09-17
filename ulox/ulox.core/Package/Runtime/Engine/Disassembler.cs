@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ULox
 {
-    public class Disassembler : IDisassembler
+    public sealed class Disassembler : IDisassembler
     {
         private readonly StringBuilder stringBuilder = new StringBuilder();
-        protected Func<Chunk, int, int>[] opCodeHandlers;
+        private Func<Chunk, int, int>[] opCodeHandlers;
 
         public Disassembler()
         {
@@ -86,6 +87,7 @@ namespace ULox
 
         public string GetString() => stringBuilder.ToString();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoChunk(Chunk chunk)
         {
             stringBuilder.AppendLine(chunk.Name);
@@ -110,6 +112,7 @@ namespace ULox
             DoSubChunks(subChunks);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoArgs(Chunk chunk)
         {
             if (chunk.Arity == 0)
@@ -127,6 +130,7 @@ namespace ULox
             stringBuilder.AppendLine();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int DoLineNumber(Chunk chunk, int instructionCount, int prevLine)
         {
             var lineForInst = chunk.GetLineForInstruction(instructionCount);
@@ -144,6 +148,7 @@ namespace ULox
             return prevLine;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int DoOpCode(Chunk chunk, int i, OpCode opCode)
         {
             stringBuilder.Append(opCode.ToString());
@@ -159,21 +164,25 @@ namespace ULox
             return i;
         }
 
-        protected void AppendSpace()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void AppendSpace()
         {
             stringBuilder.Append(" ");
         }
 
-        protected void Append(string s)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void Append(string s)
         {
             stringBuilder.Append(s);
         }
 
-        protected int AppendNothing(Chunk chunk, int i)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int AppendNothing(Chunk chunk, int i)
         {
             return i;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int AppendClosure(Chunk chunk, int i)
         {
             AppendSpace();
@@ -201,7 +210,8 @@ namespace ULox
             return i;
         }
 
-        protected int AppendUShort(Chunk chunk, int i)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int AppendUShort(Chunk chunk, int i)
         {
             AppendSpace();
             i = ReadUShort(chunk, i, out var ushortValue);
@@ -209,7 +219,8 @@ namespace ULox
             return i;
         }
 
-        protected int AppendByte(Chunk chunk, int i)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int AppendByte(Chunk chunk, int i)
         {
             AppendSpace();
             i++;
@@ -218,7 +229,8 @@ namespace ULox
             return i;
         }
 
-        protected int AppendStringConstant(Chunk chunk, int i)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int AppendStringConstant(Chunk chunk, int i)
         {
             AppendSpace();
             i++;
@@ -227,6 +239,7 @@ namespace ULox
             return i;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int ReadUShort(Chunk chunk, int i, out ushort ushortValue)
         {
             i++;
@@ -237,6 +250,7 @@ namespace ULox
             return i;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSubChunks(List<Chunk> subChunks)
         {
             stringBuilder.AppendLine("####");
@@ -247,6 +261,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoConstants(Chunk chunk, List<Chunk> subChunks)
         {
             stringBuilder.AppendLine();
@@ -270,6 +285,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int HandleTestOpCode(Chunk chunk, int i)
         {
             AppendSpace();
@@ -312,6 +328,7 @@ namespace ULox
             return i;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int AppendStringConstantThenSpaceThenUshort(Chunk chunk, int i)
         {
             i = AppendStringConstant(chunk, i);
@@ -319,6 +336,7 @@ namespace ULox
             return AppendUShort(chunk, i);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int AppendStringConstantThenByte(Chunk chunk, int i)
         {
             i = AppendStringConstant(chunk, i);

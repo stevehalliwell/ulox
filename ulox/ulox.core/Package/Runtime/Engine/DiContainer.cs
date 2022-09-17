@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace ULox
 {
-    public class DiContainer
+    public sealed class DiContainer
     {
         private bool _isFrozen = false;
         private readonly Table _diTable = new Table();
@@ -12,6 +13,7 @@ namespace ULox
         public void Freeze() 
             => _isFrozen = true;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public DiContainer ShallowCopy()
         {
             var ret = new DiContainer();
@@ -26,6 +28,7 @@ namespace ULox
             return ret;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GenerateDump()
         {
             var sb = new StringBuilder();
@@ -39,9 +42,11 @@ namespace ULox
             return sb.ToString().Trim();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(HashedString name, Value implementation)
             => _diTable[name] = implementation;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetValue(HashedString name, out Value found)
             => _diTable.TryGetValue(name, out found);
     }

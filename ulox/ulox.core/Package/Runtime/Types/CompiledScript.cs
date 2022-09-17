@@ -1,9 +1,9 @@
 ﻿namespace ULox
 {
-    public class CompiledScript
+    public sealed class CompiledScript
     {
-        public Chunk TopLevelChunk;
-        public int ScriptHash;
+        public Chunk TopLevelChunk { get; private set; }
+        public int ScriptHash { get; private set; }
 
         public CompiledScript(Chunk topLevelChunk, int scriptHash)
         {

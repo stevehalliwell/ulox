@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class HashedString : IComparable<HashedString>
+    public sealed class HashedString : IComparable<HashedString>
     {
         public readonly int Hash;
         public readonly string String;
@@ -36,7 +36,7 @@ namespace ULox
         public override string ToString() => String;
     }
 
-    public class HashedStringComparer : IEqualityComparer<HashedString>
+    public sealed class HashedStringComparer : IEqualityComparer<HashedString>
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(HashedString x, HashedString y) => x.Hash == y.Hash;

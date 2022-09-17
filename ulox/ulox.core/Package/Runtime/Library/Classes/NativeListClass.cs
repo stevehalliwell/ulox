@@ -182,7 +182,7 @@ namespace ULox
                 
                 var filterRes = vm.Pop();
 
-                if(!filterRes.IsFalsey)
+                if(!filterRes.IsFalsey())
                     retvalList.Add(testVal);
             }
 
@@ -273,7 +273,7 @@ namespace ULox
 
                 var filterRes = vm.Pop();
 
-                if (!filterRes.IsFalsey)
+                if (!filterRes.IsFalsey())
                 {
                     vm.PushReturn(testVal);
                     return NativeCallResult.SuccessfulExpression;
@@ -326,7 +326,7 @@ namespace ULox
 
                 var result = vm.Pop();
 
-                if (!result.IsFalsey)
+                if (!result.IsFalsey())
                 {
                     break;
                 }

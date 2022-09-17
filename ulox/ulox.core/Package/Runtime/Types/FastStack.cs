@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class FastStack<T> : IEnumerable<T>
+    public sealed class FastStack<T> : IEnumerable<T>
     {
         private const int StartingSize = 16;
         private const int GrowFactor = 2;

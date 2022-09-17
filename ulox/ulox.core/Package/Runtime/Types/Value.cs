@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Linq;
-using System.Collections;
 using System;
 
 namespace ULox
@@ -11,12 +10,16 @@ namespace ULox
         public ValueType type;
         public ValueTypeDataUnion val;
 
-        public bool IsFalsey => type == ValueType.Null || (type == ValueType.Bool && !val.asBool);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsFalsey() => type == ValueType.Null || (type == ValueType.Bool && !val.asBool);
 
-        public bool IsNull => type == ValueType.Null;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsNull() => type == ValueType.Null;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string str() => ToString();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             switch (type)
@@ -36,7 +39,7 @@ namespace ULox
             case ValueType.Chunk:
                 var chunk = val.asChunk;
                 if (chunk == null)
-                    throw new System.Exception("Null Chunk in Value.ToString. Illegal.");
+                    return "<Null Chunk in Value.ToString. Illegal.>";
                 var name = chunk.Name;
                 return "<fn " + name + "> ";
 
@@ -68,6 +71,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value Copy(Value copyFrom)
         {
             switch (copyFrom.type)
@@ -99,27 +103,35 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(ValueType valueType, ValueTypeDataUnion dataUnion)
             => new Value() { type = valueType, val = dataUnion };
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(double val) 
             => New(ValueType.Double, new ValueTypeDataUnion() { asDouble = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(bool val) 
             => New(ValueType.Bool, new ValueTypeDataUnion() { asBool = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(HashedString val) 
             => New(ValueType.String, new ValueTypeDataUnion() { asString = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(string val) 
             => New(new HashedString(val));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(Chunk val) 
             => New(ValueType.Chunk, new ValueTypeDataUnion() { asObject = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(Vm.NativeCallDelegate val)
             => New(ValueType.NativeFunction, new ValueTypeDataUnion() { asNativeFunc = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(ClosureInternal val)
         {
             var res = New(ValueType.Closure, new ValueTypeDataUnion() { asObject = val });
@@ -127,39 +139,50 @@ namespace ULox
             return res;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(UpvalueInternal val) 
             => New(ValueType.Upvalue, new ValueTypeDataUnion() { asObject = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(ClassInternal val) 
             => New(ValueType.Class, new ValueTypeDataUnion() { asObject = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(InstanceInternal val) 
             => New(ValueType.Instance, new ValueTypeDataUnion() { asObject = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(BoundMethod val) 
             => New(ValueType.BoundMethod, new ValueTypeDataUnion() { asObject = val });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value Null() 
             => new Value() { type = ValueType.Null };
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value Object(object obj) 
             => New(ValueType.Object, new ValueTypeDataUnion() { asObject = obj });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value Combined()
             => New(ValueType.CombinedClosures, new ValueTypeDataUnion() { asObject = new List<ClosureInternal>() });
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
             var asValue = (Value)obj;
             return Equals(ref asValue);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(ref Value rhs)
             => Compare(ref this, ref rhs);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator ==(Value left, Value right)
             => left.Equals(ref right);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool operator !=(Value left, Value right)
             => !(left == right);
 
@@ -201,6 +224,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override int GetHashCode()
         {
             switch (type)
@@ -228,6 +252,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value GetLoxClassType()
         {
             switch (type)

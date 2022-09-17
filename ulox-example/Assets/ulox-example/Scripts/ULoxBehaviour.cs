@@ -24,7 +24,7 @@ namespace ULox.Demo
             BindToScript();
 
             var setupFunc = _engine.FindFunctionWithArity(SetupGameName, 0);
-            if (!setupFunc.IsNull)
+            if (!setupFunc.IsNull())
             {
                 _ourVM.PushCallFrameAndRun(setupFunc, 0);
             }
@@ -32,13 +32,13 @@ namespace ULox.Demo
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (!_anonymousOnCollision.IsNull)
+            if (!_anonymousOnCollision.IsNull())
                 _ourVM.PushCallFrameAndRun(_anonymousOnCollision, 0);
         }
 
         private void Update()
         {
-            if (!_gameUpdateFunction.IsNull)
+            if (!_gameUpdateFunction.IsNull())
             {
                 _ourVM.SetGlobal(dtName, Value.New(Time.deltaTime));
                 _ourVM.PushCallFrameAndRun(_gameUpdateFunction, 0);

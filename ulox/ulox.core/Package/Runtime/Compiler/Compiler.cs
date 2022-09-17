@@ -6,7 +6,7 @@ namespace ULox
 {
     //todo for self assign to work, we need to route it through the assign path and
     //  then dump into a grouping, once the grouping is back, we named var ourselves and then emit the math op
-    public class Compiler : ICompiler
+    public sealed class Compiler : ICompiler
     {
         private readonly IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
         private readonly PrattParserRuleSet _prattParser = new PrattParserRuleSet();
@@ -19,8 +19,8 @@ namespace ULox
         public TokenType PreviousTokenType
             => TokenIterator?.PreviousToken.TokenType ?? TokenType.NONE;
 
-        protected Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
-        protected Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
+        private Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
+        private Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -169,7 +169,7 @@ namespace ULox
         public void WriteUShortAt(int at, ushort us)
             => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
-        protected void WriteBytesAt(int at, params byte[] b)
+        private void WriteBytesAt(int at, params byte[] b)
         {
             for (int i = 0; i < b.Length; i++)
             {
@@ -243,7 +243,7 @@ namespace ULox
             NoDeclarationFound();
         }
 
-        protected virtual void NoDeclarationFound()
+        private void NoDeclarationFound()
             => Statement();
 
         public void Statement()
@@ -258,7 +258,7 @@ namespace ULox
             NoStatementFound();
         }
 
-        protected virtual void NoStatementFound()
+        private void NoStatementFound()
             => ExpressionStatement();
 
         public void ExpressionStatement()
@@ -288,7 +288,7 @@ namespace ULox
             AfterCompilerStatePushed();
         }
 
-        protected void AfterCompilerStatePushed()
+        private void AfterCompilerStatePushed()
         {
             var functionType = CurrentCompilerState.functionType;
 
@@ -435,7 +435,7 @@ namespace ULox
                 || ft == FunctionType.PureFunction;
         }
 
-        protected Chunk EndCompile()
+        private Chunk EndCompile()
         {
             EmitReturn();
             return compilerStates.Pop().chunk;
@@ -448,7 +448,7 @@ namespace ULox
             EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
         }
 
-        protected virtual void PreEmptyReturnEmit()
+        private void PreEmptyReturnEmit()
         {
             if (CurrentCompilerState.functionType == FunctionType.Init)
                 EmitOpAndBytes(OpCode.GET_LOCAL, 0);

@@ -1,7 +1,10 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
     public static class ULoxLibraryExt
     {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Table GenerateBindingTable(
             this IULoxLibrary self,
             params (string name, Value val)[] bind)
@@ -14,6 +17,7 @@
             return resTable;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddFieldsToInstance(
             this InstanceInternal self,
             params (string name, Value val)[] bind)
@@ -24,6 +28,7 @@
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddMethodsToClass(
             this ClassInternal self,
             params (string name, Value val)[] bind)

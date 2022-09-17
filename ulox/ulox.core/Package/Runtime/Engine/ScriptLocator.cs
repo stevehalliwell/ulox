@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class LocalFileScriptLocator : IScriptLocator
+    public sealed class LocalFileScriptLocator : IScriptLocator
     {
         private readonly DirectoryInfo _directory;
         
@@ -12,6 +13,7 @@ namespace ULox
             _directory = new DirectoryInfo(Environment.CurrentDirectory);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Script Find(string name)
         {
             var externalMatches = Directory.GetFiles(_directory.FullName, $"{name}*");

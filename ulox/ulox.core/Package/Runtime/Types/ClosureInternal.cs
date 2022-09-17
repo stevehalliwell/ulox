@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class ClosureInternal
+    public sealed class ClosureInternal
     {
         public Chunk chunk;
         public Value[] upvalues;

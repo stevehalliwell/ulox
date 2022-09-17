@@ -1,8 +1,17 @@
+// Maps (or dictionaries) are natively supported. They are generic keyvalue stores.
 var key = "key";
 var expected = "value";
 var m = [:];
 
+// they can be used directly via CRUD
 m.Create(key, expected);
 var result = m.Read(key);
 m.Update(key, expected);
 m.Delete(key);
+
+//or via index
+m[key] = expected;
+print(m[key]);
+
+// can also be created inline
+var m = ["dog":"woof", "cat":"meow"];

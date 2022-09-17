@@ -269,8 +269,17 @@ namespace ULox
         }
 
         public void Expression()
-            => ParsePrecedence(Precedence.Assignment);
-
+        {
+            try
+            {
+                ParsePrecedence(Precedence.Assignment);
+            }
+            catch (UloxException) { throw; }
+            catch (Exception)
+            {
+                ThrowCompilerException("Expected to compile Expression, but encountered error");
+            }
+        }
         public void ParsePrecedence(Precedence pre)
             => _prattParser.ParsePrecedence(this, pre);
 
@@ -699,16 +708,40 @@ namespace ULox
                 return;
             }
 
+            var nativeTypeInstruction = compiler.CurrentChunkInstructinCount;
             compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
+
+            var firstLoop = true;
+            var isList = true;
 
             while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
             {
+                compiler.EmitOpCode(OpCode.DUPLICATE);
                 compiler.Expression();
 
-                var addNameID = compiler.AddCustomStringConstant("Add");
-                compiler.EmitOpAndBytes(OpCode.INVOKE, addNameID, 1);
+                if (firstLoop
+                    && compiler.TokenIterator.Check(TokenType.COLON))
+                {
+                    //switch to map
+                    isList = false;
+                    compiler.WriteBytesAt(nativeTypeInstruction, (byte)OpCode.NATIVE_TYPE, (byte)NativeType.Map);
+                }
+
+                if (isList)
+                {
+                    var addNameID = compiler.AddCustomStringConstant("Add");
+                    compiler.EmitOpAndBytes(OpCode.INVOKE, addNameID, 1);
+                }
+                else
+                {
+                    compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after key.");
+                    compiler.Expression();
+                    compiler.EmitOpCode(OpCode.SET_INDEX);
+                }
+                compiler.EmitOpCode(OpCode.POP);
 
                 compiler.TokenIterator.Match(TokenType.COMMA);
+                firstLoop = false;
             }
 
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");

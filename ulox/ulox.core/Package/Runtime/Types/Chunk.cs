@@ -11,6 +11,7 @@ namespace ULox
             public int line;
         }
 
+        private const string DefaultChunkName = "unnamed_chunk";
         private readonly List<Value> constants = new List<Value>();
         private readonly List<RunLengthLineNumber> _runLengthLineNumbers = new List<RunLengthLineNumber>();
         private int instructionCount = -1;
@@ -29,7 +30,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Chunk(string chunkName, string sourceName, FunctionType functionType)
         {
-            Name = chunkName;
+            Name = string.IsNullOrEmpty(chunkName) ? DefaultChunkName : chunkName;
             SourceName = sourceName;
             FunctionType = functionType;
         }
@@ -140,6 +141,20 @@ namespace ULox
                     startingInstruction = instructionCount
                 });
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string GetLocationString(int line = -1)
+        {
+            var locationName = Name;
+
+            var scriptOrgin = SourceName;
+            if (!string.IsNullOrEmpty(scriptOrgin))
+            {
+                locationName += $"({scriptOrgin}{(line == -1 ? "" : $":{line}")})";
+            }
+
+            return locationName;
         }
     }
 }

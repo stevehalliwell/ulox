@@ -113,12 +113,12 @@ namespace ULox
         {
             compilerStates.Clear();
             TokenIterator = null;
-
-            PushCompilerState(string.Empty, FunctionType.Script);
         }
 
         public void ThrowCompilerException(string msg)
-            => throw new CompilerException(msg, TokenIterator.PreviousToken);
+        {
+            throw new CompilerException(msg, TokenIterator.PreviousToken, $"chunk '{CurrentChunk.GetLocationString()}'");
+        }
 
         public void AddDeclarationCompilette(ICompilette compilette)
             => declarationCompilettes[compilette.Match] = compilette;
@@ -222,6 +222,8 @@ namespace ULox
         {
             TokenIterator = tokenIter;
             TokenIterator.Advance();
+            
+            PushCompilerState(string.Empty, FunctionType.Script);
 
             while (CurrentTokenType != TokenType.EOF)
             {
@@ -734,7 +736,7 @@ namespace ULox
                 }
                 else
                 {
-                    compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after key.");
+                    compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after key");
                     compiler.Expression();
                     compiler.EmitOpCode(OpCode.SET_INDEX);
                 }

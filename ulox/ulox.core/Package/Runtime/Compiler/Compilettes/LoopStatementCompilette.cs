@@ -37,7 +37,7 @@
                 if (compiler.CurrentCompilerState.ResolveLocal(compiler, itemName) != -1)
                 {
                     var prevToken = compiler.TokenIterator.PreviousToken;
-                    compiler.ThrowCompilerException($"Loop error: itemName '{itemName}' already exists at this scope, name given to loop must be unique at");
+                    compiler.ThrowCompilerException($"Loop error: itemName '{itemName}' already exists at this scope, name given to loop must be unique");
                 }
                 if (compiler.CurrentCompilerState.ResolveLocal(compiler, indexName) != -1)
                 {

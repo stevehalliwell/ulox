@@ -357,8 +357,7 @@ namespace ULox
                     throw new PanicException(
                         Pop().ToString(),
                         currentInstruction,
-                        GetLocationNameFromFrame(frame),
-                        GetLineForInstruction(frame, currentInstruction),
+                        GetLocationNameFromFrame(frame, currentInstruction),
                         GenerateValueStackDump(),
                         GenerateCallStackDump());
                 }
@@ -467,15 +466,9 @@ namespace ULox
 
             throw new RuntimeUloxException(msg,
                 currentInstruction,
-                GetLocationNameFromFrame(frame),
-                GetLineForInstruction(frame, currentInstruction),
+                GetLocationNameFromFrame(frame, currentInstruction),
                 GenerateValueStackDump(),
                 GenerateCallStackDump());
-        }
-
-        private static int GetLineForInstruction(CallFrame frame, int currentInstruction)
-        {
-            return frame.Closure?.chunk?.GetLineForInstruction(currentInstruction) ?? 0;
         }
 
         private static string DumpStack(FastStack<Value> valueStack)
@@ -488,26 +481,22 @@ namespace ULox
             return string.Join(Environment.NewLine, stackVars);
         }
 
-        private static string GetLocationNameFromFrame(CallFrame frame)
+        private static string GetLocationNameFromFrame(CallFrame frame, int currentInstruction = -1)
         {
             if (frame.nativeFunc != null)
             {
+                var name = frame.nativeFunc.Method.Name;
                 if (frame.nativeFunc.Target != null)
-                    return frame.nativeFunc.Target.GetType().Name + "." + frame.nativeFunc.Method.Name;
-                return frame.nativeFunc.Method.Name;
+                    name = frame.nativeFunc.Target.GetType().Name + "." + frame.nativeFunc.Method.Name;
+                return $"native:'{name}'";
             }
+            
+            var line = -1;
+            if(currentInstruction != -1)
+                line = frame.Closure?.chunk?.GetLineForInstruction(currentInstruction) ?? -1;
 
-            var chunk = frame.Closure?.chunk;
-            var chunkName = chunk?.Name;
-            var locationName = !string.IsNullOrEmpty(chunkName) ? chunkName : "unnamed_chunk";
-
-            var scriptOrgin = chunk?.SourceName;
-            if(!string.IsNullOrEmpty(scriptOrgin))
-            {
-                locationName += $"({scriptOrgin})";
-            }
-
-            return locationName;
+            var locationName = frame.Closure?.chunk.GetLocationString(line);
+            return $"chunk:'{locationName}'";
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

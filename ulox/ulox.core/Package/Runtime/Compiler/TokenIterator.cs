@@ -31,7 +31,7 @@ namespace ULox
             if (CurrentToken.TokenType == tokenType)
                 Advance();
             else
-                throw new CompilerException(msg, PreviousToken);
+                throw new CompilerException(msg, PreviousToken, $"source '{SourceName}'");
         }
 
         public bool Check(TokenType type)

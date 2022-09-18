@@ -732,7 +732,7 @@ Assert.AreEqual(1,1);
 Assert.AreEqual(1,2);
 Assert.AreEqual(1,1);");
 
-            StringAssert.StartsWith("'1' does not equal '2' at ip:'1' in chunk:'AreEqual':0.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("'1' does not equal '2' at ip:'1' in native:'AreEqual'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -907,7 +907,7 @@ fun InnerMain()
 var innerVM = VM();
 innerVM.Start(InnerMain);");
 
-            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'4' in chunk:'InnerMain(test)':5.", testEngine.InterpreterResult, testEngine.InterpreterResult);
+            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'4' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
         }
 
         [Test]
@@ -969,7 +969,7 @@ register Seven 7;");
             testEngine.Run(@"
 var s = inject Seven;");
 
-            StringAssert.StartsWith("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'2' in chunk:'unnamed_chunk':2.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'2' in chunk:'unnamed_chunk(test:2)'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1070,12 +1070,12 @@ var c = b + a;
 "
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'12' in chunk:'unnamed_chunk':4.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'12' in chunk:'unnamed_chunk(test:4)'.
 ===Stack===
-<closure  upvals:0>
+<closure unnamed_chunk upvals:0>
 
 ===CallStack===
-unnamed_chunk
+chunk:'unnamed_chunk(test)'
 
 ", testEngine.InterpreterResult);
         }
@@ -1092,16 +1092,16 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'5' in chunk:'f(test)':5.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'5' in chunk:'f(test:5)'.
 ===Stack===
 1
 null
 <closure f upvals:0>
-<closure  upvals:0>
+<closure unnamed_chunk upvals:0>
 
 ===CallStack===
-f(test)
-unnamed_chunk
+chunk:'f(test)'
+chunk:'unnamed_chunk(test)'
 
 ", testEngine.InterpreterResult);
         }

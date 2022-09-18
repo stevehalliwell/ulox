@@ -2,8 +2,8 @@
 {
     public class CompilerException : UloxException
     {
-        public CompilerException(string msg, Token previousToken)
-            : base(msg + $" at {previousToken.Line}:{previousToken.Character}{LiteralStringPartial(previousToken.Literal)}.")
+        public CompilerException(string msg, Token previousToken, string location)
+            : base(msg + $" in {location} at {previousToken.Line}:{previousToken.Character}{LiteralStringPartial(previousToken.Literal)}.")
         {
         }
 

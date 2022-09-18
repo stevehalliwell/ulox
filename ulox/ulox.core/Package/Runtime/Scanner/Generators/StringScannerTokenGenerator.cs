@@ -33,7 +33,7 @@ namespace ULox
 
             //we don't want this but when doing expression only mode the last char and the close of quote can be the same
             if (scanner.CurrentChar != '"')
-                throw new ScannerException(TokenType.IDENTIFIER, scanner.Line, scanner.CharacterNumber, "Unterminated String");
+                scanner.ThrowScannerException("Unterminated String");
 
             End(scanner);
         }

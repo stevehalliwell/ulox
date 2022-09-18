@@ -200,7 +200,7 @@ new TokenType[]
                 TokenType.EOF
             };
 
-            var tokens = scanner.Scan(testString);
+            var tokens = scanner.Scan(new Script("test", testString));
 
             var resultingTokenTypes = tokens.Select(x => x.TokenType).ToArray();
 
@@ -224,7 +224,7 @@ new TokenType[]
                 TokenType.EOF
             };
 
-            var tokens = scanner.Scan(testString);
+            var tokens = scanner.Scan(new Script("test", testString));
 
             var resultingTokenTypes = tokens.Select(x => x.TokenType).ToArray();
 
@@ -249,11 +249,11 @@ fun foo(p)
     var res = bar();
 }";
 
-            var firstRes = scanner.Scan(testString);
+            var firstRes = scanner.Scan(new Script("test", testString));
 
             scanner.Reset();
 
-            var res = scanner.Scan(testString);
+            var res = scanner.Scan(new Script("test", testString));
 
             Assert.AreEqual(firstRes, res);
         }
@@ -272,7 +272,7 @@ fun foo(p)
                 TokenType.EOF
             };
 
-            var tokens = scanner.Scan(testString);
+            var tokens = scanner.Scan(new Script("test", testString));
 
             var resultingTokenTypes = tokens.Select(x => x.TokenType).ToArray();
 
@@ -286,7 +286,7 @@ fun foo(p)
         [TestCaseSource(nameof(Generator))]
         public void Scanner_TokenTypeMatch(string testString, TokenType[] tokenResults)
         {
-            var tokens = scanner.Scan(testString);
+            var tokens = scanner.Scan(new Script("test", testString));
 
             var resultingTokenTypes = tokens.Select(x => x.TokenType).ToArray();
 
@@ -303,9 +303,10 @@ fun foo(p)
         {
             var testString = @"var a = ""hello";
 
-            void Act () => scanner.Scan(testString);
+            void Act () => scanner.Scan(new Script("test", testString));
 
-            Assert.Throws<ScannerException>(Act);
+            var ex = Assert.Throws<ScannerException>(Act);
+            Assert.AreEqual("Unterminated String got IDENTIFIER in test at 1:17", ex.Message);
         }
     }
 }

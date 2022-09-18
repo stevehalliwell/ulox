@@ -145,7 +145,7 @@ foo.bar = fun pure (a)
 foo.bar(1);
 ");
 
-            Assert.AreEqual("Identifiier 'print' could not be found locally in local function 'anonymous' at 5:13 'print'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'print' could not be found locally in local function 'anonymous' in chunk 'anonymous(test)' at 5:13 'print'.", testEngine.InterpreterResult);
         }
     }
 }

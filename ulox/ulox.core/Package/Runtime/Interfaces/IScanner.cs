@@ -17,6 +17,7 @@ namespace ULox
         char Peek();
         void ReadLine();
         void Reset();
-        List<Token> Scan(string text);
+        List<Token> Scan(Script script);
+        void ThrowScannerException(string msg);
     }
 }

@@ -15,6 +15,7 @@ namespace ULox
         private List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
 
         private StringReader _stringReader;
+        private Script _script;
 
         public Scanner()
         {
@@ -110,11 +111,14 @@ namespace ULox
             CharacterNumber = 0;
             if (_stringReader != null)
                 _stringReader.Dispose();
+            _script = default;
         }
 
-        public List<Token> Scan(string text)
+        public List<Token> Scan(Script script)
         {
-            using (_stringReader = new StringReader(text))
+            _script = script;
+            
+            using (_stringReader = new StringReader(_script.Source))
             {
                 while (!IsAtEnd())
                 {
@@ -123,7 +127,7 @@ namespace ULox
 
                     var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
                     if (matchinGen == null)
-                        throw new ScannerException(TokenType.IDENTIFIER, Line, CharacterNumber, $"Unexpected character '{CurrentChar}'");
+                        ThrowScannerException($"Unexpected character '{CurrentChar}'");
 
                     matchinGen.Consume(this);
                 }
@@ -132,6 +136,11 @@ namespace ULox
             }
 
             return Tokens;
+        }
+
+        public void ThrowScannerException(string msg)
+        {
+            throw new ScannerException(msg, TokenType.IDENTIFIER, Line, CharacterNumber, _script.Name);
         }
 
         public bool Match(Char matchingCharToConsume)

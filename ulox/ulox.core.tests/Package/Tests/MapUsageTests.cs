@@ -84,7 +84,7 @@ var map = [""a"":2,3,4];
 print(map[""a""]);
 ");
 
-            Assert.AreEqual("Expect ':' after key. at 2:21 '3'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Expect ':' after key in source 'test' at 2:21 '3'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -95,7 +95,7 @@ var map = [3,4,""a"":2,];
 print(map[""a""]);
 ");
 
-            Assert.AreEqual("Expected to compile Expression, but encountered error at 2:22.", testEngine.InterpreterResult);
+            Assert.AreEqual("Expected to compile Expression, but encountered error in chunk 'unnamed_chunk(test)' at 2:22.", testEngine.InterpreterResult);
         }
     }
 }

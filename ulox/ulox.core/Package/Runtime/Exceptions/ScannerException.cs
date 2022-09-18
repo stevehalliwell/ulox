@@ -2,7 +2,7 @@
 {
     public class ScannerException : UloxException
     {
-        public ScannerException(TokenType tokenType, int line, int character, string msg)
-            : base($"{tokenType}|{line}:{character} {msg}") { }
+        public ScannerException(string msg, TokenType tokenType, int line, int character, string location)
+            : base($"{msg} got {tokenType} in {location} at {line}:{character}") { }
     }
 }

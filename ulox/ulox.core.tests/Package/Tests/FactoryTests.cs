@@ -106,6 +106,24 @@ Assert.AreNotEqual(null, foo);
         }
 
         [Test]
+        public void Create_WhenSetSimpleDynInline_ShouldReturnNonNull()
+        {
+            testEngine.Run(@"
+class Foo
+{
+}
+
+Factory.SetLine(Foo, {Create: fun (){return Foo();}});
+
+var foo = Factory.Line(Foo).Create();
+
+Assert.AreNotEqual(null, foo);
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Create_WhenFooSet_ShouldReturnInstance()
         {
             testEngine.Run(@"

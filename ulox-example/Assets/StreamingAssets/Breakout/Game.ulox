@@ -1,0 +1,18 @@
+var dt;
+var breakout;
+
+fun SetupGame()
+{
+    breakout = Breakout();
+    register BreakoutInst breakout;
+    breakout.CreateBreakoutCore();
+    CreateLevel();
+}
+
+fun Update()
+{
+    if(GetKey("escape")){ReloadScene();}
+
+    breakout.UpdateGame(dt);
+    breakout.UpdateOutputText();
+}

@@ -1,0 +1,96 @@
+class Breakout
+{
+    var bricks = [];
+    var walls = [];
+    var gutter;
+    var ball;
+    var paddle;
+    var points = 0;
+    var lives = 3;
+
+    CreateBreakoutCore()
+    {
+        this.CreateWalls();
+        this.gutter = Factory.Line("Gutter").Create(Vec2.Create(0,-35), Vec2.Create(80,10));
+        this.CreateBall(Vec2.Create(0,-20));
+        this.paddle = Factory.Line(Paddle).Create(Vec2.Create(0,-30), 32);
+    }
+
+    CreateWalls()
+    {
+        var wallLine = Factory.Line("Wall");
+        this.walls.Add(wallLine.Create(Vec2.Create(-40,0), Vec2.Create(10,80)));
+        this.walls.Add(wallLine.Create(Vec2.Create(40,0), Vec2.Create(10,80)));
+        this.walls.Add(wallLine.Create(Vec2.Create(0,-40), Vec2.Create(80,10)));
+        this.walls.Add(wallLine.Create(Vec2.Create(0,40), Vec2.Create(80,10)));
+    }
+
+    CreateBall(at)
+    {
+        this.ball = Factory.Line(Ball).Create(at);
+        SetRigidBody2DVelocity(this.ball.rb, 15,18);
+    }
+
+    UpdateGame(dt)
+    {
+        var move = 0;
+        if(GetKey("left"))
+            move -= 1;
+        if(GetKey("right"))
+            move += 1;
+        this.paddle.Move(move*dt);
+    }
+
+    UpdateOutputText()
+    {
+        var outputText = "Points: " + str(this.points) + "\n" +
+            "Lives: " + str(this.lives);
+        
+        if(this.lives <= 0)
+        {
+            outputText = outputText + "\n\nGame over.\nPress esc to restart.";
+        }
+        else if(this.bricks.Count() == 0)
+        {
+            outputText = outputText + "\n\nYou have Won!";
+        }
+
+        SetUIText(outputText);
+    }
+
+    AddBrick(brick)
+    {
+        this.bricks.Add(brick);
+    }
+
+    GivePointsForBrick(brick, brickStrength)
+    {
+        this.points = this.points + (brickStrength+1) * 10;
+        this.bricks.Remove(brick);
+
+        if(this.bricks.Count() == 0)
+        {
+            if(this.ball != null)
+            {
+                DestroyUnityObject(this.ball.go);
+                this.ball = null;
+            }
+        }
+    }
+
+    BallLost()
+    {
+        this.lives = this.lives - 1;
+
+        if(this.ball != null)
+        {
+            DestroyUnityObject(this.ball.go);
+            this.ball = null;
+        }
+        
+        if(this.lives > 0)
+        {
+            this.CreateBall(Vec2.Create(0,-20));
+        }
+    }
+}

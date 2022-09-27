@@ -1,0 +1,13 @@
+fun CreateLevel()
+{
+    var generator = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3.5));
+    var arrayLayout = [
+        [0,1,1,1,1,0],
+        [1,1,1,1,1,1],
+        [1,1,2,2,1,1]
+    ];
+    var posList = generator.FromArrays(arrayLayout);
+    
+    var levelCreator = LevelCreator();
+    LevelCreator.CreateBricksFromPositions(posList);
+}

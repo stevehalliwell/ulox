@@ -1,0 +1,14 @@
+class LevelCreator
+{
+    CreateBricksFromPositions(posList)
+    {
+        var brickFac = Factory.Line(Brick).Create;
+        var breakout = inject BreakoutInst;
+
+        loop (posList)
+        {
+            var newBrick = brickFac(item.position, item.level);
+            breakout.AddBrick(newBrick);
+        }
+    }
+}

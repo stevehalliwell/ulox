@@ -151,6 +151,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 841976209}
   m_Father: {fileID: 960206342}
@@ -261,6 +262,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 4
@@ -293,6 +295,7 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 841976209}
   m_RootOrder: 0
@@ -374,6 +377,7 @@ RectTransform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 607063794}
   m_Father: {fileID: 273385947}
@@ -580,6 +584,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0, y: 0, z: 0}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1264883864}
   - {fileID: 273385947}
@@ -619,6 +624,7 @@ RectTransform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 960206342}
   m_RootOrder: 0
@@ -749,6 +755,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
@@ -783,7 +790,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 772c4726a2f862646a6b6830d7792180, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  script: {fileID: 9027929339269108002, guid: 1c55608ce5e3ef04983ff9c04b556945, type: 3}
+  scriptFile: {fileID: 0}
+  scriptString: build queue "Pong/main";
   useInstanceVm: 1
 --- !u!4 &1701529282
 Transform:
@@ -795,6 +803,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 2
@@ -812,7 +821,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefabCollectionSO: {fileID: 11400000, guid: e8615a58c59104c42bfa15bc17fc832f, type: 2}
-  textAssetCollectionSO: {fileID: 11400000, guid: 0e54afbabbf7adf4584ff5ff0e9a136e, type: 2}
   outputText: {fileID: 1264883865}
   bindAllLibraries: 0
   scriptsNamesToLoad: []
@@ -905,6 +913,7 @@ Transform:
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 1

@@ -1,7 +1,6 @@
 {
   "dependencies": {
     "com.ulox.core": "file:../../ulox/ulox.core/Package",
-    "com.ulox.core.tests": "file:../../ulox/ulox.core.tests/Package",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.ide.visualstudio": "2.0.16",
     "com.unity.test-framework": "1.1.31",

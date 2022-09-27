@@ -1,0 +1,87 @@
+class GridGenerator
+{
+    var startingPoint = Vec2();
+    var stepSize = Vec2();
+
+    init(startingPoint,stepSize){}
+    
+    FromRowCol(rows, cols)
+    {
+        var outer = [].Grow(rows, null);
+        loop(outer)
+        {
+            var inner = [].Grow(cols, 1);
+            outer[i] = inner;
+        }
+        return this.FromArrays(outer);
+    }
+
+    FromArrays(arrays)
+    {
+        var retval = [];
+
+        var cols = arrays[0].Count();
+
+        var step = this.stepSize;
+        var halfCols = (cols-1) * 0.5 * step.x;
+        var corner = this.startingPoint - Vec2.Create(halfCols, 0);
+        
+        loop (arrays, ytem, y)
+        {
+            loop(ytem, xtem, x)
+            {
+                if(xtem != 0)
+                {
+                    retval.Add(BrickInstruction(Vec2.Create(x,-y) * step + corner,xtem));
+                }
+            }
+        }
+
+        return retval;
+    }
+}
+
+class BrickInstruction
+{
+    var position = Vec2();
+    var level = 0;
+    init(position,level){}
+}
+
+test GridGeneratorTests
+{
+    testcase TenByTenFromRowCol
+    {
+        var grid = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
+        
+        var posList = grid.FromRowCol(10,10);
+        
+        Assert.AreEqual(100, posList.Count());
+    }
+
+    testcase TwoByFiveFromArraysAllActive
+    {
+        var grid = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
+        var arrayGrid = [
+            [1,1,1,1,1,],
+            [1,1,1,1,1,],
+        ];
+        
+        var posList = grid.FromArrays(arrayGrid);
+        
+        Assert.AreEqual(10, posList.Count());
+    }
+
+    testcase TwoByFiveFromArraysNoneActive
+    {
+        var grid = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
+        var arrayGrid = [
+            [0,0,0,0,0,],
+            [0,0,0,0,0,],
+        ];
+        
+        var posList = grid.FromArrays(arrayGrid);
+        
+        Assert.AreEqual(0, posList.Count());
+    }
+}

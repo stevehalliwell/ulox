@@ -1,0 +1,126 @@
+class Vec2
+{
+	static Create(x,y)
+	{
+		var ret = Vec2();
+		ret.x = x;
+		ret.y = y;
+		return ret;
+	}
+    
+    static Scale(v2, scalar)
+    {
+        return Vec2.Create(v2.x* scalar, v2.y*scalar);
+    }
+
+	var x = 0, y = 0;
+
+	_add(lhs, rhs)
+	{
+		return Vec2.Create(lhs.x + rhs.x, lhs.y + rhs.y);
+	}
+
+	_sub(lhs, rhs)
+	{
+		return Vec2.Create(lhs.x - rhs.x, lhs.y - rhs.y);
+	}
+
+	_mul(lhs, rhs)
+	{
+		return Vec2.Create(lhs.x * rhs.x, lhs.y * rhs.y);
+	}
+
+	_eq(lhs, rhs)
+	{
+		return lhs.x == rhs.x and lhs.y == rhs.y;
+	}
+}
+
+test Vec2Tests
+{
+	testcase Default
+	{
+		var expected = 0;
+		var result = Vec2();
+
+		var x = result.x;
+		var y = result.y;
+
+		Assert.AreEqual(expected, x);
+		Assert.AreEqual(expected, y);
+	}
+
+	testcase ([
+		[1,1,1,1,2,2],
+		[1,0,1,2,2,2],
+		[1,-1,1,-1,2,-2],
+		[1,2,3,4,4,6],
+	]) Add(ax, ay, bx, by, ex, ey)
+	{
+		var expected = Vec2.Create(ex,ey);
+		var result;
+		var a = Vec2.Create(ax,ay);
+		var b = Vec2.Create(bx,by);
+
+		result = a+b;
+
+		Assert.IsTrue(expected == result);
+	}
+
+	testcase ([
+		[1,1,1,1,0,0],
+		[1,0,1,2,0,-2],
+		[1,-1,1,-1,0,0],
+		[1,2,3,4,-2,-2],
+	]) Sub(ax, ay, bx, by, ex, ey)
+	{
+		var expected = Vec2.Create(ex,ey);
+		var result;
+		var a = Vec2.Create(ax,ay);
+		var b = Vec2.Create(bx,by);
+
+		result = a-b;
+
+		Assert.IsTrue(expected == result);
+	}
+
+	testcase Mul
+	{
+		var expected = Vec2.Create(3,8);
+		var result;
+		var a = Vec2.Create(1,2);
+		var b = Vec2.Create(3,4);
+
+		result = a*b;
+
+		Assert.IsTrue(expected == result);
+	}
+
+	testcase ([
+		[1,1,1,1,true],
+		[1,0,1,2,false],
+		[1,-1,1,-1,true],
+		[1,2,3,4,false],
+	]) Equal(ax, ay, bx, by, expected)
+	{
+		var result;
+		var a = Vec2.Create(ax,ay);
+		var b = Vec2.Create(bx,by);
+
+		result = a == b;
+
+		Assert.AreEqual(expected, result);
+	}
+
+	testcase Scale
+	{
+		var expected = Vec2.Create(2,4);
+		var result;
+		var a = Vec2.Create(1,2);
+		var b = 2;
+
+		result = Vec2.Scale(a,b);
+
+		Assert.IsTrue(expected == result);
+	}
+}

@@ -10,7 +10,9 @@ namespace ULox.Demo
         private static readonly HashedString thisGameObjectName = new HashedString("thisGameObject");
         private static readonly HashedString OnCollisionName = new HashedString("OnCollision");
 
-        [SerializeField] private TextAsset script;
+        [SerializeField] private TextAsset scriptFile;
+        [Multiline]
+        [SerializeField] private string scriptString;
         [SerializeField] private bool useInstanceVm = true;
         private Value _anonymousOnCollision = Value.Null();
         private Value _gameUpdateFunction = Value.Null();
@@ -47,7 +49,11 @@ namespace ULox.Demo
 
         private void BindToScript()
         {
-            _engine.Engine.RunScript(new Script(script.name, script.text));
+            var content = new Script("", scriptString);
+            if (scriptFile != null)
+                content = new Script(scriptFile.name, scriptFile.text);
+                
+            _engine.Engine.RunScript(content);
             _ourVM = _engine.Engine.Context.VM;
             if (useInstanceVm)
             {

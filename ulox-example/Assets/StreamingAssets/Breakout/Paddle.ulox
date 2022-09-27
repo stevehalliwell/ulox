@@ -1,0 +1,59 @@
+class Paddle
+{
+    var wallDist;
+    var moveSpeed = 25;
+    var pos = Vec2();
+    var go;
+
+    init(go, pos, wallDist)
+    {
+    }
+
+    Move(amt)
+    {
+        var p = this.pos;
+        var wall = this.wallDist;
+        p = p + Vec2.Create(this.moveSpeed * amt,0);
+
+        if(p.x < -wall)
+            p.x = -wall;
+        if(p.x > wall)
+            p.x = wall;
+
+        this.pos = p;
+        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
+    }
+}
+
+test PaddleTests
+{
+    testcase MoveZeroWall
+    {
+        var paddle = Paddle(null, Vec2(), 0);
+        SetGameObjectPosition = fun(go,x,y,z){};
+
+        paddle.Move(1);
+
+        Assert.AreEqual(paddle.wallDist, paddle.pos.x);
+    }
+
+    testcase MoveFarWall
+    {
+        var paddle = Paddle(null, Vec2(), 10000);
+        SetGameObjectPosition = fun(go,x,y,z){};
+
+        paddle.Move(1);
+
+        Assert.AreEqual(paddle.moveSpeed, paddle.pos.x);
+    }
+
+    testcase MoveZero
+    {
+        var paddle = Paddle(null, Vec2(), 0);
+        SetGameObjectPosition = fun(go,x,y,z){};
+
+        paddle.Move(0);
+
+        Assert.AreEqual(0, paddle.pos.x);
+    }
+}

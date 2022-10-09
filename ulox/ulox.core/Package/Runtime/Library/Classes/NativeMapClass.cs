@@ -14,6 +14,7 @@ namespace ULox
                 (nameof(Count), Value.New(Count)),
                 (nameof(Create), Value.New(Create)),
                 (nameof(Read), Value.New(Read)),
+                (nameof(ReadOrDefault), Value.New(ReadOrDefault)),
                 (nameof(Update), Value.New(Update)),
                 (nameof(Delete), Value.New(Delete))
                                   );
@@ -60,7 +61,22 @@ namespace ULox
                 vm.PushReturn(val);
                 return NativeCallResult.SuccessfulExpression;
             }
+            
+            throw new UloxException($"Map contains no key of '{key}'.");
+        }
 
+        private NativeCallResult ReadOrDefault(Vm vm, int argCount)
+        {
+            var map = GetArg0NativeMapInstance(vm);
+            var key = vm.GetArg(1);
+
+            if (map.TryGetValue(key, out var val))
+            {
+                vm.PushReturn(val);
+                return NativeCallResult.SuccessfulExpression;
+            }
+
+            vm.PushReturn(vm.GetArg(2));
             return NativeCallResult.SuccessfulExpression;
         }
 

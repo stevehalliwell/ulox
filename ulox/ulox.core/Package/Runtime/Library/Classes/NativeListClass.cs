@@ -336,7 +336,7 @@ namespace ULox
 
         public override InstanceInternal MakeInstance() => CreateInstance();
 
-        public static InstanceInternal CreateInstance() 
+        public static NativeListInstance CreateInstance() 
             => new NativeListInstance(SharedNativeListClassValue.val.asClass);
     }
 }

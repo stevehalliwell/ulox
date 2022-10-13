@@ -8,6 +8,7 @@ namespace ULox
     {
         private readonly IScanner _scanner = new Scanner();
         private readonly ICompiler _compiler = new Compiler();
+        private readonly IByteCodeOptimiser _optimiser = new ByteCodeOptimiser();
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
 
@@ -36,11 +37,14 @@ namespace ULox
 
             _scanner.Reset();
             _compiler.Reset();
+            _optimiser.Reset();
 
             var tokens = _scanner.Scan(script);
-            var chunk = _compiler.Compile(new TokenIterator(tokens, script.Name));
-            var compiled = new CompiledScript(chunk, hash);
+            var compiled = _compiler.Compile(tokens, script);
+            
             CompiledScripts.Add(compiled);
+            _optimiser.Optimise(compiled);
+            
             return compiled;
         }
     }

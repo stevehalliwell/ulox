@@ -18,6 +18,7 @@ namespace ULox
                 (nameof(Resize), Value.New(Resize)),
                 (nameof(Add), Value.New(Add)),
                 (nameof(Remove), Value.New(Remove)),
+                (nameof(Reverse), Value.New(Reverse)),
                 // TODO: RemoveAt
                 (nameof(Map), Value.New(Map)),
                 (nameof(Reduce), Value.New(Reduce)),
@@ -74,7 +75,13 @@ namespace ULox
             GetArg0NativeListInstance(vm).Remove(top);
             return NativeCallResult.SuccessfulExpression;
         }
-        
+
+        private NativeCallResult Reverse(Vm vm, int argCount)
+        {
+            GetArg0NativeListInstance(vm).Reverse();
+            return NativeCallResult.SuccessfulExpression;
+        }
+
         private NativeCallResult Grow(Vm vm, int argCount)
         {
             var size = vm.GetArg(1).val.asDouble;
@@ -336,7 +343,7 @@ namespace ULox
 
         public override InstanceInternal MakeInstance() => CreateInstance();
 
-        public static InstanceInternal CreateInstance() 
+        public static NativeListInstance CreateInstance() 
             => new NativeListInstance(SharedNativeListClassValue.val.asClass);
     }
 }

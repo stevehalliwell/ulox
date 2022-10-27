@@ -1,12 +1,12 @@
 test MapTests
 {
-    testcase ReadNonExistent
+    testcase ReadOrDefaultNonExistent
     {
         var key = "key";
         var result = 0;
         var m = [:];
 
-        result = m.Read(key);
+        result = m.ReadOrDefault(key, null);
 
         Assert.IsNull(result);
     }
@@ -64,7 +64,7 @@ test MapTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase ReadDeletedString
+    testcase ReadOrDefaultDeletedString
     {
         var key = "key";
         var initial = "value";
@@ -73,7 +73,7 @@ test MapTests
         m.Create(key, initial);
 
         m.Delete(key);
-        result = m.Read(key);
+        result = m.ReadOrDefault(key, null);
 
         Assert.IsNull(result);
     }
@@ -113,7 +113,6 @@ test MapTests
     {
         var key = "key";
         var initial = "value";
-        var expected = null;
         var result = 0;
         var m = [:];
         
@@ -121,9 +120,9 @@ test MapTests
         {
             m.Create(key+str(i), initial+str(i));
         }
-        result = m.Read(key+str(11));
+        result = m.ReadOrDefault(key+str(11), null);
 
-        Assert.AreEqual(expected, result);
+        Assert.IsNull(result);
     }
 
     testcase InlineCreation

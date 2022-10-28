@@ -15,18 +15,18 @@ jobs:
         with:
           lfs: true
 
-      - uses: game-ci/unity-builder@v2
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        with:
-          projectPath: ulox-example/
-          targetPlatform: WebGL
-          buildsPath: build
+      # - uses: game-ci/unity-builder@v2
+      #   env:
+      #     UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+      #   with:
+      #     projectPath: ulox-example/
+      #     targetPlatform: WebGL
+      #     buildsPath: build
       
-      - uses: actions/upload-artifact@v2
-        with:
-          name: build-tryitout
-          path: build/WebGL
+      # - uses: actions/upload-artifact@v2
+      #   with:
+      #     name: build-tryitout
+      #     path: build/WebGL
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.4

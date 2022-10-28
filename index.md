@@ -3,12 +3,9 @@ An experimental scripting language and language design space. Targeting game scr
 
 ### Status
 
-[![Coverage Status](https://coveralls.io/repos/github/stevehalliwell/ulox/badge.svg?branch=main)](https://coveralls.io/github/stevehalliwell/ulox?branch=main) [![Tests](https://github.com/stevehalliwell/ulox/actions/workflows/tests.yml/badge.svg)](https://github.com/stevehalliwell/ulox/actions/workflows/tests.yml) [![Build](https://github.com/stevehalliwell/ulox/actions/workflows/build-deploy.yml/badge.svg)](https://github.com/stevehalliwell/ulox/actions/workflows/build-deploy.yml)
-
+[![Coverage Status](https://coveralls.io/repos/github/stevehalliwell/ulox/badge.svg?branch=main)](https://coveralls.io/github/stevehalliwell/ulox?branch=main) [![Tests](https://github.com/stevehalliwell/ulox/actions/workflows/tests.yml/badge.svg)](https://github.com/stevehalliwell/ulox/actions/workflows/tests.yml)
 
 ulox is still quite early, expect breaking changes often. Use issues and PRs on github to track the current and future work.
-
-[Try It Out](tryitout/WebGL/index.html)
 
 ### Goal
 Create a code base that makes it quick and simple to experiment with scripting language design. I don't know exactly what I want a scripting language for games to be, but I'll know it when I see it. So we want to make that easy to explore and discover.

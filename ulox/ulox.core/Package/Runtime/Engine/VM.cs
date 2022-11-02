@@ -451,6 +451,10 @@ namespace ULox
                     DoCountOfOp();
                     break;
 
+                case OpCode.EXPECT:
+                    DoExpectOp();
+                    break;
+
                 case OpCode.NONE:
                 default:
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
@@ -535,6 +539,18 @@ namespace ULox
             }
 
             ThrowRuntimeException($"Cannot perform countof on '{target}'");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoExpectOp()
+        {
+            var msg = Pop();
+            var expected = Pop();
+
+            if (expected.IsFalsey())
+            {
+                ThrowRuntimeException($"Expect failed, got {(msg.IsNull() ? "falsey" : msg.ToString())}");
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

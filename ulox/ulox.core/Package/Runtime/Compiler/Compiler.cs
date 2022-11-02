@@ -67,7 +67,8 @@ namespace ULox
                 (TokenType.THROW, ThrowStatement),
                 (TokenType.END_STATEMENT, NoOpStatement),
                 (TokenType.REGISTER, _diCompiletteParts.RegisterStatement),
-                (TokenType.FREEZE, FreezeStatement)
+                (TokenType.FREEZE, FreezeStatement),
+                (TokenType.EXPECT, ExpectStatement)
                                        );
 
             this.SetPrattRules(
@@ -657,6 +658,22 @@ namespace ULox
         {
             compiler.Expression();
             compiler.EmitOpCode(OpCode.FREEZE);
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void ExpectStatement(Compiler compiler)
+        {
+            compiler.Expression();
+            if (compiler.TokenIterator.Match(TokenType.COLON))
+            {
+                compiler.Expression();
+            }
+            else
+            {
+                compiler.EmitNULL();
+            }
+            
+            compiler.EmitOpCode(OpCode.EXPECT);
             compiler.ConsumeEndStatement();
         }
 

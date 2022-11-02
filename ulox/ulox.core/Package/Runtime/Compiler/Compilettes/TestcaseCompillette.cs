@@ -32,9 +32,9 @@
 
                 //expression
                 compiler.DeclareAndDefineCustomVariable("testDataSource");
-                compiler.EmitOpCode(OpCode.NULL);
+                compiler.EmitNULL();
                 compiler.DeclareAndDefineCustomVariable("testDataRow");
-                compiler.EmitOpCode(OpCode.NULL);
+                compiler.EmitNULL();
                 compiler.DeclareAndDefineCustomVariable("testDataIndex");
                 compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
                 compiler.Expression();
@@ -120,7 +120,7 @@
                 compiler.PatchJump(exitDataLoopJumpLoc);
             }
 
-            compiler.EmitOpCode(OpCode.NULL);
+            compiler.EmitNULL();
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
 
             if (dataExpExecuteLocation != -1)

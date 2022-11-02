@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class DependencyInjectionCompilette
+    public sealed class DependencyInjectionCompilette
     {
         public void Inject(Compiler compiler, bool canAssign)
         {

@@ -62,7 +62,7 @@
                 //prep i
                 compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
-                compiler.EmitOpCode(OpCode.NULL);
+                compiler.EmitNULL();
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, itemArgID);
 
                 loopStart = compiler.CurrentChunkInstructinCount;

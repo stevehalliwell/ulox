@@ -663,17 +663,22 @@ namespace ULox
 
         public static void ExpectStatement(Compiler compiler)
         {
-            compiler.Expression();
-            if (compiler.TokenIterator.Match(TokenType.COLON))
+            do
             {
                 compiler.Expression();
-            }
-            else
-            {
-                compiler.EmitNULL();
-            }
-            
-            compiler.EmitOpCode(OpCode.EXPECT);
+                if (compiler.TokenIterator.Match(TokenType.COLON))
+                {
+                    compiler.Expression();
+                }
+                else
+                {
+                    compiler.EmitNULL();
+                }
+                compiler.EmitOpCode(OpCode.EXPECT);
+            } 
+            while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+
             compiler.ConsumeEndStatement();
         }
 
@@ -748,7 +753,7 @@ namespace ULox
                     isList = false;
                     compiler.WriteBytesAt(nativeTypeInstruction, (byte)OpCode.NATIVE_TYPE, (byte)NativeType.Map);
                 }
-                
+
                 if (isList)
                 {
                     var addNameID = compiler.AddCustomStringConstant("Add");

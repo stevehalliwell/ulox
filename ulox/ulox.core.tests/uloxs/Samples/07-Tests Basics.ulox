@@ -5,19 +5,28 @@ fun Sub(a,b) {return a-b;}
 test SimpleTest
 {
 	// testcase defines a single testmethod in the set
-	testcase Test1
+	testcase Expect
+	{
+		var lhs = 1;
+		var rhs = 2;
+
+		var res = Sub(lhs,rhs);
+
+		expect -1 == res : "1 minus 2 should be -1";
+	}
+	
+	testcase ManuallyThrow
 	{
 		var lhs = 1;
 		var rhs = 2;
 
 		var res = Add(lhs,rhs);
 
-		// an Assert library is provided but you can also just manually throw; to fail a test
 		if(res != 3)
 			throw "1 + 2 Should be 3.";
 	}
 	
-	testcase Test2
+	testcase AssertLibrary
 	{
 		var lhs = 1;
 		var rhs = 2;

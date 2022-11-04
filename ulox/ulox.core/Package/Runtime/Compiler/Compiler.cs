@@ -67,7 +67,8 @@ namespace ULox
                 (TokenType.THROW, ThrowStatement),
                 (TokenType.END_STATEMENT, NoOpStatement),
                 (TokenType.REGISTER, _diCompiletteParts.RegisterStatement),
-                (TokenType.FREEZE, FreezeStatement)
+                (TokenType.FREEZE, FreezeStatement),
+                (TokenType.EXPECT, ExpectStatement)
                                        );
 
             this.SetPrattRules(
@@ -131,6 +132,9 @@ namespace ULox
 
         public void EmitOpCode(OpCode op)
             => CurrentChunk.WriteSimple(op, TokenIterator.PreviousToken.Line);
+
+        public void EmitNULL()
+            => EmitOpCode(OpCode.NULL);
 
         public void EmitOpCodes(params OpCode[] ops)
         {
@@ -222,7 +226,7 @@ namespace ULox
         {
             TokenIterator = tokenIter;
             TokenIterator.Advance();
-            
+
             PushCompilerState(string.Empty, FunctionType.Script);
 
             while (CurrentTokenType != TokenType.EOF)
@@ -464,7 +468,7 @@ namespace ULox
             if (CurrentCompilerState.functionType == FunctionType.Init)
                 EmitOpAndBytes(OpCode.GET_LOCAL, 0);
             else
-                EmitOpCode(OpCode.NULL);
+                EmitNULL();
         }
 
         //TODO build commands should use this
@@ -657,6 +661,27 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        public static void ExpectStatement(Compiler compiler)
+        {
+            do
+            {
+                compiler.Expression();
+                if (compiler.TokenIterator.Match(TokenType.COLON))
+                {
+                    compiler.Expression();
+                }
+                else
+                {
+                    compiler.EmitNULL();
+                }
+                compiler.EmitOpCode(OpCode.EXPECT);
+            } 
+            while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+
+            compiler.ConsumeEndStatement();
+        }
+
         private static void BraceCreateDynamic(Compiler compiler, bool arg2)
         {
             if (compiler.TokenIterator.Match(TokenType.COLON)
@@ -799,7 +824,7 @@ namespace ULox
             }
             else
             {
-                compiler.EmitOpCode(OpCode.NULL);
+                compiler.EmitNULL();
             }
 
             compiler.ConsumeEndStatement();
@@ -844,7 +869,7 @@ namespace ULox
             if (comp.LoopStates.Count == 0)
                 compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
 
-            compiler.EmitOpCode(OpCode.NULL);
+            compiler.EmitNULL();
             int exitJump = compiler.EmitJump();
 
             compiler.ConsumeEndStatement();
@@ -931,7 +956,7 @@ namespace ULox
             {
             case TokenType.TRUE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
             case TokenType.FALSE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
-            case TokenType.NULL: compiler.EmitOpCode(OpCode.NULL); break;
+            case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
             {
                 var number = (double)compiler.TokenIterator.PreviousToken.Literal;

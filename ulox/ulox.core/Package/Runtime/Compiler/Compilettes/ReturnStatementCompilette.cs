@@ -36,7 +36,7 @@
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.Begin);
             var returnCount = compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
             if (returnCount == 0)
-                compiler.EmitOpCode(OpCode.NULL);
+                compiler.EmitNULL();
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.End);
         }
 

@@ -1,0 +1,34 @@
+test ExpectUsageTests
+{
+    testcase AreEqual
+    {
+        expect 1 == 1;
+    }
+    
+    testcase AreNotEqual
+    {
+        expect 1 != 2;
+    }
+    
+    testcase IsTrue
+    {
+        expect tcname == "IsTrue";
+    }
+    
+    testcase IsFalse
+    {
+        expect tcname != "IsTrue";
+    }
+    
+    testcase IsNull
+    {
+        var a;
+        expect a == null;
+    }
+    
+    testcase IsNotNull
+    {
+        var a = 1;
+        expect a != null;
+    }
+}

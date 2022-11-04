@@ -25,7 +25,7 @@ namespace ULox
                 if (compiler.TokenIterator.Match(TokenType.ASSIGN))
                     compiler.Expression();
                 else
-                    compiler.EmitOpCode(OpCode.NULL);
+                    compiler.EmitNULL();
 
                 compiler.DefineVariable(global);
             } while (compiler.TokenIterator.Match(TokenType.COMMA));

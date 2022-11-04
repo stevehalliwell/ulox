@@ -96,5 +96,7 @@
         SIGNS,
 
         COUNT_OF,
+
+        EXPECT,
     }
 }

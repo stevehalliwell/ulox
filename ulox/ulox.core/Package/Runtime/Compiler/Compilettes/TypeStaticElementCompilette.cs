@@ -33,7 +33,7 @@
                 }
                 else
                 {
-                    compiler.EmitOpCode(OpCode.NULL);
+                    compiler.EmitNULL();
                 }
 
                 //emit set prop

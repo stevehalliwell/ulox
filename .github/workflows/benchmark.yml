@@ -1,0 +1,40 @@
+name: Benchmark
+
+on: 
+  pull_request:
+    branches: [ main, develop ]
+    types: [ opened, synchronize ]
+  push:
+    branches: [ main, develop ]
+
+permissions:
+  contents: write
+  deployments: write
+
+jobs:
+  test:
+    name: Checkout, Build, Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '6.0.101'  # SDK Version to use. keep in line with examples/benchmarkdotnet/global.json
+      - name: Run benchmark
+        run: cd ulox/ulox.core.bench && dotnet run --exporters json -c Release
+
+      - name: Process benchmark results
+        uses: rhysd/github-action-benchmark@v1
+        with:
+          name: Benchmark.Net Benchmark
+          tool: 'benchmarkdotnet'
+          output-file-path: ulox/ulox.core.bench/BenchmarkDotNet.Artifacts/results/ulox.core.bench.Program-report-full-compressed.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          # Show alert with commit comment on detecting possible performance regression
+          alert-threshold: '150%'
+          comment-on-alert: true
+          fail-on-alert: true

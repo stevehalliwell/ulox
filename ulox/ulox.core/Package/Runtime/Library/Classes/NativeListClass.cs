@@ -6,12 +6,12 @@ using System;
 
 namespace ULox
 {
-    public class NativeListClass : ClassInternal 
+    public class NativeListClass : UserTypeInternal 
     {
         public static readonly Value SharedNativeListClassValue = Value.New(new NativeListClass());
 
         public NativeListClass()
-            : base(new HashedString("NativeList"))
+            : base(new HashedString("NativeList"), UserType.Native)
         {
             this.AddMethodsToClass(
                 (nameof(Count), Value.New(Count)),
@@ -252,7 +252,7 @@ namespace ULox
                 case ValueType.Closure:
                 case ValueType.CombinedClosures:
                 case ValueType.Upvalue:
-                case ValueType.Class:
+                case ValueType.UserType:
                 case ValueType.Instance:
                 case ValueType.BoundMethod:
                 case ValueType.Object:

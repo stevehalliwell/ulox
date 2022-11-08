@@ -52,11 +52,11 @@ namespace ULox
             case ValueType.Upvalue:
                 return $"<upvalue {val.asUpvalue.index}>";
 
-            case ValueType.Class:
-                return $"<class {val.asClass.Name}>";
+            case ValueType.UserType:
+                return $"<{val.asClass.UserType} {val.asClass.Name}>";
 
             case ValueType.Instance:
-                return $"<inst {val.asInstance.FromClass?.Name}>";
+                return $"<inst {val.asInstance.FromUserType?.Name}>";
 
             case ValueType.BoundMethod:
                 return $"<boundMeth {val.asBoundMethod.Method.chunk.Name}>";
@@ -91,7 +91,7 @@ namespace ULox
             case ValueType.NativeFunction:
             case ValueType.Closure:
             case ValueType.Upvalue:
-            case ValueType.Class:
+            case ValueType.UserType:
             case ValueType.BoundMethod:
             case ValueType.Object:
             default:
@@ -144,8 +144,8 @@ namespace ULox
             => New(ValueType.Upvalue, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(ClassInternal val) 
-            => New(ValueType.Class, new ValueTypeDataUnion() { asObject = val });
+        public static Value New(UserTypeInternal val) 
+            => New(ValueType.UserType, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(InstanceInternal val) 
@@ -212,7 +212,7 @@ namespace ULox
                 case ValueType.Instance:
                     return lhs.val.asInstance == rhs.val.asInstance;
 
-                case ValueType.Class:
+                case ValueType.UserType:
                     return lhs.val.asClass == rhs.val.asClass;
 
                 case ValueType.Object:
@@ -243,7 +243,7 @@ namespace ULox
             case ValueType.NativeFunction:
             case ValueType.Closure:
             case ValueType.Upvalue:
-            case ValueType.Class:
+            case ValueType.UserType:
             case ValueType.Instance:
             case ValueType.BoundMethod:
             case ValueType.Object:
@@ -272,10 +272,10 @@ namespace ULox
             case ValueType.BoundMethod:
             case ValueType.Upvalue:
                 break;
-            case ValueType.Class:
+            case ValueType.UserType:
                 return Value.New(val.asClass);
             case ValueType.Instance:
-                return Value.New(val.asInstance.FromClass);
+                return Value.New(val.asInstance.FromUserType);
             case ValueType.Object:
                 return Value.Object(new TypeNameClass("UserObject"));
             default:
@@ -310,7 +310,7 @@ namespace ULox
                 return -776812171 + EqualityComparer<string>.Default.GetHashCode(_typename);
             }
 
-            public override string ToString() => $"<class {_typename}>";
+            public override string ToString() => $"<{UserType.Native} {_typename}>";
         }
 
         public bool IsPure 
@@ -323,7 +323,7 @@ namespace ULox
                 case ValueType.Double:
                 case ValueType.Bool:
                 case ValueType.String:
-                case ValueType.Class:
+                case ValueType.UserType:
                 case ValueType.Instance:
                     return true;
                 case ValueType.Chunk:

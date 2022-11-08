@@ -11,7 +11,7 @@
         Closure,
         CombinedClosures,
         Upvalue,
-        Class,
+        UserType,
         Instance,
         BoundMethod,
         Object,

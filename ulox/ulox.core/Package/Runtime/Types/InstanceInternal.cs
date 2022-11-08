@@ -9,12 +9,12 @@ namespace ULox
         {
         }
 
-        public InstanceInternal(ClassInternal fromClass)
+        public InstanceInternal(UserTypeInternal from)
         {
-            FromClass = fromClass;
+            FromUserType = from;
         }
 
-        public ClassInternal FromClass { get; protected set; }
+        public UserTypeInternal FromUserType { get; protected set; }
         public bool IsFrozen { get; private set; } = false;
         public Table Fields { get; protected set; } = new Table();
 
@@ -58,7 +58,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CopyFrom(InstanceInternal inst)
         {
-            FromClass = inst.FromClass;
+            FromUserType = inst.FromUserType;
             foreach (var keyPair in inst.Fields)
             {
                 Fields[keyPair.Key] = keyPair.Value;
@@ -66,6 +66,6 @@ namespace ULox
             IsFrozen = inst.IsFrozen;
         }
 
-        public override string ToString() => $"<{nameof(InstanceInternal)}:{FromClass?.Name}>";
+        public override string ToString() => $"<{nameof(InstanceInternal)}:{FromUserType?.Name}>";
     }
 }

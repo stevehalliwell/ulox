@@ -85,7 +85,9 @@ namespace ULox
 
                 ("countof", TokenType.COUNT_OF),
 
-                ("expect", TokenType.EXPECT)
+                ("expect", TokenType.EXPECT),
+
+                ("data", TokenType.DATA)
                                               );
 
             this.AddSingleCharTokenGenerators(

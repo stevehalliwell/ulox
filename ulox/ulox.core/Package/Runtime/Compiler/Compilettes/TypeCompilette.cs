@@ -4,10 +4,46 @@ using System.Linq;
 
 namespace ULox
 {
-    public abstract class TypeCompilette : ICompilette
+    public enum UserType : byte
     {
-        private static readonly TypeCompiletteStage[] BodyCompileStageOrder = new[]
+        Native,
+        Data,
+        Class,
+    }
+
+    public class TypeCompilette : ICompilette
+    {
+        protected TypeCompilette() { }
+
+        public static TypeCompilette CreateClassCompilette()
         {
+            var compilette = new TypeCompilette();
+            compilette.AddInnerDeclarationCompilette(new TypeStaticElementCompilette());
+            compilette.AddInnerDeclarationCompilette(new TypeInitCompilette());
+            compilette.AddInnerDeclarationCompilette(new TypeMethodCompilette());
+            compilette.AddInnerDeclarationCompilette(new TypeSignsCompilette());
+            compilette.AddInnerDeclarationCompilette(new TypeMixinCompilette());
+            compilette.AddInnerDeclarationCompilette(TypePropertyCompilette.CreateForClass());
+            compilette.GenerateCompiletteByStageArray();
+            compilette.UserType = UserType.Class;
+            compilette.Match = TokenType.CLASS;
+            return compilette;
+        }
+
+        public static TypeCompilette CreateDateCompilette()
+        {
+            var compilette = new TypeCompilette();
+            compilette.AddInnerDeclarationCompilette(new TypeSignsCompilette());
+            compilette.AddInnerDeclarationCompilette(new TypeMixinCompilette());
+            compilette.AddInnerDeclarationCompilette(TypePropertyCompilette.CreateForData());
+            compilette.GenerateCompiletteByStageArray();
+            compilette.UserType = UserType.Data;
+            compilette.Match = TokenType.DATA;
+            return compilette;
+        }
+
+        private static readonly TypeCompiletteStage[] BodyCompileStageOrder = new[]
+            {
             TypeCompiletteStage.Invalid,
             TypeCompiletteStage.Begin,
             TypeCompiletteStage.Static,
@@ -31,10 +67,8 @@ namespace ULox
             TypeCompiletteStage.Signs,
             TypeCompiletteStage.Complete
         };
-        
-        public abstract TokenType Match { get; }
 
-        public abstract void Process(Compiler compiler);
+        public TokenType Match { get; private set; }
 
         public static readonly HashedString InitMethodName = new HashedString("init");
 
@@ -48,16 +82,6 @@ namespace ULox
         protected ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
         protected ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
-        protected void GenerateCompiletteByStageArray()
-        {
-            BodyCompilettesProcessingOrdered = _innerDeclarationCompilettes.Values
-                .OrderBy(x => Array.IndexOf(BodyCompileStageOrder,x.Stage))
-                .ToArray();
-            BodyCompilettesPostBodyOrdered = _innerDeclarationCompilettes.Values
-                .OrderBy(x => Array.IndexOf(PostBodyCompileStageOrder, x.Stage))
-                .ToArray();
-        }
-
         public void AddInnerDeclarationCompilette(ITypeBodyCompilette compilette)
         {
             _innerDeclarationCompilettes[compilette.Match] = compilette;
@@ -65,6 +89,51 @@ namespace ULox
                 _bodyCompiletteFallback = compilette;
         }
 
+        public void CName(Compiler compiler, bool canAssign)
+        {
+            var cname = CurrentTypeName;
+            compiler.AddConstantAndWriteOp(Value.New(cname));
+        }
+
+        public UserType UserType { get; private set; }
+
+        public virtual void Process(Compiler compiler)
+            => StageBasedDeclaration(compiler);
+
+        protected void StageBasedDeclaration(Compiler compiler)
+        {
+            foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
+                bodyCompilette.Start(this);
+
+            DoBeginDeclareType(compiler);
+            DoEndDeclareType(compiler);
+
+            foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
+                bodyCompilette.PreBody(compiler);
+
+            DoClassBody(compiler);
+
+            foreach (var bodyCompilette in BodyCompilettesPostBodyOrdered)
+                bodyCompilette.PostBody(compiler);
+
+            DoEndType(compiler);
+
+            foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
+                bodyCompilette.End();
+
+            CurrentTypeName = null;
+        }
+
+        protected void GenerateCompiletteByStageArray()
+        {
+            BodyCompilettesProcessingOrdered = _innerDeclarationCompilettes.Values
+                .OrderBy(x => Array.IndexOf(BodyCompileStageOrder, x.Stage))
+                .ToArray();
+            BodyCompilettesPostBodyOrdered = _innerDeclarationCompilettes.Values
+                .OrderBy(x => Array.IndexOf(PostBodyCompileStageOrder, x.Stage))
+                .ToArray();
+        }
+        
         protected void DoEndType(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
@@ -84,7 +153,7 @@ namespace ULox
             CurrentTypeName = (string)compiler.TokenIterator.PreviousToken.Literal;
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
-            EmitClassOp(compiler, nameConstant);
+            EmitUserTypeOpAndBytes(compiler, nameConstant);
             compiler.DefineVariable(nameConstant);
         }
 
@@ -115,13 +184,21 @@ namespace ULox
             _stage = stage;
         }
 
-        private void EmitClassOp(
+        private void EmitUserTypeOpAndBytes(
             Compiler compiler,
             byte nameConstant)
         {
-            compiler.EmitOpAndBytes(OpCode.CLASS, nameConstant);
+            compiler.EmitOpAndBytes(OpCode.TYPE, nameConstant, (byte)UserType);
             _initChainInstruction = (short)compiler.CurrentChunk.Instructions.Count;
             compiler.EmitUShort(0);
+        }
+
+        public void This(Compiler compiler, bool canAssign)
+        {
+            if (CurrentTypeName == null)
+                compiler.ThrowCompilerException("Cannot use the 'this' keyword outside of a class");
+
+            compiler.NamedVariable("this", canAssign);
         }
     }
 }

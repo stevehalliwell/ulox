@@ -11,7 +11,7 @@ namespace ulox.core.tests
 class Brioche {}
 print (Brioche);");
 
-            Assert.AreEqual("<class Brioche>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Class Brioche>", testEngine.InterpreterResult);
         }
 
         [Test]

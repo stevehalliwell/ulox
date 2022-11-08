@@ -381,8 +381,8 @@ namespace ULox
                     DoSetPropertyOp(chunk);
                     break;
 
-                case OpCode.CLASS:
-                    DoClassOp(chunk);
+                case OpCode.TYPE:
+                    DoUserTypeOp(chunk);
                     break;
 
                 case OpCode.METHOD:
@@ -561,12 +561,12 @@ namespace ULox
 
             switch (lhs.type)
             {
-            case ValueType.Class:
+            case ValueType.UserType:
                 return MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
             case ValueType.Instance:
                 switch (rhs.type)
                 {
-                case ValueType.Class:
+                case ValueType.UserType:
                     return MeetValidator.ValidateInstanceMeetsClass(lhs.val.asInstance, rhs.val.asClass);
                 case ValueType.Instance:
                     return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
@@ -1091,7 +1091,7 @@ namespace ULox
                 Call(callee.val.asClosure, argCount);
                 break;
 
-            case ValueType.Class:
+            case ValueType.UserType:
                 CreateInstance(callee.val.asClass, argCount);
                 break;
 
@@ -1204,7 +1204,7 @@ namespace ULox
             if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
                 return;
 
-            ThrowRuntimeException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromClass}' and '{rhs.val.asInstance.FromClass}'");
+            ThrowRuntimeException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1278,11 +1278,12 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoClassOp(Chunk chunk)
+        private void DoUserTypeOp(Chunk chunk)
         {
             var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex);
-            var klass = new ClassInternal(name.val.asString);
+            var userType = (UserType)ReadByte(chunk);
+            var klass = new UserTypeInternal(name.val.asString, userType);
             var klassValue = Value.New(klass);
             Push(klassValue);
             var initChain = ReadUShort(chunk);
@@ -1302,7 +1303,7 @@ namespace ULox
                 instVal.val.asInstance.Freeze();
                 break;
 
-            case ValueType.Class:
+            case ValueType.UserType:
                 instVal.val.asClass.Freeze();
                 break;
 
@@ -1352,7 +1353,7 @@ namespace ULox
             default:
                 ThrowRuntimeException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'");
                 break;
-            case ValueType.Class:
+            case ValueType.UserType:
                 instance = targetVal.val.asClass;
                 break;
 
@@ -1371,7 +1372,7 @@ namespace ULox
                 return;
             }
 
-            BindMethod(instance.FromClass, name);
+            BindMethod(instance.FromUserType, name);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1386,7 +1387,7 @@ namespace ULox
             default:
                 ThrowRuntimeException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'");
                 break;
-            case ValueType.Class:
+            case ValueType.UserType:
                 instance = targetVal.val.asClass;
                 break;
 
@@ -1427,7 +1428,7 @@ namespace ULox
                 }
                 else
                 {
-                    var fromClass = inst.FromClass;
+                    var fromClass = inst.FromUserType;
                     if (fromClass == null)
                     {
                         ThrowRuntimeException($"Cannot invoke '{methodName}' on '{receiver}' with no class");
@@ -1443,7 +1444,7 @@ namespace ULox
             }
             break;
 
-            case ValueType.Class:
+            case ValueType.UserType:
             {
                 var klass = receiver.val.asClass;
                 PushCallFrameFromValue(klass.GetMethod(methodName), argCount);
@@ -1480,11 +1481,11 @@ namespace ULox
         {
             Value klass = Pop();
             Value mixin = Pop();
-            klass.val.asClass.AddMixin(mixin);
+            klass.val.asClass.AddMixin(mixin, this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void BindMethod(ClassInternal fromClass, HashedString methodName)
+        private void BindMethod(UserTypeInternal fromClass, HashedString methodName)
         {
             if (!fromClass.TryGetMethod(methodName, out var method))
                 ThrowRuntimeException($"Undefined property {methodName}");
@@ -1505,7 +1506,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CreateInstance(ClassInternal asClass, int argCount)
+        private void CreateInstance(UserTypeInternal asClass, int argCount)
         {
             var instInternal = asClass.MakeInstance();
             var inst = Value.New(instInternal);
@@ -1515,7 +1516,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InitNewInstance(ClassInternal klass, int argCount, Value inst)
+        private void InitNewInstance(UserTypeInternal klass, int argCount, Value inst)
         {
             var stackCount = _valueStack.Count;
             var instLocOnStack = (byte)(stackCount - argCount - 1);
@@ -1565,7 +1566,7 @@ namespace ULox
 
             var inst = instVal.val.asInstance;
 
-            var initChunk = inst.FromClass.Initialiser.val.asClosure.chunk;
+            var initChunk = inst.FromUserType.Initialiser.val.asClosure.chunk;
             var argConstantIds = initChunk.ArgumentConstantIds;
 
             const int argOffset = 1;
@@ -1592,7 +1593,7 @@ namespace ULox
         {
             var instVal = vm.GetArg(0);
             var inst = instVal.val.asInstance;
-            inst.FromClass.FinishCreation(inst);
+            inst.FromUserType.FinishCreation(inst);
             vm.PushReturn(instVal);
             return NativeCallResult.SuccessfulExpression;
         }
@@ -1601,7 +1602,7 @@ namespace ULox
         private bool DoCustomOverloadOp(OpCode opCode, Value self, Value arg1, Value arg2)
         {
             var lhsInst = self.val.asInstance;
-            var opClosure = lhsInst.FromClass.GetOverloadClosure(opCode);
+            var opClosure = lhsInst.FromUserType.GetOverloadClosure(opCode);
             //identify if lhs has a matching method or field
             if (!opClosure.IsNull())
             {
@@ -1609,9 +1610,9 @@ namespace ULox
                 return true;
             }
 
-            if (lhsInst.FromClass.Name == DynamicClass.DynamicClassName)
+            if (lhsInst.FromUserType.Name == DynamicClass.DynamicClassName)
             {
-                var targetName = ClassInternal.OverloadableMethodNames[ClassInternal.OpCodeToOverloadIndex[opCode]];
+                var targetName = UserTypeInternal.OverloadableMethodNames[UserTypeInternal.OpCodeToOverloadIndex[opCode]];
                 if (self.val.asInstance.TryGetField(targetName, out var matchingValue))
                 {
                     if (matchingValue.type == ValueType.Closure)

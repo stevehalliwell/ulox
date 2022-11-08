@@ -3,12 +3,12 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class NativeMapClass : ClassInternal
+    public class NativeMapClass : UserTypeInternal
     {
         public static readonly Value SharedNativeMapClassValue = Value.New(new NativeMapClass());
 
         public NativeMapClass()
-            : base(new HashedString("NativeMap"))
+            : base(new HashedString("NativeMap"), UserType.Native)
         {
             this.AddMethodsToClass(
                 (nameof(Count), Value.New(Count)),

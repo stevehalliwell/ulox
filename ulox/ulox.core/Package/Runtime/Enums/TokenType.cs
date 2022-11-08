@@ -64,6 +64,8 @@
         NULL,
 
         THROW,
+        
+        DATA,
 
         CLASS,
         THIS,

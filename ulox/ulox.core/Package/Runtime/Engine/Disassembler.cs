@@ -55,7 +55,7 @@ namespace ULox
 
             opCodeHandlers[(int)OpCode.CLOSURE] = AppendClosure;
 
-            opCodeHandlers[(int)OpCode.CLASS] = AppendStringConstantThenSpaceThenUshort;
+            opCodeHandlers[(int)OpCode.TYPE] = AppendUserType;
             opCodeHandlers[(int)OpCode.GET_PROPERTY] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.SET_PROPERTY] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.METHOD] = AppendStringConstant;
@@ -332,9 +332,11 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendStringConstantThenSpaceThenUshort(Chunk chunk, int i)
+        private int AppendUserType(Chunk chunk, int i)
         {
             i = AppendStringConstant(chunk, i);
+            AppendSpace();
+            i = AppendByte(chunk, i);
             AppendSpace();
             return AppendUShort(chunk, i);
         }

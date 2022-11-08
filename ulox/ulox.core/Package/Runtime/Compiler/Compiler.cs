@@ -38,7 +38,7 @@ namespace ULox
             var _testdec = new TestDeclarationCompilette();
             _testcaseCompilette.SetTestDeclarationCompilette(_testdec);
             var _buildCompilette = new BuildCompilette();
-            var _classCompiler = new ClassCompilette();
+            var _classCompiler = TypeCompilette.CreateClassCompilette();
             var _diCompiletteParts = new DependencyInjectionCompilette();
 
             this.AddDeclarationCompilette(
@@ -46,7 +46,8 @@ namespace ULox
                 _testdec,
                 _classCompiler,
                 _testcaseCompilette,
-                _buildCompilette
+                _buildCompilette,
+                TypeCompilette.CreateDateCompilette()
                                          );
             this.AddDeclarationCompilette(
                 (TokenType.FUNCTION, FunctionDeclaration)

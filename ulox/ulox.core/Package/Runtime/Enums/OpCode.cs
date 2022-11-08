@@ -50,7 +50,7 @@
 
         VALIDATE,
 
-        CLASS,
+        TYPE,
         GET_PROPERTY,
         SET_PROPERTY,
         METHOD,

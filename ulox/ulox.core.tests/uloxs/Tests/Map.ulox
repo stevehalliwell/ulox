@@ -64,6 +64,21 @@ test MapTests
         Assert.AreEqual(expected, result);
     }
 
+    testcase ReadOrDefaultUpdatedString
+    {
+        var key = "key";
+        var initial = "value";
+        var expected = "changed";
+        var result = 0;
+        var m = [:];
+        m.Create(key, initial);
+
+        m.Update(key, expected);
+        result = m.ReadOrDefault(key);
+
+        Assert.AreEqual(expected, result);
+    }
+
     testcase ReadOrDefaultDeletedString
     {
         var key = "key";

@@ -11,9 +11,9 @@ namespace ULox
         Class,
     }
 
-    public class TypeCompilette : ICompilette
+    public sealed class TypeCompilette : ICompilette
     {
-        protected TypeCompilette() { }
+        private TypeCompilette() { }
 
         public static TypeCompilette CreateClassCompilette()
         {
@@ -43,7 +43,7 @@ namespace ULox
         }
 
         private static readonly TypeCompiletteStage[] BodyCompileStageOrder = new[]
-            {
+        {
             TypeCompiletteStage.Invalid,
             TypeCompiletteStage.Begin,
             TypeCompiletteStage.Static,
@@ -72,15 +72,15 @@ namespace ULox
 
         public static readonly HashedString InitMethodName = new HashedString("init");
 
-        protected Dictionary<TokenType, ITypeBodyCompilette> _innerDeclarationCompilettes = new Dictionary<TokenType, ITypeBodyCompilette>();
+        private Dictionary<TokenType, ITypeBodyCompilette> _innerDeclarationCompilettes = new Dictionary<TokenType, ITypeBodyCompilette>();
         private ITypeBodyCompilette _bodyCompiletteFallback;
 
-        protected TypeCompiletteStage _stage = TypeCompiletteStage.Invalid;
-        public string CurrentTypeName { get; protected set; }
+        private TypeCompiletteStage _stage = TypeCompiletteStage.Invalid;
+        public string CurrentTypeName { get; private set; }
         private short _initChainInstruction;
         public short InitChainInstruction => _initChainInstruction;
-        protected ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
-        protected ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
+        private ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
+        private ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
         public void AddInnerDeclarationCompilette(ITypeBodyCompilette compilette)
         {
@@ -97,10 +97,10 @@ namespace ULox
 
         public UserType UserType { get; private set; }
 
-        public virtual void Process(Compiler compiler)
+        public void Process(Compiler compiler)
             => StageBasedDeclaration(compiler);
 
-        protected void StageBasedDeclaration(Compiler compiler)
+        private void StageBasedDeclaration(Compiler compiler)
         {
             foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
                 bodyCompilette.Start(this);
@@ -124,7 +124,7 @@ namespace ULox
             CurrentTypeName = null;
         }
 
-        protected void GenerateCompiletteByStageArray()
+        private void GenerateCompiletteByStageArray()
         {
             BodyCompilettesProcessingOrdered = _innerDeclarationCompilettes.Values
                 .OrderBy(x => Array.IndexOf(BodyCompileStageOrder, x.Stage))
@@ -134,19 +134,19 @@ namespace ULox
                 .ToArray();
         }
         
-        protected void DoEndType(Compiler compiler)
+        private void DoEndType(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
             compiler.EmitOpCode(OpCode.FREEZE);
         }
 
-        protected void DoEndDeclareType(Compiler compiler)
+        private void DoEndDeclareType(Compiler compiler)
         {
             compiler.NamedVariable(CurrentTypeName, false);
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
         }
 
-        protected void DoBeginDeclareType(Compiler compiler)
+        private void DoBeginDeclareType(Compiler compiler)
         {
             _stage = TypeCompiletteStage.Begin;
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect type name.");
@@ -157,7 +157,7 @@ namespace ULox
             compiler.DefineVariable(nameConstant);
         }
 
-        protected void DoClassBody(Compiler compiler)
+        private void DoClassBody(Compiler compiler)
         {
             while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACE) && !compiler.TokenIterator.Check(TokenType.EOF))
             {
@@ -175,12 +175,11 @@ namespace ULox
             _stage = TypeCompiletteStage.Complete;
         }
 
-        protected void ValidStage(Compiler compiler, TypeCompiletteStage stage)
+        private void ValidStage(Compiler compiler, TypeCompiletteStage stage)
         {
             if (_stage > stage)
-            {
                 compiler.ThrowCompilerException($"Stage out of order. Type '{CurrentTypeName}' is at stage '{_stage}' has encountered a late '{stage}' stage element");
-            }
+
             _stage = stage;
         }
 

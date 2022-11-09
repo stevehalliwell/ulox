@@ -390,8 +390,7 @@ foo.Speak();
 
             Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
         }
-
-
+        
         [Test]
         public void Mixin_WhenDuplicateFlavours_ShouldHaveOnlyOnePresent()
         {
@@ -426,6 +425,46 @@ print(foo.a);
             testEngine.Run(script);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenDataAndDuplicateFlavours_ShouldHaveOnlyOnePresent()
+        {
+            var script = @"
+
+var globalCounter = 0;
+
+data MixMe
+{
+    a = (globalCounter += 1);
+}
+
+data Combo1
+{
+    mixin MixMe;
+    b = 1;
+}
+
+data Combo2
+{
+    mixin MixMe;
+    c = 2;
+}
+
+data Foo 
+{
+    mixin Combo1, Combo2;
+}
+
+var foo = Foo();
+print(foo.a);
+print(foo.b);
+print(foo.c);
+";
+
+            testEngine.Run(script);
+
+            Assert.AreEqual("112", testEngine.InterpreterResult);
         }
 
         [Test]

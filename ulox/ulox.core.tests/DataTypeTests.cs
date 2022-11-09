@@ -8,30 +8,30 @@ namespace ulox.core.tests
         public void Delcared_WhenAccessed_ShouldHaveDataObject()
         {
             testEngine.Run(@"
-data Brioche {}
-print (Brioche);");
+data Foo {}
+print (Foo);");
 
-            Assert.AreEqual("<Data Brioche>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Data Foo>", testEngine.InterpreterResult);
         }
 
         [Test]
         public void DataInstance_WhenAccessed_ShouldHaveInstanceOfObject()
         {
             testEngine.Run(@"
-data Brioche {}
-var b = Brioche();
+data Foo {}
+var b = Foo();
 print (b);");
 
-            Assert.AreEqual("<inst Brioche>", testEngine.InterpreterResult);
+            Assert.AreEqual("<inst Foo>", testEngine.InterpreterResult);
         }
 
         [Test]
         public void DataInstanceField_WhenAccessed_ShouldHaveDefaultValue()
         {
             testEngine.Run(@"
-data Brioche {Butter}
-var b = Brioche();
-print (b.Butter);");
+data Foo {A}
+var b = Foo();
+print (b.A);");
 
             Assert.AreEqual("null", testEngine.InterpreterResult);
         }
@@ -40,9 +40,9 @@ print (b.Butter);");
         public void DataInstanceField_WhenAccessed_ShouldHaveInitialiserValue()
         {
             testEngine.Run(@"
-data Brioche {Butter = true}
-var b = Brioche();
-print (b.Butter);");
+data Foo {A = true}
+var b = Foo();
+print (b.A);");
 
             Assert.AreEqual("True", testEngine.InterpreterResult);
         }
@@ -51,13 +51,22 @@ print (b.Butter);");
         public void DataInstanceFields_WhenAccessed_ShouldHaveInitialValues()
         {
             testEngine.Run(@"
-data Brioche {Butter = true, review, taste = ""Full""}
-var b = Brioche();
-print (b.Butter);
+data Foo {A = true, review, taste = ""Full""}
+var b = Foo();
+print (b.A);
 print (b.review);
 print (b.taste);");
 
             Assert.AreEqual("TruenullFull", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void OutOfOrder_WhenVarThenSigns_ShouldFail()
+        {
+            testEngine.Run(@"
+data A{a; signs B;}");
+
+            StringAssert.StartsWith("Stage out of order. Type 'A' is at stage 'Var' has encountered a late 'Signs' stage element in chunk", testEngine.InterpreterResult);
         }
     }
 }

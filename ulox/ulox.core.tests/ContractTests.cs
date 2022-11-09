@@ -42,6 +42,38 @@ class T
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
+        [Test]
+        public void Meets_WhenDataTargetAndITAndTMatchWithVars_ShouldNotThrow()
+        {
+            testEngine.Run(@"
+data IT { a }
+
+class T 
+{
+    signs IT;
+    var a;
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Meets_WhenDataMeetITAndTMatchWithVars_ShouldNotThrow()
+        {
+            testEngine.Run(@"
+class IT
+{
+    var a;
+}
+
+data T 
+{
+    signs IT;
+    a
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
 
         [Test]
         public void Meets_WhenITAndTDoNotMatch_ShouldThrow()

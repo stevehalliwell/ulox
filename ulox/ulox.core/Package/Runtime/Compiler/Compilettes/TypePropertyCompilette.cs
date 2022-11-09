@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public class TypePropertyCompilette : ITypeBodyCompilette
+    public sealed class TypePropertyCompilette : ITypeBodyCompilette
     {
         private List<byte> _classVarConstantNames = new List<byte>();
 
@@ -90,6 +90,8 @@ namespace ULox
 
             if(_requreEndStatement)
                 compiler.ConsumeEndStatement("property declaration");
+            else
+                compiler.TokenIterator.Match(TokenType.END_STATEMENT);
         }
 
         public void PostBody(Compiler compiler)

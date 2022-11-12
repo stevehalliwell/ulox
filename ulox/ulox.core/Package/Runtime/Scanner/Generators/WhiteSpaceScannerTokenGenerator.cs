@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class WhiteSpaceScannerTokenGenerator : IScannerTokenGenerator
+    public sealed class WhiteSpaceScannerTokenGenerator : IScannerTokenGenerator
     {
         public void Consume(IScanner scanner)
         {

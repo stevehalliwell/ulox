@@ -2,24 +2,23 @@
 
 namespace ULox
 {
-    public class StringScannerTokenGenerator : IScannerTokenGenerator
+    public sealed class StringScannerTokenGenerator : IScannerTokenGenerator
     {
-        private StringBuilder workingSpaceStringBuilder = new StringBuilder();
-        private char _prevChar;
+        private readonly StringBuilder workingSpaceStringBuilder = new StringBuilder();
 
         public bool DoesMatchChar(char ch) => ch == '"';
 
         public void Consume(IScanner scanner)
         {
             workingSpaceStringBuilder.Clear();
-            _prevChar = scanner.CurrentChar;
+            var prevChar = scanner.CurrentChar;
             scanner.Advance();//skip leading "
             while (!scanner.IsAtEnd())
             {
                 if (scanner.CurrentChar == '\n') { scanner.Line++; scanner.CharacterNumber = 0; }
 
                 if (scanner.CurrentChar == '"'
-                    && _prevChar != '\\')
+                    && prevChar != '\\')
                 {
                     End(scanner);
                     return;
@@ -27,7 +26,7 @@ namespace ULox
 
                 workingSpaceStringBuilder.Append(scanner.CurrentChar);
 
-                _prevChar = scanner.CurrentChar;
+                prevChar = scanner.CurrentChar;
                 scanner.Advance();
             }
 

@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class SlashScannerTokenGenerator : PrefixedCharScannerCharMatchTokenGenerator
+    public sealed class SlashScannerTokenGenerator : PrefixedCharScannerCharMatchTokenGenerator
     {
         public SlashScannerTokenGenerator() : base('/')
         {

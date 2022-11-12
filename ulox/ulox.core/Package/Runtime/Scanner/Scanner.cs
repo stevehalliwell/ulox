@@ -33,8 +33,7 @@ namespace ULox
                 new NumberScannerTokenGenerator(),
                 new SlashScannerTokenGenerator(),
                 new CompoundCharScannerCharMatchTokenGenerator(),
-                identScannerGen
-                                    );
+                identScannerGen);
 
             identScannerGen.Add(
                 ("var", TokenType.VAR),
@@ -87,8 +86,7 @@ namespace ULox
 
                 ("expect", TokenType.EXPECT),
 
-                ("data", TokenType.DATA)
-                                              );
+                ("data", TokenType.DATA));
 
             this.AddSingleCharTokenGenerators(
                 ('(', TokenType.OPEN_PAREN),
@@ -101,8 +99,7 @@ namespace ULox
                 (';', TokenType.END_STATEMENT),
                 ('.', TokenType.DOT),
                 (':', TokenType.COLON),
-                ('?', TokenType.QUESTION)
-                                                    );
+                ('?', TokenType.QUESTION));
         }
 
         public void AddGenerator(IScannerTokenGenerator gen)
@@ -130,10 +127,10 @@ namespace ULox
                     var ch = CurrentChar;
 
                     var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
-                    if (matchinGen == null)
+                    if (matchinGen != null)
+                        matchinGen.Consume(this);
+                    else
                         ThrowScannerException($"Unexpected character '{CurrentChar}'");
-
-                    matchinGen.Consume(this);
                 }
 
                 AddTokenSingle(TokenType.EOF);
@@ -183,7 +180,6 @@ namespace ULox
 
         public void AddToken(TokenType simpleToken, string str, object literal)
             => Tokens.Add(new Token(simpleToken, str, literal, Line, CharacterNumber));
-
 
         private void AddSingleCharTokenGenerator(char ch, TokenType tt)
             => AddGenerator(new ConfiguredSingleCharScannerCharMatchTokenGenerator(ch, tt));

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class NativeMapClass : UserTypeInternal
+    public sealed class NativeMapClass : UserTypeInternal
     {
         public static readonly Value SharedNativeMapClassValue = Value.New(new NativeMapClass());
 

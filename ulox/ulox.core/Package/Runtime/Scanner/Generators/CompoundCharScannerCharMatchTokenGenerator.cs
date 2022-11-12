@@ -2,9 +2,9 @@
 
 namespace ULox
 {
-    public class CompoundCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
+    public sealed class CompoundCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
     {
-        private (char ch, TokenType regular, TokenType compound)[] CompoundMatches = new[]
+        private readonly (char ch, TokenType regular, TokenType compound)[] CompoundMatches = new[]
         {
             ('+', TokenType.PLUS, TokenType.PLUS_EQUAL),
             ('-', TokenType.MINUS, TokenType.MINUS_EQUAL),

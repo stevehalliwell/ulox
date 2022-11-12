@@ -25,5 +25,26 @@ namespace ulox.core.bench
             var engine = Engine.CreateDefault();
             engine.RunScript(new Script("", ScriptVsNativeFunctional.FunctionalNative));
         }
+
+        [Benchmark]
+        public void CompileVsExecute_All()
+        {
+            var engine = Engine.CreateDefault();
+            engine.RunScript(new Script("", CompileVsExecute.Script));
+        }
+
+        [Benchmark]
+        public void CompileVsExecute_CompileOnly()
+        {
+            var engine = Engine.CreateDefault();
+            engine.Context.CompileScript(new Script("", CompileVsExecute.Script));
+        }
+
+        [Benchmark]
+        public void CompileVsExecute_TokenizeOnly()
+        {
+            var scanner = new Scanner();
+            var res = scanner.Scan(new Script("", CompileVsExecute.Script));
+        }
     }
 }

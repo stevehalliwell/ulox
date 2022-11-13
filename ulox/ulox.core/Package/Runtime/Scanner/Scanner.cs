@@ -83,7 +83,9 @@ namespace ULox
 
                 ("expect", TokenType.EXPECT),
 
-                ("data", TokenType.DATA));
+                ("data", TokenType.DATA),
+
+                ("match", TokenType.MATCH));
 
             this.AddSingleCharTokenGenerators(
                 ('(', TokenType.OPEN_PAREN),

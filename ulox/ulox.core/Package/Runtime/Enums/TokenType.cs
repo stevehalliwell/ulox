@@ -100,5 +100,7 @@
         COUNT_OF,
 
         EXPECT,
+
+        MATCH,
     }
 }

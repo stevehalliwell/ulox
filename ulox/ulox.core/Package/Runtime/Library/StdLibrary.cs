@@ -225,7 +225,7 @@ namespace ULox
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)
                 vm.PushReturn(Value.New(target.val.asInstance.IsFrozen));
-            else if (target.type == ValueType.Class)
+            else if (target.type == ValueType.UserType)
                 vm.PushReturn(Value.New(target.val.asClass.IsFrozen));
 
             return NativeCallResult.SuccessfulExpression;
@@ -237,7 +237,7 @@ namespace ULox
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)
                 target.val.asInstance.Unfreeze();
-            if (target.type == ValueType.Class)
+            if (target.type == ValueType.UserType)
                 target.val.asClass.Unfreeze();
 
             return NativeCallResult.SuccessfulExpression;

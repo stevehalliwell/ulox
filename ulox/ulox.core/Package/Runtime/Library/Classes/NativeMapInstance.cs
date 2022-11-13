@@ -8,7 +8,7 @@ namespace ULox
         private readonly Dictionary<Value, Value> _map = new Dictionary<Value, Value>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public NativeMapInstance(ClassInternal fromClass)
+        public NativeMapInstance(UserTypeInternal fromClass)
             : base(fromClass)
         {
         }

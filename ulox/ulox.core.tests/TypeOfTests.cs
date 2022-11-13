@@ -12,7 +12,7 @@ var t = typeof(5);
 print(t);
 ");
 
-            Assert.AreEqual("<class Number>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Native Number>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -23,7 +23,7 @@ var t = typeof(true);
 print(t);
 ");
 
-            Assert.AreEqual("<class Bool>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Native Bool>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -34,7 +34,7 @@ var t = typeof(""string"");
 print(t);
 ");
 
-            Assert.AreEqual("<class String>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Native String>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -56,7 +56,7 @@ var t = typeof([]);
 print(t);
 ");
 
-            Assert.AreEqual("<class NativeList>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Native NativeList>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -67,7 +67,7 @@ var t = typeof([:]);
 print(t);
 ");
 
-            Assert.AreEqual("<class NativeMap>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Native NativeMap>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -78,7 +78,7 @@ var t = typeof({:});
 print(t);
 ");
 
-            Assert.AreEqual("<class Dynamic>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Native Dynamic>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -90,7 +90,7 @@ var t = typeof(MyClass);
 print(t);
 ");
 
-            Assert.AreEqual("<class MyClass>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Class MyClass>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -103,7 +103,7 @@ var t = typeof(myClassInst);
 print(t);
 ");
 
-            Assert.AreEqual("<class MyClass>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Class MyClass>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -128,7 +128,7 @@ var t = typeof(myClassInst);
 print(typeof(t));
 ");
 
-            Assert.AreEqual("<class MyClass>", testEngine.InterpreterResult);
+            Assert.AreEqual("<Class MyClass>", testEngine.InterpreterResult);
         }
 
         [Test]

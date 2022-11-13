@@ -30,7 +30,7 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddMethodsToClass(
-            this ClassInternal self,
+            this UserTypeInternal self,
             params (string name, Value val)[] bind)
         {
             foreach (var item in bind)

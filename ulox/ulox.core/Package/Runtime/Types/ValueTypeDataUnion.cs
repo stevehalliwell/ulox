@@ -24,7 +24,7 @@ namespace ULox
         public ClosureInternal asClosure => asObject as ClosureInternal;
         public List<ClosureInternal> asCombined => asObject as List<ClosureInternal>;
         public UpvalueInternal asUpvalue => asObject as UpvalueInternal;
-        public ClassInternal asClass => asObject as ClassInternal;
+        public UserTypeInternal asClass => asObject as UserTypeInternal;
         public InstanceInternal asInstance => asObject as InstanceInternal;
         public Chunk asChunk => asObject as Chunk;
         public BoundMethod asBoundMethod => asObject as BoundMethod;

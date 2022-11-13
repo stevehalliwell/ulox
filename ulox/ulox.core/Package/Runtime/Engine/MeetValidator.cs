@@ -6,7 +6,7 @@ namespace ULox
     public static class MeetValidator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static (bool meets, string msg) ValidateClassMeetsClass(ClassInternal lhs, ClassInternal contract)
+        public static (bool meets, string msg) ValidateClassMeetsClass(UserTypeInternal lhs, UserTypeInternal contract)
         {
             foreach (var contractMeth in contract.Methods)
             {
@@ -32,13 +32,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static (bool meets, string msg) ValidateInstanceMeetsClass(InstanceInternal lhs, ClassInternal contract)
+        public static (bool meets, string msg) ValidateInstanceMeetsClass(InstanceInternal lhs, UserTypeInternal contract)
         {
             foreach (var contractMeth in contract.Methods)
             {
                 Value ourContractMatchingMeth = Value.Null();
                 if (lhs.Fields.TryGetValue(contractMeth.Key, out ourContractMatchingMeth)
-                    || lhs.FromClass.Methods.TryGetValue(contractMeth.Key, out ourContractMatchingMeth))
+                    || lhs.FromUserType.Methods.TryGetValue(contractMeth.Key, out ourContractMatchingMeth))
                 {
                     if (contractMeth.Value.type == ValueType.Closure
                         && ourContractMatchingMeth.type == ValueType.Closure)
@@ -71,13 +71,13 @@ namespace ULox
             if (lhs.GetType() != contract.GetType())
                 return (false, $"instance does not match internal type, expected '{contract.GetType()}' but found '{lhs.GetType()}'.");
 
-            if ((lhs.FromClass == null || lhs.FromClass is DynamicClass)
-                && (contract.FromClass == null || contract.FromClass is DynamicClass))
+            if ((lhs.FromUserType == null || lhs.FromUserType is DynamicClass)
+                && (contract.FromUserType == null || contract.FromUserType is DynamicClass))
             {
                 return InstanceContentMatcher(lhs, contract);
             }
 
-            return ValidateInstanceMeetsClass(lhs, contract.FromClass);
+            return ValidateInstanceMeetsClass(lhs, contract.FromUserType);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -87,7 +87,7 @@ namespace ULox
             {
                 Value ourMatch = Value.Null();
                 if (lhs.Fields.TryGetValue(field.Key, out ourMatch)
-                    || lhs.FromClass.Methods.TryGetValue(field.Key, out ourMatch))
+                    || lhs.FromUserType.Methods.TryGetValue(field.Key, out ourMatch))
                 {
                     if (field.Value.type != ourMatch.type)
                         return (false, $"instance has matching field name '{field.Key.String}' but type does not match, expected '{ourMatch.type}' but found '{field.Value.type}'.");

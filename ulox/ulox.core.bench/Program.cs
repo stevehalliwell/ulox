@@ -11,9 +11,7 @@ namespace ulox.core.bench
         {
             BenchmarkRunner.Run<Program>(args: args);
         }
-
-
-
+        
         [Benchmark]
         public void ScriptVsNativeFunctional_UloxMethods()
         {

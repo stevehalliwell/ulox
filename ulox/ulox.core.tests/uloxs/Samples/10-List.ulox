@@ -40,3 +40,6 @@ var fiver = [].Grow(5,0);
 
 //the list is now only 2 elements, the front two
 var twoer = fiver.Shrink(2);
+
+//list can be reversec
+var thatListReversed = thatList.Reverse();

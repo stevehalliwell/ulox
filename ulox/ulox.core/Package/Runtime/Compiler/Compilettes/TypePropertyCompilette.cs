@@ -2,16 +2,34 @@
 
 namespace ULox
 {
-    public class TypePropertyCompilette : ITypeBodyCompilette
+    public sealed class TypePropertyCompilette : ITypeBodyCompilette
     {
         private List<byte> _classVarConstantNames = new List<byte>();
 
         private int _initFragStartLocation = -1;
         private int _previousInitFragJumpLocation = -1;
         private TypeCompilette _typeCompilette;
+        private TokenType _matchToken;
+        private bool _requreEndStatement;
+
+        public static TypePropertyCompilette CreateForClass()
+        {
+            var compilette = new TypePropertyCompilette();
+            compilette._matchToken = TokenType.VAR;
+            compilette._requreEndStatement = true;
+            return compilette;
+        }
+
+        public static TypePropertyCompilette CreateForData()
+        {
+            var compilette = new TypePropertyCompilette();
+            compilette._matchToken = TokenType.NONE;
+            compilette._requreEndStatement = false;
+            return compilette;
+        }
 
         public TokenType Match
-            => TokenType.VAR;
+            => _matchToken;
 
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Var;
@@ -70,7 +88,10 @@ namespace ULox
                 compiler.PatchJump(initFragmentJump);
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
-            compiler.ConsumeEndStatement("property declaration");
+            if(_requreEndStatement)
+                compiler.ConsumeEndStatement("property declaration");
+            else
+                compiler.TokenIterator.Match(TokenType.END_STATEMENT);
         }
 
         public void PostBody(Compiler compiler)

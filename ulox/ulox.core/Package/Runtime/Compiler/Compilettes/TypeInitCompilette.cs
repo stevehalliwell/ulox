@@ -10,7 +10,7 @@
 
         public override void Process(Compiler compiler)
         {
-            var initName = ClassCompilette.InitMethodName.String;
+            var initName = TypeCompilette.InitMethodName.String;
             byte constant = compiler.AddCustomStringConstant(initName);
             compiler.Function(initName, FunctionType.Init);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);

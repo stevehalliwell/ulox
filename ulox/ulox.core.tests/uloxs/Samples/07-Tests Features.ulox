@@ -27,11 +27,11 @@ test Fixture
 //	Count of the data source.
 test DataTests
 {
-	var data = [1,2,3,4,5];
+	var dat = [1,2,3,4,5];
 
 	// Here we use a text fixture body variable as the data source. 
 	// The test will run data.Count times.
-	testcase (data) IsNumber(val)
+	testcase (dat) IsNumber(val)
 	{
 		//if you really want to you can access the data source in the testcase body as
 		var dataSourceIs = testDataSource;

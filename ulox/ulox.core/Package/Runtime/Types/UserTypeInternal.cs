@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class ClassInternal : InstanceInternal
+    public class UserTypeInternal : InstanceInternal
     {
         public static readonly HashedString[] OverloadableMethodNames = new HashedString[]
         {
@@ -41,16 +41,17 @@ namespace ULox
 
         //TODO these props also need to be write protected by the freeze
         public HashedString Name { get; protected set; }
-
+        public UserType UserType { get; }
         public Value Initialiser { get; protected set; } = Value.Null();
-        public List<(ClosureInternal closure, int instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, int)>();
+        public List<(ClosureInternal closure, ushort instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, ushort)>();
         public IReadOnlyDictionary<HashedString, Value> Methods => methods.AsReadOnly;
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private List<HashedString> _fieldsNames = new List<HashedString>();
 
-        public ClassInternal(HashedString name)
+        public UserTypeInternal(HashedString name, UserType userType)
         {
             Name = name;
+            UserType = userType;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -89,7 +90,7 @@ namespace ULox
             InitChains.Add((closure, initChainStartOp));
         }
 
-        public void AddMixin(Value flavourValue)
+        public void AddMixin(Value flavourValue, Vm vm)
         {
             // This is used internally by the vm only does not need to check for frozen
             
@@ -98,25 +99,32 @@ namespace ULox
 
             foreach (var flavourMeth in flavour.methods)
             {
-                MixinMethod(flavourMeth.Key, flavourMeth.Value);
+                MixinMethod(flavourMeth.Key, flavourMeth.Value, vm);
             }
 
             foreach (var flavourInitChain in flavour.InitChains)
             {
                 if (!InitChains.Contains(flavourInitChain))
                 {
-                    InitChains.Add(flavourInitChain);
+                    AddInitChain(flavourInitChain.closure, flavourInitChain.instruction);
                 }
             }
         }
 
-        private void MixinMethod(HashedString key, Value value)
+        private void MixinMethod(HashedString key, Value value, Vm vm)
         {
             if (methods.TryGetValue(key, out var existing))
             {
                 //combine
                 if (existing.type == ValueType.Closure)
                 {
+                    var existingArity = existing.val.asClosure.chunk.Arity;
+                    var newArity = value.val.asClosure.chunk.Arity;
+                    if (existingArity != newArity)
+                    {
+                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
+                    }
+                    
                     //make a combine
                     var temp = Value.Combined();
                     temp.val.asCombined.Add(existing.val.asClosure);
@@ -125,12 +133,19 @@ namespace ULox
                 }
                 else
                 {
+                    var existingArity = existing.val.asCombined[0].chunk.Arity;
+                    var newArity = value.val.asClosure.chunk.Arity;
+                    if (existingArity != newArity)
+                    {
+                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
+                    }
+                    
                     existing.val.asCombined.Add(value.val.asClosure);
                 }
 
                 value = existing;
             }
-
+            
             AddMethod(key, value);
         }
 
@@ -148,6 +163,6 @@ namespace ULox
         public void AddFieldName(HashedString fieldName)
             => _fieldsNames.Add(fieldName);
 
-        public override string ToString() => $"<{nameof(ClassInternal)}:{Name}>";
+        public override string ToString() => $"<{nameof(UserTypeInternal)}:{Name}>";
     }
 }

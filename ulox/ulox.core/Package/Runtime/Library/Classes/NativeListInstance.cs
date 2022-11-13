@@ -7,7 +7,7 @@ namespace ULox
     {
         private readonly List<Value> _list = new List<Value>();
 
-        public NativeListInstance(ClassInternal fromClass)
+        public NativeListInstance(UserTypeInternal fromClass)
             : base(fromClass)
         {
         }

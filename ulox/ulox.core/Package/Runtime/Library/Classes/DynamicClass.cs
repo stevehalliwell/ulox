@@ -1,11 +1,11 @@
 ﻿namespace ULox
 {
-    public class DynamicClass : ClassInternal
+    public class DynamicClass : UserTypeInternal
     {
         public static readonly HashedString DynamicClassName = new HashedString("Dynamic");
         public static readonly Value SharedDynamicClassValue = Value.New(new DynamicClass());
 
-        public DynamicClass() : base(DynamicClassName)
+        public DynamicClass() : base(DynamicClassName, UserType.Native)
         {
             this.AddMethodsToClass(
                 (nameof(HasField), Value.New(HasField)),

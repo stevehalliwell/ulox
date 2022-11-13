@@ -2,16 +2,16 @@
 
 namespace ULox
 {
-    public class VMClass : ClassInternal
+    public class VMClass : UserTypeInternal
     {
         private static readonly HashedString VMFieldName = new HashedString("vm");
 
         public Func<Vm> CreateVM { get; private set; }
 
-        public VMClass(Func<Vm> createVM) : base(new HashedString("VM"))
+        public VMClass(Func<Vm> createVM) : base(new HashedString("VM"), UserType.Native)
         {
             CreateVM = createVM;
-            this.AddMethod(ClassCompilette.InitMethodName, Value.New(InitInstance));
+            this.AddMethod(TypeCompilette.InitMethodName, Value.New(InitInstance));
             this.AddMethodsToClass(
                 (nameof(AddGlobal), Value.New(AddGlobal)),
                 (nameof(GetGlobal), Value.New(GetGlobal)),

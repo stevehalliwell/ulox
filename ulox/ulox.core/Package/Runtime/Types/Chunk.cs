@@ -110,7 +110,7 @@ namespace ULox
             case ValueType.NativeFunction:
             case ValueType.Closure:
             case ValueType.Upvalue:
-            case ValueType.Class:
+            case ValueType.UserType:
             case ValueType.Instance:
             case ValueType.BoundMethod:
             default:

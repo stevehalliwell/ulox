@@ -1,20 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace ULox
 {
     public sealed class Scanner : IScanner
     {
+        private StringIterator _stringIterator = new StringIterator("");
         public List<Token> Tokens { get; private set; }
-        public int Line { get; set; }
-        public int CharacterNumber { get; set; }
-        public Char CurrentChar { get; private set; }
-         
-        private List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+        public char CurrentChar => _stringIterator.CurrentChar;
+        public int Line { get => _stringIterator.Line; set => _stringIterator.Line = value; }
+        public int CharacterNumber { get => _stringIterator.CharacterNumber; set => _stringIterator.CharacterNumber = value; }
 
-        private StringReader _stringReader;
+        private readonly List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+
         private Script _script;
 
         public Scanner()
@@ -108,34 +107,30 @@ namespace ULox
         public void Reset()
         {
             Tokens = new List<Token>();
-            Line = 1;
-            CharacterNumber = 0;
-            if (_stringReader != null)
-                _stringReader.Dispose();
+            _stringIterator = null;
             _script = default;
         }
 
         public List<Token> Scan(Script script)
         {
             _script = script;
-            
-            using (_stringReader = new StringReader(_script.Source))
+
+            _stringIterator = new StringIterator(_script.Source);
+            Line = 1;
+            CharacterNumber = 0;
+            while (!IsAtEnd())
             {
-                while (!IsAtEnd())
-                {
-                    Advance();
-                    var ch = CurrentChar;
+                Advance();
+                var ch = CurrentChar;
 
-                    var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
-                    if (matchinGen != null)
-                        matchinGen.Consume(this);
-                    else
-                        ThrowScannerException($"Unexpected character '{CurrentChar}'");
-                }
-
-                AddTokenSingle(TokenType.EOF);
+                var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
+                if (matchinGen != null)
+                    matchinGen.Consume(this);
+                else
+                    ThrowScannerException($"Unexpected character '{CurrentChar}'");
             }
 
+            AddTokenSingle(TokenType.EOF);
             return Tokens;
         }
 
@@ -146,34 +141,24 @@ namespace ULox
 
         public bool Match(Char matchingCharToConsume)
         {
-            if (_stringReader.Peek() == matchingCharToConsume)
+            if (_stringIterator.Peek() == matchingCharToConsume)
             {
-                if (_stringReader.Read() == '\n')
-                {
-                    Line++;
-                    CharacterNumber = 0;
-                }
-                CharacterNumber++;
-
+                Advance();
                 return true;
             }
             return false;
         }
 
-        public void Advance()
-        {
-            CurrentChar = (Char)_stringReader.Read();
-            CharacterNumber++;
-        }
+        public void Advance() => _stringIterator.Advance();
 
         public bool IsAtEnd()
-            => _stringReader.Peek() == -1;
+            => _stringIterator.Peek() == -1;
 
         public Char Peek()
-            => (Char)_stringReader.Peek();
+            => (Char)_stringIterator.Peek();
 
         public void ReadLine()
-            => _stringReader.ReadLine();
+            => _stringIterator.ReadLine();
 
         public void AddTokenSingle(TokenType token)
             => AddToken(token, CurrentChar.ToString(), null);

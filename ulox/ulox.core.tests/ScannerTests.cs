@@ -307,7 +307,7 @@ fun foo(p)
             void Act() => scanner.Scan(new Script("test", testString));
 
             var ex = Assert.Throws<ScannerException>(Act);
-            Assert.AreEqual("Unterminated String got IDENTIFIER in test at 1:17", ex.Message);
+            Assert.AreEqual("Unterminated String got IDENTIFIER in test at 1:14", ex.Message);
         }
     }
 }

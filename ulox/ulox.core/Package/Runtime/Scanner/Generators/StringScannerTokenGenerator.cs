@@ -15,8 +15,6 @@ namespace ULox
             scanner.Advance();//skip leading "
             while (!scanner.IsAtEnd())
             {
-                if (scanner.CurrentChar == '\n') { scanner.Line++; scanner.CharacterNumber = 0; }
-
                 if (scanner.CurrentChar == '"'
                     && prevChar != '\\')
                 {

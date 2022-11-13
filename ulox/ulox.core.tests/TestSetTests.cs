@@ -262,7 +262,7 @@ test T
 }"
             );
 
-            Assert.AreEqual("Testcase 'Add' has arguments but no data expression in chunk 'unnamed_chunk(test)' at 4:43.", testEngine.InterpreterResult);
+            Assert.AreEqual("Testcase 'Add' has arguments but no data expression in chunk 'unnamed_chunk(test)' at 4:37.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -352,7 +352,7 @@ test T
 }"
             );
 
-            Assert.AreEqual("Testcase 'IsOne' has data expression but no arguments in chunk 'unnamed_chunk(test)' at 7:35.", testEngine.InterpreterResult);
+            Assert.AreEqual("Testcase 'IsOne' has data expression but no arguments in chunk 'unnamed_chunk(test)' at 7:30.", testEngine.InterpreterResult);
         }
 
         [Test]

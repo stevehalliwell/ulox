@@ -5,8 +5,6 @@ namespace ULox
     public interface IScanner
     {
         char CurrentChar { get; }
-        int Line { get; set; }
-        int CharacterNumber { get; set; }
 
         void AddGenerator(IScannerTokenGenerator gen);
         void AddToken(TokenType simpleToken, string str, object literal);

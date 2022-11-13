@@ -1,35 +1,55 @@
-﻿using System;
-using System.IO;
+﻿using System.Runtime.CompilerServices;
 
 namespace ULox
 {
     public sealed class StringIterator
     {
-        private readonly StringReader _stringReader;
+        private readonly string _source;
+        private int _index;
 
         public StringIterator(string source)
         {
-            _stringReader = new StringReader(source);
+            _source = source;
+            _index = -1;
+            Line = 1;
+            CharacterNumber = 0;
         }
 
         public int Line { get; set; }
         public int CharacterNumber { get; set; }
         public char CurrentChar { get; private set; }
 
-        internal int Peek() => _stringReader.Peek();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal int Peek() => SafeRead(_index + 1);
 
-        internal char Read() => (char)_stringReader.Read();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal char Read()
+        {
+            Advance();
+            return CurrentChar;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int SafeRead(int index)
+        {
+            return index < _source.Length ? _source[index] : -1;
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void ReadLine()
         {
-            _stringReader.ReadLine();
+            while (Peek() != -1 && CurrentChar != '\n')
+                Advance();
+            
             Line++;
             CharacterNumber = 1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Advance()
         {
-            CurrentChar = (Char)Read();
+            _index++; 
+            CurrentChar = (char)SafeRead(_index);
             if (CurrentChar == '\n')
             {
                 Line++;

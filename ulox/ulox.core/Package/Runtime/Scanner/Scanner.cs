@@ -9,8 +9,6 @@ namespace ULox
         private StringIterator _stringIterator = new StringIterator("");
         public List<Token> Tokens { get; private set; }
         public char CurrentChar => _stringIterator.CurrentChar;
-        public int Line { get => _stringIterator.Line; set => _stringIterator.Line = value; }
-        public int CharacterNumber { get => _stringIterator.CharacterNumber; set => _stringIterator.CharacterNumber = value; }
 
         private readonly List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
 
@@ -116,8 +114,6 @@ namespace ULox
             _script = script;
 
             _stringIterator = new StringIterator(_script.Source);
-            Line = 1;
-            CharacterNumber = 0;
             while (!IsAtEnd())
             {
                 Advance();
@@ -136,7 +132,7 @@ namespace ULox
 
         public void ThrowScannerException(string msg)
         {
-            throw new ScannerException(msg, TokenType.IDENTIFIER, Line, CharacterNumber, _script.Name);
+            throw new ScannerException(msg, TokenType.IDENTIFIER, _stringIterator.Line, _stringIterator.CharacterNumber, _script.Name);
         }
 
         public bool Match(Char matchingCharToConsume)
@@ -164,7 +160,7 @@ namespace ULox
             => AddToken(token, CurrentChar.ToString(), null);
 
         public void AddToken(TokenType simpleToken, string str, object literal)
-            => Tokens.Add(new Token(simpleToken, str, literal, Line, CharacterNumber));
+            => Tokens.Add(new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber));
 
         private void AddSingleCharTokenGenerator(char ch, TokenType tt)
             => AddGenerator(new ConfiguredSingleCharScannerCharMatchTokenGenerator(ch, tt));

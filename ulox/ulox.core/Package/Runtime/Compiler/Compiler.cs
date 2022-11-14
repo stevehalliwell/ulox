@@ -869,7 +869,7 @@ namespace ULox
 
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after match statement.");
             var matchArgName = compiler.TokenIterator.PreviousToken.Lexeme;
-            var matchArgID = (byte)compiler.CurrentCompilerState.ResolveLocal(compiler, matchArgName);
+            var (matchGetOp, _, matchArgID) = compiler.ResolveNameLookupOpCode(matchArgName);
 
             var lastElseJumpLoc = -1;
             var skipToEnds = new List<int>();
@@ -881,7 +881,7 @@ namespace ULox
                     compiler.PatchJump(lastElseJumpLoc);
                 
                 compiler.Expression();
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, matchArgID);
+                compiler.EmitOpAndBytes(matchGetOp, matchArgID);
                 compiler.EmitOpCode(OpCode.EQUAL);
                 lastElseJumpLoc = compiler.EmitJumpIf();
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");

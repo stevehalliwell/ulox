@@ -60,7 +60,7 @@ namespace ULox
         private NativeCallResult Resize(Vm vm, int argCount)
         {
             var count = vm.GetArg(1);
-            var fillWith = vm.GetArg(1);
+            var fillWith = vm.GetArg(2);
             var list = GetArg0NativeListInstance(vm);
 
             int size = (int)count.val.asDouble;

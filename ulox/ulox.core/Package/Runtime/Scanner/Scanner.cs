@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 
 namespace ULox
 {
     public sealed class Scanner : IScanner
     {
+        private StringIterator _stringIterator = new StringIterator("");
         public List<Token> Tokens { get; private set; }
-        public int Line { get; set; }
-        public int CharacterNumber { get; set; }
-        public Char CurrentChar { get; private set; }
-         
-        private List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+        public char CurrentChar => _stringIterator.CurrentChar;
 
-        private StringReader _stringReader;
+        private readonly List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+
         private Script _script;
 
         public Scanner()
@@ -33,8 +30,7 @@ namespace ULox
                 new NumberScannerTokenGenerator(),
                 new SlashScannerTokenGenerator(),
                 new CompoundCharScannerCharMatchTokenGenerator(),
-                identScannerGen
-                                    );
+                identScannerGen);
 
             identScannerGen.Add(
                 ("var", TokenType.VAR),
@@ -87,8 +83,7 @@ namespace ULox
 
                 ("expect", TokenType.EXPECT),
 
-                ("data", TokenType.DATA)
-                                              );
+                ("data", TokenType.DATA));
 
             this.AddSingleCharTokenGenerators(
                 ('(', TokenType.OPEN_PAREN),
@@ -101,8 +96,7 @@ namespace ULox
                 (';', TokenType.END_STATEMENT),
                 ('.', TokenType.DOT),
                 (':', TokenType.COLON),
-                ('?', TokenType.QUESTION)
-                                                    );
+                ('?', TokenType.QUESTION));
         }
 
         public void AddGenerator(IScannerTokenGenerator gen)
@@ -111,79 +105,62 @@ namespace ULox
         public void Reset()
         {
             Tokens = new List<Token>();
-            Line = 1;
-            CharacterNumber = 0;
-            if (_stringReader != null)
-                _stringReader.Dispose();
+            _stringIterator = null;
             _script = default;
         }
 
         public List<Token> Scan(Script script)
         {
             _script = script;
-            
-            using (_stringReader = new StringReader(_script.Source))
+
+            _stringIterator = new StringIterator(_script.Source);
+            while (!IsAtEnd())
             {
-                while (!IsAtEnd())
-                {
-                    Advance();
-                    var ch = CurrentChar;
+                Advance();
+                var ch = CurrentChar;
 
-                    var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
-                    if (matchinGen == null)
-                        ThrowScannerException($"Unexpected character '{CurrentChar}'");
-
+                var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
+                if (matchinGen != null)
                     matchinGen.Consume(this);
-                }
-
-                AddTokenSingle(TokenType.EOF);
+                else
+                    ThrowScannerException($"Unexpected character '{CurrentChar}'");
             }
 
+            AddTokenSingle(TokenType.EOF);
             return Tokens;
         }
 
         public void ThrowScannerException(string msg)
         {
-            throw new ScannerException(msg, TokenType.IDENTIFIER, Line, CharacterNumber, _script.Name);
+            throw new ScannerException(msg, TokenType.IDENTIFIER, _stringIterator.Line, _stringIterator.CharacterNumber, _script.Name);
         }
 
         public bool Match(Char matchingCharToConsume)
         {
-            if (_stringReader.Peek() == matchingCharToConsume)
+            if (_stringIterator.Peek() == matchingCharToConsume)
             {
-                if (_stringReader.Read() == '\n')
-                {
-                    Line++;
-                    CharacterNumber = 0;
-                }
-                CharacterNumber++;
-
+                Advance();
                 return true;
             }
             return false;
         }
 
-        public void Advance()
-        {
-            CurrentChar = (Char)_stringReader.Read();
-            CharacterNumber++;
-        }
+        public void Advance() => _stringIterator.Advance();
 
         public bool IsAtEnd()
-            => _stringReader.Peek() == -1;
+            => _stringIterator.Peek() == -1;
 
         public Char Peek()
-            => (Char)_stringReader.Peek();
+            => (Char)_stringIterator.Peek();
 
         public void ReadLine()
-            => _stringReader.ReadLine();
+            => _stringIterator.ReadLine();
 
         public void AddTokenSingle(TokenType token)
             => AddToken(token, CurrentChar.ToString(), null);
 
         public void AddToken(TokenType simpleToken, string str, object literal)
-            => Tokens.Add(new Token(simpleToken, str, literal, Line, CharacterNumber));
-
+            => Tokens.Add(new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber));
 
         private void AddSingleCharTokenGenerator(char ch, TokenType tt)
             => AddGenerator(new ConfiguredSingleCharScannerCharMatchTokenGenerator(ch, tt));

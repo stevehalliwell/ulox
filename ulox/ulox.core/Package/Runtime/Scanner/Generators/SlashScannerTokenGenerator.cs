@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class SlashScannerTokenGenerator : PrefixedCharScannerCharMatchTokenGenerator
+    public sealed class SlashScannerTokenGenerator : PrefixedCharScannerCharMatchTokenGenerator
     {
         public SlashScannerTokenGenerator() : base('/')
         {
@@ -11,8 +11,6 @@
             if (scanner.Match('/'))
             {
                 scanner.ReadLine();
-                scanner.Line++;
-                scanner.CharacterNumber = 1;
             }
             else if (scanner.Match('*'))
             {

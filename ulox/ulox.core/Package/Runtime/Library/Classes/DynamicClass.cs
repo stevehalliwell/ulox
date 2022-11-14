@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class DynamicClass : UserTypeInternal
+    public sealed class DynamicClass : UserTypeInternal
     {
         public static readonly HashedString DynamicClassName = new HashedString("Dynamic");
         public static readonly Value SharedDynamicClassValue = Value.New(new DynamicClass());

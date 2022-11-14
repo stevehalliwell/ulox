@@ -3,10 +3,9 @@ using System.Text;
 
 namespace ULox
 {
-    public class IdentifierScannerTokenGenerator : IScannerTokenGenerator
+    public sealed class IdentifierScannerTokenGenerator : IScannerTokenGenerator
     {
         private readonly StringBuilder workingSpaceStringBuilder = new StringBuilder();
-
         private readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
 
         public void Add(string name, TokenType tt) 

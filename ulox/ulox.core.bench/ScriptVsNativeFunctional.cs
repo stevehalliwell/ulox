@@ -1,7 +1,4 @@
-﻿using BenchmarkDotNet.Attributes;
-using ULox;
-
-namespace ulox.core.bench
+﻿namespace ulox.core.bench
 {
     public class ScriptVsNativeFunctional
     {

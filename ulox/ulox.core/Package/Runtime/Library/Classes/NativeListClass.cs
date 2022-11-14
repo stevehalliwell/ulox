@@ -6,7 +6,7 @@ using System;
 
 namespace ULox
 {
-    public class NativeListClass : UserTypeInternal 
+    public sealed class NativeListClass : UserTypeInternal 
     {
         public static readonly Value SharedNativeListClassValue = Value.New(new NativeListClass());
 

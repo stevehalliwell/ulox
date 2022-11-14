@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public class VMClass : UserTypeInternal
+    public sealed class VMClass : UserTypeInternal
     {
         private static readonly HashedString VMFieldName = new HashedString("vm");
 

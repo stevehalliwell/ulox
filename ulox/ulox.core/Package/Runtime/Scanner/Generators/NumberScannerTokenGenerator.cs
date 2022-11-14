@@ -2,9 +2,9 @@
 
 namespace ULox
 {
-    public class NumberScannerTokenGenerator : IScannerTokenGenerator
+    public sealed class NumberScannerTokenGenerator : IScannerTokenGenerator
     {
-        private StringBuilder workingSpaceStringBuilder = new StringBuilder();
+        private readonly StringBuilder workingSpaceStringBuilder = new StringBuilder();
 
         public static bool IsDigit(int ch) => ch >= '0' && ch <= '9';
 
@@ -12,7 +12,6 @@ namespace ULox
 
         public void Consume(IScanner scanner)
         {
-            bool hasFoundDecimalPoint = false;
             workingSpaceStringBuilder.Clear();
 
             workingSpaceStringBuilder.Append(scanner.CurrentChar);

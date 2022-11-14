@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class ConfiguredSingleCharScannerCharMatchTokenGenerator : PrefixedCharScannerCharMatchTokenGenerator
+    public sealed class ConfiguredSingleCharScannerCharMatchTokenGenerator : PrefixedCharScannerCharMatchTokenGenerator
     {
         public ConfiguredSingleCharScannerCharMatchTokenGenerator(char matchingChar, TokenType tokenType)
             : base(matchingChar)

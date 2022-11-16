@@ -257,4 +257,62 @@ test ControlFlow
 
         Assert.Throws(WillThrow);
     }
+
+    testcase MatchSimple
+    {
+        var expected = 1;
+        var result = 0;
+        var target = 2;
+
+        match target
+        {
+            1 : result = 1;
+            2 : result = expected;
+            3 : result = 3;
+        }
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase MatchExpressionCompares
+    {
+        var expected = 1;
+        var result = 0;
+        var target = 2;
+
+        fun One {return 1;}
+
+        match target
+        {
+            One() : result = 1;
+            1+1 : result = expected;
+            One()+1+One() : result = 3;
+        }
+
+        Assert.AreEqual(expected, result);
+    }
+
+    testcase MatchBlockBody
+    {
+        var expected = 1;
+        var result1 = 0;
+        var result2 = 0;
+        var target = 2;
+
+        fun One {return 1;}
+
+        match target
+        {
+            One() : result1 = 1;
+            1+1 : 
+            {
+                result1 = expected;
+                result2 = expected;
+            }
+            One()+1+One() : result1 = 3;
+        }
+
+        Assert.AreEqual(expected, result1);
+        Assert.AreEqual(expected, result2);
+    }
 }

@@ -229,40 +229,6 @@ var b = 1;
         }
 
         [Test]
-        public void Engine_Cycle_If_Jump_Constants()
-        {
-            testEngine.Run(@"if(1 > 2) print (""ERROR""); print (""End"");");
-
-            Assert.AreEqual("End", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Cycle_If_Else_Constants()
-        {
-            testEngine.Run(@"
-if(1 > 2)
-    print (""ERROR"");
-else
-    print (""The "");
-print (""End"");");
-
-            Assert.AreEqual("The End", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Cycle_If_Else_Logic_Constants()
-        {
-            testEngine.Run(@"
-if(1 > 2 or 2 > 3)
-    print( ""ERROR"");
-else if (1 == 1 and 2 == 2)
-    print (""The "");
-print (""End"");");
-
-            Assert.AreEqual("The End", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Compile_Func_Do_Nothing()
         {
             testEngine.Run(@"

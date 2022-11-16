@@ -47,18 +47,16 @@ namespace ULox
                 _classCompiler,
                 _testcaseCompilette,
                 _buildCompilette,
-                TypeCompilette.CreateDateCompilette()
-                                         );
+                TypeCompilette.CreateDateCompilette());
             this.AddDeclarationCompilette(
-                (TokenType.FUNCTION, FunctionDeclaration)
-                                         );
+                (TokenType.FUNCTION, FunctionDeclaration));
 
             this.AddStatementCompilette(
                 new ReturnStatementCompilette(),
                 new LoopStatementCompilette(),
                 new WhileStatementCompilette(),
-                new ForStatementCompilette()
-                                       );
+                new ForStatementCompilette());
+
             this.AddStatementCompilette(
                 (TokenType.IF, IfStatement),
                 (TokenType.YIELD, YieldStatement),
@@ -69,8 +67,8 @@ namespace ULox
                 (TokenType.END_STATEMENT, NoOpStatement),
                 (TokenType.REGISTER, _diCompiletteParts.RegisterStatement),
                 (TokenType.FREEZE, FreezeStatement),
-                (TokenType.EXPECT, ExpectStatement)
-                                       );
+                (TokenType.EXPECT, ExpectStatement),
+                (TokenType.MATCH, MatchStatement));
 
             this.SetPrattRules(
                 (TokenType.MINUS, new ActionParseRule(Unary, Binary, Precedence.Term)),
@@ -862,6 +860,47 @@ namespace ULox
             if (compiler.TokenIterator.Match(TokenType.ELSE)) compiler.Statement();
 
             compiler.PatchJump(elseJump);
+        }
+
+        public static void MatchStatement(Compiler compiler)
+        {
+            //make a scope
+            compiler.BeginScope();
+
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after match statement.");
+            var matchArgName = compiler.TokenIterator.PreviousToken.Lexeme;
+            var (matchGetOp, _, matchArgID) = compiler.ResolveNameLookupOpCode(matchArgName);
+
+            var lastElseJumpLoc = -1;
+            var skipToEnds = new List<int>();
+            
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
+            do
+            {
+                if(lastElseJumpLoc != -1)
+                    compiler.PatchJump(lastElseJumpLoc);
+                
+                compiler.Expression();
+                compiler.EmitOpAndBytes(matchGetOp, matchArgID);
+                compiler.EmitOpCode(OpCode.EQUAL);
+                lastElseJumpLoc = compiler.EmitJumpIf();
+                compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
+                compiler.Statement();
+                skipToEnds.Add(compiler.EmitJump());
+            } while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE));
+
+            if (lastElseJumpLoc != -1)
+                compiler.PatchJump(lastElseJumpLoc);
+
+            compiler.AddConstantAndWriteOp(Value.New($"Match on '{matchArgName}' did have a matching case."));
+            compiler.EmitOpCode(OpCode.THROW);
+            
+            foreach (var item in skipToEnds)
+            {
+                compiler.PatchJump(item);
+            }
+
+            compiler.EndScope();
         }
 
         public static void BreakStatement(Compiler compiler)

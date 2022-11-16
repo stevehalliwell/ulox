@@ -21,6 +21,7 @@ namespace ULox
 
         private Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         private Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
+        private List<Chunk> _allChunks = new List<Chunk>();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -113,6 +114,7 @@ namespace ULox
         {
             compilerStates.Clear();
             TokenIterator = null;
+            _allChunks.Clear();
         }
 
         public void ThrowCompilerException(string msg)
@@ -221,9 +223,9 @@ namespace ULox
             }
         }
 
-        public Chunk Compile(TokenIterator tokenIter)
+        public CompiledScript Compile(List<Token> tokens, Script script)
         {
-            TokenIterator = tokenIter;
+            TokenIterator = new TokenIterator(tokens, script.Name);
             TokenIterator.Advance();
 
             PushCompilerState(string.Empty, FunctionType.Script);
@@ -233,7 +235,8 @@ namespace ULox
                 Declaration();
             }
 
-            return EndCompile();
+            var topChunk = EndCompile();
+            return new CompiledScript(topChunk, script.GetHashCode(), _allChunks.GetRange(0, _allChunks.Count));
         }
 
         public void Declaration()
@@ -452,7 +455,9 @@ namespace ULox
         private Chunk EndCompile()
         {
             EmitReturn();
-            return compilerStates.Pop().chunk;
+            var returnChunk = compilerStates.Pop().chunk;
+            _allChunks.Add(returnChunk);
+            return returnChunk;
         }
 
         public void EmitReturn()

@@ -75,8 +75,6 @@
 
         TYPEOF,
 
-        LOCAL,
-
         MEETS,
         SIGNS,
 

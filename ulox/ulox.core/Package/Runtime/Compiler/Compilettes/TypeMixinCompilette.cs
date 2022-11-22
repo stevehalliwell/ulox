@@ -42,10 +42,5 @@ namespace ULox
                 compiler.EmitOpAndBytes(OpCode.MIXIN);
             }
         }
-
-        public void End() 
-        {
-            _mixinNames.Clear();
-        }
     }
 }

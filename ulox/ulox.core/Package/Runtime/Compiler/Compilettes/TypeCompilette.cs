@@ -118,9 +118,6 @@ namespace ULox
 
             DoEndType(compiler);
 
-            foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
-                bodyCompilette.End();
-
             CurrentTypeName = null;
         }
 

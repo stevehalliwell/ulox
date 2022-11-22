@@ -13,7 +13,10 @@ namespace ULox
             => TypeCompiletteStage.Signs;
 
         public void Start(TypeCompilette typeCompilette)
-            => _typeCompilette = typeCompilette;
+        {
+            _typeCompilette = typeCompilette;
+            _contractNames.Clear();
+        }
 
         public void PreBody(Compiler compiler) { }
 
@@ -36,11 +39,6 @@ namespace ULox
                 compiler.NamedVariable(contractName, false);
                 compiler.EmitOpCode(OpCode.SIGNS);
             }
-        }
-
-        public void End() 
-        { 
-            _contractNames.Clear(); 
         }
     }
 }

@@ -117,11 +117,5 @@ namespace ULox
                 compiler.EmitOpAndBytes(OpCode.FIELD, item);
             }
         }
-
-        public void End() 
-        {
-            _initFragStartLocation = -1;
-            _previousInitFragJumpLocation = -1;
-        }
     }
 }

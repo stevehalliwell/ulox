@@ -18,9 +18,5 @@
         public void PostBody(Compiler compiler)
         {
         }
-
-        public void End()
-        {
-        }
     }
 }

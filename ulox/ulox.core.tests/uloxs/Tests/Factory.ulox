@@ -3,13 +3,13 @@ class Foo
     var a = 1;
 }
 
-factoryline Foo fun (){ return Foo(); };
+register Foo fun (){ return Foo(); };
 
 test FactoryTests
 {
     testcase OutterFactory
     {
-        var foo = factory Foo ();
+        var foo = inject Foo ();
 
         Assert.AreEqual(1, foo.a);
     }

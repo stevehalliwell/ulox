@@ -102,8 +102,5 @@
         EXPECT,
 
         MATCH,
-
-        FACTORY,
-        FACTORYLINE,
     }
 }

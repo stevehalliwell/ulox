@@ -86,8 +86,6 @@ namespace ULox
             opCodeHandlers[(int)OpCode.COUNT_OF] = AppendNothing;
 
             opCodeHandlers[(int)OpCode.EXPECT] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.FACTORY] = AppendByteThenStringConstant;
         }
 
         public string GetString() => stringBuilder.ToString();

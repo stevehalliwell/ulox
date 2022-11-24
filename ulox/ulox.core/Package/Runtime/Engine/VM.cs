@@ -44,7 +44,6 @@ namespace ULox
         private readonly Table _globals = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
         public DiContainer DiContainer { get; private set; } = new DiContainer();
-        public Factory Factory { get; private set; } = new Factory();
 
         public Vm()
         {
@@ -141,7 +140,6 @@ namespace ULox
 
                 TestRunner = asVmBase.TestRunner;
                 DiContainer = asVmBase.DiContainer.ShallowCopy();
-                Factory = asVmBase.Factory.ShallowCopy();
             }
         }
 
@@ -454,10 +452,6 @@ namespace ULox
                 case OpCode.EXPECT:
                     DoExpectOp();
                     break;
-
-                case OpCode.FACTORY:
-                    DoFactoryOp(chunk);
-                    break;
                     
                 case OpCode.NONE:
                 default:
@@ -554,27 +548,6 @@ namespace ULox
             if (expected.IsFalsey())
             {
                 ThrowRuntimeException($"Expect failed, got {(msg.IsNull() ? "falsey" : msg.ToString())}");
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoFactoryOp(Chunk chunk)
-        {
-            var op = (FactoryOpType)ReadByte(chunk);
-            var constantIndex = ReadByte(chunk);
-            var key = chunk.ReadConstant(constantIndex);
-
-            switch (op)
-            {
-            case FactoryOpType.Set:
-                var value = Pop();
-                Factory.SetLine(this, key, value);
-                break;
-            case FactoryOpType.Get:
-                Push(Factory.GetLine(this, key));
-                break;
-            default:
-                break;
             }
         }
 

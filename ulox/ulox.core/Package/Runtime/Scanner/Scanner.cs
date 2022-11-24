@@ -85,10 +85,7 @@ namespace ULox
 
                 ("data", TokenType.DATA),
 
-                ("match", TokenType.MATCH),
-                
-                ("factory", TokenType.FACTORY),
-                ("factoryline", TokenType.FACTORYLINE));
+                ("match", TokenType.MATCH));
 
             this.AddSingleCharTokenGenerators(
                 ('(', TokenType.OPEN_PAREN),

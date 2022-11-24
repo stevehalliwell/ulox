@@ -50,8 +50,7 @@ namespace ULox
                 TypeCompilette.CreateDateCompilette());
 
             this.AddDeclarationCompilette(
-                (TokenType.FUNCTION, FunctionDeclaration),
-                (TokenType.FACTORYLINE, FactoryLineDeclaration));
+                (TokenType.FUNCTION, FunctionDeclaration));
 
             this.AddStatementCompilette(
                 new ReturnStatementCompilette(),
@@ -107,8 +106,7 @@ namespace ULox
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
                 (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
                 (TokenType.FUNCTION, new ActionParseRule(FunExp, null, Precedence.Call)),
-                (TokenType.COUNT_OF, new ActionParseRule(CountOf, null, Precedence.None)),
-                (TokenType.FACTORY, new ActionParseRule(FactoryGet, null, Precedence.Term))
+                (TokenType.COUNT_OF, new ActionParseRule(CountOf, null, Precedence.None))
                               );
         }
         
@@ -938,21 +936,6 @@ namespace ULox
         public static void FunctionDeclaration(Compiler compiler)
         {
             InnerFunctionDeclaration(compiler, true);
-        }
-        
-        public static void FactoryLineDeclaration(Compiler compiler)
-        {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Must provide name after a 'factoryline' statement.");
-            var stringConst = compiler.AddStringConstant();
-            compiler.Expression();
-            compiler.EmitOpAndBytes(OpCode.FACTORY, (byte)FactoryOpType.Set, stringConst);
-        }
-        
-        public static void FactoryGet(Compiler compiler, bool canAssign)
-        {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after 'factory'.");
-            byte name = compiler.AddStringConstant();
-            compiler.EmitOpAndBytes(OpCode.FACTORY, (byte)FactoryOpType.Get, name);
         }
         
         public static void Inject(Compiler compiler, bool canAssign)

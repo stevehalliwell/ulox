@@ -1,11 +1,10 @@
-// A standard factory exists to standardize creation of more complex objects. It
-// is a lookup by key, via the Line creator method.
+// Using register and inject to create factory methods is recommended.
 //  The factory line can be replaced inside a tests as needed.
 
 class Foo
 {
 }
-// a quick a dirty simple line via a dynamic
-factoryline Foo fun () { return Foo(); };
 
-var createdFoo = factory Foo();
+register Foo fun () { return Foo(); };
+
+var createdFoo = inject Foo();

@@ -5,40 +5,35 @@ namespace ulox.core.tests
     public class FactoryTests : EngineTestBase
     {
         [Test]
-        public void Line_WhenNotSet_ShouldThrow()
-        {
-            testEngine.Run(@"
-factory Line(1);
-");
-
-            StringAssert.StartsWith("Factory contains no line of key 'Line' at ip:'3' in chunk", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void SetLine_WhenNullCreator_ShouldThrow()
-        {
-            testEngine.Run(@"
-factoryline Foo null;
-");
-
-            StringAssert.StartsWith("Factory line of key 'Foo' attempted to be set to null. Not allowed. at ip:'4' in chunk", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Line_WhenSet_ShouldReturnNonNull()
         {
             testEngine.Run(@"
 fun Fac(){}
-factoryline Foo Fac;
+register Foo Fac;
 
-var line = factory Foo;
+var line = inject Foo;
 
 Assert.AreEqual(Fac, line);
 ");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
-        
+
+        [Test]
+        public void Factory_WhenViaRegisterAndInject_ShouldReturnObject()
+        {
+            testEngine.Run(@"
+class Foo {}
+register FooFac fun(){return Foo();};
+
+var obj = inject FooFac();
+
+Assert.AreEqual(typeof(obj), Foo);
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
         [Test]
         public void Create_WhenSetSimpleDynWithFactorySyntax_ShouldReturnNonNull()
         {
@@ -49,9 +44,9 @@ class Foo
 
 fun FooCreator() {return Foo();}
 
-factoryline Foo FooCreator;
+register Foo FooCreator;
 
-var fooLine = factory Foo;
+var fooLine = inject Foo;
 var foo = fooLine();
 
 Assert.AreNotEqual(null, foo);
@@ -67,9 +62,9 @@ class Foo
 {
 }
 
-factoryline Foo fun () {return Foo();};
+register Foo fun () {return Foo();};
 
-var fooLine = factory Foo;
+var fooLine = inject Foo;
 var foo = fooLine();
 
 Assert.AreNotEqual(null, foo);

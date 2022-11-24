@@ -81,7 +81,5 @@
         COUNT_OF,
 
         EXPECT,
-
-        FACTORY,
     }
 }

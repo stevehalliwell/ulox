@@ -40,7 +40,6 @@ namespace ULox
             _testcaseCompilette.SetTestDeclarationCompilette(_testdec);
             var _buildCompilette = new BuildCompilette();
             var _classCompiler = TypeCompilette.CreateClassCompilette();
-            var _diCompiletteParts = new DependencyInjectionCompilette();
 
             this.AddDeclarationCompilette(
                 new VarDeclarationCompilette(),
@@ -49,6 +48,7 @@ namespace ULox
                 _testcaseCompilette,
                 _buildCompilette,
                 TypeCompilette.CreateDateCompilette());
+
             this.AddDeclarationCompilette(
                 (TokenType.FUNCTION, FunctionDeclaration));
 
@@ -66,7 +66,7 @@ namespace ULox
                 (TokenType.OPEN_BRACE, BlockStatement),
                 (TokenType.THROW, ThrowStatement),
                 (TokenType.END_STATEMENT, NoOpStatement),
-                (TokenType.REGISTER, _diCompiletteParts.RegisterStatement),
+                (TokenType.REGISTER, RegisterStatement),
                 (TokenType.FREEZE, FreezeStatement),
                 (TokenType.EXPECT, ExpectStatement),
                 (TokenType.MATCH, MatchStatement));
@@ -101,7 +101,7 @@ namespace ULox
                 (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(_testcaseCompilette.TCName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TSName, null, Precedence.None)),
-                (TokenType.INJECT, new ActionParseRule(_diCompiletteParts.Inject, null, Precedence.Term)),
+                (TokenType.INJECT, new ActionParseRule(Inject, null, Precedence.Term)),
                 (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
                 (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
@@ -109,7 +109,7 @@ namespace ULox
                 (TokenType.COUNT_OF, new ActionParseRule(CountOf, null, Precedence.None))
                               );
         }
-
+        
         public void Reset()
         {
             compilerStates.Clear();
@@ -288,6 +288,7 @@ namespace ULox
                 ThrowCompilerException("Expected to compile Expression, but encountered error");
             }
         }
+        
         public void ParsePrecedence(Precedence pre)
             => _prattParser.ParsePrecedence(this, pre);
 
@@ -935,6 +936,22 @@ namespace ULox
         public static void FunctionDeclaration(Compiler compiler)
         {
             InnerFunctionDeclaration(compiler, true);
+        }
+        
+        public static void Inject(Compiler compiler, bool canAssign)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
+            byte name = compiler.AddStringConstant();
+            compiler.EmitOpAndBytes(OpCode.INJECT, name);
+        }
+
+        public static void RegisterStatement(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Must provide name after a 'register' statement.");
+            var stringConst = compiler.AddStringConstant();
+            compiler.Expression();
+            compiler.EmitOpAndBytes(OpCode.REGISTER, stringConst);
+            compiler.ConsumeEndStatement();
         }
 
         private static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)

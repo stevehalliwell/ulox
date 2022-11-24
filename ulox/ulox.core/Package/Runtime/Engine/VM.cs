@@ -44,7 +44,6 @@ namespace ULox
         private readonly Table _globals = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
         public DiContainer DiContainer { get; private set; } = new DiContainer();
-        public Factory Factory { get; private set; } = new Factory();
 
         public Vm()
         {
@@ -141,7 +140,6 @@ namespace ULox
 
                 TestRunner = asVmBase.TestRunner;
                 DiContainer = asVmBase.DiContainer.ShallowCopy();
-                Factory = asVmBase.Factory.ShallowCopy();
             }
         }
 
@@ -454,7 +452,7 @@ namespace ULox
                 case OpCode.EXPECT:
                     DoExpectOp();
                     break;
-
+                    
                 case OpCode.NONE:
                 default:
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
@@ -494,9 +492,9 @@ namespace ULox
                     name = frame.nativeFunc.Target.GetType().Name + "." + frame.nativeFunc.Method.Name;
                 return $"native:'{name}'";
             }
-            
+
             var line = -1;
-            if(currentInstruction != -1)
+            if (currentInstruction != -1)
                 line = frame.Closure?.chunk?.GetLineForInstruction(currentInstruction) ?? -1;
 
             var locationName = frame.Closure?.chunk.GetLocationString(line);
@@ -862,7 +860,7 @@ namespace ULox
             Push(v);
             Push(v);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoAssignGlobalOp(Chunk chunk)
         {

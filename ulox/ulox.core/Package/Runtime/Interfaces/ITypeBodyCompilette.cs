@@ -9,7 +9,5 @@
         void PreBody(Compiler compiler);
 
         void PostBody(Compiler compiler);
-
-        void End();
     }
 }

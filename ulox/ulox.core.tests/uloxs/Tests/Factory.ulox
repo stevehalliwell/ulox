@@ -3,14 +3,13 @@ class Foo
     var a = 1;
 }
 
-Factory.SetLine(Foo, {:});
-Factory.Line(Foo).Create = fun (){ return Foo(); };
+factoryline Foo fun (){ return Foo(); };
 
 test FactoryTests
 {
     testcase OutterFactory
     {
-        var foo = Factory.Line(Foo).Create();
+        var foo = factory Foo ();
 
         Assert.AreEqual(1, foo.a);
     }

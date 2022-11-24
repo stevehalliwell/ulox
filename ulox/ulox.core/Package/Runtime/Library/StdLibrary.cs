@@ -20,7 +20,6 @@ namespace ULox
         {
             return this.GenerateBindingTable(
                 ("VM", Value.New(new VMClass(CreateVM))),
-                ("Factory", Value.New(FactoryStdLibrary.MakeFactoryInstance())),
                 ("Assert", Value.New(MakeAssertInstance())),
                 ("Serialise", Value.New(SerialiseStdLibrary.MakeSerialiseInstance())),
                 ("DI", Value.New(DIStdLibrary.MakeDIInstance())),

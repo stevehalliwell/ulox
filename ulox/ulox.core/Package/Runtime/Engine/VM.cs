@@ -455,6 +455,10 @@ namespace ULox
                     DoExpectOp();
                     break;
 
+                case OpCode.FACTORY:
+                    DoFactoryOp(chunk);
+                    break;
+                    
                 case OpCode.NONE:
                 default:
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
@@ -494,9 +498,9 @@ namespace ULox
                     name = frame.nativeFunc.Target.GetType().Name + "." + frame.nativeFunc.Method.Name;
                 return $"native:'{name}'";
             }
-            
+
             var line = -1;
-            if(currentInstruction != -1)
+            if (currentInstruction != -1)
                 line = frame.Closure?.chunk?.GetLineForInstruction(currentInstruction) ?? -1;
 
             var locationName = frame.Closure?.chunk.GetLocationString(line);
@@ -550,6 +554,27 @@ namespace ULox
             if (expected.IsFalsey())
             {
                 ThrowRuntimeException($"Expect failed, got {(msg.IsNull() ? "falsey" : msg.ToString())}");
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoFactoryOp(Chunk chunk)
+        {
+            var op = (FactoryOpType)ReadByte(chunk);
+            var constantIndex = ReadByte(chunk);
+            var key = chunk.ReadConstant(constantIndex);
+
+            switch (op)
+            {
+            case FactoryOpType.Set:
+                var value = Pop();
+                Factory.SetLine(this, key, value);
+                break;
+            case FactoryOpType.Get:
+                Push(Factory.GetLine(this, key));
+                break;
+            default:
+                break;
             }
         }
 
@@ -862,7 +887,7 @@ namespace ULox
             Push(v);
             Push(v);
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoAssignGlobalOp(Chunk chunk)
         {

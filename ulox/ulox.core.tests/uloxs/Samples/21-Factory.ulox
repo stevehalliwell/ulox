@@ -1,33 +1,11 @@
 // A standard factory exists to standardize creation of more complex objects. It
-// is a lookup by key, via the Line method. e.g. Factory.Line(Foo);
+// is a lookup by key, via the Line creator method.
 //  The factory line can be replaced inside a tests as needed.
 
 class Foo
 {
 }
 // a quick a dirty simple line via a dynamic
-Factory.SetLine(Foo, {:});
-Factory.Line(Foo).Create = fun () { return Foo(); };
+factoryline Foo fun () { return Foo(); };
 
-var createdFoo = Factory.Line(Foo).Create();
-
-
-//a more involved example
-class Bar
-{
-    var a;
-    init(a){}
-}
-
-class BarLine
-{
-    static Create(val)
-    {
-        var ret = Bar(val);
-        // ... do other stuff
-        return ret;
-    }
-}
-
-Factory.SetLine(Bar, BarLine);
-var createdBar = Factory.Line(Bar).Create(1);
+var createdFoo = factory Foo();

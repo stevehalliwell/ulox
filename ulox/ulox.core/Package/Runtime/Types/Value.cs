@@ -218,6 +218,9 @@ namespace ULox
                 case ValueType.Object:
                     return lhs.val.asObject.Equals(rhs.val.asObject);
 
+                case ValueType.Closure:
+                    return lhs.val.asClosure == rhs.val.asClosure;
+
                 default:
                     throw new UloxException($"Cannot perform compare on type '{lhs.type}'.");
                 }

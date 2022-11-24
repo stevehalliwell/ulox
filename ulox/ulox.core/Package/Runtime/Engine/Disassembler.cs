@@ -86,6 +86,8 @@ namespace ULox
             opCodeHandlers[(int)OpCode.COUNT_OF] = AppendNothing;
 
             opCodeHandlers[(int)OpCode.EXPECT] = AppendNothing;
+
+            opCodeHandlers[(int)OpCode.FACTORY] = AppendByteThenStringConstant;
         }
 
         public string GetString() => stringBuilder.ToString();
@@ -160,7 +162,7 @@ namespace ULox
 
             if (opAction == null)
                 throw new UloxException($"'{opCode}' is unhandled by the disassembler.");
-            
+
             i = opAction?.Invoke(chunk, i) ?? i;
 
             stringBuilder.AppendLine();
@@ -346,6 +348,13 @@ namespace ULox
         {
             i = AppendStringConstant(chunk, i);
             return AppendByte(chunk, i);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int AppendByteThenStringConstant(Chunk chunk, int i)
+        {
+            i = AppendByte(chunk, i);
+            return AppendStringConstant(chunk, i);
         }
     }
 }

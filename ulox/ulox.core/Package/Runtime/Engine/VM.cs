@@ -452,7 +452,15 @@ namespace ULox
                 case OpCode.EXPECT:
                     DoExpectOp();
                     break;
-                    
+
+                case OpCode.GOTO:
+                    DoGotoOp(chunk);
+                    break;
+
+                case OpCode.LABEL:
+                    ReadByte(chunk);
+                    break;
+                
                 case OpCode.NONE:
                 default:
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
@@ -549,6 +557,15 @@ namespace ULox
             {
                 ThrowRuntimeException($"Expect failed, got {(msg.IsNull() ? "falsey" : msg.ToString())}");
             }
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoGotoOp(Chunk chunk)
+        {
+            var labelID = ReadByte(chunk);
+            var labelPos = chunk.GetLabelPosition(labelID);
+
+            _currentCallFrame.InstructionPointer = labelPos;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -69,7 +69,9 @@ namespace ULox
                 (TokenType.REGISTER, RegisterStatement),
                 (TokenType.FREEZE, FreezeStatement),
                 (TokenType.EXPECT, ExpectStatement),
-                (TokenType.MATCH, MatchStatement));
+                (TokenType.MATCH, MatchStatement),
+                (TokenType.LABEL, LabelStatement),
+                (TokenType.GOTO, GotoStatement));
 
             this.SetPrattRules(
                 (TokenType.MINUS, new ActionParseRule(Unary, Binary, Precedence.Term)),
@@ -907,6 +909,32 @@ namespace ULox
             }
 
             compiler.EndScope();
+        }
+
+        public static void LabelStatement(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
+            var labelName = compiler.TokenIterator.PreviousToken.Lexeme;
+            compiler.AddLabel(labelName);
+
+            compiler.ConsumeEndStatement();
+        }
+
+        private void AddLabel(string labelName)
+        {
+            var id = AddCustomStringConstant(labelName);
+            CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
+            EmitOpAndBytes(OpCode.LABEL, id);
+        }
+
+        public static void GotoStatement(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'goto' statement.");
+            var labelNameID = compiler.AddStringConstant();
+
+            compiler.EmitOpAndBytes(OpCode.GOTO, labelNameID);
+
+            compiler.ConsumeEndStatement();
         }
 
         public static void BreakStatement(Compiler compiler)

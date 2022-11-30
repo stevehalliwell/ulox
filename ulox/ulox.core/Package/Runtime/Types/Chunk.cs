@@ -14,11 +14,13 @@ namespace ULox
         private const string DefaultChunkName = "unnamed_chunk";
         private readonly List<Value> constants = new List<Value>();
         private readonly List<RunLengthLineNumber> _runLengthLineNumbers = new List<RunLengthLineNumber>();
+        private readonly Dictionary<byte, int> _labelIdToInstruction = new Dictionary<byte, int>();
         private int instructionCount = -1;
 
         public List<byte> Instructions { get; private set; } = new List<byte>();
         public List<byte> ArgumentConstantIds { get; private set; } = new List<byte>();
         public IReadOnlyList<Value> Constants => constants.AsReadOnly();
+        public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
         public string Name { get; set; }
         public string SourceName { get; private set; }
         public FunctionType FunctionType { get; internal set; }
@@ -155,6 +157,16 @@ namespace ULox
             }
 
             return locationName;
+        }
+
+        internal int GetLabelPosition(byte labelID)
+        {
+            return _labelIdToInstruction[labelID];
+        }
+
+        internal void AddLabel(byte id, int currentChunkInstructinCount)
+        {
+            _labelIdToInstruction[id] = currentChunkInstructinCount;
         }
     }
 }

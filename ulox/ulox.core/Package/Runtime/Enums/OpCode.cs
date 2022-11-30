@@ -81,5 +81,8 @@
         COUNT_OF,
 
         EXPECT,
+
+        GOTO,
+        LABEL,
     }
 }

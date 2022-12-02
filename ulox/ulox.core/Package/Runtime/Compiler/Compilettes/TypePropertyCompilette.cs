@@ -7,7 +7,7 @@ namespace ULox
         private List<byte> _classVarConstantNames = new List<byte>();
 
         private int _initFragStartLocation = -1;
-        private int _previousInitFragJumpLocation = -1;
+        private int _previousInitFragLabelId = -1;
         private TypeCompilette _typeCompilette;
         private TokenType _matchToken;
         private bool _requreEndStatement;
@@ -38,7 +38,7 @@ namespace ULox
         {
             _typeCompilette = typeCompilette;
             _initFragStartLocation = -1;
-            _previousInitFragJumpLocation = -1;
+            _previousInitFragLabelId = -1;
             _classVarConstantNames.Clear();
         }
 
@@ -54,11 +54,11 @@ namespace ULox
                 _classVarConstantNames.Add(nameConstant);
 
                 //emit jump // to skip this during imperative
-                int initFragmentJump = compiler.EmitJump();
+                var initFragmentJump = compiler.GoToUniqueChunkLabel("SkipInitDuringImperative");
                 //patch jump previous init fragment if it exists
-                if (_previousInitFragJumpLocation != -1)
+                if (_previousInitFragLabelId != -1)
                 {
-                    compiler.PatchJump(_previousInitFragJumpLocation);
+                    compiler.EmitLabel((byte)_previousInitFragLabelId);
                 }
                 else
                 {
@@ -82,10 +82,10 @@ namespace ULox
                 compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
                 compiler.EmitOpCode(OpCode.POP);
                 //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                _previousInitFragJumpLocation = compiler.EmitJump();
+                _previousInitFragLabelId = compiler.GoToUniqueChunkLabel("InitFragmentJump");
 
                 //patch jump from skip imperative
-                compiler.PatchJump(initFragmentJump);
+                compiler.EmitLabel(initFragmentJump);
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
             if(_requreEndStatement)
@@ -102,14 +102,14 @@ namespace ULox
                 compiler.WriteUShortAt(_typeCompilette.InitChainInstruction, (ushort)_initFragStartLocation);
 
             //return stub used by init and test chains
-            var classReturnEnd = compiler.EmitJump();
+            var classReturnEnd = compiler.GoToUniqueChunkLabel("ClassReturnEnd");
 
-            if (_previousInitFragJumpLocation != -1)
-                compiler.PatchJump(_previousInitFragJumpLocation);
+            if (_previousInitFragLabelId != -1)
+                compiler.EmitLabel((byte)_previousInitFragLabelId);
 
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
 
-            compiler.PatchJump(classReturnEnd);
+            compiler.EmitLabel(classReturnEnd);
 
             foreach (var item in _classVarConstantNames)
             {

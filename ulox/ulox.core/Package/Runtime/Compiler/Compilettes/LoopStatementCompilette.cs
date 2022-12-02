@@ -77,14 +77,14 @@
                     compiler.EmitOpCode(OpCode.POP); // Condition.
                 }
                 //increment
-                int bodyJump = compiler.EmitJump();
+                var bodyJump = compiler.GoToUniqueChunkLabel("inc_body");
                 {
                     int incrementStart = compiler.CurrentChunkInstructinCount;
                     loopState.loopContinuePoint = incrementStart;
                     IncrementLocalByOne(compiler, indexArgID);
                     compiler.EmitLoop(loopStart);
                     loopStart = incrementStart;
-                    compiler.PatchJump(bodyJump);
+                    compiler.EmitLabel(bodyJump);
                 }
                 compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
 

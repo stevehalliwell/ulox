@@ -22,7 +22,7 @@ namespace ULox
 
             var comp = compiler.CurrentCompilerState;
             int loopStart = compiler.CurrentChunkInstructinCount;
-            var loopState = new LoopState();
+            var loopState = new LoopState(compiler.UniqueChunkStringConstant("loop_exit"));
             comp.LoopStates.Push(loopState);
             loopState.loopContinuePoint = loopStart;
 
@@ -33,6 +33,7 @@ namespace ULox
             compiler.EmitLoop(loopStart);
 
             PatchLoopExits(compiler, loopState);
+            compiler.EmitLabel(loopState.loopExitLabelID);
 
             compiler.EmitOpCode(OpCode.POP);
 
@@ -43,7 +44,8 @@ namespace ULox
 
         protected void PatchLoopExits(Compiler compiler, LoopState loopState)
         {
-            if (loopState.loopExitPatchLocations.Count == 0)
+            if (loopState.loopExitPatchLocations.Count == 0
+                && !loopState.HasExit)
                 compiler.ThrowCompilerException("Loops must contain a termination");
 
             for (int i = 0; i < loopState.loopExitPatchLocations.Count; i++)

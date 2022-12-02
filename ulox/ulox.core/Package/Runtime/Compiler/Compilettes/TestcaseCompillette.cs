@@ -14,8 +14,6 @@
 
         public void Process(Compiler compiler)
         {
-            var hasData = false;
-            var dataExpJumpToPatch = -1;
             var dataExpExecuteLocation = -1;
             var dataExpJumpBackToStart = -1;
             var testDataIndexLocalId = byte.MaxValue;
@@ -26,7 +24,7 @@
             {
                 compiler.BeginScope();
                 //jump
-                dataExpJumpToPatch = compiler.EmitJump();
+                var dataExpJumpID = compiler.GoToUniqueChunkLabel($"DataExpJump_{_testDeclarationCompilette.CurrentTestSetName}");
                 //note location
                 dataExpExecuteLocation = compiler.CurrentChunkInstructinCount;
 
@@ -44,14 +42,13 @@
                 compiler.EmitOpCode(OpCode.POP);
 
                 //jump for moving back to start
-                dataExpJumpBackToStart = compiler.EmitJump();
+                dataExpJumpBackToStart = compiler.GoToUniqueChunkLabel($"DataExpJumpBackToStart_{_testDeclarationCompilette.CurrentTestSetName}");
 
-                //patch jump
-                compiler.PatchJump(dataExpJumpToPatch);
+                //patch data jump
+                compiler.EmitLabel(dataExpJumpID);
 
                 //temp
                 compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "");
-                hasData = true;
             }
 
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
@@ -65,7 +62,7 @@
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
             //emit jump // to skip this during imperative
-            int testFragmentJump = compiler.EmitJump();
+            var testFragmentJump = compiler.GoToUniqueChunkLabel("testFragmentJump");
 
             _testDeclarationCompilette.AddTestCaseInstruction((ushort)compiler.CurrentChunkInstructinCount);
 
@@ -82,7 +79,7 @@
             if (dataExpExecuteLocation != -1)
             {
                 compiler.EmitLoop(dataExpExecuteLocation);
-                compiler.PatchJump(dataExpJumpBackToStart);
+                compiler.EmitLabel((byte)dataExpJumpBackToStart);
 
                 //need to deal with the args
                 //get test data row
@@ -129,7 +126,7 @@
             }
 
             //emit jump to step to next and save it
-            compiler.PatchJump(testFragmentJump);
+            compiler.EmitLabel(testFragmentJump);
             TestCaseName = null;
         }
 

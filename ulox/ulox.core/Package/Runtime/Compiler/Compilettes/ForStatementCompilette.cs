@@ -25,7 +25,7 @@ namespace ULox
 
             if (!compiler.TokenIterator.Check(TokenType.CLOSE_PAREN))
             {
-                int bodyJump = compiler.EmitJump();
+                var bodyJump = compiler.GoToUniqueChunkLabel("loop_body");
 
                 int incrementStart = compiler.CurrentChunkInstructinCount;
                 loopState.loopContinuePoint = incrementStart;
@@ -35,7 +35,7 @@ namespace ULox
                 //TODO: shouldn't you be able to omit the post loop action and have it work. this seems like it breaks it.
                 compiler.EmitLoop(loopStart);
                 loopStart = incrementStart;
-                compiler.PatchJump(bodyJump);
+                compiler.EmitLabel(bodyJump);
             }
 
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");

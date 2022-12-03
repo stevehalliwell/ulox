@@ -26,8 +26,7 @@ namespace ULox
             //increment
             {
                 var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
-                int incrementStart = compiler.CurrentChunkInstructinCount;
-                loopState.loopContinuePoint = incrementStart;
+                loopState.ContinueLabelID = newStartLabel;
                 compiler.Expression();
                 compiler.EmitOpCode(OpCode.POP);
 

@@ -494,17 +494,6 @@ namespace ULox
         public byte ArgumentList()
             => ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
 
-        public void EmitLoop(int loopStart)
-        {
-            EmitOpCode(OpCode.LOOP);
-            int offset = CurrentChunk.Instructions.Count - loopStart + 2;
-
-            if (offset > ushort.MaxValue)
-                ThrowCompilerException($"Cannot loop '{offset}'. Max loop is '{ushort.MaxValue}'");
-
-            EmitBytes((byte)((offset >> 8) & 0xff), (byte)(offset & 0xff));
-        }
-
         public byte ParseVariable(string errMsg)
         {
             TokenIterator.Consume(TokenType.IDENTIFIER, errMsg);
@@ -838,7 +827,7 @@ namespace ULox
             if (comp.LoopStates.Count == 0)
                 compiler.ThrowCompilerException($"Cannot continue when not inside a loop.");
 
-            compiler.EmitLoop(comp.LoopStates.Peek().loopContinuePoint);
+            compiler.EmitGoto(comp.LoopStates.Peek().ContinueLabelID);
 
             compiler.ConsumeEndStatement();
         }

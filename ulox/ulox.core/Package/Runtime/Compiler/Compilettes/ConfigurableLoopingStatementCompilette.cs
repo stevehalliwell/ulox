@@ -26,9 +26,8 @@ namespace ULox
 
             PreLoop(compiler, loopState);
             
-            var loopStart = compiler.CurrentChunkInstructinCount;
             loopState.StartLabelID = compiler.LabelUniqueChunkLabel("loop_start");
-            loopState.loopContinuePoint = loopStart;
+            loopState.ContinueLabelID = loopState.StartLabelID;
 
             BeginLoop(compiler, loopState);
 

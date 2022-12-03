@@ -65,7 +65,7 @@
             compiler.EmitOpAndBytes(OpCode.SET_LOCAL, itemArgID);
 
             loopState.StartLabelID = compiler.LabelUniqueChunkLabel("loop_start");
-            loopState.loopContinuePoint = compiler.CurrentChunkInstructinCount;
+            loopState.ContinueLabelID = loopState.StartLabelID;
             {
                 //confirm that the index isn't over the length of the array
                 IsIndexLessThanArrayCount(compiler, arrayGetOp, arrayArgId, indexArgID);
@@ -79,8 +79,7 @@
             var bodyJump = compiler.GoToUniqueChunkLabel("inc_body");
             {
                 var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
-                var incrementStart = compiler.CurrentChunkInstructinCount;
-                loopState.loopContinuePoint = incrementStart;
+                loopState.ContinueLabelID = newStartLabel;
                 IncrementLocalByOne(compiler, indexArgID);
                 compiler.EmitGoto(loopState.StartLabelID);
                 loopState.StartLabelID = newStartLabel;

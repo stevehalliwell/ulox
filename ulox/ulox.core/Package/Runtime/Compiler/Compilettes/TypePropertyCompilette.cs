@@ -54,7 +54,7 @@ namespace ULox
                 _classVarConstantNames.Add(nameConstant);
 
                 //emit jump // to skip this during imperative
-                var initFragmentJump = compiler.GoToUniqueChunkLabel("SkipInitDuringImperative");
+                var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
                 //patch jump previous init fragment if it exists
                 if (_previousInitFragLabelId != -1)
                 {
@@ -82,7 +82,7 @@ namespace ULox
                 compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
                 compiler.EmitOpCode(OpCode.POP);
                 //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                _previousInitFragLabelId = compiler.GoToUniqueChunkLabel("InitFragmentJump");
+                _previousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitFragmentJump");
 
                 //patch jump from skip imperative
                 compiler.EmitLabel(initFragmentJump);
@@ -102,7 +102,7 @@ namespace ULox
                 compiler.WriteUShortAt(_typeCompilette.InitChainInstruction, (ushort)_initFragStartLocation);
 
             //return stub used by init and test chains
-            var classReturnEnd = compiler.GoToUniqueChunkLabel("ClassReturnEnd");
+            var classReturnEnd = compiler.GotoUniqueChunkLabel("ClassReturnEnd");
 
             if (_previousInitFragLabelId != -1)
                 compiler.EmitLabel((byte)_previousInitFragLabelId);

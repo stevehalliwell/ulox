@@ -35,8 +35,9 @@ namespace ULox
 
             compiler.EmitGoto(loopState.StartLabelID);
 
-            PatchLoopExits(compiler, loopState);
-
+            if (!loopState.HasExit)
+                compiler.ThrowCompilerException("Loops must contain a termination");
+            compiler.EmitLabel(loopState.ExitLabelID);
             compiler.EmitOpCode(OpCode.POP);
 
             compiler.EndScope();
@@ -45,19 +46,5 @@ namespace ULox
         protected abstract void PreLoop(Compiler compiler, LoopState loopState);
 
         protected abstract void BeginLoop(Compiler compiler, LoopState loopState);
-
-        protected void PatchLoopExits(Compiler compiler, LoopState loopState)
-        {
-            if (loopState.loopExitPatchLocations.Count == 0
-                && !loopState.HasExit)
-                compiler.ThrowCompilerException("Loops must contain a termination");
-
-            for (int i = 0; i < loopState.loopExitPatchLocations.Count; i++)
-            {
-                compiler.PatchJump(loopState.loopExitPatchLocations[i]);
-            }
-
-            compiler.EmitLabel(loopState.ExitLabelID);
-        }
     }
 }

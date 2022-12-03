@@ -457,6 +457,10 @@ namespace ULox
                     DoGotoOp(chunk);
                     break;
 
+                case OpCode.GOTO_IF_FALSE:
+                    DoGotoIfFalseOp(chunk);
+                    break;
+
                 case OpCode.LABEL:
                     ReadByte(chunk);
                     break;
@@ -566,6 +570,16 @@ namespace ULox
             var labelPos = chunk.GetLabelPosition(labelID);
 
             _currentCallFrame.InstructionPointer = labelPos;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoGotoIfFalseOp(Chunk chunk)
+        {
+            var labelID = ReadByte(chunk);
+            var labelPos = chunk.GetLabelPosition(labelID);
+
+            if (Peek().IsFalsey())
+                _currentCallFrame.InstructionPointer = labelPos;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

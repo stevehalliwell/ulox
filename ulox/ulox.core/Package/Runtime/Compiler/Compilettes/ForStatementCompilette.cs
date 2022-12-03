@@ -17,12 +17,12 @@ namespace ULox
                 compiler.ConsumeEndStatement("loop condition");
 
                 // Jump out of the loop if the condition is false.
-                var exitJump = compiler.EmitJumpIf();
-                loopState.loopExitPatchLocations.Add(exitJump);
+                compiler.EmitGotoIf(loopState.ExitLabelID);
+                loopState.HasExit = true;
                 compiler.EmitOpCode(OpCode.POP); // Condition.
             }
 
-            var bodyJump = compiler.GoToUniqueChunkLabel("loop_body");
+            var bodyJump = compiler.GotoUniqueChunkLabel("loop_body");
             //increment
             {
                 var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");

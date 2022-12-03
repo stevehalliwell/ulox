@@ -83,6 +83,7 @@
         EXPECT,
 
         GOTO,
+        GOTO_IF_FALSE,
         LABEL,
     }
 }

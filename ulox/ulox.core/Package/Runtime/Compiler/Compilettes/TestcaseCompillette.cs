@@ -26,7 +26,7 @@
             if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 //jump
-                var dataExpJumpID = compiler.GoToUniqueChunkLabel($"DataExpJump_{_testDeclarationCompilette.CurrentTestSetName}");
+                var dataExpJumpID = compiler.GotoUniqueChunkLabel($"DataExpJump_{_testDeclarationCompilette.CurrentTestSetName}");
                 //note location
                 dataExpExecuteLocation = compiler.LabelUniqueChunkLabel("DataExpExecuteLocation");
 
@@ -44,7 +44,7 @@
                 compiler.EmitOpCode(OpCode.POP);
 
                 //jump for moving back to start
-                dataExpJumpBackToStart = compiler.GoToUniqueChunkLabel($"DataExpJumpBackToStart_{_testDeclarationCompilette.CurrentTestSetName}");
+                dataExpJumpBackToStart = compiler.GotoUniqueChunkLabel($"DataExpJumpBackToStart_{_testDeclarationCompilette.CurrentTestSetName}");
 
                 //patch data jump
                 compiler.EmitLabel(dataExpJumpID);
@@ -64,7 +64,7 @@
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
             //emit jump // to skip this during imperative
-            var testFragmentJump = compiler.GoToUniqueChunkLabel("testFragmentJump");
+            var testFragmentJump = compiler.GotoUniqueChunkLabel("testFragmentJump");
 
             _testDeclarationCompilette.AddTestCaseInstruction((ushort)compiler.CurrentChunkInstructinCount);
 
@@ -91,7 +91,7 @@
                 preRowCountCheck = compiler.LabelUniqueChunkLabel("preRowCountCheck");
 
                 LoopStatementCompilette.IsIndexLessThanArrayCount(compiler, OpCode.GET_LOCAL, testDataSourceLocalId, testDataIndexLocalId);
-                exitDataLoopJumpLoc = compiler.EmitJumpIf();
+                exitDataLoopJumpLoc = compiler.GotoIfUniqueChunkLabel("exitDataLoopJumpLoc");
                 compiler.EmitOpCode(OpCode.POP); // Condition.
 
                 //get row from array index
@@ -116,7 +116,7 @@
             {
                 LoopStatementCompilette.IncrementLocalByOne(compiler, testDataIndexLocalId);
                 compiler.EmitGoto((byte)preRowCountCheck);
-                compiler.PatchJump(exitDataLoopJumpLoc);
+                compiler.EmitLabel((byte)exitDataLoopJumpLoc);
             }
 
             compiler.EmitNULL();

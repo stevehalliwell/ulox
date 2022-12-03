@@ -13,9 +13,8 @@
 
             compiler.Expression();
 
-            int exitJump = compiler.EmitJumpIf();
-            loopState.loopExitPatchLocations.Add(exitJump);
-
+            compiler.EmitGotoIf(loopState.ExitLabelID);
+            loopState.HasExit = true;
             compiler.EmitOpCode(OpCode.POP);
             
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");

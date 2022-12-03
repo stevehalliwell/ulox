@@ -88,6 +88,7 @@ namespace ULox
             opCodeHandlers[(int)OpCode.EXPECT] = AppendNothing;
 
             opCodeHandlers[(int)OpCode.GOTO] = AppendStringConstant;
+            opCodeHandlers[(int)OpCode.GOTO_IF_FALSE] = AppendStringConstant;
             opCodeHandlers[(int)OpCode.LABEL] = AppendStringConstant;
         }
 

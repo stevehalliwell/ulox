@@ -28,7 +28,7 @@ namespace ULox
 
             //testbody
             compiler.BeginScope();
-            var labelID = compiler.GoToUniqueChunkLabel($"Test_{testClassName}");
+            var labelID = compiler.GotoUniqueChunkLabel($"Test_{testClassName}");
             var testFixtureBodyFirstInstruction = (ushort)compiler.CurrentChunkInstructinCount;
 
             compiler.Block();

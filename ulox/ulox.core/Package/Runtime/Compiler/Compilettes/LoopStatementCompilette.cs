@@ -46,8 +46,8 @@
 
             //skip the loop if the target is null
             compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
-            int exitJumpArrayIsNullLocation = compiler.EmitJumpIf();
-            loopState.loopExitPatchLocations.Add(exitJumpArrayIsNullLocation);
+            compiler.EmitGotoIf(loopState.ExitLabelID);
+            loopState.HasExit = true;
             compiler.EmitOpCode(OpCode.POP);
 
             //refer to output of For_WhenLimitedIterations_ShouldPrint3Times 
@@ -71,12 +71,12 @@
                 IsIndexLessThanArrayCount(compiler, arrayGetOp, arrayArgId, indexArgID);
 
                 //run the condition 
-                var exitJump = compiler.EmitJumpIf();
-                loopState.loopExitPatchLocations.Add(exitJump);
+                compiler.EmitGotoIf(loopState.ExitLabelID);
+                loopState.HasExit = true;
                 compiler.EmitOpCode(OpCode.POP); // Condition.
             }
             //increment
-            var bodyJump = compiler.GoToUniqueChunkLabel("inc_body");
+            var bodyJump = compiler.GotoUniqueChunkLabel("inc_body");
             {
                 var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
                 loopState.ContinueLabelID = newStartLabel;

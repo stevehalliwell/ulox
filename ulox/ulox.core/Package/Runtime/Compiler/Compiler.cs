@@ -837,15 +837,15 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
             compiler.Expression();
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
-
-            int thenjump = compiler.EmitJumpIf();
+            
+            var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if");
             compiler.EmitOpCode(OpCode.POP);
 
             compiler.Statement();
 
-            var elseJump = compiler.GoToUniqueChunkLabel("else");
+            var elseJump = compiler.GotoUniqueChunkLabel("else");
 
-            compiler.PatchJump(thenjump);
+            compiler.EmitLabel(thenjumpLabel);
             compiler.EmitOpCode(OpCode.POP);
 
             if (compiler.TokenIterator.Match(TokenType.ELSE)) compiler.Statement();
@@ -1052,20 +1052,20 @@ namespace ULox
 
         public static void And(Compiler compiler, bool canAssign)
         {
-            int endJump = compiler.EmitJumpIf();
+            var endJumpLabel = compiler.GotoIfUniqueChunkLabel("and");
 
             compiler.EmitOpCode(OpCode.POP);
             compiler.ParsePrecedence(Precedence.And);
 
-            compiler.PatchJump(endJump);
+            compiler.EmitLabel(endJumpLabel);
         }
 
         public static void Or(Compiler compiler, bool canAssign)
         {
-            int elseJump = compiler.EmitJumpIf();
-            var endJump = compiler.GoToUniqueChunkLabel("or");
+            var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("else_or");
+            var endJump = compiler.GotoUniqueChunkLabel("or");
 
-            compiler.PatchJump(elseJump);
+            compiler.EmitLabel(elseJumpLabel);
             compiler.EmitOpCode(OpCode.POP);
 
             compiler.ParsePrecedence(Precedence.Or);
@@ -1107,7 +1107,7 @@ namespace ULox
             compiler.EmitOpCode(OpCode.SIGNS);
         }
 
-        internal byte GoToUniqueChunkLabel(string v)
+        internal byte GotoUniqueChunkLabel(string v)
         {
             byte labelNameID = UniqueChunkStringConstant(v);
             EmitGoto(labelNameID);
@@ -1117,6 +1117,18 @@ namespace ULox
         internal void EmitGoto(byte labelNameID)
         {
             EmitOpAndBytes(OpCode.GOTO, labelNameID);
+        }
+        
+        internal byte GotoIfUniqueChunkLabel(string v)
+        {
+            byte labelNameID = UniqueChunkStringConstant(v);
+            EmitGotoIf(labelNameID);
+            return labelNameID;
+        }
+        
+        internal void EmitGotoIf(byte labelNameID)
+        {
+            EmitOpAndBytes(OpCode.GOTO_IF_FALSE, labelNameID);
         }
 
         internal byte UniqueChunkStringConstant(string v)

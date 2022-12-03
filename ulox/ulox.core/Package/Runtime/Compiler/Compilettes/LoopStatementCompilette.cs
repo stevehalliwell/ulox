@@ -63,8 +63,8 @@
             compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
             compiler.EmitNULL();
             compiler.EmitOpAndBytes(OpCode.SET_LOCAL, itemArgID);
-            
-            loopState.loopStartPoint = compiler.CurrentChunkInstructinCount;
+
+            loopState.StartLabelID = compiler.LabelUniqueChunkLabel("loop_start");
             loopState.loopContinuePoint = compiler.CurrentChunkInstructinCount;
             {
                 //confirm that the index isn't over the length of the array
@@ -78,11 +78,12 @@
             //increment
             var bodyJump = compiler.GoToUniqueChunkLabel("inc_body");
             {
+                var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
                 var incrementStart = compiler.CurrentChunkInstructinCount;
                 loopState.loopContinuePoint = incrementStart;
                 IncrementLocalByOne(compiler, indexArgID);
-                compiler.EmitLoop(loopState.loopStartPoint);
-                loopState.loopStartPoint = incrementStart;
+                compiler.EmitGoto(loopState.StartLabelID);
+                loopState.StartLabelID = newStartLabel;
                 compiler.EmitLabel(bodyJump);
             }
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");

@@ -25,13 +25,14 @@ namespace ULox
             var bodyJump = compiler.GoToUniqueChunkLabel("loop_body");
             //increment
             {
+                var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
                 int incrementStart = compiler.CurrentChunkInstructinCount;
                 loopState.loopContinuePoint = incrementStart;
                 compiler.Expression();
                 compiler.EmitOpCode(OpCode.POP);
 
-                compiler.EmitLoop(loopState.loopStartPoint);
-                loopState.loopStartPoint = incrementStart;
+                compiler.EmitGoto(loopState.StartLabelID);
+                loopState.StartLabelID = newStartLabel;
                 compiler.EmitLabel(bodyJump);
             }
             

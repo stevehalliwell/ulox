@@ -327,7 +327,7 @@ loop (arr)
 }
 ");
 
-            StringAssert.StartsWith("Cannot perform countof on '7' at ip:'22' in chunk:'unnamed_chunk(test:4)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on '7' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -341,7 +341,7 @@ loop (arr)
 }
 ");
 
-            StringAssert.StartsWith("Cannot perform countof on 'str' at ip:'22' in chunk:'unnamed_chunk(test:4)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on 'str' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]

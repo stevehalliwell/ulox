@@ -21,26 +21,31 @@ namespace ULox
             compiler.BeginScope();
 
             var comp = compiler.CurrentCompilerState;
-            int loopStart = compiler.CurrentChunkInstructinCount;
             var loopState = new LoopState(compiler.UniqueChunkStringConstant("loop_exit"));
             comp.LoopStates.Push(loopState);
+
+            PreLoop(compiler, loopState);
+            
+            var loopStart = compiler.CurrentChunkInstructinCount;
+            loopState.loopStartPoint = loopStart;
             loopState.loopContinuePoint = loopStart;
 
-            loopStart = BeginLoop(compiler, loopStart, loopState);
+            BeginLoop(compiler, loopState);
 
             compiler.Statement();
 
-            compiler.EmitLoop(loopStart);
+            compiler.EmitLoop(loopState.loopStartPoint);
 
             PatchLoopExits(compiler, loopState);
-            compiler.EmitLabel(loopState.loopExitLabelID);
 
             compiler.EmitOpCode(OpCode.POP);
 
             compiler.EndScope();
         }
 
-        protected abstract int BeginLoop(Compiler compiler, int loopStart, LoopState loopState);
+        protected abstract void PreLoop(Compiler compiler, LoopState loopState);
+
+        protected abstract void BeginLoop(Compiler compiler, LoopState loopState);
 
         protected void PatchLoopExits(Compiler compiler, LoopState loopState)
         {
@@ -52,6 +57,8 @@ namespace ULox
             {
                 compiler.PatchJump(loopState.loopExitPatchLocations[i]);
             }
+
+            compiler.EmitLabel(loopState.ExitLabelID);
         }
     }
 }

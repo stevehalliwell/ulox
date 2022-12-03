@@ -889,7 +889,7 @@ namespace ULox
                 lastElseJumpLoc = compiler.EmitJumpIf();
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
                 compiler.Statement();
-                compiler.EmitOpAndBytes(OpCode.GOTO, matchEndLabelID);
+                compiler.EmitGoto(matchEndLabelID);
             } while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE));
 
             if (lastElseJumpLoc != -1)
@@ -913,18 +913,12 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        public void EmitLabel(byte id)
-        {
-            CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
-            EmitOpAndBytes(OpCode.LABEL, id);
-        }
-
         public static void GotoStatement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'goto' statement.");
             var labelNameID = compiler.AddStringConstant();
 
-            compiler.EmitOpAndBytes(OpCode.GOTO, labelNameID);
+            compiler.EmitGoto(labelNameID);
 
             compiler.ConsumeEndStatement();
         }
@@ -936,7 +930,7 @@ namespace ULox
                 compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
 
             compiler.EmitNULL();
-            compiler.EmitOpAndBytes(OpCode.GOTO, comp.LoopStates.Peek().loopExitLabelID);
+            compiler.EmitGoto(comp.LoopStates.Peek().ExitLabelID);
             comp.LoopStates.Peek().HasExit = true;
 
             compiler.ConsumeEndStatement();
@@ -1127,13 +1121,31 @@ namespace ULox
         internal byte GoToUniqueChunkLabel(string v)
         {
             byte labelNameID = UniqueChunkStringConstant(v);
-            EmitOpAndBytes(OpCode.GOTO, labelNameID);
+            EmitGoto(labelNameID);
             return labelNameID;
+        }
+
+        internal void EmitGoto(byte labelNameID)
+        {
+            EmitOpAndBytes(OpCode.GOTO, labelNameID);
         }
 
         internal byte UniqueChunkStringConstant(string v)
         {
             return AddCustomStringConstant($"{v}_{CurrentChunk.Labels.Count}");
+        }
+
+        public byte LabelUniqueChunkLabel(string v)
+        {
+            byte labelNameID = UniqueChunkStringConstant(v);
+            EmitLabel(labelNameID);
+            return labelNameID;
+        }
+
+        public void EmitLabel(byte id)
+        {
+            CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
+            EmitOpAndBytes(OpCode.LABEL, id);
         }
     }
 }

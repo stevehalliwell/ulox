@@ -20,13 +20,15 @@
             var testDataSourceLocalId = byte.MaxValue;
             var exitDataLoopJumpLoc = -1;
             var preRowCountCheck = -1;
+                
+            compiler.BeginScope();
+            
             if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
-                compiler.BeginScope();
                 //jump
                 var dataExpJumpID = compiler.GoToUniqueChunkLabel($"DataExpJump_{_testDeclarationCompilette.CurrentTestSetName}");
                 //note location
-                dataExpExecuteLocation = compiler.CurrentChunkInstructinCount;
+                dataExpExecuteLocation = compiler.LabelUniqueChunkLabel("DataExpExecuteLocation");
 
                 //expression
                 compiler.DeclareAndDefineCustomVariable("testDataSource");
@@ -78,7 +80,7 @@
             //jump back
             if (dataExpExecuteLocation != -1)
             {
-                compiler.EmitLoop(dataExpExecuteLocation);
+                compiler.EmitGoto((byte)dataExpExecuteLocation);
                 compiler.EmitLabel((byte)dataExpJumpBackToStart);
 
                 //need to deal with the args
@@ -86,7 +88,7 @@
                 var (_, _, testDataIndexLocalIdRes) = compiler.ResolveNameLookupOpCode("testDataIndex");
                 testDataIndexLocalId = testDataIndexLocalIdRes;
 
-                preRowCountCheck = compiler.CurrentChunkInstructinCount;
+                preRowCountCheck = compiler.LabelUniqueChunkLabel("preRowCountCheck");
 
                 LoopStatementCompilette.IsIndexLessThanArrayCount(compiler, OpCode.GET_LOCAL, testDataSourceLocalId, testDataIndexLocalId);
                 exitDataLoopJumpLoc = compiler.EmitJumpIf();
@@ -113,18 +115,15 @@
             if (dataExpExecuteLocation != -1)
             {
                 LoopStatementCompilette.IncrementLocalByOne(compiler, testDataIndexLocalId);
-                compiler.EmitLoop(preRowCountCheck);
+                compiler.EmitGoto((byte)preRowCountCheck);
                 compiler.PatchJump(exitDataLoopJumpLoc);
             }
 
             compiler.EmitNULL();
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
 
-            if (dataExpExecuteLocation != -1)
-            {
-                compiler.EndScope();
-            }
-
+            compiler.EndScope();
+            
             //emit jump to step to next and save it
             compiler.EmitLabel(testFragmentJump);
             TestCaseName = null;

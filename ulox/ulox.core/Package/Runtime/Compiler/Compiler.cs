@@ -160,19 +160,6 @@ namespace ULox
             EmitBytes(b);
         }
 
-        public void PatchJump(int thenjump)
-        {
-            int jump = CurrentChunkInstructinCount - thenjump - 2;
-
-            if (jump > ushort.MaxValue)
-            {
-                ThrowCompilerException($"Cannot jump '{jump}'. Max jump is '{ushort.MaxValue}'");
-                return;
-            }
-
-            WriteBytesAt(thenjump, (byte)((jump >> 8) & 0xff), (byte)(jump & 0xff));
-        }
-
         public void WriteUShortAt(int at, ushort us)
             => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
@@ -182,12 +169,6 @@ namespace ULox
             {
                 CurrentChunk.Instructions[at + i] = b[i];
             }
-        }
-
-        public int EmitJumpIf()
-        {
-            EmitBytes((byte)OpCode.JUMP_IF_FALSE, 0xff, 0xff);
-            return CurrentChunk.Instructions.Count - 2;
         }
 
         public void EmitBytes(params byte[] b)
@@ -862,27 +843,27 @@ namespace ULox
             var matchArgName = compiler.TokenIterator.PreviousToken.Lexeme;
             var (matchGetOp, _, matchArgID) = compiler.ResolveNameLookupOpCode(matchArgName);
 
-            var lastElseJumpLoc = -1;
+            var lastElseLabel = -1;
             
             var matchEndLabelID = compiler.UniqueChunkStringConstant(nameof(MatchStatement));
             
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
             do
             {
-                if (lastElseJumpLoc != -1)
-                    compiler.PatchJump(lastElseJumpLoc);
+                if (lastElseLabel != -1)
+                    compiler.EmitLabel((byte)lastElseLabel);
 
                 compiler.Expression();
                 compiler.EmitOpAndBytes(matchGetOp, matchArgID);
                 compiler.EmitOpCode(OpCode.EQUAL);
-                lastElseJumpLoc = compiler.EmitJumpIf();
+                lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
                 compiler.Statement();
                 compiler.EmitGoto(matchEndLabelID);
             } while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE));
 
-            if (lastElseJumpLoc != -1)
-                compiler.PatchJump(lastElseJumpLoc);
+            if (lastElseLabel != -1)
+                compiler.EmitLabel((byte)lastElseLabel);
 
             compiler.AddConstantAndWriteOp(Value.New($"Match on '{matchArgName}' did have a matching case."));
             compiler.EmitOpCode(OpCode.THROW);

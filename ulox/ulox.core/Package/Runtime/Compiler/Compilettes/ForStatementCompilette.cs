@@ -9,53 +9,38 @@ namespace ULox
         {
         }
 
-        protected override int BeginLoop(Compiler compiler, int loopStart, CompilerState.LoopState loopState)
+        protected override void BeginLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
-            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
-
-            ForLoopInitialisationStatement(compiler);
-
-            loopStart = compiler.CurrentChunkInstructinCount;
-            loopState.loopContinuePoint = loopStart;
-
-            if (!compiler.TokenIterator.Match(TokenType.END_STATEMENT))
+            //condition
             {
-                ForLoopCondtionStatement(compiler, loopState);
+                compiler.Expression();
+                compiler.ConsumeEndStatement("loop condition");
+
+                // Jump out of the loop if the condition is false.
+                compiler.EmitGotoIf(loopState.ExitLabelID);
+                loopState.HasExit = true;
+                compiler.EmitOpCode(OpCode.POP); // Condition.
             }
 
-            if (!compiler.TokenIterator.Check(TokenType.CLOSE_PAREN))
+            var bodyJump = compiler.GotoUniqueChunkLabel("loop_body");
+            //increment
             {
-                int bodyJump = compiler.EmitJump();
-
-                int incrementStart = compiler.CurrentChunkInstructinCount;
-                loopState.loopContinuePoint = incrementStart;
+                var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
+                loopState.ContinueLabelID = newStartLabel;
                 compiler.Expression();
                 compiler.EmitOpCode(OpCode.POP);
 
-                //TODO: shouldn't you be able to omit the post loop action and have it work. this seems like it breaks it.
-                compiler.EmitLoop(loopStart);
-                loopStart = incrementStart;
-                compiler.PatchJump(bodyJump);
+                compiler.EmitGoto(loopState.StartLabelID);
+                loopState.StartLabelID = newStartLabel;
+                compiler.EmitLabel(bodyJump);
             }
-
+            
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
-
-            return loopStart;
         }
 
-        protected void ForLoopCondtionStatement(Compiler compiler, LoopState loopState)
+        protected override void PreLoop(Compiler compiler, LoopState loopState)
         {
-            compiler.Expression();
-            compiler.ConsumeEndStatement("loop condition");
-
-            // Jump out of the loop if the condition is false.
-            var exitJump = compiler.EmitJumpIf();
-            loopState.loopExitPatchLocations.Add(exitJump);
-            compiler.EmitOpCode(OpCode.POP); // Condition.
-        }
-
-        protected void ForLoopInitialisationStatement(Compiler compiler)
-        {
+            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
             //we really only want a var decl, var assign, or empty but Declaration covers everything
             compiler.Declaration();
         }

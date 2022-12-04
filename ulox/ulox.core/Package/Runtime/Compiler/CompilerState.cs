@@ -19,8 +19,15 @@ namespace ULox
 
         public class LoopState
         {
-            public int loopContinuePoint = -1;
-            public List<int> loopExitPatchLocations = new List<int>();
+            public byte ExitLabelID;
+            public byte ContinueLabelID;
+            public byte StartLabelID;
+            public bool HasExit = false;
+
+            public LoopState(byte exitLabelID)
+            {
+                ExitLabelID = exitLabelID;
+            }
         }
 
         internal class Upvalue

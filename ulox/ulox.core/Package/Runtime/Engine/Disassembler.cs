@@ -86,6 +86,10 @@ namespace ULox
             opCodeHandlers[(int)OpCode.COUNT_OF] = AppendNothing;
 
             opCodeHandlers[(int)OpCode.EXPECT] = AppendNothing;
+
+            opCodeHandlers[(int)OpCode.GOTO] = AppendStringConstant;
+            opCodeHandlers[(int)OpCode.GOTO_IF_FALSE] = AppendStringConstant;
+            opCodeHandlers[(int)OpCode.LABEL] = AppendStringConstant;
         }
 
         public string GetString() => stringBuilder.ToString();
@@ -110,9 +114,25 @@ namespace ULox
             }
 
             var subChunks = new List<Chunk>();
-
+            
+            DoLabels(chunk);
             DoConstants(chunk, subChunks);
             DoSubChunks(subChunks);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoLabels(Chunk chunk)
+        {
+            if (chunk.Labels.Count > 0)
+            {
+                stringBuilder.AppendLine();
+                stringBuilder.AppendLine("--labels--");
+
+                foreach (var label in chunk.Labels)
+                {
+                    stringBuilder.AppendLine($"{chunk.ReadConstant(label.Key)} = {label.Value}");
+                }
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

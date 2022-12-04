@@ -28,13 +28,13 @@ namespace ULox
 
             //testbody
             compiler.BeginScope();
-            var testFixtureBodyJumpLoc = compiler.EmitJump();
+            var labelID = compiler.GotoUniqueChunkLabel($"Test_{testClassName}");
             var testFixtureBodyFirstInstruction = (ushort)compiler.CurrentChunkInstructinCount;
 
             compiler.Block();
             compiler.EmitOpCode(OpCode.YIELD);
             compiler.EndScope();
-            compiler.PatchJump(testFixtureBodyJumpLoc);
+            compiler.EmitLabel(labelID);
 
             var testcaseCount = _currentTestcaseInstructions.Count;
             if (testcaseCount > byte.MaxValue)

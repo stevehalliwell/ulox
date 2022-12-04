@@ -102,5 +102,8 @@
         EXPECT,
 
         MATCH,
+
+        LABEL,
+        GOTO
     }
 }

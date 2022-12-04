@@ -89,7 +89,7 @@ class T
     signs IT;
 }");
 
-            StringAssert.StartsWith("Sign failure with msg ''T' does not contain matching method 'Required'.' at ip:'38' in chunk:'unnamed_chunk(test:10)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Sign failure with msg ''T' does not contain matching method 'Required'.' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -107,7 +107,7 @@ class T
     Required(a){}
 }");
 
-            StringAssert.StartsWith("Sign failure with msg 'Expected arity '0' but found '1'.' at ip:'42' in chunk:'unnamed_chunk(test:11)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Sign failure with msg 'Expected arity '0' but found '1'.' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -148,7 +148,7 @@ class T
     Required(){}
 }");
 
-            StringAssert.StartsWith("Sign failure with msg 'Expected local but found 'Method'.' at ip:'42' in chunk:'unnamed_chunk(test:11)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Sign failure with msg 'Expected local but found 'Method'.' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -202,7 +202,7 @@ class T
     Required(){}
 }");
 
-            StringAssert.StartsWith("Sign failure with msg 'Expected pure but found 'Method'.' at ip:'42' in chunk:'unnamed_chunk(test:11)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Sign failure with msg 'Expected pure but found 'Method'.' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]

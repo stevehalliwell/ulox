@@ -327,7 +327,7 @@ loop (arr)
 }
 ");
 
-            StringAssert.StartsWith("Cannot perform countof on '7' at ip:'22' in chunk:'unnamed_chunk(test:4)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on '7' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -341,7 +341,7 @@ loop (arr)
 }
 ");
 
-            StringAssert.StartsWith("Cannot perform countof on 'str' at ip:'22' in chunk:'unnamed_chunk(test:4)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on 'str' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -407,7 +407,7 @@ loop (arr)
 }
 ");
 
-            StringAssert.StartsWith("Cannot perform countof on '<inst Stub>' at ip:'39' in chunk:'unnamed_chunk(test:5)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on '<inst Stub>' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -437,7 +437,7 @@ loop (arr)
 }
 ");
 
-            StringAssert.StartsWith("1Cannot perform get index on type 'Instance' at ip:'75' in chunk:'unnamed_chunk(test:7)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("1Cannot perform get index on type 'Instance' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]

@@ -21,35 +21,30 @@ namespace ULox
             compiler.BeginScope();
 
             var comp = compiler.CurrentCompilerState;
-            int loopStart = compiler.CurrentChunkInstructinCount;
-            var loopState = new LoopState();
+            var loopState = new LoopState(compiler.UniqueChunkStringConstant("loop_exit"));
             comp.LoopStates.Push(loopState);
-            loopState.loopContinuePoint = loopStart;
 
-            loopStart = BeginLoop(compiler, loopStart, loopState);
+            PreLoop(compiler, loopState);
+            
+            loopState.StartLabelID = compiler.LabelUniqueChunkLabel("loop_start");
+            loopState.ContinueLabelID = loopState.StartLabelID;
+
+            BeginLoop(compiler, loopState);
 
             compiler.Statement();
 
-            compiler.EmitLoop(loopStart);
+            compiler.EmitGoto(loopState.StartLabelID);
 
-            PatchLoopExits(compiler, loopState);
-
+            if (!loopState.HasExit)
+                compiler.ThrowCompilerException("Loops must contain a termination");
+            compiler.EmitLabel(loopState.ExitLabelID);
             compiler.EmitOpCode(OpCode.POP);
 
             compiler.EndScope();
         }
 
-        protected abstract int BeginLoop(Compiler compiler, int loopStart, LoopState loopState);
+        protected abstract void PreLoop(Compiler compiler, LoopState loopState);
 
-        protected void PatchLoopExits(Compiler compiler, LoopState loopState)
-        {
-            if (loopState.loopExitPatchLocations.Count == 0)
-                compiler.ThrowCompilerException("Loops must contain a termination");
-
-            for (int i = 0; i < loopState.loopExitPatchLocations.Count; i++)
-            {
-                compiler.PatchJump(loopState.loopExitPatchLocations[i]);
-            }
-        }
+        protected abstract void BeginLoop(Compiler compiler, LoopState loopState);
     }
 }

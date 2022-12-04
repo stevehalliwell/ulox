@@ -69,7 +69,9 @@ namespace ULox
                 (TokenType.REGISTER, RegisterStatement),
                 (TokenType.FREEZE, FreezeStatement),
                 (TokenType.EXPECT, ExpectStatement),
-                (TokenType.MATCH, MatchStatement));
+                (TokenType.MATCH, MatchStatement),
+                (TokenType.LABEL, LabelStatement),
+                (TokenType.GOTO, GotoStatement));
 
             this.SetPrattRules(
                 (TokenType.MINUS, new ActionParseRule(Unary, Binary, Precedence.Term)),
@@ -109,7 +111,7 @@ namespace ULox
                 (TokenType.COUNT_OF, new ActionParseRule(CountOf, null, Precedence.None))
                               );
         }
-        
+
         public void Reset()
         {
             compilerStates.Clear();
@@ -158,19 +160,6 @@ namespace ULox
             EmitBytes(b);
         }
 
-        public void PatchJump(int thenjump)
-        {
-            int jump = CurrentChunkInstructinCount - thenjump - 2;
-
-            if (jump > ushort.MaxValue)
-            {
-                ThrowCompilerException($"Cannot jump '{jump}'. Max jump is '{ushort.MaxValue}'");
-                return;
-            }
-
-            WriteBytesAt(thenjump, (byte)((jump >> 8) & 0xff), (byte)(jump & 0xff));
-        }
-
         public void WriteUShortAt(int at, ushort us)
             => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
@@ -180,18 +169,6 @@ namespace ULox
             {
                 CurrentChunk.Instructions[at + i] = b[i];
             }
-        }
-
-        public int EmitJump()
-        {
-            EmitBytes((byte)OpCode.JUMP, 0xff, 0xff);
-            return CurrentChunk.Instructions.Count - 2;
-        }
-
-        public int EmitJumpIf()
-        {
-            EmitBytes((byte)OpCode.JUMP_IF_FALSE, 0xff, 0xff);
-            return CurrentChunk.Instructions.Count - 2;
         }
 
         public void EmitBytes(params byte[] b)
@@ -288,7 +265,7 @@ namespace ULox
                 ThrowCompilerException("Expected to compile Expression, but encountered error");
             }
         }
-        
+
         public void ParsePrecedence(Precedence pre)
             => _prattParser.ParsePrecedence(this, pre);
 
@@ -498,17 +475,6 @@ namespace ULox
         public byte ArgumentList()
             => ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
 
-        public void EmitLoop(int loopStart)
-        {
-            EmitOpCode(OpCode.LOOP);
-            int offset = CurrentChunk.Instructions.Count - loopStart + 2;
-
-            if (offset > ushort.MaxValue)
-                ThrowCompilerException($"Cannot loop '{offset}'. Max loop is '{ushort.MaxValue}'");
-
-            EmitBytes((byte)((offset >> 8) & 0xff), (byte)(offset & 0xff));
-        }
-
         public byte ParseVariable(string errMsg)
         {
             TokenIterator.Consume(TokenType.IDENTIFIER, errMsg);
@@ -680,7 +646,7 @@ namespace ULox
                     compiler.EmitNULL();
                 }
                 compiler.EmitOpCode(OpCode.EXPECT);
-            } 
+            }
             while (compiler.TokenIterator.Match(TokenType.COMMA));
 
 
@@ -842,7 +808,7 @@ namespace ULox
             if (comp.LoopStates.Count == 0)
                 compiler.ThrowCompilerException($"Cannot continue when not inside a loop.");
 
-            compiler.EmitLoop(comp.LoopStates.Peek().loopContinuePoint);
+            compiler.EmitGoto(comp.LoopStates.Peek().ContinueLabelID);
 
             compiler.ConsumeEndStatement();
         }
@@ -852,20 +818,20 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
             compiler.Expression();
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
-
-            int thenjump = compiler.EmitJumpIf();
+            
+            var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if");
             compiler.EmitOpCode(OpCode.POP);
 
             compiler.Statement();
 
-            int elseJump = compiler.EmitJump();
+            var elseJump = compiler.GotoUniqueChunkLabel("else");
 
-            compiler.PatchJump(thenjump);
+            compiler.EmitLabel(thenjumpLabel);
             compiler.EmitOpCode(OpCode.POP);
 
             if (compiler.TokenIterator.Match(TokenType.ELSE)) compiler.Statement();
 
-            compiler.PatchJump(elseJump);
+            compiler.EmitLabel(elseJump);
         }
 
         public static void MatchStatement(Compiler compiler)
@@ -877,36 +843,54 @@ namespace ULox
             var matchArgName = compiler.TokenIterator.PreviousToken.Lexeme;
             var (matchGetOp, _, matchArgID) = compiler.ResolveNameLookupOpCode(matchArgName);
 
-            var lastElseJumpLoc = -1;
-            var skipToEnds = new List<int>();
+            var lastElseLabel = -1;
+            
+            var matchEndLabelID = compiler.UniqueChunkStringConstant(nameof(MatchStatement));
             
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
             do
             {
-                if(lastElseJumpLoc != -1)
-                    compiler.PatchJump(lastElseJumpLoc);
-                
+                if (lastElseLabel != -1)
+                    compiler.EmitLabel((byte)lastElseLabel);
+
                 compiler.Expression();
                 compiler.EmitOpAndBytes(matchGetOp, matchArgID);
                 compiler.EmitOpCode(OpCode.EQUAL);
-                lastElseJumpLoc = compiler.EmitJumpIf();
+                lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
                 compiler.Statement();
-                skipToEnds.Add(compiler.EmitJump());
+                compiler.EmitGoto(matchEndLabelID);
             } while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE));
 
-            if (lastElseJumpLoc != -1)
-                compiler.PatchJump(lastElseJumpLoc);
+            if (lastElseLabel != -1)
+                compiler.EmitLabel((byte)lastElseLabel);
 
             compiler.AddConstantAndWriteOp(Value.New($"Match on '{matchArgName}' did have a matching case."));
             compiler.EmitOpCode(OpCode.THROW);
-            
-            foreach (var item in skipToEnds)
-            {
-                compiler.PatchJump(item);
-            }
+
+            compiler.EmitLabel(matchEndLabelID);
 
             compiler.EndScope();
+        }
+
+        public static void LabelStatement(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
+            var labelName = compiler.TokenIterator.PreviousToken.Lexeme;
+            var id = compiler.AddCustomStringConstant(labelName);
+            compiler.EmitLabel(id);
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void GotoStatement(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'goto' statement.");
+            var labelNameID = compiler.AddStringConstant();
+
+            compiler.EmitGoto(labelNameID);
+
+            compiler.ConsumeEndStatement();
         }
 
         public static void BreakStatement(Compiler compiler)
@@ -916,11 +900,10 @@ namespace ULox
                 compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
 
             compiler.EmitNULL();
-            int exitJump = compiler.EmitJump();
+            compiler.EmitGoto(comp.LoopStates.Peek().ExitLabelID);
+            comp.LoopStates.Peek().HasExit = true;
 
             compiler.ConsumeEndStatement();
-
-            comp.LoopStates.Peek().loopExitPatchLocations.Add(exitJump);
         }
 
         public static void YieldStatement(Compiler compiler)
@@ -937,7 +920,7 @@ namespace ULox
         {
             InnerFunctionDeclaration(compiler, true);
         }
-        
+
         public static void Inject(Compiler compiler, bool canAssign)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
@@ -1050,25 +1033,25 @@ namespace ULox
 
         public static void And(Compiler compiler, bool canAssign)
         {
-            int endJump = compiler.EmitJumpIf();
+            var endJumpLabel = compiler.GotoIfUniqueChunkLabel("and");
 
             compiler.EmitOpCode(OpCode.POP);
             compiler.ParsePrecedence(Precedence.And);
 
-            compiler.PatchJump(endJump);
+            compiler.EmitLabel(endJumpLabel);
         }
 
         public static void Or(Compiler compiler, bool canAssign)
         {
-            int elseJump = compiler.EmitJumpIf();
-            int endJump = compiler.EmitJump();
+            var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("else_or");
+            var endJump = compiler.GotoUniqueChunkLabel("or");
 
-            compiler.PatchJump(elseJump);
+            compiler.EmitLabel(elseJumpLabel);
             compiler.EmitOpCode(OpCode.POP);
 
             compiler.ParsePrecedence(Precedence.Or);
 
-            compiler.PatchJump(endJump);
+            compiler.EmitLabel(endJump);
         }
 
         public static void Grouping(Compiler compiler, bool canAssign)
@@ -1103,6 +1086,48 @@ namespace ULox
         {
             compiler.Expression();
             compiler.EmitOpCode(OpCode.SIGNS);
+        }
+
+        internal byte GotoUniqueChunkLabel(string v)
+        {
+            byte labelNameID = UniqueChunkStringConstant(v);
+            EmitGoto(labelNameID);
+            return labelNameID;
+        }
+
+        internal void EmitGoto(byte labelNameID)
+        {
+            EmitOpAndBytes(OpCode.GOTO, labelNameID);
+        }
+        
+        internal byte GotoIfUniqueChunkLabel(string v)
+        {
+            byte labelNameID = UniqueChunkStringConstant(v);
+            EmitGotoIf(labelNameID);
+            return labelNameID;
+        }
+        
+        internal void EmitGotoIf(byte labelNameID)
+        {
+            EmitOpAndBytes(OpCode.GOTO_IF_FALSE, labelNameID);
+        }
+
+        internal byte UniqueChunkStringConstant(string v)
+        {
+            return AddCustomStringConstant($"{v}_{CurrentChunk.Labels.Count}");
+        }
+
+        public byte LabelUniqueChunkLabel(string v)
+        {
+            byte labelNameID = UniqueChunkStringConstant(v);
+            EmitLabel(labelNameID);
+            return labelNameID;
+        }
+
+        public void EmitLabel(byte id)
+        {
+            CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
+            EmitOpAndBytes(OpCode.LABEL, id);
         }
     }
 }

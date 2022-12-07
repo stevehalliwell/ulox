@@ -41,6 +41,16 @@ namespace ulox.core.bench
         }
 
         [Benchmark]
+        public void CompileVsExecute_CompileAndDissam()
+        {
+            var engine = Engine.CreateDefault();
+            var compiledScript = engine.Context.CompileScript(new Script("", CompileVsExecute.Script));
+            var dis = new Disassembler();
+            dis.DoCompiledScript(compiledScript);
+            var res = dis.GetString();
+        }
+
+        [Benchmark]
         public void CompileVsExecute_TokenizeOnly()
         {
             var scanner = new Scanner();

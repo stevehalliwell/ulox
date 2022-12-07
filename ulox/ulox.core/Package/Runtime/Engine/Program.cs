@@ -19,7 +19,7 @@ namespace ULox
                 var dis = new Disassembler();
                 foreach (var compiledScript in CompiledScripts)
                 {
-                    dis.DoChunk(compiledScript.TopLevelChunk);
+                    dis.Iterate(compiledScript);
                 }
 
                 return dis.GetString();

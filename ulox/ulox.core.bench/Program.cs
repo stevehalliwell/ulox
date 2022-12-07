@@ -46,7 +46,7 @@ namespace ulox.core.bench
             var engine = Engine.CreateDefault();
             var compiledScript = engine.Context.CompileScript(new Script("", CompileVsExecute.Script));
             var dis = new Disassembler();
-            dis.DoCompiledScript(compiledScript);
+            dis.Iterate(compiledScript);
             var res = dis.GetString();
         }
 

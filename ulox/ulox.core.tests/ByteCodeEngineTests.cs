@@ -24,17 +24,6 @@ namespace ulox.core.tests
         }
 
         [Test]
-        public void Manual_Chunk_Disasemble()
-        {
-            var chunk = GenerateManualChunk();
-            var dis = new Disassembler();
-
-            dis.DoChunk(chunk);
-
-            System.Console.WriteLine(dis.GetString());
-        }
-
-        [Test]
         public void Manual_Chunk_VM()
         {
             var chunk = GenerateManualChunk();

@@ -50,36 +50,36 @@ namespace ulox.core.bench
         [Benchmark]
         public void Looping_While()
         {
-            var scanner = new Scanner();
-            var res = scanner.Scan(new Script("", Looping.While));
+            var engine = Engine.CreateDefault();
+            engine.RunScript(new Script("", Looping.While));
         }
 
         [Benchmark]
         public void Looping_For()
         {
-            var scanner = new Scanner();
-            var res = scanner.Scan(new Script("", Looping.For));
+            var engine = Engine.CreateDefault();
+            engine.RunScript(new Script("", Looping.For));
         }
 
         [Benchmark]
         public void Looping_Loop()
         {
-            var scanner = new Scanner();
-            var res = scanner.Scan(new Script("", Looping.Loop));
+            var engine = Engine.CreateDefault();
+            engine.RunScript(new Script("", Looping.Loop));
         }
 
         [Benchmark]
         public void Conditional_If()
         {
-            var scanner = new Scanner();
-            var res = scanner.Scan(new Script("", Conditional.If));
+            var engine = Engine.CreateDefault();
+            engine.RunScript(new Script("", Conditional.If));
         }
 
         [Benchmark]
         public void Conditional_Match()
         {
-            var scanner = new Scanner();
-            var res = scanner.Scan(new Script("", Conditional.Match));
+            var engine = Engine.CreateDefault();
+            engine.RunScript(new Script("", Conditional.Match));
         }
     }
 }

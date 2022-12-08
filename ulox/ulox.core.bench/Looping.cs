@@ -4,7 +4,8 @@
     {
         public const string While = @"
 var i = 0;
-var arr = [].Resize(100,0);
+var arr = [];
+arr.Resize(100,0);
 
 while(i < 100)
 {
@@ -13,7 +14,8 @@ while(i < 100)
 }";
 
         public const string For = @"
-var arr = [].Resize(100,0);
+var arr = [];
+arr.Resize(100,0);
 
 for(var i = 0; i < 100; i+=1)
 {
@@ -21,7 +23,8 @@ for(var i = 0; i < 100; i+=1)
 }";
 
         public const string Loop = @"
-var arr = [].Resize(100,0);
+var arr = [];
+arr.Resize(100,0);
 
 loop (arr)
 {

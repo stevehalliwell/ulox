@@ -12,6 +12,8 @@ namespace ULox
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
 
+        public IByteCodeOptimiser Optimiser => _optimiser;
+
         public string Disassembly
         {
             get

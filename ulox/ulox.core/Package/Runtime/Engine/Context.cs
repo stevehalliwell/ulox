@@ -57,7 +57,8 @@ namespace ULox
         public CompiledScript CompileScript(Script script)
         {
             var res = Program.Compile(script);
-            _compiledChunks.Add(res);
+            if(!_compiledChunks.Contains(res))
+                _compiledChunks.Add(res);
             return res;
         }
 

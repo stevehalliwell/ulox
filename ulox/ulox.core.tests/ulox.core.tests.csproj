@@ -25,6 +25,7 @@
     <None Include="uloxs\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\ulox.core.bench\ulox.core.bench.csproj" />
     <ProjectReference Include="..\ulox.core\ulox.core.csproj" />
   </ItemGroup>
   <ItemGroup>

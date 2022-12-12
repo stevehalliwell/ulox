@@ -104,7 +104,8 @@ namespace ULox
                 SetFixtureLoc(ushort.MaxValue);
                 break;
             case TestOpType.TestFixtureBodyInstruction:
-                var loc = vm.ReadUShort(chunk);
+                var labelId = vm.ReadByte(chunk);
+                var loc = (ushort)chunk.Labels[labelId];
                 SetFixtureLoc(loc);
                 break;
             }
@@ -139,7 +140,8 @@ namespace ULox
 
             for (int i = 0; i < testcaseCount; i++)
             {
-                var loc = vm.ReadUShort(chunk);
+                var label = vm.ReadByte(chunk);
+                var loc = (ushort)chunk.Labels[label];
                 if (Enabled)
                 {
                     RunTestCase(vm, chunk, loc);

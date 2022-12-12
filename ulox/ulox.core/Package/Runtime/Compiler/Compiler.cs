@@ -163,7 +163,7 @@ namespace ULox
         public void WriteUShortAt(int at, ushort us)
             => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
-        private void WriteBytesAt(int at, params byte[] b)
+        public void WriteBytesAt(int at, params byte[] b)
         {
             for (int i = 0; i < b.Length; i++)
             {

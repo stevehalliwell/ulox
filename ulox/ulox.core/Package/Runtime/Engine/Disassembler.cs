@@ -110,9 +110,9 @@ namespace ULox
             AppendSpace();
         }
 
-        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLocation(OpCode opCode, byte sc, Value value, byte testCount, int it, ushort ushortValue)
+        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(Chunk chunk, OpCode opCode, byte sc, Value value, byte testCount, int it, byte label)
         {
-            stringBuilder.Append($"({ushortValue})");
+            stringBuilder.Append($"({chunk.Labels[label]})");
             if (it < testCount - 1)
                 Append(", ");
             else
@@ -134,9 +134,9 @@ namespace ULox
             AppendSpace();
         }
 
-        protected override void ProcessTestOpAndUShort(OpCode opCode, TestOpType testOpType, ushort ushortValue)
+        protected override void ProcessTestOpAndLabel(Chunk chunk, OpCode opCode, TestOpType testOpType, byte labelId)
         {
-            stringBuilder.Append($"({ushortValue})");
+            stringBuilder.Append($"({chunk.Labels[labelId]})");
             AppendSpace();
         }
 
@@ -160,13 +160,13 @@ namespace ULox
                 stringBuilder.AppendLine();
         }
 
-        protected override void ProcessOpAndStringConstantAndByteAndUShort(OpCode opCode, byte stringConstant, Value value, byte b, ushort ushortValue)
+        protected override void ProcessOpAndStringConstantAndByteAndLabel(Chunk chunk, OpCode opCode, byte stringConstant, Value value, byte b, byte initLabel)
         {
             stringBuilder.Append($"({stringConstant}){value}");
             AppendSpace();
             stringBuilder.Append($"({b})");
             AppendSpace();
-            stringBuilder.Append($"({ushortValue})");
+            //stringBuilder.Append($"({chunk.Labels[initLabel]})");
             AppendSpace();
         }
 
@@ -183,12 +183,12 @@ namespace ULox
             stringBuilder.Append($"({ushortValue})");
         }
 
-        protected override void ProcessOpAndStringConstant(OpCode opCode, byte b, Value value)
+        protected override void ProcessOpAndStringConstant(Chunk chunk, OpCode opCode, byte sc, Value value)
         {
-            stringBuilder.Append($"({b}){value}");
+            stringBuilder.Append($"({sc}){value}");
         }
 
-        protected override void ProcessOpAndByte(OpCode opCode, byte b)
+        protected override void ProcessOpAndByte(Chunk chunk, OpCode opCode, byte b)
         {
             stringBuilder.Append($"({b})");
         }

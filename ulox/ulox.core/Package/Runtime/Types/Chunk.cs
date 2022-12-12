@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -167,6 +168,15 @@ namespace ULox
         internal void AddLabel(byte id, int currentChunkInstructinCount)
         {
             _labelIdToInstruction[id] = currentChunkInstructinCount;
+        }
+
+        internal void AdjustLabelIndicies(int byteChangedThresholde, int delta)
+        {
+            foreach (var item in _labelIdToInstruction.ToList())
+            {
+                if (item.Value < byteChangedThresholde) continue;
+                _labelIdToInstruction[item.Key] = item.Value + delta;
+            }
         }
     }
 }

@@ -77,8 +77,7 @@ namespace ULox
 
         private TypeCompiletteStage _stage = TypeCompiletteStage.Invalid;
         public string CurrentTypeName { get; private set; }
-        private short _initChainInstruction;
-        public short InitChainInstruction => _initChainInstruction;
+        public byte InitChainLabelId { get; private set; }
         private ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
         private ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
@@ -185,8 +184,8 @@ namespace ULox
             byte nameConstant)
         {
             compiler.EmitOpAndBytes(OpCode.TYPE, nameConstant, (byte)UserType);
-            _initChainInstruction = (short)compiler.CurrentChunk.Instructions.Count;
-            compiler.EmitUShort(0);
+            InitChainLabelId = compiler.UniqueChunkStringConstant("InitChain");
+            compiler.EmitBytes(InitChainLabelId);
         }
 
         public void This(Compiler compiler, bool canAssign)

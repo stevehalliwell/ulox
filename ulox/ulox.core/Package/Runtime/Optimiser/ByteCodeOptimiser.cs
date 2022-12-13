@@ -43,8 +43,7 @@ namespace ULox
             for (int i = _deadBytes.Count - 1; i >= 0; i--)
             {
                 var (chunk, b) = _deadBytes[i];
-                chunk.Instructions.RemoveAt(b);
-                chunk.AdjustLabelIndicies(b, -1);
+                chunk.RemoveByteAt(b);
             }
         }
 

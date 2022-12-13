@@ -170,12 +170,33 @@ namespace ULox
             _labelIdToInstruction[id] = currentChunkInstructinCount;
         }
 
+        internal void RemoveByteAt(int b)
+        {
+            Instructions.RemoveAt(b);
+            AdjustLabelIndicies(b, -1);
+            AdjustLineNumbers(b, -1);
+        }
+
         internal void AdjustLabelIndicies(int byteChangedThresholde, int delta)
         {
             foreach (var item in _labelIdToInstruction.ToList())
             {
                 if (item.Value < byteChangedThresholde) continue;
                 _labelIdToInstruction[item.Key] = item.Value + delta;
+            }
+        }
+
+        private void AdjustLineNumbers(int byteChangedThresholde, int delta)
+        {
+            for (var i = 0; i < _runLengthLineNumbers.Count; i++)
+            {
+                var item = _runLengthLineNumbers[i];
+                if (item.startingInstruction < byteChangedThresholde) continue;
+                _runLengthLineNumbers[i] = new RunLengthLineNumber()
+                {
+                    line = item.line,
+                    startingInstruction = item.startingInstruction + delta
+                };
             }
         }
     }

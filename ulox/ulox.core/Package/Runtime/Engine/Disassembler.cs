@@ -160,13 +160,13 @@ namespace ULox
                 stringBuilder.AppendLine();
         }
 
-        protected override void ProcessOpAndStringConstantAndByteAndLabel(Chunk chunk, OpCode opCode, byte stringConstant, Value value, byte b, byte initLabel)
+        protected override void ProcessTypeOp(Chunk chunk, OpCode opCode, byte stringConstant, Value value, byte b, byte initLabel)
         {
             stringBuilder.Append($"({stringConstant}){value}");
             AppendSpace();
             stringBuilder.Append($"({b})");
             AppendSpace();
-            //stringBuilder.Append($"({chunk.Labels[initLabel]})");
+            stringBuilder.Append($"({chunk.Labels[initLabel]})");
             AppendSpace();
         }
 

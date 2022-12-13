@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace ULox
 {
     public abstract class ByteCodeIterator
     {
+        public int CurrentInstructionIndex { get; private set; }
+
         public void Iterate(CompiledScript compiledScript)
         {
             Iterate(compiledScript, compiledScript.TopLevelChunk);
@@ -28,10 +29,10 @@ namespace ULox
 
         private void ChunkIterate(Chunk chunk)
         {
-            for (int i = 0; i < chunk.Instructions.Count; i++)
+            for (CurrentInstructionIndex = 0; CurrentInstructionIndex < chunk.Instructions.Count; CurrentInstructionIndex++)
             {
-                var opCode = (OpCode)chunk.Instructions[i];
-                DefaultOpCode(chunk, i, opCode);
+                var opCode = (OpCode)chunk.Instructions[CurrentInstructionIndex];
+                DefaultOpCode(chunk, CurrentInstructionIndex, opCode);
 
                 switch (opCode)
                 {
@@ -78,8 +79,8 @@ namespace ULox
                 case OpCode.NATIVE_TYPE:
                 case OpCode.VALIDATE:
                 {
-                    i++;
-                    var b = chunk.Instructions[i];
+                    CurrentInstructionIndex++;
+                    var b = chunk.Instructions[CurrentInstructionIndex];
                     ProcessOpAndByte(chunk, opCode, b);
                 }
                 break;
@@ -98,8 +99,8 @@ namespace ULox
                 case OpCode.GOTO_IF_FALSE:
                 case OpCode.LABEL:
                 {
-                    i++;
-                    var sc = chunk.Instructions[i];
+                    CurrentInstructionIndex++;
+                    var sc = chunk.Instructions[CurrentInstructionIndex];
                     ProcessOpAndStringConstant(chunk, opCode, sc, chunk.ReadConstant(sc));
                 }
                 break;
@@ -108,7 +109,7 @@ namespace ULox
                 case OpCode.JUMP:
                 case OpCode.LOOP:
                 {
-                    i = ReadUShort(chunk, i, out var ushortValue);
+                    CurrentInstructionIndex = ReadUShort(chunk, CurrentInstructionIndex, out var ushortValue);
                     ProcessOpAndUShort(opCode, ushortValue);
                 }
                 break;
@@ -118,29 +119,29 @@ namespace ULox
 
                 case OpCode.INVOKE:
                 {
-                    i++;
-                    var sc = chunk.Instructions[i];
-                    i++;
-                    var b = chunk.Instructions[i];
+                    CurrentInstructionIndex++;
+                    var sc = chunk.Instructions[CurrentInstructionIndex];
+                    CurrentInstructionIndex++;
+                    var b = chunk.Instructions[CurrentInstructionIndex];
                     ProcessOpAndStringConstantAndByte(opCode, sc, chunk.ReadConstant(sc), b);
                 }
                 break;
                 case OpCode.TYPE:
                 {
-                    i++;
-                    var sc = chunk.Instructions[i];
-                    i++;
-                    var b = chunk.Instructions[i];
-                    i++;
-                    var label = chunk.Instructions[i];
-                    ProcessOpAndStringConstantAndByteAndLabel(chunk, opCode, sc, chunk.ReadConstant(sc), b, label);
+                    CurrentInstructionIndex++;
+                    var sc = chunk.Instructions[CurrentInstructionIndex];
+                    CurrentInstructionIndex++;
+                    var b = chunk.Instructions[CurrentInstructionIndex];
+                    CurrentInstructionIndex++;
+                    var label = chunk.Instructions[CurrentInstructionIndex];
+                    ProcessTypeOp(chunk, opCode, sc, chunk.ReadConstant(sc), b, label);
                 }
                 break;
 
                 case OpCode.CLOSURE:
                 {
-                    i++;
-                    var ind = chunk.Instructions[i];
+                    CurrentInstructionIndex++;
+                    var ind = chunk.Instructions[CurrentInstructionIndex];
                     var func = chunk.ReadConstant(ind);
 
                     var count = func.val.asChunk.UpvalueCount;
@@ -149,10 +150,10 @@ namespace ULox
 
                     for (int upVal = 0; upVal < count; upVal++)
                     {
-                        i++;
-                        var isLocal = chunk.Instructions[i];
-                        i++;
-                        var upvalIndex = chunk.Instructions[i];
+                        CurrentInstructionIndex++;
+                        var isLocal = chunk.Instructions[CurrentInstructionIndex];
+                        CurrentInstructionIndex++;
+                        var upvalIndex = chunk.Instructions[CurrentInstructionIndex];
 
                         ProcessOpClosureUpValue(opCode, ind, count, upVal, isLocal, upvalIndex);
                     }
@@ -160,8 +161,8 @@ namespace ULox
                 break;
                 case OpCode.TEST:
                 {
-                    i++;
-                    var testOpType = (TestOpType)chunk.Instructions[i];
+                    CurrentInstructionIndex++;
+                    var testOpType = (TestOpType)chunk.Instructions[CurrentInstructionIndex];
 
                     ProcessTestOp(opCode, testOpType);
 
@@ -170,25 +171,25 @@ namespace ULox
                     case TestOpType.CaseStart:
                     case TestOpType.CaseEnd:
                     {
-                        i++;
-                        var sc = chunk.Instructions[i];
-                        i++;
-                        var b = chunk.Instructions[i];
+                        CurrentInstructionIndex++;
+                        var sc = chunk.Instructions[CurrentInstructionIndex];
+                        CurrentInstructionIndex++;
+                        var b = chunk.Instructions[CurrentInstructionIndex];
                         ProcessTestOpAndStringConstantAndByte(opCode, testOpType, sc, chunk.ReadConstant(sc), b);
                     }
                     break;
 
                     case TestOpType.TestSetStart:
                     {
-                        i++;
-                        var sc = chunk.Instructions[i];
-                        i++;
-                        var testCount = chunk.Instructions[i];
+                        CurrentInstructionIndex++;
+                        var sc = chunk.Instructions[CurrentInstructionIndex];
+                        CurrentInstructionIndex++;
+                        var testCount = chunk.Instructions[CurrentInstructionIndex];
                         ProcessTestOpAndStringConstantAndTestCount(opCode, sc, chunk.ReadConstant(sc), testCount);
                         for (int it = 0; it < testCount; it++)
                         {
-                            i++;
-                            var label = chunk.Instructions[i];
+                            CurrentInstructionIndex++;
+                            var label = chunk.Instructions[CurrentInstructionIndex];
                             ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(chunk, opCode, sc, chunk.ReadConstant(sc), testCount, it, label);
                         }
                     }
@@ -196,17 +197,17 @@ namespace ULox
 
                     case TestOpType.TestSetEnd:
                     {
-                        i++;
-                        var b1 = chunk.Instructions[i];
-                        i++;
-                        var b2 = chunk.Instructions[i];
+                        CurrentInstructionIndex++;
+                        var b1 = chunk.Instructions[CurrentInstructionIndex];
+                        CurrentInstructionIndex++;
+                        var b2 = chunk.Instructions[CurrentInstructionIndex];
                         ProcessTestOpAndByteAndByte(opCode, testOpType, b1, b2);
                     }
                     break;
                     case TestOpType.TestFixtureBodyInstruction:
                     {
-                        i++;
-                        var label = chunk.Instructions[i];
+                        CurrentInstructionIndex++;
+                        var label = chunk.Instructions[CurrentInstructionIndex];
                         ProcessTestOpAndLabel(chunk, opCode, testOpType, label);
                     }
                     break;
@@ -234,7 +235,7 @@ namespace ULox
         protected abstract void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, Value value, byte b);
         protected abstract void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount);
         protected abstract void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex);
-        protected abstract void ProcessOpAndStringConstantAndByteAndLabel(Chunk chunk, OpCode opCode, byte stringConstant, Value value, byte b, byte initLabel);
+        protected abstract void ProcessTypeOp(Chunk chunk, OpCode opCode, byte stringConstant, Value value, byte b, byte initLabel);
         protected abstract void ProcessOpAndStringConstantAndByte(OpCode opCode, byte stringConstant, Value value, byte b);
         protected abstract void ProcessOpAndUShort(OpCode opCode, ushort ushortValue);
         protected abstract void ProcessOpAndStringConstant(Chunk chunk, OpCode opCode, byte sc, Value value);

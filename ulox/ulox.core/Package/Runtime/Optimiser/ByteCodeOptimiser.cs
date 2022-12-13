@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace ULox
@@ -18,8 +19,36 @@ namespace ULox
 
             Iterate(compiledScript);
 
+            MarkNoJumpGotoLabelAsDead(compiledScript);
             MarkUnsedLabelsAsDead(compiledScript);
             RemoveDeadBytes();
+        }
+
+        private void MarkNoJumpGotoLabelAsDead(CompiledScript compiledScript)
+        {
+            foreach (var labelUsage in _labelUsage)
+            {
+                var labelLoc = labelUsage.chunk.Labels[labelUsage.label];
+
+                if (labelUsage.from - 1 >= labelLoc)
+                    continue;
+
+                var found = false;
+                for (int i = labelUsage.from +1; i < labelLoc; i++)
+                {
+                    if (!_deadBytes.Any(d => d.chunk == labelUsage.chunk && d.b == i))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if(!found)
+                {
+                    _deadBytes.Add((labelUsage.chunk, labelUsage.from-1));
+                    _deadBytes.Add((labelUsage.chunk, labelUsage.from));
+                }
+            }
         }
 
         private void MarkUnsedLabelsAsDead(CompiledScript compiledScript)
@@ -28,11 +57,12 @@ namespace ULox
             {
                 foreach (var label in chunk.Labels)
                 {
-                    var used = _labelUsage.Any(x => x.chunk == chunk && x.label == label.Key);
-                    if(!used)
+                    var matches = _labelUsage.Where(x => x.chunk == chunk && x.label == label.Key);
+                    var used = matches.Any(x => !_deadBytes.Any(y => y.chunk == chunk && y.b == x.from));
+                    if (!used)
                     {
                         _deadBytes.Add((chunk, label.Value));
-                        _deadBytes.Add((chunk, label.Value+1));
+                        _deadBytes.Add((chunk, label.Value + 1));
                     }
                 }
             }
@@ -40,6 +70,9 @@ namespace ULox
 
         private void RemoveDeadBytes()
         {
+            _deadBytes.Sort((x, y) => x.b.CompareTo(y.b));
+            _deadBytes = _deadBytes.Distinct().ToList();
+
             for (int i = _deadBytes.Count - 1; i >= 0; i--)
             {
                 var (chunk, b) = _deadBytes[i];
@@ -55,7 +88,8 @@ namespace ULox
 
         protected override void DefaultOpCode(Chunk chunk, int i, OpCode opCode)
         {
-            if (_prevOoCode == OpCode.GOTO
+            if (_deadCodeStart == -1 
+                && _prevOoCode == OpCode.GOTO
                 && opCode != OpCode.LABEL)
             {
                 _deadCodeStart = i;
@@ -99,13 +133,7 @@ namespace ULox
             if (opCode == OpCode.GOTO
                 || opCode == OpCode.GOTO_IF_FALSE)
             {
-                if (chunk.Labels[sc] - 1 != CurrentInstructionIndex)
-                    _labelUsage.Add((chunk, CurrentInstructionIndex, sc));
-                else
-                {
-                    _deadBytes.Add((chunk, CurrentInstructionIndex - 1));
-                    _deadBytes.Add((chunk, CurrentInstructionIndex));
-                }
+                _labelUsage.Add((chunk, CurrentInstructionIndex, sc));
             }
         }
 

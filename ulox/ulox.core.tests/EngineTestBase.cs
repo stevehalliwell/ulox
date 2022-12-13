@@ -11,7 +11,6 @@ namespace ulox.core.tests
         public void Setup()
         {
             testEngine = new ByteCodeInterpreterTestEngine(System.Console.WriteLine);
-            (testEngine.MyEngine.Context.Program as Program).Optimiser.Enabled = false;
         }
     }
 }

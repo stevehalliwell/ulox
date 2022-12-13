@@ -3,16 +3,8 @@
 namespace ulox.core.tests
 {
     [TestFixture]
-    public class OptimiserTests
+    public class OptimiserTests : EngineTestBase
     {
-        protected ByteCodeInterpreterTestEngine testEngine;
-
-        [SetUp]
-        public void Setup()
-        {
-            testEngine = new ByteCodeInterpreterTestEngine(System.Console.WriteLine);
-        }
-
         [Test]
         public void Optimiser_NothingToOptimise_DoesNothing()
         {
@@ -32,7 +24,7 @@ print (1+2);");
             Assert.AreEqual("3", testEngine.InterpreterResult);
             Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
-        
+
         [Test]
         public void Optimiser_JumpOps_RemovesUnreachable()
         {
@@ -46,7 +38,7 @@ print(1+2);");
             Assert.AreEqual("3", testEngine.InterpreterResult);
             Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
-        
+
         [Test]
         public void Optimiser_GotoLabelWithDeadInBetween_RemovesGotoAndLabel()
         {

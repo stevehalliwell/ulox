@@ -15,7 +15,6 @@ namespace ULox
 
         public string GetString() => stringBuilder.ToString();
 
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoLabels(Chunk chunk)
         {
@@ -102,17 +101,17 @@ namespace ULox
             AppendSpace();
         }
 
-        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, Value value, byte b)
+        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b)
         {
-            stringBuilder.Append($"({stringConstant}){value}");
+            stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
             AppendSpace();
             stringBuilder.Append($"({b})");
             AppendSpace();
         }
 
-        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(Chunk chunk, OpCode opCode, byte sc, Value value, byte testCount, int it, byte label)
+        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label)
         {
-            stringBuilder.Append($"({chunk.Labels[label]})");
+            PrintLabel(CurrentChunk, label);
             if (it < testCount - 1)
                 Append(", ");
             else
@@ -127,16 +126,16 @@ namespace ULox
             AppendSpace();
         }
 
-        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, Value value, byte testCount)
+        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount)
         {
-            stringBuilder.Append($"({stringConstantID}){value}");
+            stringBuilder.Append($"({stringConstantID}){CurrentChunk.Constants[stringConstantID]}");
             Append("  [");
             AppendSpace();
         }
 
-        protected override void ProcessTestOpAndLabel(Chunk chunk, OpCode opCode, TestOpType testOpType, byte labelId)
+        protected override void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte labelId)
         {
-            stringBuilder.Append($"({chunk.Labels[labelId]})");
+            PrintLabel(CurrentChunk, labelId);
             AppendSpace();
         }
 
@@ -160,19 +159,19 @@ namespace ULox
                 stringBuilder.AppendLine();
         }
 
-        protected override void ProcessTypeOp(Chunk chunk, OpCode opCode, byte stringConstant, Value value, byte b, byte initLabel)
+        protected override void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte initLabel)
         {
-            stringBuilder.Append($"({stringConstant}){value}");
+            stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
             AppendSpace();
             stringBuilder.Append($"({b})");
             AppendSpace();
-            stringBuilder.Append($"({chunk.Labels[initLabel]})");
+            PrintLabel(CurrentChunk, initLabel);
             AppendSpace();
         }
 
-        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte stringConstant, Value value, byte b)
+        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte sc, byte b)
         {
-            stringBuilder.Append($"({stringConstant}){value}");
+            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
             AppendSpace();
             stringBuilder.Append($"({b})");
             AppendSpace();
@@ -183,12 +182,12 @@ namespace ULox
             stringBuilder.Append($"({ushortValue})");
         }
 
-        protected override void ProcessOpAndStringConstant(Chunk chunk, OpCode opCode, byte sc, Value value)
+        protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
         {
-            stringBuilder.Append($"({sc}){value}");
+            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
         }
 
-        protected override void ProcessOpAndByte(Chunk chunk, OpCode opCode, byte b)
+        protected override void ProcessOpAndByte(OpCode opCode, byte b)
         {
             stringBuilder.Append($"({b})");
         }
@@ -197,10 +196,10 @@ namespace ULox
         {
         }
 
-        protected override void DefaultOpCode(Chunk chunk, int i, OpCode opCode)
+        protected override void DefaultOpCode(OpCode opCode)
         {
-            stringBuilder.Append(i.ToString("00000"));
-            DoLineNumber(chunk);
+            stringBuilder.Append(CurrentInstructionIndex.ToString("00000"));
+            DoLineNumber(CurrentChunk);
             stringBuilder.Append(opCode);
             AppendSpace();
         }
@@ -232,6 +231,16 @@ namespace ULox
 
             _currentInstructionCount = 0;
             _prevLine = -1;
+        }
+
+        protected override void ProcessOpAndLabel(OpCode opCode, byte labelID)
+        {
+            PrintLabel(CurrentChunk, labelID);
+        }
+
+        private void PrintLabel(Chunk chunk, byte labelID)
+        {
+            stringBuilder.Append($"({labelID}){chunk.Constants[labelID]}@{chunk.Labels[labelID]}");
         }
     }
 }

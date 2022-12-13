@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace ULox
@@ -34,7 +33,7 @@ namespace ULox
                     continue;
 
                 var found = false;
-                for (int i = labelUsage.from +1; i < labelLoc; i++)
+                for (int i = labelUsage.from + 1; i < labelLoc; i++)
                 {
                     if (!_deadBytes.Any(d => d.chunk == labelUsage.chunk && d.b == i))
                     {
@@ -43,9 +42,9 @@ namespace ULox
                     }
                 }
 
-                if(!found)
+                if (!found)
                 {
-                    _deadBytes.Add((labelUsage.chunk, labelUsage.from-1));
+                    _deadBytes.Add((labelUsage.chunk, labelUsage.from - 1));
                     _deadBytes.Add((labelUsage.chunk, labelUsage.from));
                 }
             }
@@ -86,19 +85,19 @@ namespace ULox
             _deadCodeStart = -1;
         }
 
-        protected override void DefaultOpCode(Chunk chunk, int i, OpCode opCode)
+        protected override void DefaultOpCode(OpCode opCode)
         {
-            if (_deadCodeStart == -1 
+            if (_deadCodeStart == -1
                 && _prevOoCode == OpCode.GOTO
                 && opCode != OpCode.LABEL)
             {
-                _deadCodeStart = i;
+                _deadCodeStart = CurrentInstructionIndex;
             }
 
             if (opCode == OpCode.LABEL
                 && _deadCodeStart != -1)
             {
-                _deadBytes.AddRange(Enumerable.Range(_deadCodeStart, i - _deadCodeStart).Select(b => (chunk, b)));
+                _deadBytes.AddRange(Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart).Select(b => (CurrentChunk, b)));
                 _deadCodeStart = -1;
             }
             _prevOoCode = opCode;
@@ -106,90 +105,87 @@ namespace ULox
 
         protected override void DefaultPostOpCode()
         {
-
         }
 
         protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
         {
-
         }
 
         protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
         {
-
         }
 
         protected override void ProcessOp(OpCode opCode)
         {
-
         }
 
-        protected override void ProcessOpAndByte(Chunk chunk, OpCode opCode, byte b)
+        protected override void ProcessOpAndByte(OpCode opCode, byte b)
         {
         }
 
-        protected override void ProcessOpAndStringConstant(Chunk chunk, OpCode opCode, byte sc, Value value)
+        protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
         {
-            if (opCode == OpCode.GOTO
-                || opCode == OpCode.GOTO_IF_FALSE)
-            {
-                _labelUsage.Add((chunk, CurrentInstructionIndex, sc));
-            }
         }
 
-        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte stringConstant, Value value, byte b)
+        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte stringConstant, byte b)
         {
-
         }
 
-        protected override void ProcessTypeOp(Chunk chunk, OpCode opCode, byte stringConstant, Value value, byte b, byte labelId)
+        protected override void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte labelId)
         {
-            _labelUsage.Add((chunk, CurrentInstructionIndex, labelId));
+            AddLabelUsage(labelId);
         }
 
         protected override void ProcessOpAndUShort(OpCode opCode, ushort ushortValue)
         {
-
         }
 
         protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)
         {
-
         }
 
         protected override void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex)
         {
-
         }
 
         protected override void ProcessTestOp(OpCode opCode, TestOpType testOpType)
         {
-
         }
 
         protected override void ProcessTestOpAndByteAndByte(OpCode opCode, TestOpType testOpType, byte b1, byte b2)
         {
-
         }
 
-        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, Value value, byte b)
+        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b)
         {
-
         }
 
-        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, Value value, byte testCount)
+        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount)
         {
-
         }
 
-        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(Chunk chunk, OpCode opCode, byte sc, Value value, byte testCount, int it, byte label)
+        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label)
         {
-            _labelUsage.Add((chunk, CurrentInstructionIndex, label));
+            AddLabelUsage(label);
         }
 
-        protected override void ProcessTestOpAndLabel(Chunk chunk, OpCode opCode, TestOpType testOpType, byte label)
+        private void AddLabelUsage(byte labelId)
         {
-            _labelUsage.Add((chunk, CurrentInstructionIndex, label));
+            _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));
+        }
+
+        protected override void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte label)
+        {
+            AddLabelUsage(label);
+        }
+
+        protected override void ProcessOpAndLabel(OpCode opCode, byte labelId)
+        {
+            if (opCode == OpCode.GOTO
+                || opCode == OpCode.GOTO_IF_FALSE)
+            {
+                AddLabelUsage(labelId);
+            }
         }
     }
 }

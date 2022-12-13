@@ -1,11 +1,11 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace ULox
 {
     public abstract class ByteCodeIterator
     {
         public int CurrentInstructionIndex { get; private set; }
+        public Chunk CurrentChunk { get; private set; }
 
         public void Iterate(CompiledScript compiledScript)
         {
@@ -21,7 +21,7 @@ namespace ULox
         public void Iterate(CompiledScript compiledScript, Chunk chunk)
         {
             PreChunkInterate(compiledScript, chunk);
-            
+
             ChunkIterate(chunk);
 
             PostChunkIterate(compiledScript, chunk);
@@ -29,10 +29,11 @@ namespace ULox
 
         private void ChunkIterate(Chunk chunk)
         {
+            CurrentChunk = chunk;
             for (CurrentInstructionIndex = 0; CurrentInstructionIndex < chunk.Instructions.Count; CurrentInstructionIndex++)
             {
                 var opCode = (OpCode)chunk.Instructions[CurrentInstructionIndex];
-                DefaultOpCode(chunk, CurrentInstructionIndex, opCode);
+                DefaultOpCode(opCode);
 
                 switch (opCode)
                 {
@@ -81,7 +82,7 @@ namespace ULox
                 {
                     CurrentInstructionIndex++;
                     var b = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessOpAndByte(chunk, opCode, b);
+                    ProcessOpAndByte(opCode, b);
                 }
                 break;
 
@@ -95,13 +96,20 @@ namespace ULox
                 case OpCode.FIELD:
                 case OpCode.REGISTER:
                 case OpCode.INJECT:
+                {
+                    CurrentInstructionIndex++;
+                    var sc = chunk.Instructions[CurrentInstructionIndex];
+                    ProcessOpAndStringConstant(opCode, sc);
+                }
+                break;
+
                 case OpCode.GOTO:
                 case OpCode.GOTO_IF_FALSE:
                 case OpCode.LABEL:
                 {
                     CurrentInstructionIndex++;
-                    var sc = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessOpAndStringConstant(chunk, opCode, sc, chunk.ReadConstant(sc));
+                    var labelID = chunk.Instructions[CurrentInstructionIndex];
+                    ProcessOpAndLabel(opCode, labelID);
                 }
                 break;
 
@@ -114,18 +122,16 @@ namespace ULox
                 }
                 break;
 
-                case OpCode.NATIVE_CALL:
-                    break;
-
                 case OpCode.INVOKE:
                 {
                     CurrentInstructionIndex++;
                     var sc = chunk.Instructions[CurrentInstructionIndex];
                     CurrentInstructionIndex++;
                     var b = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessOpAndStringConstantAndByte(opCode, sc, chunk.ReadConstant(sc), b);
+                    ProcessOpAndStringConstantAndByte(opCode, sc, b);
                 }
                 break;
+
                 case OpCode.TYPE:
                 {
                     CurrentInstructionIndex++;
@@ -134,7 +140,7 @@ namespace ULox
                     var b = chunk.Instructions[CurrentInstructionIndex];
                     CurrentInstructionIndex++;
                     var label = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessTypeOp(chunk, opCode, sc, chunk.ReadConstant(sc), b, label);
+                    ProcessTypeOp(opCode, sc, b, label);
                 }
                 break;
 
@@ -159,6 +165,7 @@ namespace ULox
                     }
                 }
                 break;
+
                 case OpCode.TEST:
                 {
                     CurrentInstructionIndex++;
@@ -175,7 +182,7 @@ namespace ULox
                         var sc = chunk.Instructions[CurrentInstructionIndex];
                         CurrentInstructionIndex++;
                         var b = chunk.Instructions[CurrentInstructionIndex];
-                        ProcessTestOpAndStringConstantAndByte(opCode, testOpType, sc, chunk.ReadConstant(sc), b);
+                        ProcessTestOpAndStringConstantAndByte(opCode, testOpType, sc, b);
                     }
                     break;
 
@@ -185,12 +192,12 @@ namespace ULox
                         var sc = chunk.Instructions[CurrentInstructionIndex];
                         CurrentInstructionIndex++;
                         var testCount = chunk.Instructions[CurrentInstructionIndex];
-                        ProcessTestOpAndStringConstantAndTestCount(opCode, sc, chunk.ReadConstant(sc), testCount);
+                        ProcessTestOpAndStringConstantAndTestCount(opCode, sc, testCount);
                         for (int it = 0; it < testCount; it++)
                         {
                             CurrentInstructionIndex++;
                             var label = chunk.Instructions[CurrentInstructionIndex];
-                            ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(chunk, opCode, sc, chunk.ReadConstant(sc), testCount, it, label);
+                            ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(opCode, sc, testCount, it, label);
                         }
                     }
                     break;
@@ -204,42 +211,47 @@ namespace ULox
                         ProcessTestOpAndByteAndByte(opCode, testOpType, b1, b2);
                     }
                     break;
+
                     case TestOpType.TestFixtureBodyInstruction:
                     {
                         CurrentInstructionIndex++;
                         var label = chunk.Instructions[CurrentInstructionIndex];
-                        ProcessTestOpAndLabel(chunk, opCode, testOpType, label);
+                        ProcessTestOpAndLabel(opCode, testOpType, label);
                     }
                     break;
                     }
                 }
                 break;
 
+                case OpCode.NATIVE_CALL:
+                    break;
+
                 default:
-                    throw new Exception();
+                    throw new UloxException($"Unhandled OpCode '{opCode}'.");
                 }
 
                 DefaultPostOpCode();
             }
         }
 
+        protected abstract void ProcessOpAndStringConstantAndByte(OpCode opCode, byte sc, byte b);
+        protected abstract void ProcessOpAndStringConstant(OpCode opCode, byte sc);
+        protected abstract void ProcessOpAndLabel(OpCode opCode, byte labelId);
         protected abstract void PostChunkIterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void PreChunkInterate(CompiledScript compiledScript, Chunk chunk);
-        protected abstract void DefaultOpCode(Chunk chunk, int i, OpCode opCode);
+        protected abstract void DefaultOpCode(OpCode opCode);
         protected abstract void DefaultPostOpCode();
-        protected abstract void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(Chunk chunk, OpCode opCode, byte sc, Value value, byte testCount, int it, byte label);
-        protected abstract void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, Value value, byte testCount);
+        protected abstract void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label);
+        protected abstract void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount);
         protected abstract void ProcessTestOp(OpCode opCode, TestOpType testOpType);
-        protected abstract void ProcessTestOpAndLabel(Chunk chunk, OpCode opCode, TestOpType testOpType, byte label);
+        protected abstract void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte label);
         protected abstract void ProcessTestOpAndByteAndByte(OpCode opCode, TestOpType testOpType, byte b1, byte b2);
-        protected abstract void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, Value value, byte b);
+        protected abstract void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b);
         protected abstract void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount);
         protected abstract void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex);
-        protected abstract void ProcessTypeOp(Chunk chunk, OpCode opCode, byte stringConstant, Value value, byte b, byte initLabel);
-        protected abstract void ProcessOpAndStringConstantAndByte(OpCode opCode, byte stringConstant, Value value, byte b);
+        protected abstract void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte initLabel);
         protected abstract void ProcessOpAndUShort(OpCode opCode, ushort ushortValue);
-        protected abstract void ProcessOpAndStringConstant(Chunk chunk, OpCode opCode, byte sc, Value value);
-        protected abstract void ProcessOpAndByte(Chunk chunk, OpCode opCode, byte b);
+        protected abstract void ProcessOpAndByte(OpCode opCode, byte b);
         protected abstract void ProcessOp(OpCode opCode);
 
 

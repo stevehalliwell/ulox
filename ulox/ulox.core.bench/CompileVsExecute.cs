@@ -1,8 +1,10 @@
-﻿namespace ulox.core.bench
+﻿using ULox;
+
+namespace ulox.core.bench
 {
     public static class CompileVsExecute
     {
-        public const string Script = @"
+        public static readonly Script Script = new Script(nameof(Script), @"
 var a = 1;
 
 class Foo { var b = 2, c, d = ""Hello""; }
@@ -30,6 +32,6 @@ expect
     fb.f == null,
     fb.g == ""World"",
     fb.Meth() == fb.e;
-";
+");
     }
 }

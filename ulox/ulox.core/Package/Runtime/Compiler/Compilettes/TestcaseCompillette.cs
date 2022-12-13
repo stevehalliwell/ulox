@@ -66,7 +66,7 @@
             //emit jump // to skip this during imperative
             var testFragmentJump = compiler.GotoUniqueChunkLabel("testFragmentJump");
 
-            _testDeclarationCompilette.AddTestCaseInstruction((ushort)compiler.CurrentChunkInstructinCount);
+            _testDeclarationCompilette.AddTestCaseLabel(compiler.LabelUniqueChunkLabel($"TestCase_{testcaseName}"));
 
             compiler.BeginScope();
             var numArgs = compiler.VariableNameListDeclareOptional(null);

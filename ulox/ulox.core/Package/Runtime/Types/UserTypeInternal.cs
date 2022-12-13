@@ -41,6 +41,7 @@ namespace ULox
 
         //TODO these props also need to be write protected by the freeze
         public HashedString Name { get; protected set; }
+
         public UserType UserType { get; }
         public Value Initialiser { get; protected set; } = Value.Null();
         public List<(ClosureInternal closure, ushort instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, ushort)>();
@@ -70,7 +71,7 @@ namespace ULox
         public void AddMethod(HashedString key, Value method)
         {
             // This is used internally by the vm only does not need to check for frozen
-            
+
             methods[key] = method;
             if (key == TypeCompilette.InitMethodName)
             {
@@ -86,14 +87,14 @@ namespace ULox
         public void AddInitChain(ClosureInternal closure, ushort initChainStartOp)
         {
             // This is used internally by the vm only does not need to check for frozen
-            
+
             InitChains.Add((closure, initChainStartOp));
         }
 
         public void AddMixin(Value flavourValue, Vm vm)
         {
             // This is used internally by the vm only does not need to check for frozen
-            
+
             var flavour = flavourValue.val.asClass;
             flavours[flavour.Name] = flavourValue;
 
@@ -124,7 +125,7 @@ namespace ULox
                     {
                         vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
                     }
-                    
+
                     //make a combine
                     var temp = Value.Combined();
                     temp.val.asCombined.Add(existing.val.asClosure);
@@ -139,13 +140,13 @@ namespace ULox
                     {
                         vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
                     }
-                    
+
                     existing.val.asCombined.Add(value.val.asClosure);
                 }
 
                 value = existing;
             }
-            
+
             AddMethod(key, value);
         }
 

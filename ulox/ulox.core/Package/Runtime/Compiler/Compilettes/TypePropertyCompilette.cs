@@ -5,8 +5,7 @@ namespace ULox
     public sealed class TypePropertyCompilette : ITypeBodyCompilette
     {
         private List<byte> _classVarConstantNames = new List<byte>();
-
-        private int _initFragStartLocation = -1;
+        
         private int _previousInitFragLabelId = -1;
         private TypeCompilette _typeCompilette;
         private TokenType _matchToken;
@@ -37,7 +36,6 @@ namespace ULox
         public void Start(TypeCompilette typeCompilette)
         {
             _typeCompilette = typeCompilette;
-            _initFragStartLocation = -1;
             _previousInitFragLabelId = -1;
             _classVarConstantNames.Clear();
         }
@@ -62,7 +60,7 @@ namespace ULox
                 }
                 else
                 {
-                    _initFragStartLocation = compiler.CurrentChunk.Instructions.Count;
+                    compiler.EmitLabel((byte)_typeCompilette.InitChainLabelId);
                 }
 
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
@@ -96,16 +94,13 @@ namespace ULox
 
         public void PostBody(Compiler compiler)
         {
-            //emit return //if we are the last link in the chain this ends our call
-
-            if (_initFragStartLocation != -1)
-                compiler.WriteUShortAt(_typeCompilette.InitChainInstruction, (ushort)_initFragStartLocation);
-
             //return stub used by init and test chains
             var classReturnEnd = compiler.GotoUniqueChunkLabel("ClassReturnEnd");
 
             if (_previousInitFragLabelId != -1)
                 compiler.EmitLabel((byte)_previousInitFragLabelId);
+            else
+                compiler.CurrentCompilerState.chunk.AddLabel(_typeCompilette.InitChainLabelId, 0);
 
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
 

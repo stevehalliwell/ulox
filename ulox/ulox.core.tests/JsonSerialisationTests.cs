@@ -5,7 +5,6 @@ using ULox;
 
 namespace ulox.core.tests
 {
-
     [TestFixture]
     public class JsonSerialisationTests : EngineTestBase
     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text;
 using ULox;
 
 namespace ulox.core.tests
@@ -22,9 +23,14 @@ namespace ulox.core.tests
 
         public void Run(string testString)
         {
+            Run(new Script("test", testString));
+        } 
+        
+        public void Run(Script script)
+        {
             try
             {
-                MyEngine.RunScript(new Script("test", testString));
+                MyEngine.RunScript(script);
             }
             catch (PanicException) { throw; }
             catch (UloxException e)

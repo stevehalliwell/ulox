@@ -12,6 +12,8 @@ namespace ULox
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
 
+        public IByteCodeOptimiser Optimiser => _optimiser;
+
         public string Disassembly
         {
             get
@@ -19,7 +21,7 @@ namespace ULox
                 var dis = new Disassembler();
                 foreach (var compiledScript in CompiledScripts)
                 {
-                    dis.DoChunk(compiledScript.TopLevelChunk);
+                    dis.Iterate(compiledScript);
                 }
 
                 return dis.GetString();

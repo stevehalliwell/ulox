@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using ULox;
 
 namespace ulox.core.tests
 {

@@ -1,124 +1,19 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ULox
 {
-    public sealed class Disassembler : IDisassembler
+    public sealed class Disassembler : ByteCodeIterator
     {
+        protected Func<Chunk, int, int>[] OpCodeHandlers { get; set; } = new Func<Chunk, int, int>[Enum.GetValues(typeof(OpCode)).Length];
+
         private readonly StringBuilder stringBuilder = new StringBuilder();
-        private Func<Chunk, int, int>[] opCodeHandlers;
-
-        public Disassembler()
-        {
-            opCodeHandlers = new Func<Chunk, int, int>[Enum.GetValues(typeof(OpCode)).Length];
-
-            opCodeHandlers[(int)OpCode.NEGATE] = AppendNothing;
-            opCodeHandlers[(int)OpCode.ADD] = AppendNothing;
-            opCodeHandlers[(int)OpCode.SUBTRACT] = AppendNothing;
-            opCodeHandlers[(int)OpCode.MULTIPLY] = AppendNothing;
-            opCodeHandlers[(int)OpCode.DIVIDE] = AppendNothing;
-            opCodeHandlers[(int)OpCode.MODULUS] = AppendNothing;
-            opCodeHandlers[(int)OpCode.NONE] = AppendNothing;
-            opCodeHandlers[(int)OpCode.NULL] = AppendNothing;
-            opCodeHandlers[(int)OpCode.NOT] = AppendNothing;
-            opCodeHandlers[(int)OpCode.GREATER] = AppendNothing;
-            opCodeHandlers[(int)OpCode.LESS] = AppendNothing;
-            opCodeHandlers[(int)OpCode.EQUAL] = AppendNothing;
-            opCodeHandlers[(int)OpCode.POP] = AppendNothing;
-            opCodeHandlers[(int)OpCode.SWAP] = AppendNothing;
-            opCodeHandlers[(int)OpCode.DUPLICATE] = AppendNothing;
-            opCodeHandlers[(int)OpCode.CLOSE_UPVALUE] = AppendNothing;
-            opCodeHandlers[(int)OpCode.THROW] = AppendNothing;
-            opCodeHandlers[(int)OpCode.YIELD] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.JUMP_IF_FALSE] = AppendUShort;
-            opCodeHandlers[(int)OpCode.JUMP] = AppendUShort;
-            opCodeHandlers[(int)OpCode.LOOP] = AppendUShort;
-
-            opCodeHandlers[(int)OpCode.RETURN] = AppendByte;
-            opCodeHandlers[(int)OpCode.GET_UPVALUE] = AppendByte;
-            opCodeHandlers[(int)OpCode.SET_UPVALUE] = AppendByte;
-            opCodeHandlers[(int)OpCode.GET_LOCAL] = AppendByte;
-            opCodeHandlers[(int)OpCode.SET_LOCAL] = AppendByte;
-            opCodeHandlers[(int)OpCode.CALL] = AppendByte;
-            opCodeHandlers[(int)OpCode.PUSH_BOOL] = AppendByte;
-            opCodeHandlers[(int)OpCode.PUSH_BYTE] = AppendByte;
-            opCodeHandlers[(int)OpCode.VALIDATE] = AppendByte;
-
-            opCodeHandlers[(int)OpCode.CONSTANT] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.DEFINE_GLOBAL] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.FETCH_GLOBAL] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.ASSIGN_GLOBAL] = AppendStringConstant;
-
-            opCodeHandlers[(int)OpCode.CLOSURE] = AppendClosure;
-
-            opCodeHandlers[(int)OpCode.TYPE] = AppendUserType;
-            opCodeHandlers[(int)OpCode.GET_PROPERTY] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.SET_PROPERTY] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.METHOD] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.FIELD] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.MIXIN] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.FREEZE] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.INVOKE] = AppendStringConstantThenByte;
-
-            opCodeHandlers[(int)OpCode.TEST] = HandleTestOpCode;
-
-            opCodeHandlers[(int)OpCode.BUILD] = AppendByte;
-
-            opCodeHandlers[(int)OpCode.REGISTER] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.INJECT] = AppendStringConstant;
-
-            opCodeHandlers[(int)OpCode.NATIVE_TYPE] = AppendByte;
-            opCodeHandlers[(int)OpCode.GET_INDEX] = AppendNothing;
-            opCodeHandlers[(int)OpCode.SET_INDEX] = AppendNothing;
-            opCodeHandlers[(int)OpCode.EXPAND_COPY_TO_STACK] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.TYPEOF] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.MEETS] = AppendNothing;
-            opCodeHandlers[(int)OpCode.SIGNS] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.COUNT_OF] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.EXPECT] = AppendNothing;
-
-            opCodeHandlers[(int)OpCode.GOTO] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.GOTO_IF_FALSE] = AppendStringConstant;
-            opCodeHandlers[(int)OpCode.LABEL] = AppendStringConstant;
-        }
+        private int _currentInstructionCount;
+        private int _prevLine;
 
         public string GetString() => stringBuilder.ToString();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DoChunk(Chunk chunk)
-        {
-            stringBuilder.AppendLine(chunk.Name);
-            var instructionCount = 0;
-            var prevLine = -1;
-
-            DoArgs(chunk);
-
-            for (int i = 0; i < chunk.Instructions.Count; i++, instructionCount++)
-            {
-                stringBuilder.Append(i.ToString("00000"));
-
-                var opCode = (OpCode)chunk.Instructions[i];
-                prevLine = DoLineNumber(chunk, instructionCount, prevLine);
-
-                i = DoOpCode(chunk, i, opCode);
-            }
-
-            var subChunks = new List<Chunk>();
-            
-            DoLabels(chunk);
-            DoConstants(chunk, subChunks);
-            DoSubChunks(subChunks);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoLabels(Chunk chunk)
@@ -154,37 +49,19 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int DoLineNumber(Chunk chunk, int instructionCount, int prevLine)
+        private void DoLineNumber(Chunk chunk)
         {
-            var lineForInst = chunk.GetLineForInstruction(instructionCount);
+            var lineForInst = chunk.GetLineForInstruction(_currentInstructionCount);
 
-            if (lineForInst != prevLine)
+            if (lineForInst != _prevLine)
             {
                 stringBuilder.Append($" {lineForInst} ");
-                prevLine = lineForInst;
+                _prevLine = lineForInst;
             }
             else
             {
                 stringBuilder.Append($" | ");
             }
-
-            return prevLine;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int DoOpCode(Chunk chunk, int i, OpCode opCode)
-        {
-            stringBuilder.Append(opCode.ToString());
-
-            var opAction = opCodeHandlers[(int)opCode];
-
-            if (opAction == null)
-                throw new UloxException($"'{opCode}' is unhandled by the disassembler.");
-
-            i = opAction?.Invoke(chunk, i) ?? i;
-
-            stringBuilder.AppendLine();
-            return i;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -200,92 +77,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendNothing(Chunk chunk, int i)
-        {
-            return i;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendClosure(Chunk chunk, int i)
-        {
-            AppendSpace();
-            i++;
-            var ind = chunk.Instructions[i];
-            var func = chunk.ReadConstant(ind);
-            stringBuilder.Append($"({ind})" + func.ToString());
-
-            if (func.val.asChunk.UpvalueCount > 0)
-                stringBuilder.AppendLine();
-
-            var count = func.val.asChunk.UpvalueCount;
-            for (int upVal = 0; upVal < count; upVal++)
-            {
-                i++;
-                var isLocal = chunk.Instructions[i];
-                i++;
-                var upvalIndex = chunk.Instructions[i];
-
-                stringBuilder.Append($"     {(isLocal == 1 ? "local" : "upvalue")} {upvalIndex}");
-                if (upVal < count - 1)
-                    stringBuilder.AppendLine();
-            }
-
-            return i;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendUShort(Chunk chunk, int i)
-        {
-            AppendSpace();
-            i = ReadUShort(chunk, i, out var ushortValue);
-            stringBuilder.Append($"({ushortValue})");
-            return i;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendByte(Chunk chunk, int i)
-        {
-            AppendSpace();
-            i++;
-            var byteValue = chunk.Instructions[i];
-            stringBuilder.Append($"({byteValue})");
-            return i;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendStringConstant(Chunk chunk, int i)
-        {
-            AppendSpace();
-            i++;
-            var ind = chunk.Instructions[i];
-            stringBuilder.Append($"({ind})" + chunk.ReadConstant(ind).ToString());
-            return i;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int ReadUShort(Chunk chunk, int i, out ushort ushortValue)
-        {
-            i++;
-            var bhi = chunk.Instructions[i];
-            i++;
-            var blo = chunk.Instructions[i];
-            ushortValue = (ushort)((bhi << 8) | blo);
-            return i;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSubChunks(List<Chunk> subChunks)
-        {
-            stringBuilder.AppendLine("####");
-            stringBuilder.AppendLine();
-            foreach (var c in subChunks)
-            {
-                DoChunk(c);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoConstants(Chunk chunk, List<Chunk> subChunks)
+        private void DoConstants(Chunk chunk)
         {
             stringBuilder.AppendLine();
             stringBuilder.AppendLine("--constants--");
@@ -300,79 +92,155 @@ namespace ULox
                 stringBuilder.Append("  ");
                 stringBuilder.Append(v.ToString());
                 stringBuilder.AppendLine();
-
-                if (v.type == ValueType.Chunk)
-                {
-                    subChunks.Add(v.val.asChunk);
-                }
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int HandleTestOpCode(Chunk chunk, int i)
+        protected override void ProcessTestOp(OpCode opCode, TestOpType testOpType)
         {
-            AppendSpace();
-            i++;
-            var testOpType = (TestOpType)chunk.Instructions[i];
             Append(testOpType.ToString());
             AppendSpace();
-            switch (testOpType)
+        }
+
+        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b)
+        {
+            stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
+            AppendSpace();
+            stringBuilder.Append($"({b})");
+            AppendSpace();
+        }
+
+        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label)
+        {
+            PrintLabel(CurrentChunk, label);
+            if (it < testCount - 1)
+                Append(", ");
+            else
+                Append(" ] ");
+        }
+
+        protected override void ProcessTestOpAndByteAndByte(OpCode opCode, TestOpType testOpType, byte b1, byte b2)
+        {
+            stringBuilder.Append($"({b1})");
+            AppendSpace();
+            stringBuilder.Append($"({b2})");
+            AppendSpace();
+        }
+
+        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount)
+        {
+            stringBuilder.Append($"({stringConstantID}){CurrentChunk.Constants[stringConstantID]}");
+            Append("  [");
+            AppendSpace();
+        }
+
+        protected override void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte labelId)
+        {
+            PrintLabel(CurrentChunk, labelId);
+            AppendSpace();
+        }
+
+        protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)
+        {
+            stringBuilder.Append($"({funcID})" + asChunk.ToString());
+            if (upValueCount > 0)
+                stringBuilder.AppendLine();
+        }
+
+        protected override void ProcessOpClosureUpValue(
+            OpCode opCode,
+            byte fundID,
+            int count,
+            int upVal,
+            byte isLocal,
+            byte upvalIndex)
+        {
+            stringBuilder.Append($"     {(isLocal == 1 ? "local" : "upvalue")} {upvalIndex}");
+            if (upVal < count - 1)
+                stringBuilder.AppendLine();
+        }
+
+        protected override void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte initLabel)
+        {
+            stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
+            AppendSpace();
+            stringBuilder.Append($"({b})");
+            AppendSpace();
+            PrintLabel(CurrentChunk, initLabel);
+            AppendSpace();
+        }
+
+        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte sc, byte b)
+        {
+            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
+            AppendSpace();
+            stringBuilder.Append($"({b})");
+            AppendSpace();
+        }
+
+        protected override void ProcessOpAndUShort(OpCode opCode, ushort ushortValue)
+        {
+            stringBuilder.Append($"({ushortValue})");
+        }
+
+        protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
+        {
+            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
+        }
+
+        protected override void ProcessOpAndByte(OpCode opCode, byte b)
+        {
+            stringBuilder.Append($"({b})");
+        }
+
+        protected override void ProcessOp(OpCode opCode)
+        {
+        }
+
+        protected override void DefaultOpCode(OpCode opCode)
+        {
+            stringBuilder.Append(CurrentInstructionIndex.ToString("00000"));
+            DoLineNumber(CurrentChunk);
+            stringBuilder.Append(opCode);
+            AppendSpace();
+        }
+
+        protected override void DefaultPostOpCode()
+        {
+            stringBuilder.AppendLine();
+            _currentInstructionCount++;
+        }
+
+        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
+        {
+            DoLabels(chunk);
+            DoConstants(chunk);
+
+            if (chunk == compiledScript.TopLevelChunk)
             {
-            case TestOpType.CaseStart:
-            case TestOpType.CaseEnd:
-                i = AppendStringConstant(chunk, i);
-                i = AppendByte(chunk, i);
-                break;
-
-            case TestOpType.TestSetStart:
-                i = AppendStringConstant(chunk, i);
-                Append(" ");
-                i++;
-                var testCount = chunk.Instructions[i];
-                Append(" [");
-                for (int it = 0; it < testCount; it++)
-                {
-                    i = AppendUShort(chunk, i);
-                    if (it < testCount - 1)
-                        Append(", ");
-                }
-                Append("] ");
-                break;
-
-            case TestOpType.TestSetEnd:
-                i = AppendByte(chunk, i);
-                i = AppendByte(chunk, i);
-                break;
-            case TestOpType.TestFixtureBodyInstruction:
-                i = AppendUShort(chunk, i);
-                break;
+                stringBuilder.AppendLine();
+                stringBuilder.AppendLine("####");
+                stringBuilder.AppendLine();
             }
-
-            return i;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendUserType(Chunk chunk, int i)
+        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
         {
-            i = AppendStringConstant(chunk, i);
-            AppendSpace();
-            i = AppendByte(chunk, i);
-            AppendSpace();
-            return AppendUShort(chunk, i);
+            stringBuilder.AppendLine(chunk.Name);
+
+            DoArgs(chunk);
+
+            _currentInstructionCount = 0;
+            _prevLine = -1;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendStringConstantThenByte(Chunk chunk, int i)
+        protected override void ProcessOpAndLabel(OpCode opCode, byte labelID)
         {
-            i = AppendStringConstant(chunk, i);
-            return AppendByte(chunk, i);
+            PrintLabel(CurrentChunk, labelID);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int AppendByteThenStringConstant(Chunk chunk, int i)
+        private void PrintLabel(Chunk chunk, byte labelID)
         {
-            i = AppendByte(chunk, i);
-            return AppendStringConstant(chunk, i);
+            stringBuilder.Append($"({labelID}){chunk.Constants[labelID]}@{chunk.Labels[labelID]}");
         }
     }
 }

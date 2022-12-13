@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ULox;
 
 namespace ulox.core.tests
@@ -21,17 +20,6 @@ namespace ulox.core.tests
             chunk.WriteByte((byte)ReturnMode.One, 2);
 
             return chunk;
-        }
-
-        [Test]
-        public void Manual_Chunk_Disasemble()
-        {
-            var chunk = GenerateManualChunk();
-            var dis = new Disassembler();
-
-            dis.DoChunk(chunk);
-
-            System.Console.WriteLine(dis.GetString());
         }
 
         [Test]

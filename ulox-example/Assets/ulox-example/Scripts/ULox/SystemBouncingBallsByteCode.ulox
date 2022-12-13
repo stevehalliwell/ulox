@@ -87,17 +87,12 @@ fun SetupGame()
 	}
 }
 
-fun BallTick(x) { x.Tick();}
-
 fun Update()
 {
 	if(GetKey("escape")){ReloadScene();}
 
-	balls.Map(BallTick);
-	//	or use the imperative method
-	//var len = balls.Count();
-	// for(var i = 0; i < len; i = i + 1)
-	// {
-	// 	balls[i].Tick();
-	// }
+	loop(balls)
+	{
+		item.Tick();
+	}
 }

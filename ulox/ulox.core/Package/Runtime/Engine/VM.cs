@@ -1315,10 +1315,11 @@ namespace ULox
             var klass = new UserTypeInternal(name.val.asString, userType);
             var klassValue = Value.New(klass);
             Push(klassValue);
-            var initChain = ReadUShort(chunk);
+            var initChainLabelID = ReadByte(chunk);
+            var initChain = chunk.Labels[initChainLabelID];
             if (initChain != 0)
             {
-                klass.AddInitChain(_currentCallFrame.Closure, initChain);
+                klass.AddInitChain(_currentCallFrame.Closure, (ushort)initChain);
             }
         }
 

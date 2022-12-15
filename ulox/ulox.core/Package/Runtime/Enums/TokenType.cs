@@ -104,6 +104,8 @@
         MATCH,
 
         LABEL,
-        GOTO
+        GOTO,
+
+        ENUM,
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public class BuildCompilette : ICompilette
+    public sealed class BuildCompilette : ICompilette
     {
         private const string BindIdentKeyword = "bind";
         private const string QueueIdentKeyword = "queue";

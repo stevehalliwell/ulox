@@ -1,19 +1,27 @@
 ﻿namespace ULox
 {
-    public class TypeInitCompilette : EmptyTypeBodyCompilette
+    public class TypeInitCompilette : ITypeBodyCompilette
     {
-        public override TokenType Match 
+        public TokenType Match 
             => TokenType.INIT;
 
-        public override TypeCompiletteStage Stage 
+        public TypeCompiletteStage Stage 
             => TypeCompiletteStage.Init;
 
-        public override void Process(Compiler compiler)
+        public void PostBody(Compiler compiler)
+        {
+        }
+
+        public void Process(Compiler compiler)
         {
             var initName = TypeCompilette.InitMethodName.String;
             byte constant = compiler.AddCustomStringConstant(initName);
             compiler.Function(initName, FunctionType.Init);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
+        }
+
+        public void Start(TypeCompilette typeCompilette)
+        {
         }
     }
 }

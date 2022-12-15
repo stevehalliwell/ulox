@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace ULox
 {
@@ -38,8 +36,7 @@ namespace ULox
         private readonly FastStack<Value> _returnStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         private CallFrame _currentCallFrame;
-        private IEngine _engine;
-        public IEngine Engine => _engine;
+        public IEngine Engine { get; private set; }
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private readonly Table _globals = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
@@ -70,7 +67,7 @@ namespace ULox
 
         public string GenerateGlobalsDump()
         {
-            var sb = new StringBuilder();
+            var sb = new System.Text.StringBuilder();
 
             foreach (var item in _globals)
             {
@@ -82,7 +79,7 @@ namespace ULox
 
         public string GenerateCallStackDump()
         {
-            var sb = new StringBuilder();
+            var sb = new System.Text.StringBuilder();
 
             for (int i = 0; i < _callFrames.Count; i++)
             {
@@ -104,7 +101,7 @@ namespace ULox
         public Value StackTop => _valueStack.Peek();
         public int StackCount => _valueStack.Count;
 
-        public void SetEngine(IEngine engine) => _engine = engine;
+        public void SetEngine(IEngine engine) => Engine = engine;
 
         public InterpreterResult PushCallFrameAndRun(Value func, int args)
         {
@@ -129,7 +126,7 @@ namespace ULox
 
         public void CopyFrom(IVm otherVM)
         {
-            _engine = otherVM.Engine;
+            Engine = otherVM.Engine;
 
             if (otherVM is Vm asVmBase)
             {
@@ -464,7 +461,11 @@ namespace ULox
                 case OpCode.LABEL:
                     ReadByte(chunk);
                     break;
-                
+
+                case OpCode.ENUM_VALUE:
+                    DoEnumValueOp(chunk);
+                    break;
+
                 case OpCode.NONE:
                 default:
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
@@ -492,7 +493,7 @@ namespace ULox
                 .Take(valueStack.Count)
                 .Reverse();
 
-            return string.Join(Environment.NewLine, stackVars);
+            return string.Join(System.Environment.NewLine, stackVars);
         }
 
         private static string GetLocationNameFromFrame(CallFrame frame, int currentInstruction = -1)
@@ -562,7 +563,7 @@ namespace ULox
                 ThrowRuntimeException($"Expect failed, got {(msg.IsNull() ? "falsey" : msg.ToString())}");
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGotoOp(Chunk chunk)
         {
@@ -571,7 +572,7 @@ namespace ULox
 
             _currentCallFrame.InstructionPointer = labelPos;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGotoIfFalseOp(Chunk chunk)
         {
@@ -580,6 +581,15 @@ namespace ULox
 
             if (Peek().IsFalsey())
                 _currentCallFrame.InstructionPointer = labelPos;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoEnumValueOp(Chunk chunk)
+        {
+            var enumObject = Pop();
+            var key = Pop();
+            var val = Pop();
+            enumObject.val.asClass.AddEnumValue(key, val);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1509,8 +1519,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMixinOp(Chunk chunk)
         {
-            Value klass = Pop();
-            Value mixin = Pop();
+            var klass = Pop();
+            var mixin = Pop();
             klass.val.asClass.AddMixin(mixin, this);
         }
 

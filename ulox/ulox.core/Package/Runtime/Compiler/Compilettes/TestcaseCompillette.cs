@@ -5,9 +5,9 @@
         public TokenType Match => TokenType.TESTCASE;
         public string TestCaseName { get; private set; }
 
-        private TestDeclarationCompilette _testDeclarationCompilette;
+        private readonly TestDeclarationCompilette _testDeclarationCompilette;
 
-        public void SetTestDeclarationCompilette(TestDeclarationCompilette testDeclarationCompilette)
+        public TestcaseCompillette(TestDeclarationCompilette testDeclarationCompilette)
         {
             _testDeclarationCompilette = testDeclarationCompilette;
         }

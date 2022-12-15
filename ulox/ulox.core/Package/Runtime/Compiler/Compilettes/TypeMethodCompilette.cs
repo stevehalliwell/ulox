@@ -1,14 +1,18 @@
 ﻿namespace ULox
 {
-    public class TypeMethodCompilette : EmptyTypeBodyCompilette
+    public class TypeMethodCompilette : ITypeBodyCompilette
     {
-        public override TokenType Match 
+        public TokenType Match 
             => TokenType.NONE;
 
-        public override TypeCompiletteStage Stage 
+        public TypeCompiletteStage Stage 
             => TypeCompiletteStage.Method;
 
-        public override void Process(Compiler compiler)
+        public void PostBody(Compiler compiler)
+        {
+        }
+
+        public void Process(Compiler compiler)
         {
             var isLocal = false;
             if (compiler.TokenIterator.Match(TokenType.LOCAL))
@@ -29,6 +33,10 @@
                 : FunctionType.Method);
             compiler.Function(name, funcType);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
+        }
+
+        public void Start(TypeCompilette typeCompilette)
+        {
         }
     }
 }

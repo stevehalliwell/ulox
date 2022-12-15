@@ -88,7 +88,9 @@ namespace ULox
                 ("match", TokenType.MATCH),
 
                 ("label", TokenType.LABEL),
-                ("goto", TokenType.GOTO));
+                ("goto", TokenType.GOTO),
+
+                ("enum", TokenType.ENUM));
 
             this.AddSingleCharTokenGenerators(
                 ('(', TokenType.OPEN_PAREN),

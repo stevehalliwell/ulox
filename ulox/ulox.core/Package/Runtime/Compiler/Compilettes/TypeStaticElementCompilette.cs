@@ -1,14 +1,14 @@
 ﻿namespace ULox
 {
-    public class TypeStaticElementCompilette : EmptyTypeBodyCompilette
+    public class TypeStaticElementCompilette : ITypeBodyCompilette
     {
-        public override TokenType Match 
+        public TokenType Match 
             => TokenType.STATIC;
-
-        public override TypeCompiletteStage Stage 
+        
+        public TypeCompiletteStage Stage 
             => TypeCompiletteStage.Static;
 
-        public override void Process(Compiler compiler)
+        public void Process(Compiler compiler)
         {
             if (compiler.TokenIterator.Match(TokenType.VAR))
                 StaticProperty(compiler);
@@ -53,6 +53,14 @@
 
             compiler.Function(name.String, FunctionType.Function);
             compiler.EmitOpAndBytes(OpCode.METHOD, constant);
+        }
+
+        public void Start(TypeCompilette typeCompilette)
+        {
+        }
+
+        public void PostBody(Compiler compiler)
+        {
         }
     }
 }

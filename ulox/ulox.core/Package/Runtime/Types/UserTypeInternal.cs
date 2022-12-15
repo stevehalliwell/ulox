@@ -165,5 +165,11 @@ namespace ULox
             => _fieldsNames.Add(fieldName);
 
         public override string ToString() => $"<{nameof(UserTypeInternal)}:{Name}>";
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal void AddEnumValue(Value key, Value val)
+        {
+            Fields[key.val.asString] = val;
+        }
     }
 }

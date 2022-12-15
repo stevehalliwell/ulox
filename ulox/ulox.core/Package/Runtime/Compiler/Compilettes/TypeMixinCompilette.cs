@@ -18,8 +18,6 @@ namespace ULox
             _mixinNames.Clear();
         }
 
-        public void PreBody(Compiler compiler) { }
-
         public void Process(Compiler compiler)
         {
             do

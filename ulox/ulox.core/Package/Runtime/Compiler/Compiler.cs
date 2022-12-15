@@ -19,9 +19,9 @@ namespace ULox
         public TokenType PreviousTokenType
             => TokenIterator?.PreviousToken.TokenType ?? TokenType.NONE;
 
-        private Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
-        private Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
-        private List<Chunk> _allChunks = new List<Chunk>();
+        private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
+        private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
+        private readonly List<Chunk> _allChunks = new List<Chunk>();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -35,18 +35,17 @@ namespace ULox
 
         private void Setup()
         {
-            var _testcaseCompilette = new TestcaseCompillette();
             var _testdec = new TestDeclarationCompilette();
-            _testcaseCompilette.SetTestDeclarationCompilette(_testdec);
-            var _buildCompilette = new BuildCompilette();
             var _classCompiler = TypeCompilette.CreateClassCompilette();
+            var _testcaseCompilette = new TestcaseCompillette(_testdec);
 
             this.AddDeclarationCompilette(
                 new VarDeclarationCompilette(),
                 _testdec,
                 _classCompiler,
                 _testcaseCompilette,
-                _buildCompilette,
+                new BuildCompilette(),
+                TypeCompilette.CreateEnumCompilette(),
                 TypeCompilette.CreateDateCompilette());
 
             this.AddDeclarationCompilette(
@@ -1006,13 +1005,7 @@ namespace ULox
             {
                 var number = (double)compiler.TokenIterator.PreviousToken.Literal;
 
-                var isInt = number == System.Math.Truncate(number);
-
-                if (isInt && number < 255 && number >= 0)
-                    compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
-                else
-                    //todo push to compiler
-                    compiler.AddConstantAndWriteOp(Value.New(number));
+                compiler.DoNumberConstant(number);
             }
             break;
 
@@ -1023,6 +1016,17 @@ namespace ULox
             }
             break;
             }
+        }
+
+        public void DoNumberConstant(double number)
+        {
+            var isInt = number == System.Math.Truncate(number);
+
+            if (isInt && number < 255 && number >= 0)
+                EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
+            else
+                //todo push to compiler
+                AddConstantAndWriteOp(Value.New(number));
         }
 
         public static void Variable(Compiler compiler, bool canAssign)

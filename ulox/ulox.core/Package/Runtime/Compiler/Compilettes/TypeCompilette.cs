@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace ULox
@@ -9,6 +8,7 @@ namespace ULox
         Native,
         Data,
         Class,
+        Enum,
     }
 
     public sealed class TypeCompilette : ICompilette
@@ -39,6 +39,16 @@ namespace ULox
             compilette.GenerateCompiletteByStageArray();
             compilette.UserType = UserType.Data;
             compilette.Match = TokenType.DATA;
+            return compilette;
+        }
+
+        public static TypeCompilette CreateEnumCompilette()
+        {
+            var compilette = new TypeCompilette();
+            compilette.AddInnerDeclarationCompilette(new TypeEnumValueCompilette());
+            compilette.GenerateCompiletteByStageArray();
+            compilette.UserType = UserType.Enum;
+            compilette.Match = TokenType.ENUM;
             return compilette;
         }
 
@@ -78,6 +88,7 @@ namespace ULox
         private TypeCompiletteStage _stage = TypeCompiletteStage.Invalid;
         public string CurrentTypeName { get; private set; }
         public byte InitChainLabelId { get; private set; }
+        public int PreviousInitFragLabelId { get; set; } = -1;
         private ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
         private ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
@@ -101,16 +112,16 @@ namespace ULox
 
         private void StageBasedDeclaration(Compiler compiler)
         {
+            PreviousInitFragLabelId = -1;
+
             foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
                 bodyCompilette.Start(this);
 
-            DoBeginDeclareType(compiler);
-            DoEndDeclareType(compiler);
-
-            foreach (var bodyCompilette in BodyCompilettesProcessingOrdered)
-                bodyCompilette.PreBody(compiler);
+            DoDeclareType(compiler);
 
             DoClassBody(compiler);
+
+            DoInitChainEnd(compiler);
 
             foreach (var bodyCompilette in BodyCompilettesPostBodyOrdered)
                 bodyCompilette.PostBody(compiler);
@@ -120,37 +131,51 @@ namespace ULox
             CurrentTypeName = null;
         }
 
+        private void DoInitChainEnd(Compiler compiler)
+        {
+            //return stub used by init and test chains
+            var classReturnEnd = compiler.GotoUniqueChunkLabel("ClassReturnEnd");
+
+            if (PreviousInitFragLabelId != -1)
+                compiler.EmitLabel((byte)PreviousInitFragLabelId);
+            else
+                compiler.CurrentCompilerState.chunk.AddLabel(InitChainLabelId, 0);
+
+            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+
+            compiler.EmitLabel(classReturnEnd);
+        }
+
         private void GenerateCompiletteByStageArray()
         {
             BodyCompilettesProcessingOrdered = _innerDeclarationCompilettes.Values
-                .OrderBy(x => Array.IndexOf(BodyCompileStageOrder, x.Stage))
+                .OrderBy(x => System.Array.IndexOf(BodyCompileStageOrder, x.Stage))
                 .ToArray();
             BodyCompilettesPostBodyOrdered = _innerDeclarationCompilettes.Values
-                .OrderBy(x => Array.IndexOf(PostBodyCompileStageOrder, x.Stage))
+                .OrderBy(x => System.Array.IndexOf(PostBodyCompileStageOrder, x.Stage))
                 .ToArray();
         }
         
-        private void DoEndType(Compiler compiler)
-        {
-            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
-            compiler.EmitOpCode(OpCode.FREEZE);
-        }
-
-        private void DoEndDeclareType(Compiler compiler)
-        {
-            compiler.NamedVariable(CurrentTypeName, false);
-            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
-        }
-
-        private void DoBeginDeclareType(Compiler compiler)
+        private void DoDeclareType(Compiler compiler)
         {
             _stage = TypeCompiletteStage.Begin;
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect type name.");
             CurrentTypeName = (string)compiler.TokenIterator.PreviousToken.Literal;
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
-            EmitUserTypeOpAndBytes(compiler, nameConstant);
+
+            InitChainLabelId = compiler.UniqueChunkStringConstant("InitChain");
+            compiler.EmitOpAndBytes(OpCode.TYPE, nameConstant, (byte)UserType, InitChainLabelId);
+            
             compiler.DefineVariable(nameConstant);
+            compiler.NamedVariable(CurrentTypeName, false);
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
+        }
+
+        private void DoEndType(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
+            compiler.EmitOpCode(OpCode.FREEZE);
         }
 
         private void DoClassBody(Compiler compiler)
@@ -177,15 +202,6 @@ namespace ULox
                 compiler.ThrowCompilerException($"Stage out of order. Type '{CurrentTypeName}' is at stage '{_stage}' has encountered a late '{stage}' stage element");
 
             _stage = stage;
-        }
-
-        private void EmitUserTypeOpAndBytes(
-            Compiler compiler,
-            byte nameConstant)
-        {
-            compiler.EmitOpAndBytes(OpCode.TYPE, nameConstant, (byte)UserType);
-            InitChainLabelId = compiler.UniqueChunkStringConstant("InitChain");
-            compiler.EmitBytes(InitChainLabelId);
         }
 
         public void This(Compiler compiler, bool canAssign)

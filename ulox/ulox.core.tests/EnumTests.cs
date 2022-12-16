@@ -29,6 +29,21 @@ enum Foo
         }
 
         [Test]
+        public void Delcared_WhenPrinted_ShouldSayName()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz
+}
+
+print(Foo);");
+
+            Assert.AreEqual("<Enum Foo>", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Declared_WhenGivenLitterals_ShouldPass()
         {
             testEngine.Run(@"
@@ -179,9 +194,241 @@ enum Foo
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void TypeOf_WhenEnum_ShouldBeEnum()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+print(typeof(Foo));
+");
+
+            Assert.AreEqual("<Enum Foo>", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void EnumValueEquality_WhenSameEnumValue_ShouldBeTrue()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+print(Foo.Bar == Foo.Bar);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void EnumValueEquality_WhenDifferentEnumValue_ShouldBeFalse()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+print(Foo.Bar == Foo.Baz);
+");
+
+            Assert.AreEqual("False", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void EnumValue_WhenDotValue_ShouldBeHelloWorld()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar = ""Hello"",
+    Baz = ""World"",
+}
+
+print(Foo.Bar.Value);
+print(Foo.Baz.Value);
+");
+
+            Assert.AreEqual("HelloWorld", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void EnumValue_WhenDotName_ShouldBeBarBaz()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar = ""Hello"",
+    Baz = ""World"",
+}
+
+print(Foo.Bar.Key);
+print(Foo.Baz.Key);
+");
+
+            Assert.AreEqual("BarBaz", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void EnumValue_WhenDotEnum_ShouldBeTrue()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar = ""Hello"",
+    Baz = ""World"",
+}
+
+print(Foo.Bar.Enum == Foo);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void EnumMixin_WhenDifferentEnums_ShouldSeeAllOfAInB()
+        {
+            testEngine.Run(@"
+enum A
+{
+    Bar,
+    Baz,
+}
+
+enum B
+{
+    mixin A;
+    Bax,
+}
+
+print(B.Bar);
+print(B.Baz);
+print(B.Bax);
+");
+
+            Assert.AreEqual("012", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void DotEnum_WhenMixinDifferentEnums_ShouldSeeMostSpecific()
+        {
+            testEngine.Run(@"
+enum A
+{
+    Bar,
+    Baz,
+}
+
+enum B
+{
+    mixin A;
+    Bax,
+}
+
+print(B.Baz.Enum);
+");
+
+            Assert.AreEqual("B", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void FromValue_WhenExists_ShouldReturnMatch()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+print(Foo.FromValue(0).Key);
+");
+
+            Assert.AreEqual("Bar", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void FromValue_WhenDoesNotExists_ShouldReturnNull()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+print(Foo.FromValue(-1) == null);
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void All_WhenEmptyFoo_ShouldPrintNothing()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+}
+
+var all = Foo.All;
+
+loop (all)
+{
+    print(item);
+}
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void All_WhenFoo_ShouldPrintAll()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+var all = Foo.All;
+
+loop (all)
+{
+    print(item);
+}
+");
+
+            Assert.AreEqual("BarBaz", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void EnumValue_WhenSetAttempted_ShouldFail()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+var fb = Foo.Bar;
+fb.Value = 7;
+");
+
+            Assert.AreEqual("Attempted to Set field 'Value', but instance is read only.", testEngine.InterpreterResult);
+        }
     }
 }
 
-//todo type of enum is enum, not clas or instance
 //todo should print print the value and what we have now be the typeof result
-//todo how do we combine enums?
+//todo how else can user use readonly

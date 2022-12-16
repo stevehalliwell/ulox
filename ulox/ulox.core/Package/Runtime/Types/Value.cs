@@ -45,29 +45,20 @@ namespace ULox
 
             case ValueType.NativeFunction:
                 return "<NativeFunc>";
-
-            case ValueType.Closure:
-                return $"<closure {val.asClosure.chunk.Name} upvals:{val.asClosure.upvalues.Length}>";
-
+                
             case ValueType.Upvalue:
                 return $"<upvalue {val.asUpvalue.index}>";
 
+            case ValueType.Closure:
             case ValueType.UserType:
-                return $"<{val.asClass.UserType} {val.asClass.Name}>";
-
             case ValueType.Instance:
-                return $"<inst {val.asInstance.FromUserType?.Name}>";
-
             case ValueType.BoundMethod:
-                return $"<boundMeth {val.asBoundMethod.Method.chunk.Name}>";
-
+                return val.asObject.ToString();
+                
             case ValueType.Object:
                 if (val.asObject is TypeNameClass typenameClass)
                     return typenameClass.ToString();
                 return $"<object {val.asObject}>";
-           
-            case ValueType.EnumValue:
-                return val.asEnumValue.ToString();
                 
             case ValueType.CombinedClosures:
             default:
@@ -86,7 +77,6 @@ namespace ULox
                 newInst.CopyFrom(inst);
                 return Value.New(newInst);
             case ValueType.CombinedClosures:
-            case ValueType.EnumValue:
             case ValueType.Null:
             case ValueType.Double:
             case ValueType.Bool:
@@ -150,8 +140,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(UserTypeInternal val) 
             => New(ValueType.UserType, new ValueTypeDataUnion() { asObject = val });
-        public static Value New(EnumValue val) 
-            => New(ValueType.EnumValue, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(InstanceInternal val) 
@@ -216,7 +204,7 @@ namespace ULox
                     return lhs.val.asString == rhs.val.asString;
 
                 case ValueType.Instance:
-                    return lhs.val.asInstance == rhs.val.asInstance;
+                    return lhs.val.asInstance.Equals(rhs.val.asInstance);
 
                 case ValueType.UserType:
                     return lhs.val.asClass == rhs.val.asClass;
@@ -226,9 +214,6 @@ namespace ULox
 
                 case ValueType.Closure:
                     return lhs.val.asClosure == rhs.val.asClosure;
-                
-                case ValueType.EnumValue:
-                    return lhs.val.asEnumValue == rhs.val.asEnumValue;
                     
                 case ValueType.NativeFunction:
                 case ValueType.CombinedClosures:
@@ -251,11 +236,9 @@ namespace ULox
 
             case ValueType.Bool:
                 return val.asBool.GetHashCode();
-
+                
             case ValueType.String:
                 return val.asString.Hash;
-            case ValueType.EnumValue:
-                return val.asEnumValue.GetHashCode();
             case ValueType.CombinedClosures:
             case ValueType.Null:
             case ValueType.Chunk:
@@ -297,8 +280,6 @@ namespace ULox
                 return Value.New(val.asInstance.FromUserType);
             case ValueType.Object:
                 return Value.Object(new TypeNameClass("UserObject"));
-            case ValueType.EnumValue:
-                return Value.Object(new TypeNameClass("EnumValue"));
             default:
                 break;
             }

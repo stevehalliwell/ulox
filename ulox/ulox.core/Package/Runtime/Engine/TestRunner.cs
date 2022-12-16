@@ -6,15 +6,6 @@ using System.Text;
 
 namespace ULox
 {
-    public sealed class EnumValues
-    {
-        private readonly Dictionary<int, Value> _values = new Dictionary<int, Value>();
-        private readonly Dictionary<Value, int> _keys = new Dictionary<Value, int>();
-    }
-    public sealed class EnumLookup
-    {
-        private readonly Dictionary<Value, EnumValues> _enums = new Dictionary<Value, EnumValues>();
-    }
     public sealed class TestRunner
     {
         private readonly Dictionary<string, bool> _testStatus = new Dictionary<string, bool>();

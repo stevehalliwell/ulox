@@ -20,7 +20,7 @@ namespace ULox
             new HashedString("_co"),
         };
 
-        public static readonly Dictionary<OpCode, int> OpCodeToOverloadIndex = new Dictionary<OpCode, int>()
+        public static readonly IReadOnlyDictionary<OpCode, int> OpCodeToOverloadIndex = new Dictionary<OpCode, int>()
         {
             {OpCode.ADD,        0 },
             {OpCode.SUBTRACT,   1 },
@@ -47,7 +47,7 @@ namespace ULox
         public List<(ClosureInternal closure, ushort instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, ushort)>();
         public IReadOnlyDictionary<HashedString, Value> Methods => methods.AsReadOnly;
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
-        private List<HashedString> _fieldsNames = new List<HashedString>();
+        private readonly List<HashedString> _fieldsNames = new List<HashedString>();
 
         public UserTypeInternal(HashedString name, UserType userType)
         {
@@ -164,7 +164,7 @@ namespace ULox
         public void AddFieldName(HashedString fieldName)
             => _fieldsNames.Add(fieldName);
 
-        public override string ToString() => $"<{nameof(UserTypeInternal)}:{Name}>";
+        public override string ToString() => $"<{UserType} {Name}>";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AddEnumValue(Value key, Value val)

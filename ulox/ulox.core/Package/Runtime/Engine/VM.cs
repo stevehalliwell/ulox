@@ -613,11 +613,13 @@ namespace ULox
             {
             case ValueType.UserType:
                 return MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
+                
             case ValueType.Instance:
                 switch (rhs.type)
                 {
                 case ValueType.UserType:
                     return MeetValidator.ValidateInstanceMeetsClass(lhs.val.asInstance, rhs.val.asClass);
+                    
                 case ValueType.Instance:
                     return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
                 default:
@@ -1407,7 +1409,7 @@ namespace ULox
             case ValueType.UserType:
                 instance = targetVal.val.asClass;
                 break;
-
+                
             case ValueType.Instance:
                 instance = targetVal.val.asInstance;
                 break;
@@ -1441,7 +1443,7 @@ namespace ULox
             case ValueType.UserType:
                 instance = targetVal.val.asClass;
                 break;
-
+                
             case ValueType.Instance:
                 instance = targetVal.val.asInstance;
                 break;

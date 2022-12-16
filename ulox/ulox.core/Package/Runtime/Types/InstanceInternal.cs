@@ -71,7 +71,7 @@ namespace ULox
             IsFrozen = inst.IsFrozen;
         }
 
-        public override string ToString() => $"<{nameof(InstanceInternal)}:{FromUserType?.Name}>";
+        public override string ToString() =>  $"<inst {FromUserType?.Name}>";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReadOnly()

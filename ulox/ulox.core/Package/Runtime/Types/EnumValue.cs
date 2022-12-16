@@ -1,40 +1,23 @@
-﻿using System.Collections.Generic;
-
-namespace ULox
+﻿namespace ULox
 {
-    public sealed class EnumValue
+    public sealed class EnumValue : InstanceInternal
     {
-        public Value Key;
-        public Value Value;
-        public UserTypeInternal FromEnum;
+        private readonly static HashedString KeyHash = new HashedString("Key");
+        private readonly static HashedString ValueHash = new HashedString("Value");
+        private readonly static HashedString FromEnumHash = new HashedString("Enum");
 
-        public EnumValue(Value key, Value value, UserTypeInternal fromEnum)
+        public EnumValue(Value key, Value val, UserTypeInternal from)
+            : base(from)
         {
-            Key = key;
-            Value = value;
-            FromEnum = fromEnum;
-        }
-
-        public override bool Equals(object obj)
-        {
-            return obj is EnumValue value &&
-                   EqualityComparer<Value>.Default.Equals(Key, value.Key) &&
-                   EqualityComparer<Value>.Default.Equals(Value, value.Value) &&
-                   EqualityComparer<InstanceInternal>.Default.Equals(FromEnum, value.FromEnum);
-        }
-
-        public override int GetHashCode()
-        {
-            int hashCode = 1470372950;
-            hashCode = hashCode * -1521134295 + Key.GetHashCode();
-            hashCode = hashCode * -1521134295 + Value.GetHashCode();
-            hashCode = hashCode * -1521134295 + EqualityComparer<InstanceInternal>.Default.GetHashCode(FromEnum);
-            return hashCode;
+            Fields[KeyHash] = key;
+            Fields[ValueHash] = val;
+            Fields[FromEnumHash] = Value.New(from);
+            ReadOnly();
         }
 
         public override string ToString()
         {
-            return $"<{nameof(EnumValue)} {FromEnum.Name}.{Key} ({Value})>";
+            return $"<{nameof(EnumValue)} {FromUserType.Name}.{Fields[KeyHash]} ({Fields[ValueHash]})>";
         }
     }
 }

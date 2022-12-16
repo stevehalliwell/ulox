@@ -466,6 +466,10 @@ namespace ULox
                     DoEnumValueOp(chunk);
                     break;
 
+                case OpCode.READ_ONLY:
+                    DoReadOnlyOp(chunk);
+                    break;
+
                 case OpCode.NONE:
                 default:
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
@@ -587,9 +591,16 @@ namespace ULox
         private void DoEnumValueOp(Chunk chunk)
         {
             var enumObject = Pop();
-            var key = Pop();
             var val = Pop();
+            var key = Pop();
             enumObject.val.asClass.AddEnumValue(key, val);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoReadOnlyOp(Chunk chunk)
+        {
+            var target = Pop();
+            target.val.asInstance.ReadOnly();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

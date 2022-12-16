@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace ULox
 {
     public class TypeEnumValueCompilette : ITypeBodyCompilette
     {
-        private List<(string, object)> _enumKVs = new List<(string, object)>();
-        private TypeCompilette _typeCompilette;
+        private readonly List<string> _enumKeys = new List<string>();
         private double _previousNumber = -1;
+        private bool _manualAssign = false;
 
         public TokenType Match
             => TokenType.NONE;
@@ -16,9 +15,9 @@ namespace ULox
 
         public void Start(TypeCompilette typeCompilette)
         {
-            _typeCompilette = typeCompilette;
-            _enumKVs.Clear();
+            _enumKeys.Clear();
             _previousNumber = -1;
+            _manualAssign = false;
         }
 
         public void Process(Compiler compiler)
@@ -29,35 +28,36 @@ namespace ULox
             {
                 var enumKey = compiler.TokenIterator.PreviousToken.Literal as string;
 
-                if (_enumKVs.Any(x => x.Item1 == enumKey))
+                if (_enumKeys.Contains(enumKey))
                     compiler.ThrowCompilerException($"Duplicate Enum Key '{enumKey}'");
+                
+                _enumKeys.Add(enumKey);
+
+                compiler.AddConstantAndWriteOp(Value.New(enumKey));
 
                 if (compiler.TokenIterator.Match(TokenType.ASSIGN))
                 {
-                    compiler.TokenIterator.Consume(TokenType.NUMBER, "Expect number after '='.");
-                    _previousNumber = (double)compiler.TokenIterator.PreviousToken.Literal;
-                    _enumKVs.Add((enumKey, _previousNumber));
+                    compiler.Expression(); 
+                    _manualAssign = true;
                 }
                 else
                 {
-                    _previousNumber++;
-                    _enumKVs.Add((enumKey, _previousNumber));
+                    if(_manualAssign)
+                        compiler.ThrowCompilerException($"Enum Key '{enumKey}' must be assigned a value. Cannot mix and match.");
+                    
+                    compiler.DoNumberConstant(++_previousNumber);
                 }
+
+
+                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
+                compiler.EmitOpCode(OpCode.ENUM_VALUE);
+                
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (compiler.TokenIterator.Match(TokenType.IDENTIFIER));
         }
 
         public void PostBody(Compiler compiler)
         {
-            //dump all mixins after everything else so we don't have to fight regular class setup process in vm
-            for (int i = 0; i < _enumKVs.Count; i++)
-            {
-                var (k, v) = _enumKVs[i];
-                compiler.DoNumberConstant((double)v);
-                compiler.AddConstantAndWriteOp(Value.New(k));
-                compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                compiler.EmitOpCode(OpCode.ENUM_VALUE);
-            }
         }
     }
 }

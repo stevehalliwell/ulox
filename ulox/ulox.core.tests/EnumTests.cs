@@ -35,7 +35,7 @@ enum Foo
 enum Foo
 {
     Bar = 7,
-    Baz
+    Baz = 8
 }
 ");
 
@@ -54,7 +54,7 @@ enum Foo
 
 print(Foo.Bar);");
 
-            Assert.AreEqual("0", testEngine.InterpreterResult);
+            Assert.AreEqual("<EnumValue Foo.Bar (0)>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -77,12 +77,12 @@ enum Foo
 enum Foo
 {
     Bar = 7,
-    Baz
+    Baz = 8,
 }
 
 print(Foo.Bar);");
 
-            Assert.AreEqual("7", testEngine.InterpreterResult);
+            Assert.AreEqual("<EnumValue Foo.Bar (7)>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -92,12 +92,12 @@ print(Foo.Bar);");
 enum Foo
 {
     Bar = 7,
-    Baz
+    Baz = 8
 }
 
 print(Foo.Baz);");
 
-            Assert.AreEqual("8", testEngine.InterpreterResult);
+            Assert.AreEqual("<EnumValue Foo.Baz (8)>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -107,12 +107,12 @@ print(Foo.Baz);");
 enum Foo
 {
     Bar = ""Hello"",
-    Baz
+    Baz = ""World"",
 }
 
 print(Foo.Bar);");
 
-            Assert.AreEqual("Hello", testEngine.InterpreterResult);
+            Assert.AreEqual("<EnumValue Foo.Bar (Hello)>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -127,7 +127,7 @@ enum Foo
 
 Foo.Bar = 1;");
 
-            Assert.AreEqual("error", testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Set field 'Bar', but instance is read only.", testEngine.InterpreterResult);
         }
         
         [Test]
@@ -143,7 +143,28 @@ enum Foo
 var b = Foo.Bar;
 print(b);");
 
-            Assert.AreEqual("0", testEngine.InterpreterResult);
+            Assert.AreEqual("<EnumValue Foo.Bar (0)>", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Match_WhenEnumValues_Should()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz
+}
+
+var b = Foo.Bar;
+
+match b
+{
+Foo.Bar: print(""Bar"");
+Foo.Baz: print(""Baz"");
+}");
+
+            Assert.AreEqual("Bar", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -160,3 +181,7 @@ enum Foo
         }
     }
 }
+
+//todo type of enum is enum, not clas or instance
+//todo should print print the value and what we have now be the typeof result
+//todo how do we combine enums?

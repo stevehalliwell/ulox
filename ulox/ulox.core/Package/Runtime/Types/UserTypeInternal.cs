@@ -169,7 +169,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AddEnumValue(Value key, Value val)
         {
-            Fields[key.val.asString] = val;
+            Fields[key.val.asString] = Value.New(new EnumValue(key, val, this));
         }
     }
 }

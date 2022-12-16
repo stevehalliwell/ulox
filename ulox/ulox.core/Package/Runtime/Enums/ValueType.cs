@@ -15,5 +15,6 @@
         Instance,
         BoundMethod,
         Object,
+        EnumValue,
     }
 }

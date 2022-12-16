@@ -17,6 +17,7 @@ namespace ULox
         public UserTypeInternal FromUserType { get; protected set; }
         public bool IsFrozen { get; private set; } = false;
         public Table Fields { get; protected set; } = new Table();
+        public bool IsReadOnly { get; protected set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool HasField(HashedString key) => Fields.ContainsKey(key);
@@ -24,7 +25,11 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetField(HashedString key, Value val)
         {
-            if (!IsFrozen || Fields.ContainsKey(key))
+            if(IsReadOnly)
+                throw new UloxException($"Attempted to Set field '{key}', but instance is read only.");
+
+            if (!IsFrozen 
+                || Fields.ContainsKey(key))
                 Fields[key] = val;
             else
                 throw new UloxException($"Attempted to Create a new field '{key}' via SetField on a frozen object.");
@@ -67,5 +72,9 @@ namespace ULox
         }
 
         public override string ToString() => $"<{nameof(InstanceInternal)}:{FromUserType?.Name}>";
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ReadOnly()
+            => IsReadOnly = true;
     }
 }

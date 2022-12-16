@@ -66,6 +66,7 @@ namespace ULox
                 case OpCode.TYPEOF:
                 case OpCode.THROW:
                 case OpCode.ENUM_VALUE:
+                case OpCode.READ_ONLY:
                     ProcessOp(opCode);
                     break;
 

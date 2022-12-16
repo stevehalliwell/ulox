@@ -87,5 +87,6 @@
         LABEL,
 
         ENUM_VALUE,
+        READ_ONLY,
     }
 }

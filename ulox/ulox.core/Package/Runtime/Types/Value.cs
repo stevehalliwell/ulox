@@ -65,7 +65,11 @@ namespace ULox
                 if (val.asObject is TypeNameClass typenameClass)
                     return typenameClass.ToString();
                 return $"<object {val.asObject}>";
-
+           
+            case ValueType.EnumValue:
+                return val.asEnumValue.ToString();
+                
+            case ValueType.CombinedClosures:
             default:
                 throw new System.NotImplementedException();
             }
@@ -81,8 +85,8 @@ namespace ULox
                 var newInst = new InstanceInternal();
                 newInst.CopyFrom(inst);
                 return Value.New(newInst);
-                break;
-
+            case ValueType.CombinedClosures:
+            case ValueType.EnumValue:
             case ValueType.Null:
             case ValueType.Double:
             case ValueType.Bool:
@@ -146,6 +150,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(UserTypeInternal val) 
             => New(ValueType.UserType, new ValueTypeDataUnion() { asObject = val });
+        public static Value New(EnumValue val) 
+            => New(ValueType.EnumValue, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(InstanceInternal val) 
@@ -220,7 +226,15 @@ namespace ULox
 
                 case ValueType.Closure:
                     return lhs.val.asClosure == rhs.val.asClosure;
-
+                
+                case ValueType.EnumValue:
+                    return lhs.val.asEnumValue == rhs.val.asEnumValue;
+                    
+                case ValueType.NativeFunction:
+                case ValueType.CombinedClosures:
+                case ValueType.Upvalue:
+                case ValueType.BoundMethod:
+                case ValueType.Chunk:
                 default:
                     throw new UloxException($"Cannot perform compare on type '{lhs.type}'.");
                 }
@@ -240,7 +254,9 @@ namespace ULox
 
             case ValueType.String:
                 return val.asString.Hash;
-
+            case ValueType.EnumValue:
+                return val.asEnumValue.GetHashCode();
+            case ValueType.CombinedClosures:
             case ValueType.Null:
             case ValueType.Chunk:
             case ValueType.NativeFunction:
@@ -281,12 +297,14 @@ namespace ULox
                 return Value.New(val.asInstance.FromUserType);
             case ValueType.Object:
                 return Value.Object(new TypeNameClass("UserObject"));
+            case ValueType.EnumValue:
+                return Value.Object(new TypeNameClass("EnumValue"));
             default:
                 break;
             }
             return Value.Null();
         }
-        
+
         public sealed class TypeNameClass : IEquatable<TypeNameClass>
         {
             private string _typename;
@@ -338,9 +356,9 @@ namespace ULox
                 case ValueType.CombinedClosures:
                     return val.asCombined.Select(x => x.chunk.FunctionType == FunctionType.PureFunction).Any();
                 case ValueType.NativeFunction:  //todo nativefuncs could declare themselves to be pure
+                    return false;
                 case ValueType.Upvalue:
                 case ValueType.Object:
-                    return false;
                 default:
                     return false;
                 }

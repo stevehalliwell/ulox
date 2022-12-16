@@ -49,6 +49,7 @@ namespace ULox
             compilette.GenerateCompiletteByStageArray();
             compilette.UserType = UserType.Enum;
             compilette.Match = TokenType.ENUM;
+            compilette.IsReadOnlyAtEnd = true;
             return compilette;
         }
 
@@ -89,6 +90,8 @@ namespace ULox
         public string CurrentTypeName { get; private set; }
         public byte InitChainLabelId { get; private set; }
         public int PreviousInitFragLabelId { get; set; } = -1;
+        public bool IsFrozenAtEnd { get; set; } = true;
+        public bool IsReadOnlyAtEnd { get; set; } = false;
         private ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
         private ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
@@ -175,7 +178,16 @@ namespace ULox
         private void DoEndType(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
-            compiler.EmitOpCode(OpCode.FREEZE);
+            if (IsFrozenAtEnd)
+                compiler.EmitOpCode(OpCode.FREEZE);
+            else
+                compiler.EmitOpCode(OpCode.POP);    //todo replace all with EmitPop()
+            
+            if(IsReadOnlyAtEnd)
+            {
+                compiler.NamedVariable(CurrentTypeName, false);
+                compiler.EmitOpCode(OpCode.READ_ONLY);
+            }
         }
 
         private void DoClassBody(Compiler compiler)

@@ -7,10 +7,7 @@
 
         public TypeCompiletteStage Stage 
             => TypeCompiletteStage.Method;
-
-        public void PostBody(Compiler compiler)
-        {
-        }
+        
 
         public void Process(Compiler compiler)
         {

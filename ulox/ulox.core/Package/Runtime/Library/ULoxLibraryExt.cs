@@ -35,7 +35,7 @@ namespace ULox
         {
             foreach (var item in bind)
             {
-                self.AddMethod(new HashedString(item.name), item.val);
+                self.AddMethod(new HashedString(item.name), item.val, null);
             }
         }
     }

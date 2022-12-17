@@ -58,9 +58,5 @@
         public void Start(TypeCompilette typeCompilette)
         {
         }
-
-        public void PostBody(Compiler compiler)
-        {
-        }
     }
 }

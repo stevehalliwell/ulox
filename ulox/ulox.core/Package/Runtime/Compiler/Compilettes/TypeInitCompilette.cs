@@ -7,11 +7,7 @@
 
         public TypeCompiletteStage Stage 
             => TypeCompiletteStage.Init;
-
-        public void PostBody(Compiler compiler)
-        {
-        }
-
+        
         public void Process(Compiler compiler)
         {
             var initName = TypeCompilette.InitMethodName.String;

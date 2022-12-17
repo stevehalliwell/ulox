@@ -68,9 +68,41 @@ namespace ULox
         public bool TryGetMethod(HashedString name, out Value method) => methods.TryGetValue(name, out method);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddMethod(HashedString key, Value method)
+        public void AddMethod(HashedString key, Value method, Vm vm)
         {
             // This is used internally by the vm only does not need to check for frozen
+            if (methods.TryGetValue(key, out var existing))
+            {
+                //combine
+                if (existing.type == ValueType.Closure)
+                {
+                    var existingArity = existing.val.asClosure.chunk.Arity;
+                    var newArity = method.val.asClosure.chunk.Arity;
+                    if (existingArity != newArity)
+                    {
+                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
+                    }
+
+                    //make a combine
+                    var temp = Value.Combined();
+                    temp.val.asCombined.Add(method.val.asClosure);
+                    temp.val.asCombined.Add(existing.val.asClosure);
+                    existing = temp;
+                }
+                else
+                {
+                    var existingArity = existing.val.asCombined[0].chunk.Arity;
+                    var newArity = method.val.asClosure.chunk.Arity;
+                    if (existingArity != newArity)
+                    {
+                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
+                    }
+
+                    existing.val.asCombined.Insert(0,method.val.asClosure);
+                }
+
+                method = existing;
+            }
 
             methods[key] = method;
             if (key == TypeCompilette.InitMethodName)
@@ -100,7 +132,7 @@ namespace ULox
 
             foreach (var flavourMeth in flavour.methods)
             {
-                MixinMethod(flavourMeth.Key, flavourMeth.Value, vm);
+                AddMethod(flavourMeth.Key, flavourMeth.Value, vm);
             }
 
             foreach (var flavourInitChain in flavour.InitChains)
@@ -110,44 +142,6 @@ namespace ULox
                     AddInitChain(flavourInitChain.closure, flavourInitChain.instruction);
                 }
             }
-        }
-
-        private void MixinMethod(HashedString key, Value value, Vm vm)
-        {
-            if (methods.TryGetValue(key, out var existing))
-            {
-                //combine
-                if (existing.type == ValueType.Closure)
-                {
-                    var existingArity = existing.val.asClosure.chunk.Arity;
-                    var newArity = value.val.asClosure.chunk.Arity;
-                    if (existingArity != newArity)
-                    {
-                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
-                    }
-
-                    //make a combine
-                    var temp = Value.Combined();
-                    temp.val.asCombined.Add(existing.val.asClosure);
-                    temp.val.asCombined.Add(value.val.asClosure);
-                    existing = temp;
-                }
-                else
-                {
-                    var existingArity = existing.val.asCombined[0].chunk.Arity;
-                    var newArity = value.val.asClosure.chunk.Arity;
-                    if (existingArity != newArity)
-                    {
-                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
-                    }
-
-                    existing.val.asCombined.Add(value.val.asClosure);
-                }
-
-                value = existing;
-            }
-
-            AddMethod(key, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

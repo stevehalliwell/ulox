@@ -55,9 +55,5 @@ namespace ULox
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (compiler.TokenIterator.Match(TokenType.IDENTIFIER));
         }
-
-        public void PostBody(Compiler compiler)
-        {
-        }
     }
 }

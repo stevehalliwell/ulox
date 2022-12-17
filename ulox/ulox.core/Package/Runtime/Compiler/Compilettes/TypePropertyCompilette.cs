@@ -1,11 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace ULox
+﻿namespace ULox
 {
     public sealed class TypePropertyCompilette : ITypeBodyCompilette
     {
-        private List<byte> _classVarConstantNames = new List<byte>();
-        
         private TypeCompilette _typeCompilette;
         private TokenType _matchToken;
         private bool _requreEndStatement;
@@ -35,7 +31,6 @@ namespace ULox
         public void Start(TypeCompilette typeCompilette)
         {
             _typeCompilette = typeCompilette;
-            _classVarConstantNames.Clear();
         }
 
         public void Process(Compiler compiler)
@@ -44,8 +39,9 @@ namespace ULox
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name.");
                 byte nameConstant = compiler.AddStringConstant();
-
-                _classVarConstantNames.Add(nameConstant);
+                
+                compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
+                compiler.EmitOpAndBytes(OpCode.FIELD, nameConstant);
 
                 //emit jump // to skip this during imperative
                 var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
@@ -86,15 +82,6 @@ namespace ULox
                 compiler.ConsumeEndStatement("property declaration");
             else
                 compiler.TokenIterator.Match(TokenType.END_STATEMENT);
-        }
-
-        public void PostBody(Compiler compiler)
-        {
-            foreach (var item in _classVarConstantNames)
-            {
-                compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                compiler.EmitOpAndBytes(OpCode.FIELD, item);
-            }
         }
     }
 }

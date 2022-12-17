@@ -88,6 +88,7 @@ namespace ULox
 
         private TypeCompiletteStage _stage = TypeCompiletteStage.Invalid;
         public string CurrentTypeName { get; private set; }
+        public event System.Action<Compiler> OnPostBody;
         public byte InitChainLabelId { get; private set; }
         public int PreviousInitFragLabelId { get; set; } = -1;
         public bool IsFrozenAtEnd { get; set; } = true;
@@ -126,8 +127,8 @@ namespace ULox
 
             DoInitChainEnd(compiler);
 
-            foreach (var bodyCompilette in BodyCompilettesPostBodyOrdered)
-                bodyCompilette.PostBody(compiler);
+            OnPostBody?.Invoke(compiler);
+            OnPostBody = null;
 
             DoEndType(compiler);
 

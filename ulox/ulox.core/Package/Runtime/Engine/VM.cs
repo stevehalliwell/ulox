@@ -1517,7 +1517,7 @@ namespace ULox
             var name = chunk.ReadConstant(constantIndex).val.asString;
             Value method = Peek();
             var klass = Peek(1).val.asClass;
-            klass.AddMethod(name, method);
+            klass.AddMethod(name, method, this);
             DiscardPop();
         }
 

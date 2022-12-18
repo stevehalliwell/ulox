@@ -10,6 +10,11 @@ namespace ULox
     {
         public static readonly Value SharedNativeListClassValue = Value.New(new NativeListClass());
 
+        public override InstanceInternal MakeInstance() => CreateInstance();
+
+        public static NativeListInstance CreateInstance()
+            => new NativeListInstance(SharedNativeListClassValue.val.asClass);
+
         public NativeListClass()
             : base(new HashedString("NativeList"), UserType.Native)
         {
@@ -50,6 +55,7 @@ namespace ULox
 
         private NativeCallResult Add(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             var top = vm.GetArg(1);
             var inst = vm.GetArg(0);
             var nativeListinst = inst.val.asInstance as NativeListInstance;
@@ -57,8 +63,17 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        private void ThrowIfReadOnly(Vm vm)
+        {
+            var inst = vm.GetArg(0);
+            var nativeListinst = inst.val.asInstance as NativeListInstance;
+            if (nativeListinst.IsReadOnly)
+                vm.ThrowRuntimeException($"Attempted to modify a read only list");
+        }
+
         private NativeCallResult Resize(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             var count = vm.GetArg(1);
             var fillWith = vm.GetArg(2);
             var list = GetArg0NativeListInstance(vm);
@@ -71,6 +86,7 @@ namespace ULox
 
         private NativeCallResult Remove(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             var top = vm.GetArg(1);
             GetArg0NativeListInstance(vm).Remove(top);
             return NativeCallResult.SuccessfulExpression;
@@ -78,12 +94,14 @@ namespace ULox
 
         private NativeCallResult Reverse(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             GetArg0NativeListInstance(vm).Reverse();
             return NativeCallResult.SuccessfulExpression;
         }
 
         private NativeCallResult Grow(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             var size = vm.GetArg(1).val.asDouble;
             var val = vm.GetArg(2);
             var inst = vm.GetArg(0);
@@ -95,6 +113,7 @@ namespace ULox
 
         private NativeCallResult Shrink(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             var size = vm.GetArg(1).val.asDouble;
             var inst = vm.GetArg(0);
             var nativeListinst = inst.val.asInstance as NativeListInstance;
@@ -340,10 +359,5 @@ namespace ULox
 
             return NativeCallResult.SuccessfulExpression;
         }
-
-        public override InstanceInternal MakeInstance() => CreateInstance();
-
-        public static NativeListInstance CreateInstance() 
-            => new NativeListInstance(SharedNativeListClassValue.val.asClass);
     }
 }

@@ -18,6 +18,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(Value ind, Value val)
         {
+            if (IsReadOnly)
+                throw new UloxException($"Attempted to Set index '{ind}' to '{val}', but map is read only.");
+
             _map[ind] = val;
         }
 

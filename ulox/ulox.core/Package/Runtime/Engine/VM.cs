@@ -600,6 +600,10 @@ namespace ULox
         private void DoReadOnlyOp(Chunk chunk)
         {
             var target = Pop();
+            if (target.type != ValueType.Instance
+                && target.type != ValueType.UserType)
+                ThrowRuntimeException($"Cannot perform readonly on '{target}'. Got unexpected type '{target.type}'");
+
             target.val.asInstance.ReadOnly();
         }
 
@@ -638,7 +642,7 @@ namespace ULox
         private void DoTypeOfOp()
         {
             var target = Pop();
-            Push(target.GetLoxClassType());
+            Push(target.GetClassType());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1540,8 +1544,11 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void BindMethod(UserTypeInternal fromClass, HashedString methodName)
         {
+            if(fromClass == null)
+                ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
+
             if (!fromClass.TryGetMethod(methodName, out var method))
-                ThrowRuntimeException($"Undefined property {methodName}");
+                ThrowRuntimeException($"Undefined property '{methodName}'");
 
             var receiver = Peek();
             var meth = method.val.asClosure;

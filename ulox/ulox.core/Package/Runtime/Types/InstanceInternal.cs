@@ -4,7 +4,7 @@ namespace ULox
 {
     public class InstanceInternal
     {
-        public InstanceInternal() 
+        public InstanceInternal()
             : this(null)
         {
         }
@@ -25,10 +25,10 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetField(HashedString key, Value val)
         {
-            if(IsReadOnly)
+            if (IsReadOnly)
                 throw new UloxException($"Attempted to Set field '{key}', but instance is read only.");
 
-            if (!IsFrozen 
+            if (!IsFrozen
                 || Fields.ContainsKey(key))
                 Fields[key] = val;
             else
@@ -45,11 +45,11 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetField(HashedString key, out Value val) 
+        public bool TryGetField(HashedString key, out Value val)
             => Fields.TryGetValue(key, out val);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool RemoveField(HashedString fieldNameStr) 
+        public bool RemoveField(HashedString fieldNameStr)
             => Fields.Remove(fieldNameStr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -57,7 +57,7 @@ namespace ULox
             => IsFrozen = true;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Unfreeze() 
+        public void Unfreeze()
             => IsFrozen = false;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -71,10 +71,22 @@ namespace ULox
             IsFrozen = inst.IsFrozen;
         }
 
-        public override string ToString() =>  $"<inst {FromUserType?.Name}>";
+        public override string ToString() => $"<inst {FromUserType?.Name}>";
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReadOnly()
-            => IsReadOnly = true;
+        {
+            if (IsReadOnly) return;
+
+            IsReadOnly = true;
+
+            foreach (var field in Fields)
+            {
+                if (field.Value.val.asObject is InstanceInternal inst)
+                {
+                    inst.ReadOnly();
+                }
+            }
+        }
     }
 }

@@ -45,6 +45,7 @@ namespace ULox
         public static TypeCompilette CreateEnumCompilette()
         {
             var compilette = new TypeCompilette();
+            //compilette.AddInnerDeclarationCompilette(new TypeMixinCompilette());
             compilette.AddInnerDeclarationCompilette(new TypeEnumValueCompilette());
             compilette.GenerateCompiletteByStageArray();
             compilette.UserType = UserType.Enum;

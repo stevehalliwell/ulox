@@ -122,6 +122,18 @@ print(arr[0]);
         }
 
         [Test]
+        public void NativeList_ReadOnlyThenAdd_Error()
+        {
+            testEngine.Run(@"
+var arr = [];
+readonly arr;
+arr.Add(1);
+");
+
+            StringAssert.StartsWith("Attempted to modify a read only list at ip:'", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_NativeList_SameObjectAddThenRemove_CountIs0()
         {
             testEngine.Run(@"

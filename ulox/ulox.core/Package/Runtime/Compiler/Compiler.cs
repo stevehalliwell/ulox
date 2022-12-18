@@ -70,7 +70,8 @@ namespace ULox
                 (TokenType.EXPECT, ExpectStatement),
                 (TokenType.MATCH, MatchStatement),
                 (TokenType.LABEL, LabelStatement),
-                (TokenType.GOTO, GotoStatement));
+                (TokenType.GOTO, GotoStatement),
+                (TokenType.READ_ONLY, ReadOnlyStatement));
 
             this.SetPrattRules(
                 (TokenType.MINUS, new ActionParseRule(Unary, Binary, Precedence.Term)),
@@ -888,6 +889,14 @@ namespace ULox
             var labelNameID = compiler.AddStringConstant();
 
             compiler.EmitGoto(labelNameID);
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void ReadOnlyStatement(Compiler compiler)
+        {
+            compiler.Expression();
+            compiler.EmitOpCode(OpCode.READ_ONLY);
 
             compiler.ConsumeEndStatement();
         }

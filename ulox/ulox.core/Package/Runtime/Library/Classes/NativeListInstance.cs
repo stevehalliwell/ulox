@@ -17,6 +17,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(Value ind, Value val)
         {
+            if (IsReadOnly)
+                throw new UloxException($"Attempted to Set index '{ind}' to '{val}', but list is read only.");
+
             _list[(int)ind.val.asDouble] = val;
         }
 

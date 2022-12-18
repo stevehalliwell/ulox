@@ -90,7 +90,9 @@ namespace ULox
                 ("label", TokenType.LABEL),
                 ("goto", TokenType.GOTO),
 
-                ("enum", TokenType.ENUM));
+                ("enum", TokenType.ENUM),
+
+                ("readonly", TokenType.READ_ONLY));
 
             this.AddSingleCharTokenGenerators(
                 ('(', TokenType.OPEN_PAREN),

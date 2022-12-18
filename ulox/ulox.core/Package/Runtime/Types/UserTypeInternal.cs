@@ -35,6 +35,8 @@ namespace ULox
             {OpCode.COUNT_OF,   10 },
         };
 
+        private readonly static HashedString AllEnumHash = new HashedString("All");
+
         private readonly Table methods = new Table();
         private readonly Table flavours = new Table();
         private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
@@ -53,6 +55,11 @@ namespace ULox
         {
             Name = name;
             UserType = userType;
+
+            if (UserType == UserType.Enum)
+            {
+                Fields[AllEnumHash] = Value.New(NativeListClass.CreateInstance());
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -125,8 +132,30 @@ namespace ULox
 
         public void AddMixin(Value flavourValue, Vm vm)
         {
+            var flavour = flavourValue.val.asClass;
             // This is used internally by the vm only does not need to check for frozen
 
+            //if (UserType == UserType.Enum && flavour.UserType == UserType.Enum)
+            //{
+            //    MixinEnum(flavour);
+            //}
+            //else
+            //{
+                MixinClass(flavourValue, vm);
+            //}
+        }
+
+        private void MixinEnum(UserTypeInternal flavour)
+        {
+            var flavourEnumValues = flavour.Fields[AllEnumHash].val.asObject as NativeListInstance;
+            foreach (var enumValue in flavourEnumValues.List)
+            {
+                AddEnumValue(enumValue.val.asInstance.Fields[EnumValue.KeyHash], enumValue.val.asInstance.Fields[EnumValue.ValueHash]);
+            }
+        }
+
+        private void MixinClass(Value flavourValue, Vm vm)
+        {
             var flavour = flavourValue.val.asClass;
             flavours[flavour.Name] = flavourValue;
 
@@ -163,7 +192,10 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AddEnumValue(Value key, Value val)
         {
-            Fields[key.val.asString] = Value.New(new EnumValue(key, val, this));
+            var enumValue = Value.New(new EnumValue(key, val, this));
+            Fields[key.val.asString] = enumValue;
+            
+            (Fields[AllEnumHash].val.asObject as NativeListInstance).List.Add(enumValue);
         }
     }
 }

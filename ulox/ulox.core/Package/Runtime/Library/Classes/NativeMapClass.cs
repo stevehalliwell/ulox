@@ -7,6 +7,11 @@ namespace ULox
     {
         public static readonly Value SharedNativeMapClassValue = Value.New(new NativeMapClass());
 
+        public override InstanceInternal MakeInstance()
+        {
+            return new NativeMapInstance(this);
+        }
+
         public NativeMapClass()
             : base(new HashedString("NativeMap"), UserType.Native)
         {
@@ -36,6 +41,7 @@ namespace ULox
 
         private NativeCallResult Create(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
             var val = vm.GetArg(2);
@@ -82,6 +88,7 @@ namespace ULox
 
         private NativeCallResult Update(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
             var val = vm.GetArg(2);
@@ -99,6 +106,7 @@ namespace ULox
 
         private NativeCallResult Delete(Vm vm, int argCount)
         {
+            ThrowIfReadOnly(vm);
             var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
 
@@ -106,9 +114,12 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        public override InstanceInternal MakeInstance()
+        private void ThrowIfReadOnly(Vm vm)
         {
-            return new NativeMapInstance(this);
+            var inst = vm.GetArg(0);
+            var nativeMapInstance = inst.val.asInstance as NativeMapInstance;
+            if (nativeMapInstance.IsReadOnly)
+                vm.ThrowRuntimeException($"Attempted to modify a read only map");
         }
     }
 }

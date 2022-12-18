@@ -107,5 +107,7 @@
         GOTO,
 
         ENUM,
+
+        READ_ONLY,
     }
 }

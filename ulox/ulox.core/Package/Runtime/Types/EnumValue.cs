@@ -2,9 +2,9 @@
 {
     public sealed class EnumValue : InstanceInternal
     {
-        private readonly static HashedString KeyHash = new HashedString("Key");
-        private readonly static HashedString ValueHash = new HashedString("Value");
-        private readonly static HashedString FromEnumHash = new HashedString("Enum");
+        public readonly static HashedString KeyHash = new HashedString("Key");
+        public readonly static HashedString ValueHash = new HashedString("Value");
+        public readonly static HashedString FromEnumHash = new HashedString("Enum");
 
         public EnumValue(Value key, Value val, UserTypeInternal from)
             : base(from)

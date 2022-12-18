@@ -1,12 +1,41 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Linq;
-using System;
 
 namespace ULox
 {
     public struct Value
     {
+        public sealed class TypeNameClass : System.IEquatable<TypeNameClass>
+        {
+            private string _typename;
+
+            public TypeNameClass(string typename)
+            {
+                _typename = typename;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is TypeNameClass customDummyClass
+                    ? Equals(customDummyClass)
+                    : false;
+            }
+
+            public bool Equals(TypeNameClass other)
+            {
+                return _typename == other._typename;
+            }
+
+            public override int GetHashCode()
+            {
+                return -776812171 + EqualityComparer<string>.Default.GetHashCode(_typename);
+            }
+
+            public override string ToString() => $"<{UserType.Native} {_typename}>";
+        }
+
+        
         public ValueType type;
         public ValueTypeDataUnion val;
 
@@ -255,7 +284,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetLoxClassType()
+        public Value GetClassType()
         {
             switch (type)
             {
@@ -285,36 +314,6 @@ namespace ULox
             }
             return Value.Null();
         }
-
-        public sealed class TypeNameClass : IEquatable<TypeNameClass>
-        {
-            private string _typename;
-
-            public TypeNameClass(string typename)
-            {
-                _typename = typename;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is TypeNameClass customDummyClass 
-                    ? Equals(customDummyClass)
-                    : false;
-            }
-
-            public bool Equals(TypeNameClass other)
-            {
-                return _typename == other._typename;
-            }
-
-            public override int GetHashCode()
-            {
-                return -776812171 + EqualityComparer<string>.Default.GetHashCode(_typename);
-            }
-
-            public override string ToString() => $"<{UserType.Native} {_typename}>";
-        }
-
         public bool IsPure 
         { 
             get

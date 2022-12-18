@@ -35,6 +35,10 @@
                 vm.ThrowRuntimeException($"Cannot perform {nameof(RemoveField)} on given types, '{obj}', '{fieldName}'");
 
             var inst = obj.val.asInstance;
+
+            if(inst.IsReadOnly)
+                vm.ThrowRuntimeException($"Cannot remove field from read only instance, '{inst}'");
+
             var fieldNameStr = fieldName.val.asString;
             inst.RemoveField(fieldNameStr);
 

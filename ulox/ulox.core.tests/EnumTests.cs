@@ -162,7 +162,7 @@ print(b);");
         }
 
         [Test]
-        public void Match_WhenEnumValues_Should()
+        public void Match_WhenEnumValues_ShouldPass()
         {
             testEngine.Run(@"
 enum Foo
@@ -177,6 +177,48 @@ match b
 {
 Foo.Bar: print(""Bar"");
 Foo.Baz: print(""Baz"");
+}");
+
+            Assert.AreEqual("Bar", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Match_WhenEnumValuesRaw_ShouldPass()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz
+}
+
+var b = Foo.Bar.Value;
+
+match b
+{
+0: print(""Bar"");
+1: print(""Baz"");
+}");
+
+            Assert.AreEqual("Bar", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Match_WhenEnumValuesKeys_ShouldPass()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz
+}
+
+var b = Foo.Bar.Key;
+
+match b
+{
+""Bar"": print(""Bar"");
+""Baz"": print(""Baz"");
 }");
 
             Assert.AreEqual("Bar", testEngine.InterpreterResult);
@@ -293,55 +335,56 @@ print(Foo.Bar.Enum == Foo);
             Assert.AreEqual("True", testEngine.InterpreterResult);
         }
 
+        //        [Test]
+        //        public void EnumMixin_WhenDifferentEnums_ShouldSeeAllOfAInB()
+        //        {
+        //            testEngine.Run(@"
+        //enum A
+        //{
+        //    Bar,
+        //    Baz,
+        //}
+
+        //enum B
+        //{
+        //    mixin A;
+        //    Bax,
+        //}
+
+        //print(B.Bar.Value);
+        //print(B.Baz.Value);
+        //print(B.Bax.Value);
+        //");
+
+        //            Assert.AreEqual("012", testEngine.InterpreterResult);
+        //        }
+
+        //        [Test]
+        //        public void DotEnum_WhenMixinDifferentEnums_ShouldSeeMostSpecific()
+        //        {
+        //            testEngine.Run(@"
+        //enum A
+        //{
+        //    Bar,
+        //    Baz,
+        //}
+
+        //enum B
+        //{
+        //    mixin A;
+        //    Bax,
+        //}
+
+        //print(B.Baz.Enum);
+        //");
+
+        //            Assert.AreEqual("<Enum B>", testEngine.InterpreterResult);
+        //        }
+
         [Test]
-        public void EnumMixin_WhenDifferentEnums_ShouldSeeAllOfAInB()
+        public void FirstAll_WhenExists_ShouldReturnMatch()
         {
-            testEngine.Run(@"
-enum A
-{
-    Bar,
-    Baz,
-}
-
-enum B
-{
-    mixin A;
-    Bax,
-}
-
-print(B.Bar);
-print(B.Baz);
-print(B.Bax);
-");
-
-            Assert.AreEqual("012", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void DotEnum_WhenMixinDifferentEnums_ShouldSeeMostSpecific()
-        {
-            testEngine.Run(@"
-enum A
-{
-    Bar,
-    Baz,
-}
-
-enum B
-{
-    mixin A;
-    Bax,
-}
-
-print(B.Baz.Enum);
-");
-
-            Assert.AreEqual("B", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void FromValue_WhenExists_ShouldReturnMatch()
-        {
+            //todo could do first or null on the all
             testEngine.Run(@"
 enum Foo
 {
@@ -349,26 +392,10 @@ enum Foo
     Baz,
 }
 
-print(Foo.FromValue(0).Key);
+print(Foo.All.First(fun (x) {return x.Value == 0;}).Key);
 ");
 
             Assert.AreEqual("Bar", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void FromValue_WhenDoesNotExists_ShouldReturnNull()
-        {
-            testEngine.Run(@"
-enum Foo
-{
-    Bar,
-    Baz,
-}
-
-print(Foo.FromValue(-1) == null);
-");
-
-            Assert.AreEqual("True", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -404,11 +431,11 @@ var all = Foo.All;
 
 loop (all)
 {
-    print(item);
+    print(item.Value);
 }
 ");
 
-            Assert.AreEqual("BarBaz", testEngine.InterpreterResult);
+            Assert.AreEqual("01", testEngine.InterpreterResult);
         }
 
         [Test]

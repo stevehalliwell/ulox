@@ -78,9 +78,23 @@ fun ()
 
             StringAssert.StartsWith("Attempted to set readonly local 'a' in", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void ReadOnly_UpValue_ShouldError()
+        {
+            testEngine.Run(@"
+fun ()
+{
+    var a = 1;
+    readonly a;
+    fun ()
+    {
+        a = 2;
+    }
+}
 ");
 
-            StringAssert.StartsWith("Cannot perform readonly on '1'. Got unexpected type 'Double'", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to set readonly upvalue 'a' in", testEngine.InterpreterResult);
         }
     }
 }

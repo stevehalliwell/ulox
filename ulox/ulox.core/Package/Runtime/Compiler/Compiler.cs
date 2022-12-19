@@ -344,6 +344,12 @@ namespace ULox
             {
                 ThrowCompilerException($"Attempted to set readonly local '{name}'");
             }
+
+            if (setOp == OpCode.SET_UPVALUE
+                && CurrentCompilerState.IsUpValueReadOnly(this, name))
+            {
+                ThrowCompilerException($"Attempted to set readonly upvalue '{name}'");
+            }
         }
 
         private void ConfirmAccess(OpCode getOp, OpCode setOp, string name)

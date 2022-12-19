@@ -59,7 +59,7 @@ namespace ULox
 
         public Stack<LoopState> LoopStates { get; private set; } = new Stack<LoopState>();
         private Local LastLocal => locals[localCount - 1];
-        
+
         public void AddLocal(Compiler compiler, string name, int depth = -1)
         {
             if (localCount == byte.MaxValue)
@@ -147,6 +147,19 @@ namespace ULox
         {
             if (scopeDepth == 0) return;
             LastLocal.Depth = scopeDepth;
+        }
+
+        internal bool IsUpValueReadOnly(Compiler compiler, string name)
+        {
+            int local = enclosing.ResolveLocal(compiler, name);
+            if (local != -1)
+            {
+                return enclosing.locals[local].IsReadOnly;
+            }
+
+            return enclosing == null
+                ? false
+                : enclosing.IsUpValueReadOnly(compiler, name);
         }
     }
 }

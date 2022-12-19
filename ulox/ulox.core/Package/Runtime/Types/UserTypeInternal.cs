@@ -20,7 +20,7 @@ namespace ULox
             new HashedString("_co"),
         };
 
-        public static readonly Dictionary<OpCode, int> OpCodeToOverloadIndex = new Dictionary<OpCode, int>()
+        public static readonly IReadOnlyDictionary<OpCode, int> OpCodeToOverloadIndex = new Dictionary<OpCode, int>()
         {
             {OpCode.ADD,        0 },
             {OpCode.SUBTRACT,   1 },
@@ -47,7 +47,7 @@ namespace ULox
         public List<(ClosureInternal closure, ushort instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, ushort)>();
         public IReadOnlyDictionary<HashedString, Value> Methods => methods.AsReadOnly;
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
-        private List<HashedString> _fieldsNames = new List<HashedString>();
+        private readonly List<HashedString> _fieldsNames = new List<HashedString>();
 
         public UserTypeInternal(HashedString name, UserType userType)
         {
@@ -68,11 +68,44 @@ namespace ULox
         public bool TryGetMethod(HashedString name, out Value method) => methods.TryGetValue(name, out method);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddMethod(HashedString key, Value method)
+        public void AddMethod(HashedString key, Value method, Vm vm)
         {
             // This is used internally by the vm only does not need to check for frozen
+            if (methods.TryGetValue(key, out var existing))
+            {
+                //combine
+                if (existing.type == ValueType.Closure)
+                {
+                    var existingArity = existing.val.asClosure.chunk.Arity;
+                    var newArity = method.val.asClosure.chunk.Arity;
+                    if (existingArity != newArity)
+                    {
+                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
+                    }
+
+                    //make a combine
+                    var temp = Value.Combined();
+                    temp.val.asCombined.Add(method.val.asClosure);
+                    temp.val.asCombined.Add(existing.val.asClosure);
+                    existing = temp;
+                }
+                else
+                {
+                    var existingArity = existing.val.asCombined[0].chunk.Arity;
+                    var newArity = method.val.asClosure.chunk.Arity;
+                    if (existingArity != newArity)
+                    {
+                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
+                    }
+
+                    existing.val.asCombined.Insert(0, method.val.asClosure);
+                }
+
+                method = existing;
+            }
 
             methods[key] = method;
+
             if (key == TypeCompilette.InitMethodName)
             {
                 Initialiser = method;
@@ -93,14 +126,17 @@ namespace ULox
 
         public void AddMixin(Value flavourValue, Vm vm)
         {
-            // This is used internally by the vm only does not need to check for frozen
+            MixinClass(flavourValue, vm);
+        }
 
+        private void MixinClass(Value flavourValue, Vm vm)
+        {
             var flavour = flavourValue.val.asClass;
             flavours[flavour.Name] = flavourValue;
 
             foreach (var flavourMeth in flavour.methods)
             {
-                MixinMethod(flavourMeth.Key, flavourMeth.Value, vm);
+                AddMethod(flavourMeth.Key, flavourMeth.Value, vm);
             }
 
             foreach (var flavourInitChain in flavour.InitChains)
@@ -110,44 +146,6 @@ namespace ULox
                     AddInitChain(flavourInitChain.closure, flavourInitChain.instruction);
                 }
             }
-        }
-
-        private void MixinMethod(HashedString key, Value value, Vm vm)
-        {
-            if (methods.TryGetValue(key, out var existing))
-            {
-                //combine
-                if (existing.type == ValueType.Closure)
-                {
-                    var existingArity = existing.val.asClosure.chunk.Arity;
-                    var newArity = value.val.asClosure.chunk.Arity;
-                    if (existingArity != newArity)
-                    {
-                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
-                    }
-
-                    //make a combine
-                    var temp = Value.Combined();
-                    temp.val.asCombined.Add(existing.val.asClosure);
-                    temp.val.asCombined.Add(value.val.asClosure);
-                    existing = temp;
-                }
-                else
-                {
-                    var existingArity = existing.val.asCombined[0].chunk.Arity;
-                    var newArity = value.val.asClosure.chunk.Arity;
-                    if (existingArity != newArity)
-                    {
-                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
-                    }
-
-                    existing.val.asCombined.Add(value.val.asClosure);
-                }
-
-                value = existing;
-            }
-
-            AddMethod(key, value);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -164,6 +162,6 @@ namespace ULox
         public void AddFieldName(HashedString fieldName)
             => _fieldsNames.Add(fieldName);
 
-        public override string ToString() => $"<{nameof(UserTypeInternal)}:{Name}>";
+        public override string ToString() => $"<{UserType} {Name}>";
     }
 }

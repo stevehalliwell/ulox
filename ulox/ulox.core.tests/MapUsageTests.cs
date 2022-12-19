@@ -39,6 +39,18 @@ print(map.Count());
         }
 
         [Test]
+        public void Map_ReadOnlyThenSet_Error()
+        {
+            testEngine.Run(@"
+var map = [:];
+readonly map;
+map[1] = 2;
+");
+
+            StringAssert.StartsWith("Attempted to Set index '1' to '2'", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_MapSet_MatchesValue()
         {
             testEngine.Run(@"

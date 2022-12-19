@@ -4,7 +4,6 @@ namespace ULox
 {
     public class TypeSignsCompilette : ITypeBodyCompilette
     {
-        private List<string> _contractNames = new List<string>();
         private TypeCompilette _typeCompilette;
 
         public TokenType Match
@@ -15,30 +14,28 @@ namespace ULox
         public void Start(TypeCompilette typeCompilette)
         {
             _typeCompilette = typeCompilette;
-            _contractNames.Clear();
         }
-
-        public void PreBody(Compiler compiler) { }
 
         public void Process(Compiler compiler)
         {
+            var contractNames = new List<string>();
             do
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after signs into class.");
-                _contractNames.Add(compiler.TokenIterator.PreviousToken.Literal as string);
+                contractNames.Add(compiler.TokenIterator.PreviousToken.Literal as string);
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
             compiler.ConsumeEndStatement("signs declaration");
-        }
 
-        public void PostBody(Compiler compiler)
-        {
-            foreach (var contractName in _contractNames)
+            _typeCompilette.OnPostBody += x =>
             {
-                compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                compiler.NamedVariable(contractName, false);
-                compiler.EmitOpCode(OpCode.SIGNS);
-            }
+                foreach (var contractName in contractNames)
+                {
+                    compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
+                    compiler.NamedVariable(contractName, false);
+                    compiler.EmitOpCode(OpCode.SIGNS);
+                }
+            };
         }
     }
 }

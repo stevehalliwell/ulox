@@ -1,12 +1,41 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Linq;
-using System;
 
 namespace ULox
 {
     public struct Value
     {
+        public sealed class TypeNameClass : System.IEquatable<TypeNameClass>
+        {
+            private string _typename;
+
+            public TypeNameClass(string typename)
+            {
+                _typename = typename;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is TypeNameClass customDummyClass
+                    ? Equals(customDummyClass)
+                    : false;
+            }
+
+            public bool Equals(TypeNameClass other)
+            {
+                return _typename == other._typename;
+            }
+
+            public override int GetHashCode()
+            {
+                return -776812171 + EqualityComparer<string>.Default.GetHashCode(_typename);
+            }
+
+            public override string ToString() => $"<{UserType.Native} {_typename}>";
+        }
+
+        
         public ValueType type;
         public ValueTypeDataUnion val;
 
@@ -45,27 +74,22 @@ namespace ULox
 
             case ValueType.NativeFunction:
                 return "<NativeFunc>";
-
-            case ValueType.Closure:
-                return $"<closure {val.asClosure.chunk.Name} upvals:{val.asClosure.upvalues.Length}>";
-
+                
             case ValueType.Upvalue:
                 return $"<upvalue {val.asUpvalue.index}>";
 
+            case ValueType.Closure:
             case ValueType.UserType:
-                return $"<{val.asClass.UserType} {val.asClass.Name}>";
-
             case ValueType.Instance:
-                return $"<inst {val.asInstance.FromUserType?.Name}>";
-
             case ValueType.BoundMethod:
-                return $"<boundMeth {val.asBoundMethod.Method.chunk.Name}>";
-
+                return val.asObject.ToString();
+                
             case ValueType.Object:
                 if (val.asObject is TypeNameClass typenameClass)
                     return typenameClass.ToString();
                 return $"<object {val.asObject}>";
-
+                
+            case ValueType.CombinedClosures:
             default:
                 throw new System.NotImplementedException();
             }
@@ -81,8 +105,7 @@ namespace ULox
                 var newInst = new InstanceInternal();
                 newInst.CopyFrom(inst);
                 return Value.New(newInst);
-                break;
-
+            case ValueType.CombinedClosures:
             case ValueType.Null:
             case ValueType.Double:
             case ValueType.Bool:
@@ -210,7 +233,7 @@ namespace ULox
                     return lhs.val.asString == rhs.val.asString;
 
                 case ValueType.Instance:
-                    return lhs.val.asInstance == rhs.val.asInstance;
+                    return lhs.val.asInstance.Equals(rhs.val.asInstance);
 
                 case ValueType.UserType:
                     return lhs.val.asClass == rhs.val.asClass;
@@ -220,7 +243,12 @@ namespace ULox
 
                 case ValueType.Closure:
                     return lhs.val.asClosure == rhs.val.asClosure;
-
+                    
+                case ValueType.NativeFunction:
+                case ValueType.CombinedClosures:
+                case ValueType.Upvalue:
+                case ValueType.BoundMethod:
+                case ValueType.Chunk:
                 default:
                     throw new UloxException($"Cannot perform compare on type '{lhs.type}'.");
                 }
@@ -237,10 +265,10 @@ namespace ULox
 
             case ValueType.Bool:
                 return val.asBool.GetHashCode();
-
+                
             case ValueType.String:
                 return val.asString.Hash;
-
+            case ValueType.CombinedClosures:
             case ValueType.Null:
             case ValueType.Chunk:
             case ValueType.NativeFunction:
@@ -256,7 +284,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetLoxClassType()
+        public Value GetClassType()
         {
             switch (type)
             {
@@ -286,36 +314,6 @@ namespace ULox
             }
             return Value.Null();
         }
-        
-        public sealed class TypeNameClass : IEquatable<TypeNameClass>
-        {
-            private string _typename;
-
-            public TypeNameClass(string typename)
-            {
-                _typename = typename;
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is TypeNameClass customDummyClass 
-                    ? Equals(customDummyClass)
-                    : false;
-            }
-
-            public bool Equals(TypeNameClass other)
-            {
-                return _typename == other._typename;
-            }
-
-            public override int GetHashCode()
-            {
-                return -776812171 + EqualityComparer<string>.Default.GetHashCode(_typename);
-            }
-
-            public override string ToString() => $"<{UserType.Native} {_typename}>";
-        }
-
         public bool IsPure 
         { 
             get
@@ -338,9 +336,9 @@ namespace ULox
                 case ValueType.CombinedClosures:
                     return val.asCombined.Select(x => x.chunk.FunctionType == FunctionType.PureFunction).Any();
                 case ValueType.NativeFunction:  //todo nativefuncs could declare themselves to be pure
+                    return false;
                 case ValueType.Upvalue:
                 case ValueType.Object:
-                    return false;
                 default:
                     return false;
                 }

@@ -58,8 +58,7 @@ namespace ULox
 
         public Stack<LoopState> LoopStates { get; private set; } = new Stack<LoopState>();
         private Local LastLocal => locals[localCount - 1];
-
-
+        
         public void AddLocal(Compiler compiler, string name, int depth = -1)
         {
             if (localCount == byte.MaxValue)
@@ -76,7 +75,7 @@ namespace ULox
                 if (name == local.Name)
                 {
                     if (local.Depth == -1)
-                        compiler.ThrowCompilerException($"{name}. Cannot referenece a variable in it's own initialiser.");  //todo all of these throws need to report names and locations
+                        compiler.ThrowCompilerException($"{name}. Cannot referenece a variable in it's own initialiser.");
                     return i;
                 }
             }

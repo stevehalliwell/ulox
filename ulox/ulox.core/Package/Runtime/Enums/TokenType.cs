@@ -104,6 +104,10 @@
         MATCH,
 
         LABEL,
-        GOTO
+        GOTO,
+
+        ENUM,
+
+        READ_ONLY,
     }
 }

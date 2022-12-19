@@ -5,9 +5,9 @@
         public TokenType Match => TokenType.TESTCASE;
         public string TestCaseName { get; private set; }
 
-        private TestDeclarationCompilette _testDeclarationCompilette;
+        private readonly TestDeclarationCompilette _testDeclarationCompilette;
 
-        public void SetTestDeclarationCompilette(TestDeclarationCompilette testDeclarationCompilette)
+        public TestcaseCompillette(TestDeclarationCompilette testDeclarationCompilette)
         {
             _testDeclarationCompilette = testDeclarationCompilette;
         }
@@ -41,7 +41,7 @@
                 var (_, _, res) = compiler.ResolveNameLookupOpCode("testDataSource");
                 testDataSourceLocalId = res;
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataSourceLocalId);
-                compiler.EmitOpCode(OpCode.POP);
+                compiler.EmitPop();
 
                 //jump for moving back to start
                 dataExpJumpBackToStart = compiler.GotoUniqueChunkLabel($"DataExpJumpBackToStart_{_testDeclarationCompilette.CurrentTestSetName}");
@@ -92,7 +92,7 @@
 
                 LoopStatementCompilette.IsIndexLessThanArrayCount(compiler, OpCode.GET_LOCAL, testDataSourceLocalId, testDataIndexLocalId);
                 exitDataLoopJumpLoc = compiler.GotoIfUniqueChunkLabel("exitDataLoopJumpLoc");
-                compiler.EmitOpCode(OpCode.POP); // Condition.
+                compiler.EmitPop(); // Condition.
 
                 //get row from array index
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataSourceLocalId);
@@ -100,7 +100,7 @@
                 compiler.EmitOpCode(OpCode.GET_INDEX);
                 var (_, _, testDataRowLocalId) = compiler.ResolveNameLookupOpCode("testDataRow");
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataRowLocalId);
-                compiler.EmitOpCode(OpCode.POP);
+                compiler.EmitPop();
                 //appy row as inputs to the test
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataRowLocalId);
                 compiler.EmitOpCode(OpCode.EXPAND_COPY_TO_STACK);

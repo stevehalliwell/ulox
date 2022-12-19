@@ -28,5 +28,6 @@ namespace ULox
         public InstanceInternal asInstance => asObject as InstanceInternal;
         public Chunk asChunk => asObject as Chunk;
         public BoundMethod asBoundMethod => asObject as BoundMethod;
+        public EnumValue asEnumValue => asObject as EnumValue;
     }
 }

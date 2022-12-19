@@ -1,12 +1,7 @@
-﻿using System.Collections.Generic;
-
-namespace ULox
+﻿namespace ULox
 {
     public sealed class TypePropertyCompilette : ITypeBodyCompilette
     {
-        private List<byte> _classVarConstantNames = new List<byte>();
-        
-        private int _previousInitFragLabelId = -1;
         private TypeCompilette _typeCompilette;
         private TokenType _matchToken;
         private bool _requreEndStatement;
@@ -36,11 +31,7 @@ namespace ULox
         public void Start(TypeCompilette typeCompilette)
         {
             _typeCompilette = typeCompilette;
-            _previousInitFragLabelId = -1;
-            _classVarConstantNames.Clear();
         }
-
-        public void PreBody(Compiler compiler) { }
 
         public void Process(Compiler compiler)
         {
@@ -48,15 +39,16 @@ namespace ULox
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name.");
                 byte nameConstant = compiler.AddStringConstant();
-
-                _classVarConstantNames.Add(nameConstant);
+                
+                compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
+                compiler.EmitOpAndBytes(OpCode.FIELD, nameConstant);
 
                 //emit jump // to skip this during imperative
                 var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
                 //patch jump previous init fragment if it exists
-                if (_previousInitFragLabelId != -1)
+                if (_typeCompilette.PreviousInitFragLabelId != -1)
                 {
-                    compiler.EmitLabel((byte)_previousInitFragLabelId);
+                    compiler.EmitLabel((byte)_typeCompilette.PreviousInitFragLabelId);
                 }
                 else
                 {
@@ -78,9 +70,9 @@ namespace ULox
 
                 //emit set prop
                 compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
-                compiler.EmitOpCode(OpCode.POP);
+                compiler.EmitPop();
                 //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                _previousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitFragmentJump");
+                _typeCompilette.PreviousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitFragmentJump");
 
                 //patch jump from skip imperative
                 compiler.EmitLabel(initFragmentJump);
@@ -90,27 +82,6 @@ namespace ULox
                 compiler.ConsumeEndStatement("property declaration");
             else
                 compiler.TokenIterator.Match(TokenType.END_STATEMENT);
-        }
-
-        public void PostBody(Compiler compiler)
-        {
-            //return stub used by init and test chains
-            var classReturnEnd = compiler.GotoUniqueChunkLabel("ClassReturnEnd");
-
-            if (_previousInitFragLabelId != -1)
-                compiler.EmitLabel((byte)_previousInitFragLabelId);
-            else
-                compiler.CurrentCompilerState.chunk.AddLabel(_typeCompilette.InitChainLabelId, 0);
-
-            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
-
-            compiler.EmitLabel(classReturnEnd);
-
-            foreach (var item in _classVarConstantNames)
-            {
-                compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                compiler.EmitOpAndBytes(OpCode.FIELD, item);
-            }
         }
     }
 }

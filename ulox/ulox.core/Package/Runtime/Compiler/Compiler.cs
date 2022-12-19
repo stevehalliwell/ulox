@@ -19,9 +19,9 @@ namespace ULox
         public TokenType PreviousTokenType
             => TokenIterator?.PreviousToken.TokenType ?? TokenType.NONE;
 
-        private Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
-        private Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
-        private List<Chunk> _allChunks = new List<Chunk>();
+        private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
+        private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
+        private readonly List<Chunk> _allChunks = new List<Chunk>();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -35,18 +35,17 @@ namespace ULox
 
         private void Setup()
         {
-            var _testcaseCompilette = new TestcaseCompillette();
             var _testdec = new TestDeclarationCompilette();
-            _testcaseCompilette.SetTestDeclarationCompilette(_testdec);
-            var _buildCompilette = new BuildCompilette();
             var _classCompiler = TypeCompilette.CreateClassCompilette();
+            var _testcaseCompilette = new TestcaseCompillette(_testdec);
 
             this.AddDeclarationCompilette(
                 new VarDeclarationCompilette(),
                 _testdec,
                 _classCompiler,
                 _testcaseCompilette,
-                _buildCompilette,
+                new BuildCompilette(),
+                TypeCompilette.CreateEnumCompilette(),
                 TypeCompilette.CreateDateCompilette());
 
             this.AddDeclarationCompilette(
@@ -71,7 +70,8 @@ namespace ULox
                 (TokenType.EXPECT, ExpectStatement),
                 (TokenType.MATCH, MatchStatement),
                 (TokenType.LABEL, LabelStatement),
-                (TokenType.GOTO, GotoStatement));
+                (TokenType.GOTO, GotoStatement),
+                (TokenType.READ_ONLY, ReadOnlyStatement));
 
             this.SetPrattRules(
                 (TokenType.MINUS, new ActionParseRule(Unary, Binary, Precedence.Term)),
@@ -194,7 +194,7 @@ namespace ULox
                 if (comp.locals[comp.localCount - 1].IsCaptured)
                     EmitOpCode(OpCode.CLOSE_UPVALUE);
                 else
-                    EmitOpCode(OpCode.POP);
+                    EmitPop();
 
                 CurrentCompilerState.localCount--;
             }
@@ -250,7 +250,7 @@ namespace ULox
         {
             Expression();
             ConsumeEndStatement();
-            EmitOpCode(OpCode.POP);
+            EmitPop();
         }
 
         public void Expression()
@@ -677,7 +677,7 @@ namespace ULox
                     compiler.Expression();
                     //we need a set property
                     compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, identConstantID);
-                    compiler.EmitOpCode(OpCode.POP);
+                    compiler.EmitPop();
 
                     //if comma consume
                     compiler.TokenIterator.Match(TokenType.COMMA);
@@ -736,7 +736,7 @@ namespace ULox
                     compiler.Expression();
                     compiler.EmitOpCode(OpCode.SET_INDEX);
                 }
-                compiler.EmitOpCode(OpCode.POP);
+                compiler.EmitPop();
 
                 compiler.TokenIterator.Match(TokenType.COMMA);
                 firstLoop = false;
@@ -820,14 +820,14 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
             
             var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if");
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
 
             compiler.Statement();
 
             var elseJump = compiler.GotoUniqueChunkLabel("else");
 
             compiler.EmitLabel(thenjumpLabel);
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
 
             if (compiler.TokenIterator.Match(TokenType.ELSE)) compiler.Statement();
 
@@ -889,6 +889,14 @@ namespace ULox
             var labelNameID = compiler.AddStringConstant();
 
             compiler.EmitGoto(labelNameID);
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void ReadOnlyStatement(Compiler compiler)
+        {
+            compiler.Expression();
+            compiler.EmitOpCode(OpCode.READ_ONLY);
 
             compiler.ConsumeEndStatement();
         }
@@ -1006,13 +1014,7 @@ namespace ULox
             {
                 var number = (double)compiler.TokenIterator.PreviousToken.Literal;
 
-                var isInt = number == System.Math.Truncate(number);
-
-                if (isInt && number < 255 && number >= 0)
-                    compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
-                else
-                    //todo push to compiler
-                    compiler.AddConstantAndWriteOp(Value.New(number));
+                compiler.DoNumberConstant(number);
             }
             break;
 
@@ -1025,6 +1027,17 @@ namespace ULox
             }
         }
 
+        public void DoNumberConstant(double number)
+        {
+            var isInt = number == System.Math.Truncate(number);
+
+            if (isInt && number < 255 && number >= 0)
+                EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
+            else
+                //todo push to compiler
+                AddConstantAndWriteOp(Value.New(number));
+        }
+
         public static void Variable(Compiler compiler, bool canAssign)
         {
             var name = (string)compiler.TokenIterator.PreviousToken.Literal;
@@ -1035,7 +1048,7 @@ namespace ULox
         {
             var endJumpLabel = compiler.GotoIfUniqueChunkLabel("and");
 
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
             compiler.ParsePrecedence(Precedence.And);
 
             compiler.EmitLabel(endJumpLabel);
@@ -1047,7 +1060,7 @@ namespace ULox
             var endJump = compiler.GotoUniqueChunkLabel("or");
 
             compiler.EmitLabel(elseJumpLabel);
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
 
             compiler.ParsePrecedence(Precedence.Or);
 
@@ -1128,6 +1141,11 @@ namespace ULox
         {
             CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
             EmitOpAndBytes(OpCode.LABEL, id);
+        }
+
+        internal void EmitPop()
+        {
+            EmitOpCode(OpCode.POP);
         }
     }
 }

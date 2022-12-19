@@ -85,5 +85,8 @@
         GOTO,
         GOTO_IF_FALSE,
         LABEL,
+
+        ENUM_VALUE,
+        READ_ONLY,
     }
 }

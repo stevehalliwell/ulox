@@ -77,6 +77,21 @@ print(obj.c);
             Assert.AreEqual("1<inst Dynamic>23", testEngine.InterpreterResult);
         }
 
+        [Test]
+        public void Dyanic_RemoveFieldWhenReadOnly_ShouldError()
+        {
+            testEngine.Run(@"
+var expected = false;
+var result = 0;
+var obj = {:};
+obj.a = 7;
+readonly obj;
+
+obj.RemoveField(obj, ""a"");");
+
+            StringAssert.StartsWith("Cannot remove field from read only", testEngine.InterpreterResult);
+        }
+
         //        [Test]
         //        public void DynamicAsClass_WhenSetupAndCalled_ShouldPrintExepctedResult()
         //        {

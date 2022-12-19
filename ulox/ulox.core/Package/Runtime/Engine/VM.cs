@@ -593,7 +593,7 @@ namespace ULox
             var enumObject = Pop();
             var val = Pop();
             var key = Pop();
-            enumObject.val.asClass.AddEnumValue(key, val);
+            (enumObject.val.asClass as EnumClass).AddEnumValue(key, val);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1339,7 +1339,9 @@ namespace ULox
             var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex);
             var userType = (UserType)ReadByte(chunk);
-            var klass = new UserTypeInternal(name.val.asString, userType);
+            UserTypeInternal klass = userType == UserType.Enum
+                ? new EnumClass(name.val.asString) 
+                : new UserTypeInternal(name.val.asString, userType);
             var klassValue = Value.New(klass);
             Push(klassValue);
             var initChainLabelID = ReadByte(chunk);

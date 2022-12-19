@@ -35,8 +35,6 @@ namespace ULox
             {OpCode.COUNT_OF,   10 },
         };
 
-        private readonly static HashedString AllEnumHash = new HashedString("All");
-
         private readonly Table methods = new Table();
         private readonly Table flavours = new Table();
         private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
@@ -55,11 +53,6 @@ namespace ULox
         {
             Name = name;
             UserType = userType;
-
-            if (UserType == UserType.Enum)
-            {
-                Fields[AllEnumHash] = Value.New(NativeListClass.CreateInstance());
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -105,13 +98,14 @@ namespace ULox
                         vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
                     }
 
-                    existing.val.asCombined.Insert(0,method.val.asClosure);
+                    existing.val.asCombined.Insert(0, method.val.asClosure);
                 }
 
                 method = existing;
             }
 
             methods[key] = method;
+
             if (key == TypeCompilette.InitMethodName)
             {
                 Initialiser = method;
@@ -132,26 +126,7 @@ namespace ULox
 
         public void AddMixin(Value flavourValue, Vm vm)
         {
-            var flavour = flavourValue.val.asClass;
-            // This is used internally by the vm only does not need to check for frozen
-
-            //if (UserType == UserType.Enum && flavour.UserType == UserType.Enum)
-            //{
-            //    MixinEnum(flavour);
-            //}
-            //else
-            //{
-                MixinClass(flavourValue, vm);
-            //}
-        }
-
-        private void MixinEnum(UserTypeInternal flavour)
-        {
-            var flavourEnumValues = flavour.Fields[AllEnumHash].val.asObject as NativeListInstance;
-            foreach (var enumValue in flavourEnumValues.List)
-            {
-                AddEnumValue(enumValue.val.asInstance.Fields[EnumValue.KeyHash], enumValue.val.asInstance.Fields[EnumValue.ValueHash]);
-            }
+            MixinClass(flavourValue, vm);
         }
 
         private void MixinClass(Value flavourValue, Vm vm)
@@ -188,14 +163,5 @@ namespace ULox
             => _fieldsNames.Add(fieldName);
 
         public override string ToString() => $"<{UserType} {Name}>";
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void AddEnumValue(Value key, Value val)
-        {
-            var enumValue = Value.New(new EnumValue(key, val, this));
-            Fields[key.val.asString] = enumValue;
-            
-            (Fields[AllEnumHash].val.asObject as NativeListInstance).List.Add(enumValue);
-        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using static ULox.CompilerState;
 
 namespace ULox
 {
@@ -315,7 +316,7 @@ namespace ULox
             if (TokenIterator.Match(TokenType.ASSIGN))
             {
                 Expression();
-                ConfirmWrite(name, argId);
+                ConfirmWrite(name, setOp, argId);
 
                 EmitOpAndBytes(setOp, argId);
                 return;
@@ -323,19 +324,25 @@ namespace ULox
 
             if (HandleCompoundAssignToken(getOp, setOp, argId))
             {
-                ConfirmWrite(name, argId);
+                ConfirmWrite(name, setOp, argId);
                 return;
             }
 
             EmitOpAndBytes(getOp, argId);
         }
 
-        private void ConfirmWrite(string name, byte argId)
+        private void ConfirmWrite(string name, OpCode setOp, byte argId)
         {
             if (CurrentCompilerState.functionType == FunctionType.PureFunction)
             {
                 if (argId <= CurrentCompilerState.chunk.Arity)
                     ThrowCompilerException($"Attempted to write to function param '{name}', this is not allowed in a 'pure' function");
+            }
+
+            if (setOp == OpCode.SET_LOCAL
+                && CurrentCompilerState.locals[argId].IsReadOnly)
+            {
+                ThrowCompilerException($"Attempted to set readonly local '{name}'");
             }
         }
 
@@ -395,7 +402,19 @@ namespace ULox
             return false;
         }
 
-        public (OpCode getOp, OpCode setOp, byte argId) ResolveNameLookupOpCode(string name)
+        public (OpCode getOp, byte argId) ResolveNameLookupGetOpCode(string name)
+        {
+            var (getOp, _, argId) = ResolveNameLookupOpCode(name);
+            return (getOp, argId);
+        }
+
+        public byte ResolveArgId(string name)
+        {
+            var (_, _, argId) = ResolveNameLookupOpCode(name);
+            return argId;
+        }
+
+        private (OpCode getOp, OpCode setOp, byte argId) ResolveNameLookupOpCode(string name)
         {
             var getOp = OpCode.FETCH_GLOBAL;
             var setOp = OpCode.ASSIGN_GLOBAL;
@@ -818,7 +837,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
             compiler.Expression();
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
-            
+
             var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if");
             compiler.EmitPop();
 
@@ -841,12 +860,12 @@ namespace ULox
 
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after match statement.");
             var matchArgName = compiler.TokenIterator.PreviousToken.Lexeme;
-            var (matchGetOp, _, matchArgID) = compiler.ResolveNameLookupOpCode(matchArgName);
+            var (matchGetOp, matchArgID) = compiler.ResolveNameLookupGetOpCode(matchArgName);
 
             var lastElseLabel = -1;
-            
+
             var matchEndLabelID = compiler.UniqueChunkStringConstant(nameof(MatchStatement));
-            
+
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
             do
             {
@@ -895,10 +914,23 @@ namespace ULox
 
         public static void ReadOnlyStatement(Compiler compiler)
         {
-            compiler.Expression();
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after readonly statement.");
+            var name = compiler.TokenIterator.PreviousToken.Lexeme;
+            compiler.NamedVariable(name, false);
             compiler.EmitOpCode(OpCode.READ_ONLY);
+            compiler.MarkReadOnly(name);
 
             compiler.ConsumeEndStatement();
+        }
+
+        private void MarkReadOnly(string name)
+        {
+            var localId = CurrentCompilerState.ResolveLocal(this, name);
+            if(localId != -1)
+            {
+                CurrentCompilerState.locals[localId].IsReadOnly = true;
+                return;
+            }
         }
 
         public static void BreakStatement(Compiler compiler)
@@ -978,7 +1010,7 @@ namespace ULox
 
                 if (!requirePop)
                 {
-                    var (getOp, _, argId) = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
+                    var (getOp, argId) = compiler.ResolveNameLookupGetOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
                     compiler.EmitOpAndBytes(getOp, argId);
                 }
             }
@@ -1112,14 +1144,14 @@ namespace ULox
         {
             EmitOpAndBytes(OpCode.GOTO, labelNameID);
         }
-        
+
         internal byte GotoIfUniqueChunkLabel(string v)
         {
             byte labelNameID = UniqueChunkStringConstant(v);
             EmitGotoIf(labelNameID);
             return labelNameID;
         }
-        
+
         internal void EmitGotoIf(byte labelNameID)
         {
             EmitOpAndBytes(OpCode.GOTO_IF_FALSE, labelNameID);

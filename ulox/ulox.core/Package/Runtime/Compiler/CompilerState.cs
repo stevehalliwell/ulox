@@ -15,6 +15,7 @@ namespace ULox
             public string Name { get; private set; }
             public int Depth { get; set; }
             public bool IsCaptured { get; set; }
+            public bool IsReadOnly { get; set; }
         }
 
         public class LoopState

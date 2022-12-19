@@ -17,7 +17,7 @@
             //temp
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after loop statement with arg.");
             var arrayName = compiler.TokenIterator.PreviousToken.Lexeme;
-            var (arrayGetOp, _, arrayArgId) = compiler.ResolveNameLookupOpCode(arrayName);
+            var (arrayGetOp, arrayArgId) = compiler.ResolveNameLookupGetOpCode(arrayName);
             var itemName = "item";
             var indexName = "i";
 

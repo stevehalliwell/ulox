@@ -53,12 +53,31 @@ obj.b.innerA = 4;
         }
 
         [Test]
-        public void ReadOnly_Local_ShouldError()
+        public void ReadOnly_Global_ShouldError()
         {
             testEngine.Run(@"
 var a = 1;
 readonly a;
 a = 2;
+");
+
+            StringAssert.StartsWith("Cannot perform readonly on '1'. Got unexpected type 'Double'", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ReadOnly_Local_ShouldError()
+        {
+            testEngine.Run(@"
+fun ()
+{
+    var a = 1;
+    readonly a;
+    a = 2;
+}
+");
+
+            StringAssert.StartsWith("Attempted to set readonly local 'a' in", testEngine.InterpreterResult);
+        }
 ");
 
             StringAssert.StartsWith("Cannot perform readonly on '1'. Got unexpected type 'Double'", testEngine.InterpreterResult);

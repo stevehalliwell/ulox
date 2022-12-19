@@ -38,8 +38,8 @@
                 compiler.DeclareAndDefineCustomVariable("testDataIndex");
                 compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
                 compiler.Expression();
-                var (_, _, res) = compiler.ResolveNameLookupOpCode("testDataSource");
-                testDataSourceLocalId = res;
+                var resArgId = compiler.ResolveArgId("testDataSource");
+                testDataSourceLocalId = resArgId;
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataSourceLocalId);
                 compiler.EmitPop();
 
@@ -85,8 +85,7 @@
 
                 //need to deal with the args
                 //get test data row
-                var (_, _, testDataIndexLocalIdRes) = compiler.ResolveNameLookupOpCode("testDataIndex");
-                testDataIndexLocalId = testDataIndexLocalIdRes;
+                testDataIndexLocalId = compiler.ResolveArgId("testDataIndex");
 
                 preRowCountCheck = compiler.LabelUniqueChunkLabel("preRowCountCheck");
 
@@ -98,7 +97,7 @@
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataSourceLocalId);
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataIndexLocalId);
                 compiler.EmitOpCode(OpCode.GET_INDEX);
-                var (_, _, testDataRowLocalId) = compiler.ResolveNameLookupOpCode("testDataRow");
+                var testDataRowLocalId = compiler.ResolveArgId("testDataRow");
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataRowLocalId);
                 compiler.EmitPop();
                 //appy row as inputs to the test

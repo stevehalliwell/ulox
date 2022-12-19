@@ -20,6 +20,7 @@ Foo.a = 2;
 
             StringAssert.StartsWith("Attempted to Set field 'a', but instance is read only.", testEngine.InterpreterResult);
         }
+        
         [Test]
         public void ReadOnly_InstThenModify_Error()
         {
@@ -52,7 +53,7 @@ obj.b.innerA = 4;
         }
 
         [Test]
-        public void Local_ReadOnlyThenModifyInner_ShouldError()
+        public void ReadOnly_Local_ShouldError()
         {
             testEngine.Run(@"
 var a = 1;

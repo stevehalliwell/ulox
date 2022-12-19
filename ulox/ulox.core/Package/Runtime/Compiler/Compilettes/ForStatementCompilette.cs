@@ -19,7 +19,7 @@ namespace ULox
                 // Jump out of the loop if the condition is false.
                 compiler.EmitGotoIf(loopState.ExitLabelID);
                 loopState.HasExit = true;
-                compiler.EmitOpCode(OpCode.POP); // Condition.
+                compiler.EmitPop(); // Condition.
             }
 
             var bodyJump = compiler.GotoUniqueChunkLabel("loop_body");
@@ -28,7 +28,7 @@ namespace ULox
                 var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
                 loopState.ContinueLabelID = newStartLabel;
                 compiler.Expression();
-                compiler.EmitOpCode(OpCode.POP);
+                compiler.EmitPop();
 
                 compiler.EmitGoto(loopState.StartLabelID);
                 loopState.StartLabelID = newStartLabel;

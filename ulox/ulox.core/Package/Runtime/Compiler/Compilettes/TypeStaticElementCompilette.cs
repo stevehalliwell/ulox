@@ -38,7 +38,7 @@
 
                 //emit set prop
                 compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
-                compiler.EmitOpCode(OpCode.POP);
+                compiler.EmitPop();
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
             compiler.ConsumeEndStatement();

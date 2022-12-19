@@ -38,7 +38,7 @@ namespace ULox
             if (!loopState.HasExit)
                 compiler.ThrowCompilerException("Loops must contain a termination");
             compiler.EmitLabel(loopState.ExitLabelID);
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
 
             compiler.EndScope();
         }

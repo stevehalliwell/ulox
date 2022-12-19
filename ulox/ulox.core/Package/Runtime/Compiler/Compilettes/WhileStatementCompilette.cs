@@ -15,7 +15,7 @@
 
             compiler.EmitGotoIf(loopState.ExitLabelID);
             loopState.HasExit = true;
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
             
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
         }

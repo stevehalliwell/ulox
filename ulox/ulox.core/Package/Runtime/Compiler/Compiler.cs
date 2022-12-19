@@ -194,7 +194,7 @@ namespace ULox
                 if (comp.locals[comp.localCount - 1].IsCaptured)
                     EmitOpCode(OpCode.CLOSE_UPVALUE);
                 else
-                    EmitOpCode(OpCode.POP);
+                    EmitPop();
 
                 CurrentCompilerState.localCount--;
             }
@@ -250,7 +250,7 @@ namespace ULox
         {
             Expression();
             ConsumeEndStatement();
-            EmitOpCode(OpCode.POP);
+            EmitPop();
         }
 
         public void Expression()
@@ -677,7 +677,7 @@ namespace ULox
                     compiler.Expression();
                     //we need a set property
                     compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, identConstantID);
-                    compiler.EmitOpCode(OpCode.POP);
+                    compiler.EmitPop();
 
                     //if comma consume
                     compiler.TokenIterator.Match(TokenType.COMMA);
@@ -736,7 +736,7 @@ namespace ULox
                     compiler.Expression();
                     compiler.EmitOpCode(OpCode.SET_INDEX);
                 }
-                compiler.EmitOpCode(OpCode.POP);
+                compiler.EmitPop();
 
                 compiler.TokenIterator.Match(TokenType.COMMA);
                 firstLoop = false;
@@ -820,14 +820,14 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
             
             var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if");
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
 
             compiler.Statement();
 
             var elseJump = compiler.GotoUniqueChunkLabel("else");
 
             compiler.EmitLabel(thenjumpLabel);
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
 
             if (compiler.TokenIterator.Match(TokenType.ELSE)) compiler.Statement();
 
@@ -1048,7 +1048,7 @@ namespace ULox
         {
             var endJumpLabel = compiler.GotoIfUniqueChunkLabel("and");
 
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
             compiler.ParsePrecedence(Precedence.And);
 
             compiler.EmitLabel(endJumpLabel);
@@ -1060,7 +1060,7 @@ namespace ULox
             var endJump = compiler.GotoUniqueChunkLabel("or");
 
             compiler.EmitLabel(elseJumpLabel);
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
 
             compiler.ParsePrecedence(Precedence.Or);
 
@@ -1141,6 +1141,11 @@ namespace ULox
         {
             CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
             EmitOpAndBytes(OpCode.LABEL, id);
+        }
+
+        internal void EmitPop()
+        {
+            EmitOpCode(OpCode.POP);
         }
     }
 }

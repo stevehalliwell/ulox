@@ -48,7 +48,7 @@
             compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
             compiler.EmitGotoIf(loopState.ExitLabelID);
             loopState.HasExit = true;
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
 
             //refer to output of For_WhenLimitedIterations_ShouldPrint3Times 
             compiler.CurrentCompilerState.DeclareVariableByName(compiler, indexName);
@@ -73,7 +73,7 @@
                 //run the condition 
                 compiler.EmitGotoIf(loopState.ExitLabelID);
                 loopState.HasExit = true;
-                compiler.EmitOpCode(OpCode.POP); // Condition.
+                compiler.EmitPop(); // Condition.
             }
             //increment
             var bodyJump = compiler.GotoUniqueChunkLabel("inc_body");
@@ -93,7 +93,7 @@
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
                 compiler.EmitOpCode(OpCode.GET_INDEX);
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, itemArgID);
-                compiler.EmitOpCode(OpCode.POP);
+                compiler.EmitPop();
             }
         }
 
@@ -111,7 +111,7 @@
             compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 1);
             compiler.EmitOpCode(OpCode.ADD);
             compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
-            compiler.EmitOpCode(OpCode.POP);
+            compiler.EmitPop();
         }
 
         protected override void PreLoop(Compiler compiler, CompilerState.LoopState loopState)

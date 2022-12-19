@@ -183,7 +183,7 @@ namespace ULox
             if (IsFrozenAtEnd)
                 compiler.EmitOpCode(OpCode.FREEZE);
             else
-                compiler.EmitOpCode(OpCode.POP);    //todo replace all with EmitPop()
+                compiler.EmitPop();
             
             if(IsReadOnlyAtEnd)
             {

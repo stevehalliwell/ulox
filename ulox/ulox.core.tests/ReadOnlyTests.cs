@@ -65,7 +65,7 @@ a = 2;
         }
 
         [Test]
-        public void ReadOnly_Local_ShouldError()
+        public void ReadOnly_LocalModify_ShouldError()
         {
             testEngine.Run(@"
 fun ()
@@ -80,7 +80,7 @@ fun ()
         }
 
         [Test]
-        public void ReadOnly_UpValue_ShouldError()
+        public void ReadOnly_UpValueModify_ShouldError()
         {
             testEngine.Run(@"
 fun ()
@@ -96,6 +96,44 @@ fun ()
 
             StringAssert.StartsWith("Attempted to set readonly upvalue 'a' in", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void ReadOnly_Local_ShouldPass()
+        {
+            testEngine.Run(@"
+fun Foo()
+{
+    var a = 1;
+    readonly a;
+    var b = a;
+    print(b);
+}
+
+Foo();
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ReadOnly_UpValue_ShouldPass()
+        {
+            testEngine.Run(@"
+fun Foo()
+{
+    var a = 1;
+    readonly a;
+    fun ()
+    {
+        var b = a;
+        print(b);
     }
 }
-//multi expect
+
+Foo();
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+    }
+}

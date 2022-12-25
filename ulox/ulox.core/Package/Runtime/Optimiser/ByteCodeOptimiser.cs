@@ -13,6 +13,7 @@ namespace ULox
 
         public void Optimise(CompiledScript compiledScript)
         {
+            return;
             if (!Enabled)
                 return;
 

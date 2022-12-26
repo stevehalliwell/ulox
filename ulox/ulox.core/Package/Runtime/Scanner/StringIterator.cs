@@ -21,14 +21,7 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int Peek() => SafeRead(_index + 1);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal char Read()
-        {
-            Advance();
-            return CurrentChar;
-        }
-        
+                
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int SafeRead(int index)
         {

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Linq;
 
 namespace ULox
 {
@@ -8,7 +7,7 @@ namespace ULox
     {
         public sealed class TypeNameClass : System.IEquatable<TypeNameClass>
         {
-            private string _typename;
+            private readonly string _typename;
 
             public TypeNameClass(string typename)
             {
@@ -314,6 +313,7 @@ namespace ULox
             }
             return Value.Null();
         }
+        
         public bool IsPure 
         { 
             get
@@ -333,10 +333,9 @@ namespace ULox
                     return val.asClosure.chunk.FunctionType == FunctionType.PureFunction;
                 case ValueType.BoundMethod:
                     return val.asBoundMethod.Method.chunk.FunctionType == FunctionType.PureFunction;
-                case ValueType.CombinedClosures:
-                    return val.asCombined.Select(x => x.chunk.FunctionType == FunctionType.PureFunction).Any();
                 case ValueType.NativeFunction:  //todo nativefuncs could declare themselves to be pure
                     return false;
+                case ValueType.CombinedClosures:
                 case ValueType.Upvalue:
                 case ValueType.Object:
                 default:

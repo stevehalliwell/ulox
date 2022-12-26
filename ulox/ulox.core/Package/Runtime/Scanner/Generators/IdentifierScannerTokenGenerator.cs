@@ -33,7 +33,7 @@ namespace ULox
         public bool DoesMatchChar(char ch) => IsAlpha(ch);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Consume(IScanner scanner)
+        public void Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();
 

@@ -179,7 +179,7 @@ new TokenType[]
                 .SetName("SimpleString");
         }
 
-        private IScanner scanner;
+        private Scanner scanner;
 
         [SetUp]
         public void SetUp()

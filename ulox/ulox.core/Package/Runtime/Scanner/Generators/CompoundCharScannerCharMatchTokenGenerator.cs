@@ -5,7 +5,7 @@ namespace ULox
     public sealed class CompoundCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Consume(IScanner scanner)
+        public void Consume(Scanner scanner)
         {
             switch (scanner.CurrentChar)
             {

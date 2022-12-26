@@ -6,7 +6,7 @@ namespace ULox
 {
     public sealed class Program : IProgram
     {
-        private readonly IScanner _scanner = new Scanner();
+        private readonly Scanner _scanner = new Scanner();
         private readonly ICompiler _compiler = new Compiler();
         private readonly IByteCodeOptimiser _optimiser = new ByteCodeOptimiser();
 

@@ -4,13 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public sealed class Scanner : IScanner
+    public sealed class Scanner
     {
+        public const int TokenStartingCapacity = 500;
         private StringIterator _stringIterator = new StringIterator("");
         public List<Token> Tokens { get; private set; }
         public char CurrentChar => _stringIterator.CurrentChar;
 
-        private readonly List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+        private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
 
         private Script _script;
 
@@ -24,14 +25,16 @@ namespace ULox
         {
             var identScannerGen = new IdentifierScannerTokenGenerator();
 
+            // ensure we add these in the order as we expect them to occur by most to least frequent
             this.AddGenerators(
                 new WhiteSpaceScannerTokenGenerator(),
-                new StringScannerTokenGenerator(),
-                new NumberScannerTokenGenerator(),
-                new SlashScannerTokenGenerator(),
-                new CompoundCharScannerCharMatchTokenGenerator(),
                 new SingleCharScannerCharMatchTokenGenerator(),
-                identScannerGen);
+                identScannerGen,
+                new CompoundCharScannerCharMatchTokenGenerator(),
+                new NumberScannerTokenGenerator(),
+                new StringScannerTokenGenerator(),
+                new SlashScannerTokenGenerator()
+                );
 
             identScannerGen.Add(
                 ("var", TokenType.VAR),
@@ -97,11 +100,11 @@ namespace ULox
         }
 
         public void AddGenerator(IScannerTokenGenerator gen)
-            => defaultGenerators.Add(gen);
+            => _scannerGenerators.Add(gen);
 
         public void Reset()
         {
-            Tokens = new List<Token>();
+            Tokens = new List<Token>(TokenStartingCapacity);
             _stringIterator = null;
             _script = default;
         }
@@ -114,8 +117,8 @@ namespace ULox
             while (!IsAtEnd())
             {
                 Advance();
-                var ch = CurrentChar;
-                DoGenerator(ch);
+                var matchinGen = GetMatchingGenerator(CurrentChar);
+                matchinGen.Consume(this);
             }
 
             AddTokenSingle(TokenType.EOF);
@@ -143,12 +146,11 @@ namespace ULox
         public void Advance() => _stringIterator.Advance();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsAtEnd()
-            => _stringIterator.Peek() == -1;
+        public bool IsAtEnd() => _stringIterator.Peek() == -1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Char Peek()
-            => (Char)_stringIterator.Peek();
+        public char Peek()
+            => (char)_stringIterator.Peek();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReadLine()
@@ -170,11 +172,12 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGenerator(char ch)
+        private IScannerTokenGenerator GetMatchingGenerator(char ch)
         {
             var matchinGen = default(IScannerTokenGenerator);
-            foreach (var gen in defaultGenerators)
+            for (int i = 0; i < _scannerGenerators.Count; i++)
             {
+                var gen = _scannerGenerators[i];
                 if (gen.DoesMatchChar(ch))
                 {
                     matchinGen = gen;
@@ -182,10 +185,10 @@ namespace ULox
                 }
             }
 
-            if (matchinGen != null)
-                matchinGen.Consume(this);
-            else
+            if (matchinGen == null)
                 ThrowScannerException($"Unexpected character '{ch}'");
+
+            return matchinGen;
         }
     }
 }

@@ -8,7 +8,7 @@ namespace ULox
 
         public bool DoesMatchChar(char ch) => ch == '"';
 
-        public void Consume(IScanner scanner)
+        public void Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();
             var prevChar = scanner.CurrentChar;
@@ -35,7 +35,7 @@ namespace ULox
             End(scanner);
         }
 
-        private void End(IScanner scanner)
+        private void End(Scanner scanner)
         {
             var str = System.Text.RegularExpressions.Regex.Unescape(workingSpaceStringBuilder.ToString());
             scanner.AddToken(TokenType.STRING, str, str);

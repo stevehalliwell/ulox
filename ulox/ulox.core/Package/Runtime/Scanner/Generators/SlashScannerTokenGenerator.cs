@@ -2,7 +2,7 @@
 {
     public sealed class SlashScannerTokenGenerator : IScannerTokenGenerator
     {
-        public void Consume(IScanner scanner)
+        public void Consume(Scanner scanner)
         {
             if (scanner.Match('/'))
             {
@@ -18,7 +18,7 @@
             }
         }
 
-        private void ConsumeBlockComment(IScanner scanner)
+        private void ConsumeBlockComment(Scanner scanner)
         {
             while (!scanner.IsAtEnd())
             {

@@ -6,8 +6,6 @@ namespace ULox
     {
         private readonly System.Action<string> _printer;
 
-        public string Name => nameof(PrintLibrary);
-
         public PrintLibrary(System.Action<string> printer)
         {
             _printer = printer;

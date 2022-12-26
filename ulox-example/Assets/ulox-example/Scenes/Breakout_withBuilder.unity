@@ -486,7 +486,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scriptFile: {fileID: 0}
-  scriptString: build queue "Breakout/main";
+  scriptString: build "Breakout/main";
   useInstanceVm: 0
 --- !u!4 &1701529282
 Transform:

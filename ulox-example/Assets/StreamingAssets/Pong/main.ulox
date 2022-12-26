@@ -1,6 +1,4 @@
-build bind "UnityLibrary";
-    
-build queue 
+build 
     "Vec2", 
     "Pong/PongMixins",  
     "Pong/Pong";

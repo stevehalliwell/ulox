@@ -25,7 +25,7 @@ namespace ULox.Demo
             var scriptLocator = new ScriptLocator(null, Application.streamingAssetsPath);
             Engine = new Engine(new Context(scriptLocator, new Program(), new Vm()));
 
-            DeclareAllLibraries(
+            AddDefaultLibraries(
                 x => Debug.Log(x),
                 () => new Vm());
 
@@ -33,10 +33,8 @@ namespace ULox.Demo
             if (prefabCollectionSO != null)
                 prefabs = prefabCollectionSO.Collection;
 
-            Engine.Context.DeclareLibrary(new UnityLibrary(prefabs, x => outputText.text = x));
-
-                BindAllLibraries();
-
+            Engine.Context.AddLibrary(new UnityLibrary(prefabs, x => outputText.text = x));
+            
             foreach (var item in scriptsNamesToLoad)
             {
                 Engine.LocateAndQueue(item);
@@ -66,21 +64,11 @@ namespace ULox.Demo
             return Value.Null();
         }
 
-        private void DeclareAllLibraries(
+        private void AddDefaultLibraries(
             Action<string> logger,
             Func<Vm> createVM)
         {
             Engine.Context.AddLibrary(new PrintLibrary(logger));
-        }
-
-        private void BindAllLibraries()
-        {
-            if (!bindAllLibraries) return;
-
-            foreach (var libName in Engine.Context.LibraryNames)
-            {
-                Engine.Context.BindLibrary(libName);
-            }
         }
     }
 }

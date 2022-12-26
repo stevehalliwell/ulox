@@ -861,21 +861,7 @@ namespace ULox
         {
             var givenVar = Pop();
             var str = givenVar.str();
-            var buildOpType = (BuildOpType)ReadByte(chunk);
-            switch (buildOpType)
-            {
-            case BuildOpType.Bind:
-                Engine.Context.BindLibrary(str);
-                break;
-
-            case BuildOpType.Queue:
-                Engine.LocateAndQueue(str);
-                break;
-
-            default:
-                ThrowRuntimeException($"Unhanlded BuildOpType '{buildOpType}'");
-                break;
-            }
+            Engine.LocateAndQueue(str);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

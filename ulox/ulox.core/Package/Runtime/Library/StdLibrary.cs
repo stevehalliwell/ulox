@@ -7,8 +7,6 @@ namespace ULox
     {
         private const double SquareDividedTolerance = 0.01d;
         
-        public string Name => nameof(StdLibrary);
-
         public Func<Vm> CreateVM { get; private set; }
 
         public StdLibrary()

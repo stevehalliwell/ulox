@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class CompilerState
+    public sealed class CompilerState
     {
-        internal class Local
+        internal sealed class Local
         {
             public Local(string name, int depth)
             {
@@ -17,7 +18,7 @@ namespace ULox
             public bool IsCaptured { get; set; }
         }
 
-        public class LoopState
+        public sealed class LoopState
         {
             public byte ExitLabelID;
             public byte ContinueLabelID;
@@ -30,7 +31,7 @@ namespace ULox
             }
         }
 
-        internal class Upvalue
+        internal sealed class Upvalue
         {
             public byte index;
             public bool isLocal;
@@ -58,7 +59,8 @@ namespace ULox
 
         public Stack<LoopState> LoopStates { get; private set; } = new Stack<LoopState>();
         private Local LastLocal => locals[localCount - 1];
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddLocal(Compiler compiler, string name, int depth = -1)
         {
             if (localCount == byte.MaxValue)
@@ -67,6 +69,7 @@ namespace ULox
             locals[localCount++] = new Local(name, depth);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ResolveLocal(Compiler compiler, string name)
         {
             for (int i = localCount - 1; i >= 0; i--)
@@ -83,6 +86,7 @@ namespace ULox
             return -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int AddUpvalue(Compiler compiler, byte index, bool isLocal)
         {
             int upvalueCount = chunk.UpvalueCount;
@@ -105,6 +109,7 @@ namespace ULox
             return chunk.UpvalueCount++;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int ResolveUpvalue(Compiler compiler, string name)
         {
             if (enclosing == null) return -1;
@@ -125,6 +130,7 @@ namespace ULox
             return -1;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DeclareVariableByName(Compiler compiler, string declName)
         {
             if (scopeDepth == 0) return;
@@ -142,6 +148,7 @@ namespace ULox
             AddLocal(compiler, declName);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void MarkInitialised()
         {
             if (scopeDepth == 0) return;

@@ -65,7 +65,7 @@ obj.a.a = l;";
             var expected = UloxJsonExpectedResult;
             var result = "error";
             testEngine.Run(scriptString);
-            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
+            var obj = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("obj"));
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
 
@@ -82,7 +82,7 @@ obj.a.a = l;";
             var expected = string.Empty;
             var result = "error";
             testEngine.Run(scriptString);
-            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
+            var obj = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("obj"));
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
 
@@ -99,7 +99,7 @@ obj.a.a = l;";
             var expected = string.Empty;
             var result = "error";
             testEngine.Run(scriptString);
-            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
+            var obj = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("obj"));
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
 
@@ -116,7 +116,7 @@ obj.a.a = l;";
             var expected = BiggerSBExpectedResult;
             var result = "error";
             testEngine.Run(scriptString);
-            var obj = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("obj"));
+            var obj = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("obj"));
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
 

@@ -1,9 +1,12 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
     public sealed class BuildCompilette : ICompilette
     {
         public TokenType Match => TokenType.BUILD;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)
         {
             do

@@ -7,7 +7,7 @@ namespace ulox.core.tests
     public class ByteCodeInterpreterTestEngine
     {
         private readonly Action<string> _logger;
-        public IEngine MyEngine { get; private set; }
+        public Engine MyEngine { get; private set; }
 
         public bool ReThrow { get; set; }
 
@@ -45,11 +45,11 @@ namespace ulox.core.tests
             }
             finally
             {
-                _logger(MyEngine.Context.VM.TestRunner.GenerateDump());
+                _logger(MyEngine.Context.Vm.TestRunner.GenerateDump());
                 _logger(InterpreterResult);
                 _logger(MyEngine.Context.Program.Disassembly);
-                _logger(MyEngine.Context.VM.GenerateGlobalsDump());
-                _logger(MyEngine.Context.VM.GenerateValueStackDump());
+                _logger(MyEngine.Context.Vm.GenerateGlobalsDump());
+                _logger(MyEngine.Context.Vm.GenerateValueStackDump());
             }
         }
 

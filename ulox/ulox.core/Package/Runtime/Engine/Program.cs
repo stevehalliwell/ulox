@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public sealed class Program : IProgram
+    public sealed class Program
     {
         private readonly Scanner _scanner = new Scanner();
-        private readonly ICompiler _compiler = new Compiler();
+        private readonly Compiler _compiler = new Compiler();
         private readonly ByteCodeOptimiser _optimiser = new ByteCodeOptimiser();
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
@@ -40,9 +40,8 @@ namespace ULox
             _scanner.Reset();
             _compiler.Reset();
             _optimiser.Reset();
-
-            var tokens = _scanner.Scan(script);
-            var compiled = _compiler.Compile(tokens, script);
+            
+            var compiled = _compiler.Compile(_scanner, script);
             
             CompiledScripts.Add(compiled);
             _optimiser.Optimise(compiled);

@@ -247,7 +247,7 @@ MyFunc();");
         [Test]
         public void Engine_Compile_NativeFunc_Call()
         {
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) =>
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) =>
             {
                 vm.PushReturn(Value.New("Native"));
                 return NativeCallResult.SuccessfulExpression;
@@ -590,7 +590,7 @@ print(res);
         [Test]
         public void Engine_Read_External_Global()
         {
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("a"), Value.New(1));
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("a"), Value.New(1));
 
             testEngine.Run(@"print (a);");
 
@@ -602,8 +602,8 @@ print(res);
         {
             testEngine.Run(@"fun Meth(){print (1);}");
 
-            var meth = testEngine.MyEngine.Context.VM.GetGlobal(new HashedString("Meth"));
-            testEngine.MyEngine.Context.VM.PushCallFrameAndRun(meth, 0);
+            var meth = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("Meth"));
+            testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(meth, 0);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
@@ -617,7 +617,7 @@ print(res);
                 return NativeCallResult.SuccessfulExpression;
             }
 
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("Meth"), Value.New(Func));
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
 
             testEngine.Run(@"print (Meth());");
 
@@ -633,7 +633,7 @@ print(res);
                 return NativeCallResult.SuccessfulExpression;
             }
 
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("Meth"), Value.New(Func));
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
 
             testEngine.Run(@"print (Meth(""Dad""));");
 
@@ -752,7 +752,7 @@ print(a);");
             var program = testEngine.MyEngine.Context.Program;
 
             var engine2 = new ByteCodeInterpreterTestEngine(System.Console.WriteLine);
-            engine2.MyEngine.Context.VM.Run(program);
+            engine2.MyEngine.Context.Vm.Run(program);
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
             Assert.AreEqual(engine2.InterpreterResult, "2", engine2.InterpreterResult);
@@ -826,7 +826,7 @@ a = a + 2;
 yield;
 print(a);");
 
-            testEngine.MyEngine.Context.VM.Run();
+            testEngine.MyEngine.Context.Vm.Run();
 
             Assert.AreEqual("4", testEngine.InterpreterResult);
         }

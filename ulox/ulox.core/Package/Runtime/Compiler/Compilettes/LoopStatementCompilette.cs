@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
     public class LoopStatementCompilette : ConfigurableLoopingStatementCompilette
     {
@@ -7,6 +9,7 @@
         {
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void BeginLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
             //if we have a ( then it could be a native array loop, so expand for that
@@ -97,6 +100,7 @@
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)
         {
             compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
@@ -105,6 +109,7 @@
             compiler.EmitOpAndBytes(OpCode.LESS);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void IncrementLocalByOne(Compiler compiler, byte indexArgID)
         {
             compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
@@ -114,6 +119,7 @@
             compiler.EmitPop();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void PreLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
         }

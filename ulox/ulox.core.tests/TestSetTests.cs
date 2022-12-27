@@ -84,7 +84,7 @@ test T
             );
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-            Assert.AreEqual("T:A Completed", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            Assert.AreEqual("T:A Completed", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -125,7 +125,7 @@ test T
             );
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-            var completeReport = testEngine.MyEngine.Context.VM.TestRunner.GenerateDump();
+            var completeReport = testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump();
             StringAssert.Contains("T:A Incomplete", completeReport);
             StringAssert.Contains("T:B Completed", completeReport);
             StringAssert.Contains("T:C Incomplete", completeReport);
@@ -210,7 +210,7 @@ test T
         [Test]
         public void Engine_TestCase_Simple4_Skipped()
         {
-            testEngine.MyEngine.Context.VM.TestRunner.Enabled = false;
+            testEngine.MyEngine.Context.Vm.TestRunner.Enabled = false;
 
             testEngine.Run(@"
 test T
@@ -226,7 +226,7 @@ test T
             );
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-            Assert.AreEqual("", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            Assert.AreEqual("", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
 
 
@@ -334,7 +334,7 @@ test T
             );
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-            StringAssert.DoesNotContain("T:Add", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            StringAssert.DoesNotContain("T:Add", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -440,7 +440,7 @@ test T
             );
 
             Assert.AreEqual("32", testEngine.InterpreterResult);
-            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -462,7 +462,7 @@ test T
             );
 
             Assert.AreEqual("123", testEngine.InterpreterResult);
-            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -484,7 +484,7 @@ test T
             );
 
             Assert.AreEqual("123", testEngine.InterpreterResult);
-            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -501,7 +501,7 @@ test T
             );
 
             Assert.AreEqual("123", testEngine.InterpreterResult);
-            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
 
         [Test]
@@ -520,7 +520,7 @@ test T
             );
 
             Assert.AreEqual("32", testEngine.InterpreterResult);
-            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.VM.TestRunner.GenerateDump());
+            StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
     }
 }

@@ -3,15 +3,15 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public sealed class Engine : IEngine
+    public sealed class Engine
     {
-        public IContext Context { get; private set; }
+        public Context Context { get; private set; }
         public readonly Queue<Script> _buildQueue = new Queue<Script>();
 
-        public Engine(IContext executionContext)
+        public Engine(Context executionContext)
         {
             Context = executionContext;
-            Context.VM.SetEngine(this);
+            Context.Vm.SetEngine(this);
             Context.AddLibrary(new StdLibrary());
         }
 
@@ -29,7 +29,7 @@ namespace ULox
             {
                 var script = _buildQueue.Dequeue();
                 var s = Context.CompileScript(script);
-                Context.VM.Interpret(s.TopLevelChunk);
+                Context.Vm.Interpret(s.TopLevelChunk);
             }
         }
 

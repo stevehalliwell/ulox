@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public class PrattParserRuleSet
+    public sealed class PrattParserRuleSet
     {
         private readonly IParseRule[] rules;
 

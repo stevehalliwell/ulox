@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -96,6 +97,7 @@ namespace ULox
         private ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
         private ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddInnerDeclarationCompilette(ITypeBodyCompilette compilette)
         {
             _innerDeclarationCompilettes[compilette.Match] = compilette;
@@ -103,6 +105,7 @@ namespace ULox
                 _bodyCompiletteFallback = compilette;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void CName(Compiler compiler, bool canAssign)
         {
             var cname = CurrentTypeName;
@@ -111,9 +114,11 @@ namespace ULox
 
         public UserType UserType { get; private set; }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)
             => StageBasedDeclaration(compiler);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void StageBasedDeclaration(Compiler compiler)
         {
             PreviousInitFragLabelId = -1;
@@ -135,6 +140,7 @@ namespace ULox
             CurrentTypeName = null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoInitChainEnd(Compiler compiler)
         {
             //return stub used by init and test chains
@@ -150,6 +156,7 @@ namespace ULox
             compiler.EmitLabel(classReturnEnd);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void GenerateCompiletteByStageArray()
         {
             BodyCompilettesProcessingOrdered = _innerDeclarationCompilettes.Values
@@ -159,7 +166,8 @@ namespace ULox
                 .OrderBy(x => System.Array.IndexOf(PostBodyCompileStageOrder, x.Stage))
                 .ToArray();
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoDeclareType(Compiler compiler)
         {
             _stage = TypeCompiletteStage.Begin;
@@ -176,6 +184,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoEndType(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
@@ -191,6 +200,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoClassBody(Compiler compiler)
         {
             while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACE) && !compiler.TokenIterator.Check(TokenType.EOF))
@@ -209,6 +219,7 @@ namespace ULox
             _stage = TypeCompiletteStage.Complete;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ValidStage(Compiler compiler, TypeCompiletteStage stage)
         {
             if (_stage > stage)
@@ -217,6 +228,7 @@ namespace ULox
             _stage = stage;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void This(Compiler compiler, bool canAssign)
         {
             if (CurrentTypeName == null)

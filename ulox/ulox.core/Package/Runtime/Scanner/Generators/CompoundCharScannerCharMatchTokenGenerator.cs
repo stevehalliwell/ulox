@@ -5,37 +5,28 @@ namespace ULox
     public sealed class CompoundCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Consume(Scanner scanner)
+        public Token Consume(Scanner scanner)
         {
             switch (scanner.CurrentChar)
             {
             case '+':
-                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.PLUS : TokenType.PLUS_EQUAL);
-                break;
+                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.PLUS : TokenType.PLUS_EQUAL);
             case '-':
-                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.MINUS : TokenType.MINUS_EQUAL);
-                break;
+                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.MINUS : TokenType.MINUS_EQUAL);
             case '*':
-                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.STAR : TokenType.STAR_EQUAL);
-                break;
+                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.STAR : TokenType.STAR_EQUAL);
             case '%':
-                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.PERCENT : TokenType.PERCENT_EQUAL);
-                break;
+                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.PERCENT : TokenType.PERCENT_EQUAL);
             case '!':
-                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.BANG : TokenType.BANG_EQUAL);
-                break;
+                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.BANG : TokenType.BANG_EQUAL);
             case '=':
-                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.ASSIGN : TokenType.EQUALITY);
-                break;
+                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.ASSIGN : TokenType.EQUALITY);
             case '<':
-                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.LESS : TokenType.LESS_EQUAL);
-                break;
+                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.LESS : TokenType.LESS_EQUAL);
             case '>':
-                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.GREATER : TokenType.GREATER_EQUAL);
-                break;
+                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.GREATER : TokenType.GREATER_EQUAL);
             default:
-                //throw
-                break;
+                return scanner.SharedNoToken;
             }
         }
 

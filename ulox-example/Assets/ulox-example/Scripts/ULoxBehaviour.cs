@@ -16,7 +16,7 @@ namespace ULox.Demo
         [SerializeField] private bool useInstanceVm = true;
         private Value _anonymousOnCollision = Value.Null();
         private Value _gameUpdateFunction = Value.Null();
-        private IVm _ourVM;
+        private Vm _ourVM;
         private SharedEngine _engine;
 
         private void Start()
@@ -54,11 +54,11 @@ namespace ULox.Demo
                 content = new Script(scriptFile.name, scriptFile.text);
                 
             _engine.Engine.RunScript(content);
-            _ourVM = _engine.Engine.Context.VM;
+            _ourVM = _engine.Engine.Context.Vm;
             if (useInstanceVm)
             {
                 _ourVM = new Vm();
-                _ourVM.CopyFrom(_engine.Engine.Context.VM);
+                _ourVM.CopyFrom(_engine.Engine.Context.Vm);
             }
 
             _ourVM.SetGlobal(thisGameObjectName, Value.Object(gameObject));

@@ -10,7 +10,7 @@ namespace ULox
 
         public bool DoesMatchChar(char ch) => IsDigit(ch);
 
-        public void Consume(Scanner scanner)
+        public Token Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();
 
@@ -35,7 +35,7 @@ namespace ULox
 
             var numStr = workingSpaceStringBuilder.ToString();
 
-            scanner.AddToken(
+            return scanner.EmitToken(
                 TokenType.NUMBER,
                 numStr,
                 double.Parse(numStr));

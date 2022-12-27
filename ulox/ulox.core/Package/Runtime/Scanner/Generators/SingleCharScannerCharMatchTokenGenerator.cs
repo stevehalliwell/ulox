@@ -5,46 +5,35 @@ namespace ULox
     public sealed class SingleCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Consume(Scanner scanner)
+        public Token Consume(Scanner scanner)
         {
             switch (scanner.CurrentChar)
             {
             case '(':
-                scanner.AddTokenSingle(TokenType.OPEN_PAREN);
-                break;
+                return scanner.EmitTokenSingle(TokenType.OPEN_PAREN);
             case ')':
-                scanner.AddTokenSingle(TokenType.CLOSE_PAREN);
-                break;
+                return scanner.EmitTokenSingle(TokenType.CLOSE_PAREN);
             case '{':
-                scanner.AddTokenSingle(TokenType.OPEN_BRACE);
-                break;
+                return scanner.EmitTokenSingle(TokenType.OPEN_BRACE);
             case '}':
-                scanner.AddTokenSingle(TokenType.CLOSE_BRACE);
-                break;
+                return scanner.EmitTokenSingle(TokenType.CLOSE_BRACE);
             case '[':
-                scanner.AddTokenSingle(TokenType.OPEN_BRACKET);
-                break;
+                return scanner.EmitTokenSingle(TokenType.OPEN_BRACKET);
             case ']':
-                scanner.AddTokenSingle(TokenType.CLOSE_BRACKET);
-                break;
+                return scanner.EmitTokenSingle(TokenType.CLOSE_BRACKET);
             case ',':
-                scanner.AddTokenSingle(TokenType.COMMA);
-                break;
+                return scanner.EmitTokenSingle(TokenType.COMMA);
             case ';':
-                scanner.AddTokenSingle(TokenType.END_STATEMENT);
-                break;
+                return scanner.EmitTokenSingle(TokenType.END_STATEMENT);
             case '.':
-                scanner.AddTokenSingle(TokenType.DOT);
-                break;
+                return scanner.EmitTokenSingle(TokenType.DOT);
             case ':':
-                scanner.AddTokenSingle(TokenType.COLON);
-                break;
+                return scanner.EmitTokenSingle(TokenType.COLON);
             case '?':
-                scanner.AddTokenSingle(TokenType.QUESTION);
-                break;
+                return scanner.EmitTokenSingle(TokenType.QUESTION);
             default:
-                //throw
-                break;
+                return scanner.SharedNoToken;
+
             }
         }
 

@@ -1,9 +1,12 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
-    public class ReturnStatementCompilette :ICompilette
+    public class ReturnStatementCompilette : ICompilette
     {
         public TokenType Match => TokenType.RETURN;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReturnStatement(Compiler compiler)
         {
             //TODO refactor out
@@ -18,6 +21,7 @@
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void SimpleReturnBody(Compiler compiler)
         {
             if (compiler.TokenIterator.Check(TokenType.END_STATEMENT))
@@ -31,6 +35,7 @@
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void MultiReturnBody(Compiler compiler)
         {
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.Begin);
@@ -40,6 +45,7 @@
             compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.End);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)
             => ReturnStatement(compiler);
     }

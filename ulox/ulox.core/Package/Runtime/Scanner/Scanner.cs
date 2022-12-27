@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public sealed class Scanner : IScanner
+    public sealed class Scanner
     {
+        public const int TokenStartingCapacity = 500;
         private StringIterator _stringIterator = new StringIterator("");
         public List<Token> Tokens { get; private set; }
         public char CurrentChar => _stringIterator.CurrentChar;
 
-        private readonly List<IScannerTokenGenerator> defaultGenerators = new List<IScannerTokenGenerator>();
+        private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
 
         private Script _script;
 
@@ -24,13 +25,16 @@ namespace ULox
         {
             var identScannerGen = new IdentifierScannerTokenGenerator();
 
+            // ensure we add these in the order as we expect them to occur by most to least frequent
             this.AddGenerators(
                 new WhiteSpaceScannerTokenGenerator(),
-                new StringScannerTokenGenerator(),
-                new NumberScannerTokenGenerator(),
-                new SlashScannerTokenGenerator(),
+                new SingleCharScannerCharMatchTokenGenerator(),
+                identScannerGen,
                 new CompoundCharScannerCharMatchTokenGenerator(),
-                identScannerGen);
+                new NumberScannerTokenGenerator(),
+                new StringScannerTokenGenerator(),
+                new SlashScannerTokenGenerator()
+                );
 
             identScannerGen.Add(
                 ("var", TokenType.VAR),
@@ -93,27 +97,14 @@ namespace ULox
                 ("enum", TokenType.ENUM),
 
                 ("readonly", TokenType.READ_ONLY));
-
-            this.AddSingleCharTokenGenerators(
-                ('(', TokenType.OPEN_PAREN),
-                (')', TokenType.CLOSE_PAREN),
-                ('{', TokenType.OPEN_BRACE),
-                ('}', TokenType.CLOSE_BRACE),
-                ('[', TokenType.OPEN_BRACKET),
-                (']', TokenType.CLOSE_BRACKET),
-                (',', TokenType.COMMA),
-                (';', TokenType.END_STATEMENT),
-                ('.', TokenType.DOT),
-                (':', TokenType.COLON),
-                ('?', TokenType.QUESTION));
         }
 
         public void AddGenerator(IScannerTokenGenerator gen)
-            => defaultGenerators.Add(gen);
+            => _scannerGenerators.Add(gen);
 
         public void Reset()
         {
-            Tokens = new List<Token>();
+            Tokens = new List<Token>(TokenStartingCapacity);
             _stringIterator = null;
             _script = default;
         }
@@ -126,24 +117,21 @@ namespace ULox
             while (!IsAtEnd())
             {
                 Advance();
-                var ch = CurrentChar;
-
-                var matchinGen = defaultGenerators.FirstOrDefault(x => x.DoesMatchChar(ch));
-                if (matchinGen != null)
-                    matchinGen.Consume(this);
-                else
-                    ThrowScannerException($"Unexpected character '{CurrentChar}'");
+                var matchinGen = GetMatchingGenerator(CurrentChar);
+                matchinGen.Consume(this);
             }
 
             AddTokenSingle(TokenType.EOF);
             return Tokens;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ThrowScannerException(string msg)
         {
             throw new ScannerException(msg, TokenType.IDENTIFIER, _stringIterator.Line, _stringIterator.CharacterNumber, _script.Name);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Match(Char matchingCharToConsume)
         {
             if (_stringIterator.Peek() == matchingCharToConsume)
@@ -154,36 +142,53 @@ namespace ULox
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance() => _stringIterator.Advance();
 
-        public bool IsAtEnd()
-            => _stringIterator.Peek() == -1;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsAtEnd() => _stringIterator.Peek() == -1;
 
-        public Char Peek()
-            => (Char)_stringIterator.Peek();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public char Peek()
+            => (char)_stringIterator.Peek();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReadLine()
             => _stringIterator.ReadLine();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddTokenSingle(TokenType token)
             => AddToken(token, CurrentChar.ToString(), null);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddToken(TokenType simpleToken, string str, object literal)
             => Tokens.Add(new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber));
 
-        private void AddSingleCharTokenGenerator(char ch, TokenType tt)
-            => AddGenerator(new ConfiguredSingleCharScannerCharMatchTokenGenerator(ch, tt));
-
-        private void AddSingleCharTokenGenerators(params (char ch, TokenType token)[] tokens)
-        {
-            foreach (var item in tokens)
-                AddSingleCharTokenGenerator(item.ch, item.token);
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)
         {
             foreach (var item in scannerTokenGenerators)
                 AddGenerator(item);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IScannerTokenGenerator GetMatchingGenerator(char ch)
+        {
+            var matchinGen = default(IScannerTokenGenerator);
+            for (int i = 0; i < _scannerGenerators.Count; i++)
+            {
+                var gen = _scannerGenerators[i];
+                if (gen.DoesMatchChar(ch))
+                {
+                    matchinGen = gen;
+                    break;
+                }
+            }
+
+            if (matchinGen == null)
+                ThrowScannerException($"Unexpected character '{ch}'");
+
+            return matchinGen;
         }
     }
 }

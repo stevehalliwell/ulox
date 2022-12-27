@@ -2,7 +2,7 @@ class LevelCreator
 {
     CreateBricksFromPositions(posList)
     {
-        var brickFac = Factory.Line(Brick).Create;
+        var brickFac = inject BrickFactory;
         var breakout = inject BreakoutInst;
 
         loop (posList)

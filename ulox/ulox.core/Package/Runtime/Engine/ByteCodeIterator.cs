@@ -67,6 +67,7 @@ namespace ULox
                 case OpCode.THROW:
                 case OpCode.ENUM_VALUE:
                 case OpCode.READ_ONLY:
+                case OpCode.BUILD:
                     ProcessOp(opCode);
                     break;
 
@@ -77,7 +78,6 @@ namespace ULox
                 case OpCode.SET_LOCAL:
                 case OpCode.GET_UPVALUE:
                 case OpCode.SET_UPVALUE:
-                case OpCode.BUILD:
                 case OpCode.CALL:
                 case OpCode.NATIVE_TYPE:
                 case OpCode.VALIDATE:

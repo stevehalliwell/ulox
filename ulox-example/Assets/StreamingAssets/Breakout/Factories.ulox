@@ -1,21 +1,21 @@
-Factory.SetLine("Wall", {Create: fun (pos, scale)
+register WallFactory fun (pos, scale)
 {
     var newWall = CreateFromPrefab("Wall");
     SetGameObjectPosition(newWall, pos.x, pos.y,0);
     SetGameObjectScale(newWall, scale.x, scale.y,1);
     var retval = GameObjectHolder(newWall);
     return retval;
-}});
+};
 
-Factory.SetLine("Gutter", {Create: fun (pos, scale)
+register GutterFactory fun (pos, scale)
 {
-    var gutter = Factory.Line("Wall").Create(pos, scale);
+    var gutter = inject WallFactory (pos, scale);
     SetSpriteColour(gutter.go, 0,0,0,0);
     SetGameObjectTag(gutter.go, "Gutter");
     return gutter;
-}});
+};
 
-Factory.SetLine(Brick, {Create: fun (pos, hitCount)
+register BrickFactory fun (pos, hitCount)
 {
     var go = CreateFromPrefab("Brick");
     SetGameObjectPosition(go, pos.x, pos.y, 0);
@@ -24,9 +24,9 @@ Factory.SetLine(Brick, {Create: fun (pos, hitCount)
     SetGameObjectTag(go, "Brick");
     brick.SyncColour();
     return brick;
-}});
+};
 
-Factory.SetLine(Ball, {Create: fun (pos)
+register BallFactory fun (pos)
 {
     var go = CreateFromPrefab("Ball");
     SetGameObjectPosition(go, pos.x, pos.y, 0);
@@ -38,13 +38,13 @@ Factory.SetLine(Ball, {Create: fun (pos)
     var ball = Ball(pos, go, rb);
     SetCollisionCallback(ball.go, "Gutter", ball.OnHitGutter);
     return ball;
-}});
+};
 
-Factory.SetLine(Paddle, {Create: fun(pos, wallDist)
+register PaddleFactory fun(pos, wallDist)
 {
     var go = CreateFromPrefab("Brick");
     SetGameObjectPosition(go, pos.x, pos.y, 0);
     var paddle = Paddle(go, pos, wallDist);
     SetGameObjectTag(go, "Paddle");
     return paddle;
-}});
+};

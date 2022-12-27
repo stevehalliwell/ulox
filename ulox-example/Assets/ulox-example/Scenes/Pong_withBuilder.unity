@@ -791,7 +791,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   scriptFile: {fileID: 0}
-  scriptString: build queue "Pong/main";
+  scriptString: build "Pong/main";
   useInstanceVm: 1
 --- !u!4 &1701529282
 Transform:

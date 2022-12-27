@@ -6,18 +6,13 @@ namespace ULox
     public interface IContext
     {
         IVm VM { get; }
-        IEnumerable<string> LibraryNames { get; }
         IProgram Program { get; }
         IScriptLocator ScriptLocator { get; }
 
         event Action<string> OnLog;
 
         void AddLibrary(IULoxLibrary lib);
-
-        void BindLibrary(string name);
-
         CompiledScript CompileScript(Script script);
-
-        void DeclareLibrary(IULoxLibrary lib);
+        
     }
 }

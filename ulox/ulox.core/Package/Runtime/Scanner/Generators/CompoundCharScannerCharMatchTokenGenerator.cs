@@ -1,30 +1,61 @@
-﻿using System.Linq;
+﻿using System.Runtime.CompilerServices;
 
 namespace ULox
 {
     public sealed class CompoundCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
     {
-        private readonly (char ch, TokenType regular, TokenType compound)[] CompoundMatches = new[]
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Consume(Scanner scanner)
         {
-            ('+', TokenType.PLUS, TokenType.PLUS_EQUAL),
-            ('-', TokenType.MINUS, TokenType.MINUS_EQUAL),
-            ('*', TokenType.STAR, TokenType.STAR_EQUAL),
-            ('%', TokenType.PERCENT, TokenType.PERCENT_EQUAL),
-            ('!', TokenType.BANG, TokenType.BANG_EQUAL),
-            ('=', TokenType.ASSIGN, TokenType.EQUALITY),
-            ('<', TokenType.LESS, TokenType.LESS_EQUAL),
-            ('>', TokenType.GREATER, TokenType.GREATER_EQUAL)
-        };
-
-        public void Consume(IScanner scanner)
-        {
-            var match = CompoundMatches.First(x => x.ch == scanner.CurrentChar);
-            scanner.AddTokenSingle(scanner.Match('=') ? match.compound : match.regular);
+            switch (scanner.CurrentChar)
+            {
+            case '+':
+                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.PLUS : TokenType.PLUS_EQUAL);
+                break;
+            case '-':
+                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.MINUS : TokenType.MINUS_EQUAL);
+                break;
+            case '*':
+                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.STAR : TokenType.STAR_EQUAL);
+                break;
+            case '%':
+                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.PERCENT : TokenType.PERCENT_EQUAL);
+                break;
+            case '!':
+                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.BANG : TokenType.BANG_EQUAL);
+                break;
+            case '=':
+                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.ASSIGN : TokenType.EQUALITY);
+                break;
+            case '<':
+                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.LESS : TokenType.LESS_EQUAL);
+                break;
+            case '>':
+                scanner.AddTokenSingle(!scanner.Match('=') ? TokenType.GREATER : TokenType.GREATER_EQUAL);
+                break;
+            default:
+                //throw
+                break;
+            }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool DoesMatchChar(char ch)
         {
-            return CompoundMatches.Any(x => x.ch == ch);
+            switch (ch)
+            {
+            case '+':
+            case '-':
+            case '*':
+            case '%':
+            case '!':
+            case '=':
+            case '<':
+            case '>':
+                return true;
+            default:
+                return false;
+            }
         }
     }
 }

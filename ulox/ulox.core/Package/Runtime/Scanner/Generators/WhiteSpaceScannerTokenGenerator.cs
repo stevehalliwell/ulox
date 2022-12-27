@@ -2,7 +2,7 @@
 {
     public sealed class WhiteSpaceScannerTokenGenerator : IScannerTokenGenerator
     {
-        public void Consume(IScanner scanner)
+        public void Consume(Scanner scanner)
         {
 
         }

@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace ULox
 {
-    public sealed class ByteCodeOptimiser : ByteCodeIterator, IByteCodeOptimiser
+    public sealed class ByteCodeOptimiser : ByteCodeIterator
     {
-        public bool Enabled { get; set; } = true;
+        public bool Enabled { get; set; } = false;
         private List<(Chunk chunk, int b)> _deadBytes = new List<(Chunk, int)>();
         private List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
         private OpCode _prevOoCode;

@@ -10,7 +10,7 @@ namespace ULox
 
         public bool DoesMatchChar(char ch) => IsDigit(ch);
 
-        public void Consume(IScanner scanner)
+        public void Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();
 

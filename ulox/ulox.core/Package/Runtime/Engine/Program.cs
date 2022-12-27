@@ -6,13 +6,13 @@ namespace ULox
 {
     public sealed class Program : IProgram
     {
-        private readonly IScanner _scanner = new Scanner();
+        private readonly Scanner _scanner = new Scanner();
         private readonly ICompiler _compiler = new Compiler();
-        private readonly IByteCodeOptimiser _optimiser = new ByteCodeOptimiser();
+        private readonly ByteCodeOptimiser _optimiser = new ByteCodeOptimiser();
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
 
-        public IByteCodeOptimiser Optimiser => _optimiser;
+        public ByteCodeOptimiser Optimiser => _optimiser;
 
         public string Disassembly
         {

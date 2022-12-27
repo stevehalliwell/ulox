@@ -34,6 +34,22 @@ Assert.AreEqual(typeof(obj), Foo);
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
+
+        [Test]
+        public void Factory_WhenMultiSimpleReg_ShouldReturnExpected()
+        {
+            testEngine.Run(@"
+register Fac1 fun(){return 1;};
+register Fac2 fun(){return 2;};
+
+var val = inject Fac2();
+
+print(val);
+");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
         [Test]
         public void Create_WhenSetSimpleDynWithFactorySyntax_ShouldReturnNonNull()
         {

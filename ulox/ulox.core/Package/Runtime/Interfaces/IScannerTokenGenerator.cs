@@ -4,6 +4,6 @@
     {
         bool DoesMatchChar(char ch);
 
-        void Consume(IScanner scanner);
+        void Consume(Scanner scanner);
     }
 }

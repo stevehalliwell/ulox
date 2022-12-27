@@ -20,15 +20,15 @@ class GridGenerator
     {
         var retval = [];
 
-        var cols = arrays[0].Count();
+        var cols = countof arrays[0];
 
         var step = this.stepSize;
         var halfCols = (cols-1) * 0.5 * step.x;
         var corner = this.startingPoint - Vec2.Create(halfCols, 0);
         
-        loop (arrays, ytem, y)
+        loop (arrays, ytem, y, yount)
         {
-            loop(ytem, xtem, x)
+            loop(ytem, xtem, x, xount)
             {
                 if(xtem != 0)
                 {

@@ -288,7 +288,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop (arr,jtem, j)
+loop (arr,jtem, j, jount)
 {
     print(jtem);
     loop(arr)
@@ -477,6 +477,7 @@ loop (arr)
     {
         arr.Remove(item);
         i -= 1;
+        count -= 1;
     }
     else
     {
@@ -504,7 +505,7 @@ loop (arr)
 }
 }");
 
-            Assert.AreEqual("Loop error: indexName 'i' already exists at this scope, name used for index in loop must be unique in chunk 'unnamed_chunk(test)' at 7:10 'arr'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Loop index name 'i' already exists at this scope in chunk 'unnamed_chunk(test)' at 7:10", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -521,7 +522,7 @@ loop (arr)
 }
 }");
 
-            Assert.AreEqual("Loop error: itemName 'item' already exists at this scope, name given to loop must be unique in chunk 'unnamed_chunk(test)' at 7:10 'arr'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Loop item name 'item' already exists at this scope", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -538,7 +539,7 @@ loop (arr, jtem, j)
 }
 }");
 
-            Assert.AreEqual("Loop error: indexName 'j' already exists at this scope, name used for index in loop must be unique in chunk 'unnamed_chunk(test)' at 7:19 'j'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Loop index name 'j' already exists at this scope", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -555,7 +556,7 @@ loop (arr, jtem)
 }
 }");
 
-            Assert.AreEqual("Loop error: itemName 'jtem' already exists at this scope, name given to loop must be unique in chunk 'unnamed_chunk(test)' at 7:16 'jtem'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Loop item name 'jtem' already exists at this scope in chunk", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -575,7 +576,7 @@ var jtem = 7;
 
 loop (arrays,ytem,y)
 {
-    loop(ytem, xtem, x)
+    loop(ytem, xtem, x, xount)
     {
         print(xtem);
     }
@@ -584,6 +585,98 @@ loop (arrays,ytem,y)
 ");
 
             Assert.AreEqual("1234567890", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenNumberArrayAndItemNameAndPrintCount_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var arr = [""a"",""b"",""c"",];
+
+loop (arr)
+{
+    print(item);
+    print(count);
+}
+");
+
+            Assert.AreEqual("a3b3c3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenGivenNumberArrayAndItemNameAndNamedCount_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var arr = [];
+arr.Add(""a"");
+arr.Add(""b"");
+arr.Add(""c"");
+
+loop (arr,jtem,j,jount)
+{
+    print(jtem);
+    print(jount);
+}
+");
+
+            Assert.AreEqual("a3b3c3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenDecreaseCount_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var arr = [""a"",""b"",""c"",];
+
+loop (arr)
+{
+    print(item);
+    count -= 1;
+    print(count);
+}
+");
+
+            Assert.AreEqual("a2b1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenNestedWithExstingLocals_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var arr = [""a"",""b"",""c"",];
+
+var b = 7;
+var someObj = {a:1,c:10,d:{a:1,},};
+
+loop (arr)
+{
+    loop(arr, ji, j, jount)
+    {
+        print(i+ji);
+    }
+}");
+
+            Assert.AreEqual("0a0b0c1a1b1c2a2b2c", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenInFunWithArgCollection_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+fun FromRowCol(outer)
+{
+    loop(outer, it, index, c)
+    {
+        var inner = ""hi"";
+        print(inner);
+    }
+}
+
+var outer = [].Grow(2, null);
+var posList = FromRowCol(outer);
+");
+
+            Assert.AreEqual("hihi", testEngine.InterpreterResult);
         }
     }
 }

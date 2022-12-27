@@ -2,6 +2,7 @@
 
 namespace ULox
 {
+    //todo allow more expressive rename, loop (arr, item=it)
     public class LoopStatementCompilette : ConfigurableLoopingStatementCompilette
     {
         public LoopStatementCompilette()
@@ -16,35 +17,44 @@ namespace ULox
             //if not it's a manual exit loop
             if (!compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
                 return;
-            
+
             //temp
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after loop statement with arg.");
             var arrayName = compiler.TokenIterator.PreviousToken.Lexeme;
             var (arrayGetOp, _, arrayArgId) = compiler.ResolveNameLookupOpCode(arrayName);
             var itemName = "item";
+            var itemArgID = (byte)0;
             var indexName = "i";
+            var indexArgID = (byte)0;
+            var countName = "count";
+            var countNameID = (byte)0;
 
-            if (compiler.TokenIterator.Match(TokenType.COMMA))
+            //handle user override of loop variables with specific names
             {
-                //that's the item name
-                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after first comma in loop statement with arg.");
-                itemName = compiler.TokenIterator.PreviousToken.Lexeme;
-            }
+                //refer to output of For_WhenLimitedIterations_ShouldPrint3Times 
+                if (compiler.TokenIterator.Match(TokenType.COMMA))
+                {
+                    //that's the item name
+                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after first comma in loop statement with arg.");
+                    itemName = compiler.TokenIterator.PreviousToken.Lexeme;
+                }
+                itemArgID = compiler.DeclareAndDefineLocal(itemName, "Loop item name");
 
-            if (compiler.TokenIterator.Match(TokenType.COMMA))
-            {
-                //that's the index name
-                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after first comma in loop statement with arg.");
-                indexName = compiler.TokenIterator.PreviousToken.Lexeme;
-            }
+                if (compiler.TokenIterator.Match(TokenType.COMMA))
+                {
+                    //that's the index name
+                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after second comma in loop statement with arg.");
+                    indexName = compiler.TokenIterator.PreviousToken.Lexeme;
+                }
+                indexArgID = compiler.DeclareAndDefineLocal(indexName, "Loop index name");
 
-            if (compiler.CurrentCompilerState.ResolveLocal(compiler, itemName) != -1)
-            {
-                compiler.ThrowCompilerException($"Loop error: itemName '{itemName}' already exists at this scope, name given to loop must be unique");
-            }
-            if (compiler.CurrentCompilerState.ResolveLocal(compiler, indexName) != -1)
-            {
-                compiler.ThrowCompilerException($"Loop error: indexName '{indexName}' already exists at this scope, name used for index in loop must be unique");
+                if (compiler.TokenIterator.Match(TokenType.COMMA))
+                {
+                    //that's the count name
+                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after third comma in loop statement with arg.");
+                    countName = compiler.TokenIterator.PreviousToken.Lexeme;
+                }
+                countNameID = compiler.DeclareAndDefineLocal(countName, "Loop count name");
             }
 
             //skip the loop if the target is null
@@ -53,25 +63,17 @@ namespace ULox
             loopState.HasExit = true;
             compiler.EmitPop();
 
-            //refer to output of For_WhenLimitedIterations_ShouldPrint3Times 
-            compiler.CurrentCompilerState.DeclareVariableByName(compiler, indexName);
-            compiler.CurrentCompilerState.MarkInitialised();
-            var indexArgID = (byte)compiler.CurrentCompilerState.ResolveLocal(compiler, indexName);
-            compiler.CurrentCompilerState.DeclareVariableByName(compiler, itemName);
-            compiler.CurrentCompilerState.MarkInitialised();
-            var itemArgID = (byte)compiler.CurrentCompilerState.ResolveLocal(compiler, itemName);
-
-            //prep i
-            compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
-            compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
-            compiler.EmitNULL();
-            compiler.EmitOpAndBytes(OpCode.SET_LOCAL, itemArgID);
+            //prep count
+            compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
+            compiler.EmitOpCode(OpCode.COUNT_OF);
+            compiler.EmitOpAndBytes(OpCode.SET_LOCAL, countNameID);
+            compiler.EmitPop();
 
             loopState.StartLabelID = compiler.LabelUniqueChunkLabel("loop_start");
             loopState.ContinueLabelID = loopState.StartLabelID;
             {
                 //confirm that the index isn't over the length of the array
-                IsIndexLessThanArrayCount(compiler, arrayGetOp, arrayArgId, indexArgID);
+                IsIndexLessThanCount(compiler, countNameID, indexArgID);
 
                 //run the condition 
                 compiler.EmitGotoIf(loopState.ExitLabelID);
@@ -101,11 +103,10 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)
+        public static void IsIndexLessThanCount(Compiler compiler, byte countArgId, byte indexArgId)
         {
-            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
-            compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
-            compiler.EmitOpCode(OpCode.COUNT_OF);
+            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgId);
+            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, countArgId);
             compiler.EmitOpAndBytes(OpCode.LESS);
         }
 

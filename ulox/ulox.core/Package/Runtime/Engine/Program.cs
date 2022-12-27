@@ -40,9 +40,8 @@ namespace ULox
             _scanner.Reset();
             _compiler.Reset();
             _optimiser.Reset();
-
-            var tokens = _scanner.Scan(script);
-            var compiled = _compiler.Compile(tokens, script);
+            
+            var compiled = _compiler.Compile(_scanner, script);
             
             CompiledScripts.Add(compiled);
             _optimiser.Optimise(compiled);

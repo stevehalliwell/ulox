@@ -216,9 +216,10 @@ namespace ULox
             }
         }
 
-        public CompiledScript Compile(List<Token> tokens, Script script)
+        public CompiledScript Compile(Scanner scanner, Script script)
         {
-            TokenIterator = new TokenIterator(tokens, script.Name);
+            scanner.SetScript(script);
+            TokenIterator = new TokenIterator(scanner, script);
             TokenIterator.Advance();
 
             PushCompilerState(string.Empty, FunctionType.Script);

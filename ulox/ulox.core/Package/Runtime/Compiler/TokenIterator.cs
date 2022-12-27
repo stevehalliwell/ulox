@@ -1,42 +1,43 @@
-﻿using System.Collections.Generic;
+﻿using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    //todo add tests
-    public class TokenIterator
+    public sealed class TokenIterator
     {
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
-        private readonly List<Token> _tokens;
+        public string SourceName => _script.Name;
 
-        public string SourceName { get; }
-
-        private int tokenIndex;
-
-        public TokenIterator(List<Token> tokens, string sourceName)
+        private readonly Scanner _scanner;
+        private readonly Script _script;
+        
+        public TokenIterator(Scanner scanner, Script script)
         {
-            _tokens = tokens;
-            SourceName = sourceName;
+            _scanner = scanner;
+            _script = script;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance()
         {
             PreviousToken = CurrentToken;
-            CurrentToken = _tokens[tokenIndex];
-            tokenIndex++;
+            CurrentToken = _scanner.Next();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Consume(TokenType tokenType, string msg)
         {
             if (CurrentToken.TokenType == tokenType)
                 Advance();
             else
-                throw new CompilerException(msg, PreviousToken, $"source '{SourceName}'");
+                throw new CompilerException(msg, PreviousToken, $"source '{_script.Name}'");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Check(TokenType type)
             => CurrentToken.TokenType == type;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Match(TokenType type)
         {
             if (!Check(type))
@@ -45,6 +46,7 @@ namespace ULox
             return true;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MatchAny(params TokenType[] type)
         {
             for (int i = 0; i < type.Length; i++)

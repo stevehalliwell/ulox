@@ -623,13 +623,26 @@ namespace ULox
         {
             //do equiv of ParseVariable, DefineVariable
             CurrentCompilerState.DeclareVariableByName(this, varName);
-            CurrentCompilerState.MarkInitialised();
             var id = AddCustomStringConstant(varName);
             DefineVariable(id);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //TODO can move to compiler state?
+        public byte DeclareAndDefineLocal(string itemName, string errorPrefix)
+        {
+            if (CurrentCompilerState.ResolveLocal(this, itemName) != -1)
+            {
+                ThrowCompilerException($"{errorPrefix} '{itemName}' already exists at this scope");
+            }
+            CurrentCompilerState.DeclareVariableByName(this, itemName);
+            CurrentCompilerState.MarkInitialised();
+            var itemArgId = (byte)CurrentCompilerState.ResolveLocal(this, itemName);
+            EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
+            EmitOpAndBytes(OpCode.SET_LOCAL, itemArgId);
+            return itemArgId;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DeclareVariable()
         {
             var comp = CurrentCompilerState;

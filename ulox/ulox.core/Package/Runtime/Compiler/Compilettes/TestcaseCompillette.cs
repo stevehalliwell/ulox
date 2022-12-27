@@ -93,7 +93,7 @@ namespace ULox
 
                 preRowCountCheck = compiler.LabelUniqueChunkLabel("preRowCountCheck");
 
-                LoopStatementCompilette.IsIndexLessThanArrayCount(compiler, OpCode.GET_LOCAL, testDataSourceLocalId, testDataIndexLocalId);
+                IsIndexLessThanArrayCount(compiler, OpCode.GET_LOCAL, testDataSourceLocalId, testDataIndexLocalId);
                 exitDataLoopJumpLoc = compiler.GotoIfUniqueChunkLabel("exitDataLoopJumpLoc");
                 compiler.EmitPop(); // Condition.
 
@@ -117,7 +117,7 @@ namespace ULox
 
             if (dataExpExecuteLocation != -1)
             {
-                LoopStatementCompilette.IncrementLocalByOne(compiler, testDataIndexLocalId);
+                IncrementLocalByOne(compiler, testDataIndexLocalId);
                 compiler.EmitGoto((byte)preRowCountCheck);
                 compiler.EmitLabel((byte)exitDataLoopJumpLoc);
             }
@@ -137,6 +137,25 @@ namespace ULox
         {
             var tcname = TestCaseName;
             compiler.AddConstantAndWriteOp(Value.New(tcname));
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)
+        {
+            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
+            compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
+            compiler.EmitOpCode(OpCode.COUNT_OF);
+            compiler.EmitOpAndBytes(OpCode.LESS);
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void IncrementLocalByOne(Compiler compiler, byte indexArgID)
+        {
+            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
+            compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 1);
+            compiler.EmitOpCode(OpCode.ADD);
+            compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
+            compiler.EmitPop();
         }
     }
 }

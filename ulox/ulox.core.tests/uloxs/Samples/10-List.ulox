@@ -28,6 +28,7 @@ loop (list, val, j)
     {
         list.Remove(val);
         j -= 1;
+        count -= 1;
     }
 }
 

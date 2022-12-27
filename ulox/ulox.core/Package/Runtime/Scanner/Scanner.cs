@@ -8,8 +8,10 @@ namespace ULox
     {
         public const int TokenStartingCapacity = 500;
         private StringIterator _stringIterator = new StringIterator("");
-        public List<Token> Tokens { get; private set; }
         public char CurrentChar => _stringIterator.CurrentChar;
+
+        public static readonly Token NoTokenFound = new Token(TokenType.NONE, string.Empty, null, 0, 0);
+        public Token SharedNoToken => NoTokenFound;
 
         private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
 
@@ -104,25 +106,46 @@ namespace ULox
 
         public void Reset()
         {
-            Tokens = new List<Token>(TokenStartingCapacity);
             _stringIterator = null;
             _script = default;
         }
 
-        public List<Token> Scan(Script script)
-        {
-            _script = script;
 
-            _stringIterator = new StringIterator(_script.Source);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Token Next()
+        {
+            var lastToken = default(Token);
             while (!IsAtEnd())
             {
                 Advance();
                 var matchinGen = GetMatchingGenerator(CurrentChar);
-                matchinGen.Consume(this);
+                var tok = matchinGen.Consume(this);
+                if (tok.TokenType != TokenType.NONE)
+                    return tok;
             }
 
-            AddTokenSingle(TokenType.EOF);
-            return Tokens;
+            return EmitTokenSingle(TokenType.EOF);
+        }
+
+        public List<Token> Scan(Script script)
+        {
+            SetScript(script);
+            var tokens = new List<Token>(TokenStartingCapacity);
+            var lastToken = default(Token);
+            do
+            {
+                lastToken = Next();
+                tokens.Add(lastToken);
+            } while (lastToken.TokenType != TokenType.EOF);
+            
+            return tokens;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetScript(Script script)
+        {
+            _script = script;
+            _stringIterator = new StringIterator(_script.Source);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,7 +155,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Match(Char matchingCharToConsume)
+        public bool Match(char matchingCharToConsume)
         {
             if (_stringIterator.Peek() == matchingCharToConsume)
             {
@@ -157,12 +180,12 @@ namespace ULox
             => _stringIterator.ReadLine();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddTokenSingle(TokenType token)
-            => AddToken(token, CurrentChar.ToString(), null);
-
+        public Token EmitTokenSingle(TokenType token)
+            => EmitToken(token, CurrentChar.ToString(), null);
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void AddToken(TokenType simpleToken, string str, object literal)
-            => Tokens.Add(new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber));
+        public Token EmitToken(TokenType simpleToken, string str, object literal)
+            => new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)

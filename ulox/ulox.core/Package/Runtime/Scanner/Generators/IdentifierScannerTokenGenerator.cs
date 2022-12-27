@@ -33,7 +33,7 @@ namespace ULox
         public bool DoesMatchChar(char ch) => IsAlpha(ch);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Consume(Scanner scanner)
+        public Token Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();
 
@@ -51,7 +51,7 @@ namespace ULox
             if (keywords.TryGetValue(identString, out var keywordTokenType))
                 token = keywordTokenType;
 
-            scanner.AddToken(token, identString, identString);
+            return scanner.EmitToken(token, identString, identString);
         }
     }
 }

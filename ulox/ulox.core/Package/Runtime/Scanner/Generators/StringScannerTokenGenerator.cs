@@ -8,7 +8,7 @@ namespace ULox
 
         public bool DoesMatchChar(char ch) => ch == '"';
 
-        public void Consume(Scanner scanner)
+        public Token Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();
             var prevChar = scanner.CurrentChar;
@@ -18,8 +18,7 @@ namespace ULox
                 if (scanner.CurrentChar == '"'
                     && prevChar != '\\')
                 {
-                    End(scanner);
-                    return;
+                    return End(scanner);
                 }
 
                 workingSpaceStringBuilder.Append(scanner.CurrentChar);
@@ -32,13 +31,13 @@ namespace ULox
             if (scanner.CurrentChar != '"')
                 scanner.ThrowScannerException("Unterminated String");
 
-            End(scanner);
+            return End(scanner);
         }
 
-        private void End(Scanner scanner)
+        private Token End(Scanner scanner)
         {
             var str = System.Text.RegularExpressions.Regex.Unescape(workingSpaceStringBuilder.ToString());
-            scanner.AddToken(TokenType.STRING, str, str);
+            return scanner.EmitToken(TokenType.STRING, str, str);
         }
     }
 }

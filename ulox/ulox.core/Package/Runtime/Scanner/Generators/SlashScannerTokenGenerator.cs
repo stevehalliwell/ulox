@@ -2,35 +2,37 @@
 {
     public sealed class SlashScannerTokenGenerator : IScannerTokenGenerator
     {
-        public void Consume(Scanner scanner)
+        public Token Consume(Scanner scanner)
         {
             if (scanner.Match('/'))
             {
                 scanner.ReadLine();
+                return scanner.SharedNoToken;
             }
             else if (scanner.Match('*'))
             {
-                ConsumeBlockComment(scanner);
+                return ConsumeBlockComment(scanner);
             }
             else
             {
-                scanner.AddTokenSingle(scanner.Match('=') ? TokenType.SLASH_EQUAL : TokenType.SLASH);
+                return scanner.EmitTokenSingle(scanner.Match('=') ? TokenType.SLASH_EQUAL : TokenType.SLASH);
             }
         }
 
-        private void ConsumeBlockComment(Scanner scanner)
+        private Token ConsumeBlockComment(Scanner scanner)
         {
             while (!scanner.IsAtEnd())
             {
                 if (scanner.Match('*') && scanner.Match('/'))
                 {
-                    return;
+                    break;
                 }
                 else
                 {
                     scanner.Advance();
                 }
             }
+            return scanner.SharedNoToken;
         }
         
         public bool DoesMatchChar(char ch)

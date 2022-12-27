@@ -6,7 +6,7 @@ namespace ULox
 {
     //todo for self assign to work, we need to route it through the assign path and
     //  then dump into a grouping, once the grouping is back, we named var ourselves and then emit the math op
-    public sealed class Compiler : ICompiler
+    public sealed class Compiler
     {
         private readonly IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
         private readonly PrattParserRuleSet _prattParser = new PrattParserRuleSet();
@@ -119,50 +119,63 @@ namespace ULox
             _allChunks.Clear();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ThrowCompilerException(string msg)
         {
             throw new CompilerException(msg, TokenIterator.PreviousToken, $"chunk '{CurrentChunk.GetLocationString()}'");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddDeclarationCompilette(ICompilette compilette)
             => declarationCompilettes[compilette.Match] = compilette;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddStatementCompilette(ICompilette compilette)
             => statementCompilettes[compilette.Match] = compilette;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetPrattRule(TokenType tt, IParseRule rule)
             => _prattParser.SetPrattRule(tt, rule);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitOpCode(OpCode op)
             => CurrentChunk.WriteSimple(op, TokenIterator.PreviousToken.Line);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitNULL()
             => EmitOpCode(OpCode.NULL);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitOpCodes(params OpCode[] ops)
         {
             for (int i = 0; i < ops.Length; i++)
                 EmitOpCode(ops[i]);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddStringConstant()
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddConstantAndWriteOp(Value value)
             => CurrentChunk.AddConstantAndWriteInstruction(value, TokenIterator.PreviousToken.Line);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddCustomStringConstant(string str)
             => CurrentChunk.AddConstant(Value.New(str));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitOpAndBytes(OpCode op, params byte[] b)
         {
             EmitOpCode(op);
             EmitBytes(b);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteUShortAt(int at, ushort us)
             => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteBytesAt(int at, params byte[] b)
         {
             for (int i = 0; i < b.Length; i++)
@@ -170,6 +183,7 @@ namespace ULox
                 CurrentChunk.Instructions[at + i] = b[i];
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
 
         public void EmitBytes(params byte[] b)
         {
@@ -179,9 +193,11 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitUShort(ushort us)
             => EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndScope()
         {
             var comp = CurrentCompilerState;
@@ -216,6 +232,7 @@ namespace ULox
             return new CompiledScript(topChunk, script.GetHashCode(), _allChunks.GetRange(0, _allChunks.Count));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Declaration()
         {
             if (declarationCompilettes.TryGetValue(CurrentTokenType, out var complette))
@@ -228,9 +245,11 @@ namespace ULox
             NoDeclarationFound();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void NoDeclarationFound()
             => Statement();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Statement()
         {
             if (statementCompilettes.TryGetValue(CurrentTokenType, out var complette))
@@ -243,9 +262,11 @@ namespace ULox
             NoStatementFound();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void NoStatementFound()
             => ExpressionStatement();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ExpressionStatement()
         {
             Expression();
@@ -253,6 +274,7 @@ namespace ULox
             EmitPop();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Expression()
         {
             try
@@ -266,12 +288,15 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ParsePrecedence(Precedence pre)
             => _prattParser.ParsePrecedence(this, pre);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ConsumeEndStatement([CallerMemberName] string after = default)
             => TokenIterator.Consume(TokenType.END_STATEMENT, $"Expect ; after {after}.");
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushCompilerState(string name, FunctionType functionType)
         {
             var newCompState = new CompilerState(compilerStates.Peek(), functionType)
@@ -283,6 +308,7 @@ namespace ULox
             AfterCompilerStatePushed();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AfterCompilerStatePushed()
         {
             var functionType = CurrentCompilerState.functionType;
@@ -300,6 +326,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void NamedVariable(string name, bool canAssign)
         {
             (var getOp, var setOp, var argId) = ResolveNameLookupOpCode(name);
@@ -330,6 +357,7 @@ namespace ULox
             EmitOpAndBytes(getOp, argId);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ConfirmWrite(string name, byte argId)
         {
             if (CurrentCompilerState.functionType == FunctionType.PureFunction)
@@ -339,6 +367,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ConfirmAccess(OpCode getOp, OpCode setOp, string name)
         {
             if (IsFunctionLocal())
@@ -349,6 +378,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool HandleCompoundAssignToken(OpCode getOp, OpCode setOp, byte argId)
         {
             if (TokenIterator.MatchAny(TokenType.PLUS_EQUAL,
@@ -395,6 +425,7 @@ namespace ULox
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public (OpCode getOp, OpCode setOp, byte argId) ResolveNameLookupOpCode(string name)
         {
             var getOp = OpCode.FETCH_GLOBAL;
@@ -422,6 +453,7 @@ namespace ULox
             return (getOp, setOp, (byte)argId);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsFunctionLocal()
         {
             var ft = CurrentCompilerState.functionType;
@@ -430,6 +462,7 @@ namespace ULox
                 || ft == FunctionType.PureFunction;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Chunk EndCompile()
         {
             EmitReturn();
@@ -438,6 +471,7 @@ namespace ULox
             return returnChunk;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitReturn()
         {
             PreEmptyReturnEmit();
@@ -445,6 +479,7 @@ namespace ULox
             EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PreEmptyReturnEmit()
         {
             if (CurrentCompilerState.functionType == FunctionType.Init)
@@ -453,6 +488,7 @@ namespace ULox
                 EmitNULL();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         //TODO build commands should use this
         public byte ExpressionList(TokenType terminatorToken, string missingTermError)
         {
@@ -472,9 +508,11 @@ namespace ULox
             return argCount;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ArgumentList()
             => ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte ParseVariable(string errMsg)
         {
             TokenIterator.Consume(TokenType.IDENTIFIER, errMsg);
@@ -484,6 +522,7 @@ namespace ULox
             return AddStringConstant();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Function(string name, FunctionType functionType)
         {
             PushCompilerState(name, functionType);
@@ -498,11 +537,13 @@ namespace ULox
             EndFunction();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void FunctionParamListOptional()
         {
             VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte VariableNameListDeclareOptional(Action postDefinePerVar)
         {
             byte argCount = 0;
@@ -527,6 +568,7 @@ namespace ULox
             return argCount;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void IncreaseArity(byte argNameConstant)
         {
             CurrentChunk.ArgumentConstantIds.Add(argNameConstant);
@@ -534,6 +576,7 @@ namespace ULox
                 ThrowCompilerException($"Can't have more than 255 parameters.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndFunction()
         {
             // Create the function object.
@@ -548,6 +591,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Block()
         {
             while (!TokenIterator.Check(TokenType.CLOSE_BRACE)
@@ -557,9 +601,11 @@ namespace ULox
             TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after block.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void BeginScope()
             => CurrentCompilerState.scopeDepth++;
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DefineVariable(byte global)
         {
             if (CurrentCompilerState.scopeDepth > 0)
@@ -571,6 +617,7 @@ namespace ULox
             EmitOpAndBytes(OpCode.DEFINE_GLOBAL, global);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DeclareAndDefineCustomVariable(string varName)
         {
             //do equiv of ParseVariable, DefineVariable
@@ -580,6 +627,7 @@ namespace ULox
             DefineVariable(id);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         //TODO can move to compiler state?
         public void DeclareVariable()
         {
@@ -591,6 +639,7 @@ namespace ULox
             comp.DeclareVariableByName(this, declName);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void BlockStatement()
         {
             BeginScope();
@@ -598,6 +647,7 @@ namespace ULox
             EndScope();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Binary(Compiler compiler, bool canAssign)
         {
             TokenType operatorType = compiler.PreviousTokenType;
@@ -625,6 +675,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FreezeStatement(Compiler compiler)
         {
             compiler.Expression();
@@ -632,6 +683,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ExpectStatement(Compiler compiler)
         {
             do
@@ -653,6 +705,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BraceCreateDynamic(Compiler compiler, bool arg2)
         {
             if (compiler.TokenIterator.Match(TokenType.COLON)
@@ -689,6 +742,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void TypeOf(Compiler compiler, bool canAssign)
         {
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after typeof.");
@@ -697,6 +751,7 @@ namespace ULox
             compiler.EmitOpCode(OpCode.TYPEOF);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void BracketCreate(Compiler compiler, bool canAssign)
         {
             if (compiler.TokenIterator.Match(TokenType.COLON)
@@ -745,6 +800,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void BracketSubScript(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
@@ -760,6 +816,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Dot(Compiler compiler, bool canAssign)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
@@ -781,12 +838,14 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FName(Compiler compiler, bool canAssign)
         {
             var fname = compiler.CurrentChunk.Name;
             compiler.AddConstantAndWriteOp(Value.New(fname));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ThrowStatement(Compiler compiler)
         {
             if (!compiler.TokenIterator.Check(TokenType.END_STATEMENT))
@@ -802,6 +861,7 @@ namespace ULox
             compiler.EmitOpCode(OpCode.THROW);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ContinueStatement(Compiler compiler)
         {
             var comp = compiler.CurrentCompilerState;
@@ -813,6 +873,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void IfStatement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
@@ -834,6 +895,7 @@ namespace ULox
             compiler.EmitLabel(elseJump);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void MatchStatement(Compiler compiler)
         {
             //make a scope
@@ -873,6 +935,7 @@ namespace ULox
             compiler.EndScope();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void LabelStatement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
@@ -883,6 +946,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void GotoStatement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'goto' statement.");
@@ -893,6 +957,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReadOnlyStatement(Compiler compiler)
         {
             compiler.Expression();
@@ -901,6 +966,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void BreakStatement(Compiler compiler)
         {
             var comp = compiler.CurrentCompilerState;
@@ -914,6 +980,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void YieldStatement(Compiler compiler)
         {
             compiler.EmitOpCode(OpCode.YIELD);
@@ -921,14 +988,17 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void BlockStatement(Compiler compiler)
             => compiler.BlockStatement();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FunctionDeclaration(Compiler compiler)
         {
             InnerFunctionDeclaration(compiler, true);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Inject(Compiler compiler, bool canAssign)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
@@ -936,6 +1006,7 @@ namespace ULox
             compiler.EmitOpAndBytes(OpCode.INJECT, name);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void RegisterStatement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Must provide name after a 'register' statement.");
@@ -945,6 +1016,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)
         {
             var functionType = FunctionType.Function;
@@ -984,10 +1056,12 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void NoOpStatement(Compiler compiler)
         {
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Unary(Compiler compiler, bool canAssign)
         {
             var op = compiler.PreviousTokenType;
@@ -1003,6 +1077,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Literal(Compiler compiler, bool canAssign)
         {
             switch (compiler.PreviousTokenType)
@@ -1027,6 +1102,7 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoNumberConstant(double number)
         {
             var isInt = number == System.Math.Truncate(number);
@@ -1038,12 +1114,14 @@ namespace ULox
                 AddConstantAndWriteOp(Value.New(number));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Variable(Compiler compiler, bool canAssign)
         {
             var name = (string)compiler.TokenIterator.PreviousToken.Literal;
             compiler.NamedVariable(name, canAssign);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void And(Compiler compiler, bool canAssign)
         {
             var endJumpLabel = compiler.GotoIfUniqueChunkLabel("and");
@@ -1054,6 +1132,7 @@ namespace ULox
             compiler.EmitLabel(endJumpLabel);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Or(Compiler compiler, bool canAssign)
         {
             var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("else_or");
@@ -1067,40 +1146,47 @@ namespace ULox
             compiler.EmitLabel(endJump);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Grouping(Compiler compiler, bool canAssign)
         {
             compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void FunExp(Compiler compiler, bool canAssign)
         {
             InnerFunctionDeclaration(compiler, false);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void CountOf(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
             compiler.EmitOpCode(OpCode.COUNT_OF);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Call(Compiler compiler, bool canAssign)
         {
             var argCount = compiler.ArgumentList();
             compiler.EmitOpAndBytes(OpCode.CALL, argCount);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Meets(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
             compiler.EmitOpCode(OpCode.MEETS);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Signs(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
             compiler.EmitOpCode(OpCode.SIGNS);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte GotoUniqueChunkLabel(string v)
         {
             byte labelNameID = UniqueChunkStringConstant(v);
@@ -1108,28 +1194,33 @@ namespace ULox
             return labelNameID;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EmitGoto(byte labelNameID)
         {
             EmitOpAndBytes(OpCode.GOTO, labelNameID);
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte GotoIfUniqueChunkLabel(string v)
         {
             byte labelNameID = UniqueChunkStringConstant(v);
             EmitGotoIf(labelNameID);
             return labelNameID;
         }
-        
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EmitGotoIf(byte labelNameID)
         {
             EmitOpAndBytes(OpCode.GOTO_IF_FALSE, labelNameID);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte UniqueChunkStringConstant(string v)
         {
             return AddCustomStringConstant($"{v}_{CurrentChunk.Labels.Count}");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte LabelUniqueChunkLabel(string v)
         {
             byte labelNameID = UniqueChunkStringConstant(v);
@@ -1137,12 +1228,14 @@ namespace ULox
             return labelNameID;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitLabel(byte id)
         {
             CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
             EmitOpAndBytes(OpCode.LABEL, id);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EmitPop()
         {
             EmitOpCode(OpCode.POP);

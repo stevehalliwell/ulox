@@ -4,23 +4,23 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public sealed class Context : IContext
+    public sealed class Context
     {
         private readonly List<CompiledScript> _compiledChunks = new List<CompiledScript>();
 
         public Context(
             IScriptLocator scriptLocator,
-            IProgram program,
-            IVm vm)
+            Program program,
+            Vm vm)
         {
             ScriptLocator = scriptLocator;
             Program = program;
-            VM = vm;
+            Vm = vm;
         }
 
         public IScriptLocator ScriptLocator { get; private set; }
-        public IProgram Program { get; private set; }
-        public IVm VM { get; private set; }
+        public Program Program { get; private set; }
+        public Vm Vm { get; private set; }
         public event Action<string> OnLog;
 
         public void AddLibrary(IULoxLibrary lib)
@@ -29,7 +29,7 @@ namespace ULox
 
             foreach (var item in toAdd)
             {
-                VM.SetGlobal(item.Key, item.Value);
+                Vm.SetGlobal(item.Key, item.Value);
             }
         }
 

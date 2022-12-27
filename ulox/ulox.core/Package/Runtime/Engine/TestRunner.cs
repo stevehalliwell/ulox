@@ -24,7 +24,7 @@ namespace ULox
         public Func<Vm> CreateVM { get; private set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void StartTest(IVm vm, string name)
+        public void StartTest(Vm vm, string name)
         {
             var id = MakeId(name);
             if (_testStatus.ContainsKey(id))

@@ -12,8 +12,8 @@ public class NoFailUloxTests : UloxScriptTestBase
 
         engine.Run(script);
 
-        Assert.IsTrue(engine.MyEngine.Context.VM.TestRunner.AllPassed);
-        Assert.AreNotEqual(0, engine.MyEngine.Context.VM.TestRunner.TestsFound, "Expect to find at least 1 test in the NoFail tests folder");
+        Assert.IsTrue(engine.MyEngine.Context.Vm.TestRunner.AllPassed);
+        Assert.AreNotEqual(0, engine.MyEngine.Context.Vm.TestRunner.TestsFound, "Expect to find at least 1 test in the NoFail tests folder");
     }
 
     public static TestCaseData[] ScriptGenerator()

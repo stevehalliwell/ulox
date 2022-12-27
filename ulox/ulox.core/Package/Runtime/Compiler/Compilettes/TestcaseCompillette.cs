@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
     public class TestcaseCompillette : ICompilette
     {
@@ -12,6 +14,7 @@
             _testDeclarationCompilette = testDeclarationCompilette;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)
         {
             var dataExpExecuteLocation = -1;
@@ -129,6 +132,7 @@
             TestCaseName = null;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TCName(Compiler compiler, bool obj)
         {
             var tcname = TestCaseName;

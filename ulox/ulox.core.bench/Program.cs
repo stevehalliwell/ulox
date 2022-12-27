@@ -70,35 +70,35 @@ namespace ulox.core.bench
         public void Looping_While()
         {
             var engine = Engine.CreateDefault();
-            engine.Context.VM.Interpret(_whileCompiled.TopLevelChunk);
+            engine.Context.Vm.Interpret(_whileCompiled.TopLevelChunk);
         }
 
         [Benchmark]
         public void Looping_For()
         {
             var engine = Engine.CreateDefault();
-            engine.Context.VM.Interpret(_forCompiled.TopLevelChunk);
+            engine.Context.Vm.Interpret(_forCompiled.TopLevelChunk);
         }
 
         [Benchmark]
         public void Looping_Loop()
         {
             var engine = Engine.CreateDefault();
-            engine.Context.VM.Interpret(_loopCompiled.TopLevelChunk);
+            engine.Context.Vm.Interpret(_loopCompiled.TopLevelChunk);
         }
 
         [Benchmark]
         public void Conditional_If()
         {
             var engine = Engine.CreateDefault();
-            engine.Context.VM.Interpret(_ifCompiled.TopLevelChunk);
+            engine.Context.Vm.Interpret(_ifCompiled.TopLevelChunk);
         }
 
         [Benchmark]
         public void Conditional_Match()
         {
             var engine = Engine.CreateDefault();
-            engine.Context.VM.Interpret(_matchCompiled.TopLevelChunk);
+            engine.Context.Vm.Interpret(_matchCompiled.TopLevelChunk);
         }
 
         [Benchmark]

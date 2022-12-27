@@ -16,7 +16,7 @@ namespace ULox
     //todo better, standardisead errors, including from native
     //todo track and output class information from compile
     //todo self asign needs safety to prevent their use in declarations.
-    public sealed class Vm : IVm
+    public sealed class Vm
     {
         public delegate NativeCallResult NativeCallDelegate(Vm vm, int argc);
 
@@ -36,7 +36,7 @@ namespace ULox
         private readonly FastStack<Value> _returnStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         private CallFrame _currentCallFrame;
-        public IEngine Engine { get; private set; }
+        public Engine Engine { get; private set; }
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private readonly Table _globals = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
@@ -101,7 +101,7 @@ namespace ULox
         public Value StackTop => _valueStack.Peek();
         public int StackCount => _valueStack.Count;
 
-        public void SetEngine(IEngine engine) => Engine = engine;
+        public void SetEngine(Engine engine) => Engine = engine;
 
         public InterpreterResult PushCallFrameAndRun(Value func, int args)
         {
@@ -124,20 +124,17 @@ namespace ULox
             _currentCallFrame.YieldOnReturn = true;
         }
 
-        public void CopyFrom(IVm otherVM)
+        public void CopyFrom(Vm otherVM)
         {
             Engine = otherVM.Engine;
-
-            if (otherVM is Vm asVmBase)
+            
+            foreach (var val in otherVM._globals)
             {
-                foreach (var val in asVmBase._globals)
-                {
-                    SetGlobal(val.Key, val.Value);
-                }
-
-                TestRunner = asVmBase.TestRunner;
-                DiContainer = asVmBase.DiContainer.ShallowCopy();
+                SetGlobal(val.Key, val.Value);
             }
+
+            TestRunner = otherVM.TestRunner;
+            DiContainer = otherVM.DiContainer.ShallowCopy();
         }
 
         public void CopyStackFrom(Vm vm)
@@ -208,7 +205,7 @@ namespace ULox
             return Run();
         }
 
-        public InterpreterResult Run(IProgram program)
+        public InterpreterResult Run(Program program)
         {
             foreach (var compiled in program.CompiledScripts)
             {
@@ -617,13 +614,13 @@ namespace ULox
             {
             case ValueType.UserType:
                 return MeetValidator.ValidateClassMeetsClass(lhs.val.asClass, rhs.val.asClass);
-                
+
             case ValueType.Instance:
                 switch (rhs.type)
                 {
                 case ValueType.UserType:
                     return MeetValidator.ValidateInstanceMeetsClass(lhs.val.asInstance, rhs.val.asClass);
-                    
+
                 case ValueType.Instance:
                     return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
                 default:
@@ -1326,7 +1323,7 @@ namespace ULox
             var name = chunk.ReadConstant(constantIndex);
             var userType = (UserType)ReadByte(chunk);
             UserTypeInternal klass = userType == UserType.Enum
-                ? new EnumClass(name.val.asString) 
+                ? new EnumClass(name.val.asString)
                 : new UserTypeInternal(name.val.asString, userType);
             var klassValue = Value.New(klass);
             Push(klassValue);
@@ -1401,7 +1398,7 @@ namespace ULox
             case ValueType.UserType:
                 instance = targetVal.val.asClass;
                 break;
-                
+
             case ValueType.Instance:
                 instance = targetVal.val.asInstance;
                 break;
@@ -1435,7 +1432,7 @@ namespace ULox
             case ValueType.UserType:
                 instance = targetVal.val.asClass;
                 break;
-                
+
             case ValueType.Instance:
                 instance = targetVal.val.asInstance;
                 break;
@@ -1532,7 +1529,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void BindMethod(UserTypeInternal fromClass, HashedString methodName)
         {
-            if(fromClass == null)
+            if (fromClass == null)
                 ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
 
             if (!fromClass.TryGetMethod(methodName, out var method))

@@ -64,7 +64,7 @@ print(d);");
         [Test]
         public void Run_WhenReturnNothingFromExternalFunctionInMiddleOfMathOpsAndAllLocals_ShouldNotImpactMathOps()
         {
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
 
             testEngine.Run(@"
 fun Locals()
@@ -86,7 +86,7 @@ Locals();");
         [Test]
         public void Run_WhenReturnNothing_ShouldNotHaveError()
         {
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
 
             testEngine.Run(@"A();");
 
@@ -96,7 +96,7 @@ Locals();");
         [Test]
         public void Run_WhenReturnNothingFromExternalFunctionInMiddleOfMathOps_ShouldNotImpactMathOps()
         {
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothing));
 
             testEngine.Run(@"
 var a = 1;
@@ -118,7 +118,7 @@ print(a);");
         [Test]
         public void Run_WhenReturnFromExternalFunction_ShouldMatchExpected()
         {
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A1"), Value.New(Return1Thing));
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A1"), Value.New(Return1Thing));
 
             testEngine.Run(@"
 var a = A1();
@@ -137,7 +137,7 @@ print(a);");
         [Test]
         public void Run_WhenReturn2FromExternalFunction_ShouldMatchExpected()
         {
-            testEngine.MyEngine.Context.VM.SetGlobal(new HashedString("A2"), Value.New(Return2Thing));
+            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A2"), Value.New(Return2Thing));
 
             testEngine.Run(@"
 var (a,b) = A2();

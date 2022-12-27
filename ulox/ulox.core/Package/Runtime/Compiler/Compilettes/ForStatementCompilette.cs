@@ -1,4 +1,5 @@
-﻿using static ULox.CompilerState;
+﻿using System.Runtime.CompilerServices;
+using static ULox.CompilerState;
 
 namespace ULox
 {
@@ -9,6 +10,7 @@ namespace ULox
         {
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void BeginLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
             //condition
@@ -38,6 +40,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void PreLoop(Compiler compiler, LoopState loopState)
         {
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");

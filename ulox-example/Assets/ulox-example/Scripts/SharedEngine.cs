@@ -45,7 +45,7 @@ namespace ULox.Demo
 
         public Value FindFunctionWithArity(HashedString name, int arity)
         {
-            var vm = Engine.Context.VM;
+            var vm = Engine.Context.Vm;
 
             try
             {

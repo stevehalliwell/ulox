@@ -109,8 +109,7 @@ namespace ULox
             _stringIterator = null;
             _script = default;
         }
-
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token Next()
         {

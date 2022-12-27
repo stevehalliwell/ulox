@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public sealed class Program : IProgram
+    public sealed class Program
     {
         private readonly Scanner _scanner = new Scanner();
-        private readonly ICompiler _compiler = new Compiler();
+        private readonly Compiler _compiler = new Compiler();
         private readonly ByteCodeOptimiser _optimiser = new ByteCodeOptimiser();
 
         public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();

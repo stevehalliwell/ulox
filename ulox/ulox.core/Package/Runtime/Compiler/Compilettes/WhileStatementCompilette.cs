@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System.Runtime.CompilerServices;
+
+namespace ULox
 {
     public class WhileStatementCompilette : ConfigurableLoopingStatementCompilette
     {
@@ -7,6 +9,7 @@
         {
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void BeginLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
@@ -20,6 +23,7 @@
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void PreLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
         }

@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ulox.core.bench", "ulox.cor
 		{E1907AB2-7EE6-4494-A737-02031F7C4AF2} = {E1907AB2-7EE6-4494-A737-02031F7C4AF2}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ulox.core.profile", "ulox.core.profile\ulox.core.profile.csproj", "{D477994C-C505-4DD3-88D6-92B443BB484F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{CA6C4173-40F1-485A-9CD2-7399943E7653}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA6C4173-40F1-485A-9CD2-7399943E7653}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA6C4173-40F1-485A-9CD2-7399943E7653}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D477994C-C505-4DD3-88D6-92B443BB484F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D477994C-C505-4DD3-88D6-92B443BB484F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D477994C-C505-4DD3-88D6-92B443BB484F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D477994C-C505-4DD3-88D6-92B443BB484F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

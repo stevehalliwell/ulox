@@ -1452,8 +1452,8 @@ namespace ULox
         private void DoInvokeOp(Chunk chunk)
         {
             var constantIndex = ReadByte(chunk);
-            var methodName = chunk.ReadConstant(constantIndex).val.asString;
             var argCount = ReadByte(chunk);
+            var methodName = chunk.ReadConstant(constantIndex).val.asString;
 
             var receiver = Peek(argCount);
             switch (receiver.type)

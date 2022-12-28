@@ -2,26 +2,11 @@
 
 var compileRepeat = 1000;
 var runRepeat = 1000;
-var callFuncRepeat = 1000;
+var callFuncRepeat = 10000;
 var funcSetupName = "SetupGame";
 var funcUpdateName = "Update";
 
 var targetScriptText = @"
-/*
-Code we expect from Unity's side;
-SetUIText(string)
-CreateFromPrefab(string):GameObject (returns a GameObject reference that we'll pass back to unity)
-GetKey(string):bool
-SetGameObjectPosition(GameObject, x, y, z)
-ReloadScene - reload the current unity scene
-
-
-Unity will find and call: 
-- SetupGame in Start
-- Update in Update
-*/
-
-//functions and data
 var dt = 0;
 var limit = 5;
 var numBallsToSpawn = 200;
@@ -92,14 +77,12 @@ fun SetupGame()
 }
 
 fun Update()
-
+{
 	loop(balls)
 	{
 		item.Tick();
 	}
-}
-
-";
+}";
 
 var targetScript = new Script("", targetScriptText);
 

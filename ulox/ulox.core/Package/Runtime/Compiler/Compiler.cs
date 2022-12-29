@@ -150,6 +150,10 @@ namespace ULox
             => EmitPacket(new ByteCodePacket(OpCode.RETURN, returnMode));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitBoolPacket(bool b)
+            => EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, b));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(OpCode opCode)
             => EmitPacket(new ByteCodePacket(opCode));
 
@@ -1108,8 +1112,8 @@ namespace ULox
         {
             switch (compiler.PreviousTokenType)
             {
-            case TokenType.TRUE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
-            case TokenType.FALSE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
+            case TokenType.TRUE: compiler.EmitBoolPacket(true); break;
+            case TokenType.FALSE: compiler.EmitBoolPacket(false); break;
             case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
             {

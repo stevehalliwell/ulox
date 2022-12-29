@@ -848,6 +848,10 @@ namespace ULox
         private void DoPushBoolOp(Chunk chunk)
         {
             var b = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk); 
+            ReadByte(chunk);
+            
             Push(Value.New(b == 1));
         }
 

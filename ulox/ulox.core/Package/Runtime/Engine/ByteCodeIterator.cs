@@ -7,6 +7,8 @@ namespace ULox
     public struct ByteCodePacket
     {
         public OpCode OpCode => (OpCode)_opCode;
+        public ReturnMode ReturnMode => (ReturnMode)b1;
+        public bool BoolValue => b1 != 0;
 
         [FieldOffset(0)]
         public readonly byte _opCode;
@@ -31,7 +33,12 @@ namespace ULox
 
         public ByteCodePacket(OpCode opCode, ReturnMode returnMode) : this(opCode)
         {
-            this.b1 = (byte)returnMode;
+            b1 = (byte)returnMode;
+        }
+
+        public ByteCodePacket(OpCode opCode, bool b) : this(opCode)
+        {
+            b1 = b ? (byte)1 : (byte)0;
         }
     }
 
@@ -93,6 +100,7 @@ namespace ULox
                 case OpCode.READ_ONLY:
                 case OpCode.BUILD:
                 case OpCode.RETURN:
+                case OpCode.PUSH_BOOL:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -115,7 +123,6 @@ namespace ULox
                     ProcessOp(opCode);
                     break;
 
-                case OpCode.PUSH_BOOL:
                 case OpCode.PUSH_BYTE:
                 case OpCode.GET_LOCAL:
                 case OpCode.SET_LOCAL:

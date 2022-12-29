@@ -110,9 +110,9 @@ namespace ULox
             }
 
             // The body.
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.CaseStart, nameConstantID, numArgs);
+            compiler.EmitTestPacket(TestOpType.CaseStart, nameConstantID, numArgs);
             compiler.BlockStatement();
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.CaseEnd, nameConstantID, 0x00);
+            compiler.EmitTestPacket(TestOpType.CaseEnd, nameConstantID, 0);
             compiler.EndScope();
 
             if (dataExpExecuteLocation != -1)

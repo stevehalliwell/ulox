@@ -6,6 +6,25 @@ namespace ULox
     [StructLayout(LayoutKind.Explicit)]
     public struct ByteCodePacket
     {
+        [StructLayout(LayoutKind.Explicit)]
+        public struct TestOpDetails
+        {
+            public TestOpType TestOpType => (TestOpType)_testOp;
+
+            [FieldOffset(0)]
+            public readonly byte _testOp;
+            [FieldOffset(1)]
+            public readonly byte b1;
+            [FieldOffset(2)]
+            public readonly byte b2;
+
+            public TestOpDetails(TestOpType testOpType, byte b1, byte b2) : this()
+            {
+                _testOp = (byte)testOpType;
+                this.b1 = b1;
+                this.b2 = b2;
+            }
+        }
 
         [StructLayout(LayoutKind.Explicit)]
         public struct TypeDetails
@@ -48,6 +67,9 @@ namespace ULox
         [FieldOffset(1)]
         public readonly TypeDetails typeDetails;
 
+        [FieldOffset(1)]
+        public readonly TestOpDetails testOpDetails;
+
         public ByteCodePacket(OpCode opCode) : this()
         {
             _opCode = (byte)opCode;
@@ -88,6 +110,11 @@ namespace ULox
         public ByteCodePacket(OpCode opCode, TypeDetails typeDetails) : this(opCode)
         {
             this.typeDetails = typeDetails;
+        }
+
+        public ByteCodePacket(OpCode opCode, TestOpDetails testOpDetails) : this(opCode)
+        {
+            this.testOpDetails = testOpDetails;
         }
     }
 
@@ -180,6 +207,7 @@ namespace ULox
                 case OpCode.GREATER:
                 case OpCode.MODULUS:
                 case OpCode.EQUAL:
+                case OpCode.TEST:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -232,66 +260,7 @@ namespace ULox
                     }
                 }
                 break;
-
-                case OpCode.TEST:
-                {
-                    CurrentInstructionIndex++;
-                    var testOpType = (TestOpType)chunk.Instructions[CurrentInstructionIndex];
-
-                    ProcessTestOp(opCode, testOpType);
-
-                    switch (testOpType)
-                    {
-                    case TestOpType.CaseStart:
-                    case TestOpType.CaseEnd:
-                    {
-                        CurrentInstructionIndex++;
-                        var sc = chunk.Instructions[CurrentInstructionIndex];
-                        CurrentInstructionIndex++;
-                        var b = chunk.Instructions[CurrentInstructionIndex];
-                        ProcessTestOpAndStringConstantAndByte(opCode, testOpType, sc, b);
-                    }
-                    break;
-
-                    case TestOpType.TestSetStart:
-                    {
-                        CurrentInstructionIndex++;
-                        var sc = chunk.Instructions[CurrentInstructionIndex];
-                        CurrentInstructionIndex++;
-                        var testCount = chunk.Instructions[CurrentInstructionIndex];
-                        ProcessTestOpAndStringConstantAndTestCount(opCode, sc, testCount);
-                        for (int it = 0; it < testCount; it++)
-                        {
-                            CurrentInstructionIndex++;
-                            var label = chunk.Instructions[CurrentInstructionIndex];
-                            ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(opCode, sc, testCount, it, label);
-                        }
-                    }
-                    break;
-
-                    case TestOpType.TestSetEnd:
-                    {
-                        CurrentInstructionIndex++;
-                        var b1 = chunk.Instructions[CurrentInstructionIndex];
-                        CurrentInstructionIndex++;
-                        var b2 = chunk.Instructions[CurrentInstructionIndex];
-                        ProcessTestOpAndByteAndByte(opCode, testOpType, b1, b2);
-                    }
-                    break;
-
-                    case TestOpType.TestFixtureBodyInstruction:
-                    {
-                        CurrentInstructionIndex++;
-                        var label = chunk.Instructions[CurrentInstructionIndex];
-                        ProcessTestOpAndLabel(opCode, testOpType, label);
-                    }
-                    break;
-                    }
-                }
-                break;
-
-                    break;
-
+                
                 default:
                     throw new UloxException($"Unhandled OpCode '{opCode}'.");
                 }
@@ -305,12 +274,6 @@ namespace ULox
         protected abstract void PreChunkInterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void DefaultOpCode(OpCode opCode);
         protected abstract void DefaultPostOpCode();
-        protected abstract void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label);
-        protected abstract void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount);
-        protected abstract void ProcessTestOp(OpCode opCode, TestOpType testOpType);
-        protected abstract void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte label);
-        protected abstract void ProcessTestOpAndByteAndByte(OpCode opCode, TestOpType testOpType, byte b1, byte b2);
-        protected abstract void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b);
         protected abstract void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount);
         protected abstract void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex);
         protected abstract void ProcessOpAndByte(OpCode opCode, byte b);

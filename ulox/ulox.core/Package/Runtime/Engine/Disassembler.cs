@@ -95,50 +95,6 @@ namespace ULox
             }
         }
 
-        protected override void ProcessTestOp(OpCode opCode, TestOpType testOpType)
-        {
-            Append(testOpType.ToString());
-            AppendSpace();
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b)
-        {
-            stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
-            AppendSpace();
-            stringBuilder.Append($"({b})");
-            AppendSpace();
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label)
-        {
-            PrintLabel(label);
-            if (it < testCount - 1)
-                Append(", ");
-            else
-                Append(" ] ");
-        }
-
-        protected override void ProcessTestOpAndByteAndByte(OpCode opCode, TestOpType testOpType, byte b1, byte b2)
-        {
-            stringBuilder.Append($"({b1})");
-            AppendSpace();
-            stringBuilder.Append($"({b2})");
-            AppendSpace();
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount)
-        {
-            stringBuilder.Append($"({stringConstantID}){CurrentChunk.Constants[stringConstantID]}");
-            Append("  [");
-            AppendSpace();
-        }
-
-        protected override void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte labelId)
-        {
-            PrintLabel(labelId);
-            AppendSpace();
-        }
-
         protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)
         {
             stringBuilder.Append($"({funcID})" + asChunk.ToString());
@@ -339,6 +295,43 @@ namespace ULox
             case OpCode.MIXIN:
                 break;
             case OpCode.TEST:
+            {
+                var testOpType = packet.testOpDetails.TestOpType;
+                Append(testOpType.ToString());
+                AppendSpace();
+
+                switch (testOpType)
+                {
+                case TestOpType.TestFixtureBodyInstruction:
+                    PrintLabel(packet.testOpDetails.b1);
+                    AppendSpace();
+                    break;
+                case TestOpType.TestCase:
+                {
+                    var label = packet.testOpDetails.b1;
+                    var stringConstant = packet.testOpDetails.b2;
+                    stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
+                    AppendSpace();
+                    PrintLabel(label);
+                }
+                break;
+                case TestOpType.CaseStart:
+                case TestOpType.CaseEnd:
+                {
+                    var stringConstant = packet.testOpDetails.b1;
+                    var b = packet.testOpDetails.b2;
+                    stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
+                    AppendSpace();
+                    stringBuilder.Append($"({b})");
+                    AppendSpace();
+                }
+                break;
+                case TestOpType.TestSetEnd:
+                    break;
+                default:
+                    break;
+                }
+            }
                 break;
             case OpCode.BUILD:
                 break;

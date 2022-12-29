@@ -43,16 +43,15 @@ namespace ULox
             if (testcaseCount > byte.MaxValue)
                 compiler.ThrowCompilerException($"{testcaseCount} has more than {byte.MaxValue} testcases, this is not allowed.");
 
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestFixtureBodyInstruction, testFixtureBodyLabel);
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestSetStart, testSetNameID, (byte)testcaseCount);
+            compiler.EmitTestPacket(TestOpType.TestFixtureBodyInstruction, testFixtureBodyLabel, 0);
 
             for (int i = 0; i < _currentTestcaseLabels.Count; i++)
             {
-                compiler.EmitBytes(_currentTestcaseLabels[i]);
+                compiler.EmitTestPacket(TestOpType.TestCase, _currentTestcaseLabels[i], testSetNameID);
             }
 
             _currentTestcaseLabels.Clear();
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestSetEnd, 0, 0);
+            compiler.EmitTestPacket(TestOpType.TestSetEnd, 0, 0);
 
             CurrentTestSetName = null;
         }

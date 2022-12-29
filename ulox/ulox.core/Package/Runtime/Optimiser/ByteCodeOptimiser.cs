@@ -135,35 +135,9 @@ namespace ULox
         {
         }
 
-        protected override void ProcessTestOp(OpCode opCode, TestOpType testOpType)
-        {
-        }
-
-        protected override void ProcessTestOpAndByteAndByte(OpCode opCode, TestOpType testOpType, byte b1, byte b2)
-        {
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b)
-        {
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount)
-        {
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label)
-        {
-            AddLabelUsage(label);
-        }
-
         private void AddLabelUsage(byte labelId)
         {
             _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));
-        }
-
-        protected override void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte label)
-        {
-            AddLabelUsage(label);
         }
 
         protected override void ProcessPacket(ByteCodePacket packet)
@@ -260,6 +234,10 @@ namespace ULox
             case OpCode.MIXIN:
                 break;
             case OpCode.TEST:
+                if(packet.testOpDetails.TestOpType == TestOpType.TestFixtureBodyInstruction)
+                    AddLabelUsage(packet.testOpDetails.b1);
+                else if (packet.testOpDetails.TestOpType == TestOpType.TestCase)
+                    AddLabelUsage(packet.testOpDetails.b2);
                 break;
             case OpCode.BUILD:
                 break;

@@ -166,6 +166,10 @@ namespace ULox
             => EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, nativeType));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitTestPacket(TestOpType opType, byte b1, byte b2)
+            => EmitPacket(new ByteCodePacket(OpCode.TEST, new ByteCodePacket.TestOpDetails(opType, b1, b2)));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(OpCode opCode)
             => EmitPacket(new ByteCodePacket(opCode));
 

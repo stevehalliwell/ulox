@@ -123,7 +123,7 @@ namespace ULox
             }
 
             compiler.EmitNULL();
-            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+            compiler.EmitReturnPacket(ReturnMode.One);
 
             compiler.EndScope();
             

@@ -28,6 +28,11 @@ namespace ULox
             this.b2 = b2;
             this.b3 = b3;
         }
+
+        public ByteCodePacket(OpCode opCode, ReturnMode returnMode) : this(opCode)
+        {
+            this.b1 = (byte)returnMode;
+        }
     }
 
     public abstract class ByteCodeIterator
@@ -87,6 +92,7 @@ namespace ULox
                 case OpCode.ENUM_VALUE:
                 case OpCode.READ_ONLY:
                 case OpCode.BUILD:
+                case OpCode.RETURN:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -109,7 +115,6 @@ namespace ULox
                     ProcessOp(opCode);
                     break;
 
-                case OpCode.RETURN:
                 case OpCode.PUSH_BOOL:
                 case OpCode.PUSH_BYTE:
                 case OpCode.GET_LOCAL:

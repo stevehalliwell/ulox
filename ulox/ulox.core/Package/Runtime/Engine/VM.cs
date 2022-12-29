@@ -1002,6 +1002,9 @@ namespace ULox
             var origCallFrameCount = _callFrames.Count;
             var wantsToYieldOnReturn = _currentCallFrame.YieldOnReturn;
             var returnMode = (ReturnMode)ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
             switch (returnMode)
             {
             case ReturnMode.One:

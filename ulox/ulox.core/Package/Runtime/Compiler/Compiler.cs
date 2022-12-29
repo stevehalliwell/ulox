@@ -146,8 +146,12 @@ namespace ULox
             => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitReturnPacket(ReturnMode returnMode)
+            => EmitPacket(new ByteCodePacket(OpCode.RETURN, returnMode));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(OpCode opCode)
-            => CurrentChunk.WritePacket(new ByteCodePacket(opCode), TokenIterator.PreviousToken.Line);
+            => EmitPacket(new ByteCodePacket(opCode));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitNULL()
@@ -485,7 +489,7 @@ namespace ULox
         {
             PreEmptyReturnEmit();
 
-            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+            EmitReturnPacket(ReturnMode.One);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

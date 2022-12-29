@@ -25,7 +25,7 @@ namespace ulox.core.bench
             _matchCompiled = engine.Context.CompileScript(BenchmarkScripts.Match);
             _scriptCompiled = engine.Context.CompileScript(CompileVsExecute.Script);
         }
-        
+
         static void Main(string[] args)
         {
             BenchmarkRunner.Run<Program>(args: args);
@@ -129,6 +129,19 @@ namespace ulox.core.bench
         {
             var opt = new ByteCodeOptimiser();
             opt.Optimise(Engine.CreateDefault().Context.CompileScript(BenchmarkScripts.While));
+        }
+
+        [Benchmark]
+        public void BouncingBall()
+        {
+            var engine = Engine.CreateDefault();
+            engine.RunScript(BouncingBallProfileScript.Script);
+
+            engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("SetupGame")), 0);
+            for (int i = 0; i < 100; i++)
+            {
+                engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("Update")), 0);
+            }
         }
     }
 }

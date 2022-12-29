@@ -1041,7 +1041,7 @@ namespace ULox
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
             byte name = compiler.AddStringConstant();
-            compiler.EmitOpAndBytes(OpCode.INJECT, name);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.INJECT, name,0,0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1050,7 +1050,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Must provide name after a 'register' statement.");
             var stringConst = compiler.AddStringConstant();
             compiler.Expression();
-            compiler.EmitOpAndBytes(OpCode.REGISTER, stringConst);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.REGISTER, stringConst,0,0));
             compiler.ConsumeEndStatement();
         }
 
@@ -1235,7 +1235,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EmitGoto(byte labelNameID)
         {
-            EmitOpAndBytes(OpCode.GOTO, labelNameID);
+            EmitPacket(new ByteCodePacket(OpCode.GOTO, labelNameID,0,0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1249,7 +1249,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EmitGotoIf(byte labelNameID)
         {
-            EmitOpAndBytes(OpCode.GOTO_IF_FALSE, labelNameID);
+            EmitPacket(new ByteCodePacket(OpCode.GOTO_IF_FALSE, labelNameID,0,0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1270,7 +1270,7 @@ namespace ULox
         public void EmitLabel(byte id)
         {
             CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
-            EmitOpAndBytes(OpCode.LABEL, id);
+            EmitPacket(new ByteCodePacket(OpCode.LABEL, id,0,0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

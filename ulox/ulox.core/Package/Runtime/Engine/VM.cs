@@ -476,7 +476,7 @@ namespace ULox
                     break;
 
                 case OpCode.LABEL:
-                    ReadByte(chunk);
+                    ReadRestOfPacket(chunk);
                     break;
 
                 case OpCode.ENUM_VALUE:
@@ -599,6 +599,10 @@ namespace ULox
         private void DoGotoOp(Chunk chunk)
         {
             var labelID = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var labelPos = chunk.GetLabelPosition(labelID);
 
             _currentCallFrame.InstructionPointer = labelPos;
@@ -608,6 +612,10 @@ namespace ULox
         private void DoGotoIfFalseOp(Chunk chunk)
         {
             var labelID = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var labelPos = chunk.GetLabelPosition(labelID);
 
             if (Peek().IsFalsey())
@@ -1421,6 +1429,10 @@ namespace ULox
         private void DoInjectOp(Chunk chunk)
         {
             var constantIndex = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var name = chunk.ReadConstant(constantIndex).val.asString;
             if (DiContainer.TryGetValue(name, out var found))
                 Push(found);
@@ -1432,6 +1444,10 @@ namespace ULox
         private void DoRegisterOp(Chunk chunk)
         {
             var constantIndex = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var name = chunk.ReadConstant(constantIndex).val.asString;
             var implementation = Pop();
             DiContainer.Set(name, implementation);
@@ -1588,6 +1604,10 @@ namespace ULox
         private void DoFieldOp(Chunk chunk)
         {
             var constantIndex = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var klass = Pop().val.asClass;
             klass.AddFieldName(chunk.ReadConstant(constantIndex).val.asString);
         }

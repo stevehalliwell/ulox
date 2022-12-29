@@ -41,7 +41,7 @@
                 byte nameConstant = compiler.AddStringConstant();
                 
                 compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                compiler.EmitOpAndBytes(OpCode.FIELD, nameConstant);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.FIELD, nameConstant,0,0));
 
                 //emit jump // to skip this during imperative
                 var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");

@@ -111,7 +111,7 @@ namespace ULox
 
         protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label)
         {
-            PrintLabel(CurrentChunk, label);
+            PrintLabel(label);
             if (it < testCount - 1)
                 Append(", ");
             else
@@ -135,7 +135,7 @@ namespace ULox
 
         protected override void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte labelId)
         {
-            PrintLabel(CurrentChunk, labelId);
+            PrintLabel(labelId);
             AppendSpace();
         }
 
@@ -165,7 +165,7 @@ namespace ULox
             AppendSpace();
             stringBuilder.Append($"({b})");
             AppendSpace();
-            PrintLabel(CurrentChunk, initLabel);
+            PrintLabel(initLabel);
             AppendSpace();
         }
 
@@ -233,14 +233,9 @@ namespace ULox
             _prevLine = -1;
         }
 
-        protected override void ProcessOpAndLabel(OpCode opCode, byte labelID)
+        private void PrintLabel(byte labelID)
         {
-            PrintLabel(CurrentChunk, labelID);
-        }
-
-        private void PrintLabel(Chunk chunk, byte labelID)
-        {
-            stringBuilder.Append($"({labelID}){chunk.Constants[labelID]}@{chunk.Labels[labelID]}");
+            stringBuilder.Append($"({labelID}){CurrentChunk.Constants[labelID]}@{CurrentChunk.Labels[labelID]}");
         }
 
         protected override void ProcessPacket(ByteCodePacket packet)
@@ -338,6 +333,7 @@ namespace ULox
                 DoConstant(packet);
                 break;
             case OpCode.FIELD:
+                DoConstant(packet);
                 break;
             case OpCode.INVOKE:
                 break;
@@ -350,8 +346,10 @@ namespace ULox
             case OpCode.BUILD:
                 break;
             case OpCode.REGISTER:
+                DoConstant(packet);
                 break;
             case OpCode.INJECT:
+                DoConstant(packet);
                 break;
             case OpCode.NATIVE_TYPE:
                 stringBuilder.Append($"({packet.NativeType})");
@@ -373,10 +371,13 @@ namespace ULox
             case OpCode.EXPECT:
                 break;
             case OpCode.GOTO:
+                PrintLabel(packet.b1);
                 break;
             case OpCode.GOTO_IF_FALSE:
+                PrintLabel(packet.b1);
                 break;
             case OpCode.LABEL:
+                PrintLabel(packet.b1);
                 break;
             case OpCode.ENUM_VALUE:
                 break;

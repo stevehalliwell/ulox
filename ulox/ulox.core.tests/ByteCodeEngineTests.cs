@@ -924,7 +924,7 @@ register Seven 7;");
             testEngine.Run(@"
 var s = inject Seven;");
 
-            StringAssert.StartsWith("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'2' in chunk:'unnamed_chunk(test:2)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'4' in chunk:'unnamed_chunk(test:2)'.", testEngine.InterpreterResult);
         }
 
         [Test]

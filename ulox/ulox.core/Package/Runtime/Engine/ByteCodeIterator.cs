@@ -122,6 +122,12 @@ namespace ULox
                 case OpCode.GET_PROPERTY:
                 case OpCode.SET_PROPERTY:
                 case OpCode.METHOD:
+                case OpCode.FIELD:
+                case OpCode.REGISTER:
+                case OpCode.INJECT:
+                case OpCode.GOTO:
+                case OpCode.GOTO_IF_FALSE:
+                case OpCode.LABEL:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -157,26 +163,13 @@ namespace ULox
 
                 case OpCode.FETCH_GLOBAL:
                 case OpCode.ASSIGN_GLOBAL:
-                case OpCode.FIELD:
-                case OpCode.REGISTER:
-                case OpCode.INJECT:
                 {
                     CurrentInstructionIndex++;
                     var sc = chunk.Instructions[CurrentInstructionIndex];
                     ProcessOpAndStringConstant(opCode, sc);
                 }
                 break;
-
-                case OpCode.GOTO:
-                case OpCode.GOTO_IF_FALSE:
-                case OpCode.LABEL:
-                {
-                    CurrentInstructionIndex++;
-                    var labelID = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessOpAndLabel(opCode, labelID);
-                }
-                break;
-
+                
                 case OpCode.JUMP_IF_FALSE:
                 case OpCode.JUMP:
                 case OpCode.LOOP:
@@ -300,7 +293,6 @@ namespace ULox
 
         protected abstract void ProcessOpAndStringConstantAndByte(OpCode opCode, byte sc, byte b);
         protected abstract void ProcessOpAndStringConstant(OpCode opCode, byte sc);
-        protected abstract void ProcessOpAndLabel(OpCode opCode, byte labelId);
         protected abstract void PostChunkIterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void PreChunkInterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void DefaultOpCode(OpCode opCode);

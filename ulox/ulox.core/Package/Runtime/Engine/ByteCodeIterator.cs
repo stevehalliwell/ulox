@@ -66,6 +66,27 @@ namespace ULox
                 switch (opCode)
                 {
                 case OpCode.NEGATE:
+                case OpCode.NOT:
+                case OpCode.NULL:
+                case OpCode.POP:
+                case OpCode.SWAP:
+                case OpCode.FREEZE:
+                case OpCode.MIXIN:
+                case OpCode.GET_INDEX:
+                case OpCode.SET_INDEX:
+                case OpCode.EXPAND_COPY_TO_STACK:
+                case OpCode.MEETS:
+                case OpCode.SIGNS:
+                case OpCode.EXPECT:
+                case OpCode.COUNT_OF:
+                case OpCode.DUPLICATE:
+                case OpCode.CLOSE_UPVALUE:
+                case OpCode.YIELD:
+                case OpCode.TYPEOF:
+                case OpCode.THROW:
+                case OpCode.ENUM_VALUE:
+                case OpCode.READ_ONLY:
+                case OpCode.BUILD:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -81,31 +102,10 @@ namespace ULox
                 case OpCode.SUBTRACT:
                 case OpCode.MULTIPLY:
                 case OpCode.DIVIDE:
-                case OpCode.NOT:
-                case OpCode.NULL:
                 case OpCode.LESS:
                 case OpCode.GREATER:
                 case OpCode.MODULUS:
-                case OpCode.POP:
-                case OpCode.SWAP:
-                case OpCode.FREEZE:
-                case OpCode.MIXIN:
-                case OpCode.GET_INDEX:
-                case OpCode.SET_INDEX:
-                case OpCode.EXPAND_COPY_TO_STACK:
-                case OpCode.MEETS:
-                case OpCode.SIGNS:
-                case OpCode.COUNT_OF:
-                case OpCode.EXPECT:
-                case OpCode.DUPLICATE:
                 case OpCode.EQUAL:
-                case OpCode.CLOSE_UPVALUE:
-                case OpCode.YIELD:
-                case OpCode.TYPEOF:
-                case OpCode.THROW:
-                case OpCode.ENUM_VALUE:
-                case OpCode.READ_ONLY:
-                case OpCode.BUILD:
                     ProcessOp(opCode);
                     break;
 

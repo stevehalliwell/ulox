@@ -242,6 +242,7 @@ namespace ULox
                     break;
 
                 case OpCode.YIELD:
+                    ReadRestOfPacket(chunk);
                     return InterpreterResult.YIELD;
 
                 case OpCode.NEGATE:
@@ -264,6 +265,7 @@ namespace ULox
                     break;
 
                 case OpCode.NOT:
+                    ReadRestOfPacket(chunk);
                     DoNotOp();
                     break;
 
@@ -272,6 +274,7 @@ namespace ULox
                     break;
 
                 case OpCode.NULL:
+                    ReadRestOfPacket(chunk);
                     DoNullOp();
                     break;
 
@@ -280,14 +283,17 @@ namespace ULox
                     break;
 
                 case OpCode.POP:
+                    ReadRestOfPacket(chunk);
                     DiscardPop();
                     break;
 
                 case OpCode.SWAP:
+                    ReadRestOfPacket(chunk);
                     DoSwapOp();
                     break;
 
                 case OpCode.DUPLICATE:
+                    ReadRestOfPacket(chunk);
                     DoDuplicateOp();
                     break;
 
@@ -340,11 +346,13 @@ namespace ULox
                     break;
 
                 case OpCode.CLOSE_UPVALUE:
+                    ReadRestOfPacket(chunk);
                     DoCloseUpvalueOp();
                     break;
 
                 case OpCode.THROW:
                 {
+                    ReadRestOfPacket(chunk);
                     var frame = _callFrames.Peek();
                     var currentInstruction = frame.InstructionPointer;
                     throw new PanicException(
@@ -355,6 +363,7 @@ namespace ULox
                         GenerateCallStackDump());
                 }
                 case OpCode.BUILD:
+                    ReadRestOfPacket(chunk);
                     DoBuildOp(chunk);
                     break;
 
@@ -387,6 +396,7 @@ namespace ULox
                     break;
 
                 case OpCode.MIXIN:
+                    ReadRestOfPacket(chunk);
                     DoMixinOp(chunk);
                     break;
 
@@ -407,6 +417,7 @@ namespace ULox
                     break;
 
                 case OpCode.FREEZE:
+                    ReadRestOfPacket(chunk);
                     DoFreezeOp();
                     break;
 
@@ -415,36 +426,44 @@ namespace ULox
                     break;
 
                 case OpCode.GET_INDEX:
+                    ReadRestOfPacket(chunk);
                     DoGetIndexOp(opCode);
                     break;
 
                 case OpCode.SET_INDEX:
+                    ReadRestOfPacket(chunk);
                     DoSetIndexOp(opCode);
                     break;
 
                 case OpCode.EXPAND_COPY_TO_STACK:
+                    ReadRestOfPacket(chunk);
                     DoExpandCopyToStackOp(opCode);
                     break;
 
                 case OpCode.TYPEOF:
+                    ReadRestOfPacket(chunk);
                     DoTypeOfOp();
                     break;
 
                 //can merge into validate, this is not perf critical
                 case OpCode.MEETS:
+                    ReadRestOfPacket(chunk);
                     DoMeetsOp();
                     break;
 
                 //can merge into validate, this is not perf critical
                 case OpCode.SIGNS:
+                    ReadRestOfPacket(chunk);
                     DoSignsOp();
                     break;
 
                 case OpCode.COUNT_OF:
+                    ReadRestOfPacket(chunk);
                     DoCountOfOp();
                     break;
 
                 case OpCode.EXPECT:
+                    ReadRestOfPacket(chunk);
                     DoExpectOp();
                     break;
 
@@ -461,10 +480,12 @@ namespace ULox
                     break;
 
                 case OpCode.ENUM_VALUE:
+                    ReadRestOfPacket(chunk);
                     DoEnumValueOp(chunk);
                     break;
 
                 case OpCode.READ_ONLY:
+                    ReadRestOfPacket(chunk);
                     DoReadOnlyOp(chunk);
                     break;
 

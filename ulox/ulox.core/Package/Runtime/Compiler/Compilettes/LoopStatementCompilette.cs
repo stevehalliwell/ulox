@@ -65,7 +65,7 @@ namespace ULox
 
             //prep count
             compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
-            compiler.EmitOpCode(OpCode.COUNT_OF);
+            compiler.EmitPacket(OpCode.COUNT_OF);
             compiler.EmitOpAndBytes(OpCode.SET_LOCAL, countNameID);
             compiler.EmitPop();
 
@@ -96,7 +96,7 @@ namespace ULox
             {
                 compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
-                compiler.EmitOpCode(OpCode.GET_INDEX);
+                compiler.EmitPacket( OpCode.GET_INDEX);
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, itemArgID);
                 compiler.EmitPop();
             }

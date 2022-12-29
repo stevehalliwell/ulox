@@ -100,13 +100,13 @@ namespace ULox
                 //get row from array index
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataSourceLocalId);
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataIndexLocalId);
-                compiler.EmitOpCode(OpCode.GET_INDEX);
+                compiler.EmitPacket(OpCode.GET_INDEX);
                 var (_, _, testDataRowLocalId) = compiler.ResolveNameLookupOpCode("testDataRow");
                 compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataRowLocalId);
                 compiler.EmitPop();
                 //appy row as inputs to the test
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataRowLocalId);
-                compiler.EmitOpCode(OpCode.EXPAND_COPY_TO_STACK);
+                compiler.EmitPacket(OpCode.EXPAND_COPY_TO_STACK);
             }
 
             // The body.
@@ -144,7 +144,7 @@ namespace ULox
         {
             compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
             compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
-            compiler.EmitOpCode(OpCode.COUNT_OF);
+            compiler.EmitPacket(OpCode.COUNT_OF);
             compiler.EmitOpAndBytes(OpCode.LESS);
         }
         

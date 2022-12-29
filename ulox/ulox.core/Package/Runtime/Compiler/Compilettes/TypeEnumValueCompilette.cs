@@ -50,7 +50,7 @@ namespace ULox
 
 
                 compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
-                compiler.EmitOpCode(OpCode.ENUM_VALUE);
+                compiler.EmitPacket(OpCode.ENUM_VALUE);
                 
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (compiler.TokenIterator.Match(TokenType.IDENTIFIER));

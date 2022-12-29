@@ -136,7 +136,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetPrattRule(TokenType tt, IParseRule rule)
             => _prattParser.SetPrattRule(tt, rule);
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(ByteCodePacket packet)
             => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
@@ -172,15 +172,15 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(OpCode opCode)
             => EmitPacket(new ByteCodePacket(opCode));
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacketByte(OpCode opCode, byte b)
-            => EmitPacket(new ByteCodePacket(opCode, b,0,0));
+            => EmitPacket(new ByteCodePacket(opCode, b, 0, 0));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitNULL()
             => EmitPacket(OpCode.NULL);
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddStringConstant()
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
@@ -192,16 +192,13 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddCustomStringConstant(string str)
             => CurrentChunk.AddConstant(Value.New(str));
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBytesAt(int at, params byte[] b)
+        public void WriteAt(int at, ByteCodePacket packet)
         {
-            for (int i = 0; i < b.Length; i++)
-            {
-                CurrentChunk.Instructions[at + i] = b[i];
-            }
+            CurrentChunk.Instructions[at] = packet;
         }
-       
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndScope()
         {
@@ -798,7 +795,7 @@ namespace ULox
                 {
                     //switch to map
                     isList = false;
-                    compiler.WriteBytesAt(nativeTypeInstruction, (byte)OpCode.NATIVE_TYPE, (byte)NativeType.Map);
+                    compiler.WriteAt(nativeTypeInstruction, new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Map));
                 }
 
                 if (isList)

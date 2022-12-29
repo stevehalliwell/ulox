@@ -66,11 +66,11 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DoTestOpCode(Vm vm, Chunk chunk)
+        public void DoTestOpCode(Vm vm, Chunk chunk, ByteCodePacket.TestOpDetails testOpDetails)
         {
-            var testOpType = (TestOpType)vm.ReadByte(chunk);
-            var b1 = vm.ReadByte(chunk);
-            var b2 = vm.ReadByte(chunk);
+            var testOpType = testOpDetails.TestOpType;
+            var b1 = testOpDetails.b1;
+            var b2 = testOpDetails.b2;
             switch (testOpType)
             {
             case TestOpType.CaseStart:

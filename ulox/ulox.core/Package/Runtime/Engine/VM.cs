@@ -155,16 +155,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ReadByte(Chunk chunk)
+        public ByteCodePacket ReadPacket(Chunk chunk)
             => chunk.Instructions[_currentCallFrame.InstructionPointer++];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort ReadUShort(Chunk chunk)
-        {
-            var bhi = chunk.Instructions[_currentCallFrame.InstructionPointer++];
-            var blo = chunk.Instructions[_currentCallFrame.InstructionPointer++];
-            return (ushort)((bhi << 8) | blo);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PushNewCallframe(CallFrame callFrame)
@@ -227,27 +219,26 @@ namespace ULox
             {
                 var chunk = _currentCallFrame.Closure.chunk;
 
-                OpCode opCode = (OpCode)ReadByte(chunk);
+                var packet = ReadPacket(chunk);
+                var opCode = packet.OpCode;
 
                 switch (opCode)
                 {
                 case OpCode.CONSTANT:
-                    DoConstantOp(chunk);
+                    Push(chunk.ReadConstant(packet.b1));
                     break;
 
                 case OpCode.RETURN:
-                    if (DoReturnOp(chunk))
+                    if (DoReturnOp(chunk, packet.ReturnMode))
                         return InterpreterResult.OK;
 
                     break;
 
                 case OpCode.YIELD:
-                    ReadRestOfPacket(chunk);
                     return InterpreterResult.YIELD;
 
                 case OpCode.NEGATE:
                     Push(Value.New(-Pop().val.asDouble));
-                    ReadRestOfPacket(chunk);
                     break;
 
                 case OpCode.ADD:
@@ -255,106 +246,100 @@ namespace ULox
                 case OpCode.MULTIPLY:
                 case OpCode.DIVIDE:
                 case OpCode.MODULUS:
-                    ReadRestOfPacket(chunk);
                     DoMathOp(opCode);
                     break;
 
                 case OpCode.EQUAL:
                 case OpCode.LESS:
                 case OpCode.GREATER:
-                    ReadRestOfPacket(chunk);
                     DoComparisonOp(opCode);
                     break;
 
                 case OpCode.NOT:
-                    ReadRestOfPacket(chunk);
-                    DoNotOp();
+                    Push(Value.New(Pop().IsFalsey()));
                     break;
 
                 case OpCode.PUSH_BOOL:
-                    DoPushBoolOp(chunk);
+                    Push(Value.New(packet.BoolValue));
                     break;
 
                 case OpCode.NULL:
-                    ReadRestOfPacket(chunk);
-                    DoNullOp();
+                    Push(Value.Null());
                     break;
 
                 case OpCode.PUSH_BYTE:
-                    DoPushByteOp(chunk);
+                    Push(Value.New(packet.b1));
                     break;
 
                 case OpCode.POP:
-                    ReadRestOfPacket(chunk);
                     DiscardPop();
                     break;
 
                 case OpCode.SWAP:
-                    ReadRestOfPacket(chunk);
                     DoSwapOp();
                     break;
 
                 case OpCode.DUPLICATE:
-                    ReadRestOfPacket(chunk);
                     DoDuplicateOp();
                     break;
 
                 case OpCode.JUMP_IF_FALSE:
-                    DoJumpIfFalseOp(chunk);
+                    DoJumpIfFalseOp(chunk, packet.u1);
                     break;
 
                 case OpCode.JUMP:
-                    DoJumpOp(chunk);
+                    DoJumpOp(chunk, packet.u1);
                     break;
 
                 case OpCode.LOOP:
-                    DoLoopOp(chunk);
+                    DoLoopOp(chunk, packet.u1);
                     break;
 
                 case OpCode.GET_LOCAL:
-                    DoGetLocalOp(chunk);
+                    DoGetLocalOp(chunk, packet.b1);
                     break;
 
                 case OpCode.SET_LOCAL:
-                    DoSetLocalOp(chunk);
+                    DoSetLocalOp(chunk, packet.b1);
                     break;
 
                 case OpCode.GET_UPVALUE:
-                    DoGetUpvalueOp(chunk);
+                    DoGetUpvalueOp(chunk, packet.b1);
                     break;
 
                 case OpCode.SET_UPVALUE:
-                    DoSetUpvalueOp(chunk);
+                    DoSetUpvalueOp(chunk, packet.b1);
                     break;
 
                 case OpCode.DEFINE_GLOBAL:
-                    DoDefineGlobalOp(chunk);
+                    DoDefineGlobalOp(chunk, packet.b1);
                     break;
 
                 case OpCode.FETCH_GLOBAL:
-                    DoFetchGlobalOp(chunk);
+                    DoFetchGlobalOp(chunk, packet.b1);
                     break;
 
                 case OpCode.ASSIGN_GLOBAL:
-                    DoAssignGlobalOp(chunk);
+                    DoAssignGlobalOp(chunk, packet.b1);
                     break;
 
                 case OpCode.CALL:
-                    DoCallOp(chunk);
+                {
+                    var argCount = packet.b1;
+                    PushCallFrameFromValue(Peek(argCount), argCount);
+                }
                     break;
 
                 case OpCode.CLOSURE:
-                    DoClosureOp(chunk);
+                    DoClosureOp(chunk, packet.closureDetails);
                     break;
 
                 case OpCode.CLOSE_UPVALUE:
-                    ReadRestOfPacket(chunk);
                     DoCloseUpvalueOp();
                     break;
 
                 case OpCode.THROW:
                 {
-                    ReadRestOfPacket(chunk);
                     var frame = _callFrames.Peek();
                     var currentInstruction = frame.InstructionPointer;
                     throw new PanicException(
@@ -365,130 +350,115 @@ namespace ULox
                         GenerateCallStackDump());
                 }
                 case OpCode.BUILD:
-                    ReadRestOfPacket(chunk);
                     DoBuildOp(chunk);
                     break;
 
                 case OpCode.NATIVE_CALL:
-                    ReadRestOfPacket(chunk);
                     DoNativeCall(opCode);
                     break;
 
                 case OpCode.VALIDATE:
-                    DoValidateOp(chunk);
+                    DoValidateOp(chunk, packet.ValidateOp);
                     break;
 
                 case OpCode.GET_PROPERTY:
-                    DoGetPropertyOp(chunk);
+                    DoGetPropertyOp(chunk, packet.b1);
                     break;
 
                 case OpCode.SET_PROPERTY:
-                    DoSetPropertyOp(chunk);
+                    DoSetPropertyOp(chunk, packet.b1);
                     break;
 
                 case OpCode.TYPE:
-                    DoUserTypeOp(chunk);
+                    DoUserTypeOp(chunk, packet.typeDetails);
                     break;
 
                 case OpCode.METHOD:
-                    DoMethodOp(chunk);
+                    DoMethodOp(chunk, packet.b1);
                     break;
 
                 case OpCode.FIELD:
-                    DoFieldOp(chunk);
+                    DoFieldOp(chunk, packet.b1);
                     break;
 
                 case OpCode.MIXIN:
-                    ReadRestOfPacket(chunk);
                     DoMixinOp(chunk);
                     break;
 
                 case OpCode.INVOKE:
-                    DoInvokeOp(chunk);
+                    DoInvokeOp(chunk, packet);
                     break;
 
                 case OpCode.TEST:
-                    TestRunner.DoTestOpCode(this, chunk);
+                    TestRunner.DoTestOpCode(this, chunk, packet.testOpDetails);
                     break;
 
                 case OpCode.REGISTER:
-                    DoRegisterOp(chunk);
+                    DoRegisterOp(chunk, packet.b1);
                     break;
 
                 case OpCode.INJECT:
-                    DoInjectOp(chunk);
+                    DoInjectOp(chunk, packet.b1);
                     break;
 
                 case OpCode.FREEZE:
-                    ReadRestOfPacket(chunk);
                     DoFreezeOp();
                     break;
 
                 case OpCode.NATIVE_TYPE:
-                    DoNativeTypeOp(chunk);
+                    DoNativeTypeOp(chunk, packet.NativeType);
                     break;
 
                 case OpCode.GET_INDEX:
-                    ReadRestOfPacket(chunk);
                     DoGetIndexOp(opCode);
                     break;
 
                 case OpCode.SET_INDEX:
-                    ReadRestOfPacket(chunk);
                     DoSetIndexOp(opCode);
                     break;
 
                 case OpCode.EXPAND_COPY_TO_STACK:
-                    ReadRestOfPacket(chunk);
                     DoExpandCopyToStackOp(opCode);
                     break;
 
                 case OpCode.TYPEOF:
-                    ReadRestOfPacket(chunk);
                     DoTypeOfOp();
                     break;
 
                 //can merge into validate, this is not perf critical
                 case OpCode.MEETS:
-                    ReadRestOfPacket(chunk);
                     DoMeetsOp();
                     break;
 
                 //can merge into validate, this is not perf critical
                 case OpCode.SIGNS:
-                    ReadRestOfPacket(chunk);
                     DoSignsOp();
                     break;
 
                 case OpCode.COUNT_OF:
-                    ReadRestOfPacket(chunk);
                     DoCountOfOp();
                     break;
 
                 case OpCode.EXPECT:
-                    ReadRestOfPacket(chunk);
                     DoExpectOp();
                     break;
 
                 case OpCode.GOTO:
-                    DoGotoOp(chunk);
+                    DoGotoOp(chunk, packet.b1);
                     break;
 
                 case OpCode.GOTO_IF_FALSE:
-                    DoGotoIfFalseOp(chunk);
+                    DoGotoIfFalseOp(chunk, packet.b1);
                     break;
 
                 case OpCode.LABEL:
-                    ReadRestOfPacket(chunk);
                     break;
 
                 case OpCode.ENUM_VALUE:
-                    ReadRestOfPacket(chunk);
                     DoEnumValueOp(chunk);
                     break;
 
                 case OpCode.READ_ONLY:
-                    ReadRestOfPacket(chunk);
                     DoReadOnlyOp(chunk);
                     break;
 
@@ -498,14 +468,6 @@ namespace ULox
                     break;
                 }
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReadRestOfPacket(Chunk chunk)
-        {
-            ReadByte(chunk);
-            ReadByte(chunk);
-            ReadByte(chunk);
         }
 
         public void ThrowRuntimeException(string msg)
@@ -599,26 +561,16 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGotoOp(Chunk chunk)
+        private void DoGotoOp(Chunk chunk, byte labelID)
         {
-            var labelID = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             var labelPos = chunk.GetLabelPosition(labelID);
-
+            
             _currentCallFrame.InstructionPointer = labelPos;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGotoIfFalseOp(Chunk chunk)
+        private void DoGotoIfFalseOp(Chunk chunk, byte labelID)
         {
-            var labelID = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             var labelPos = chunk.GetLabelPosition(labelID);
 
             if (Peek().IsFalsey())
@@ -748,13 +700,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNativeTypeOp(Chunk chunk)
+        private void DoNativeTypeOp(Chunk chunk, NativeType nativeTypeRequested)
         {
-            var nativeTypeRequested = (NativeType)ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             switch (nativeTypeRequested)
             {
             case NativeType.List:
@@ -780,26 +727,10 @@ namespace ULox
             CloseUpvalues(_valueStack.Count - 1);
             DiscardPop();
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoCallOp(Chunk chunk)
+        private void DoSetUpvalueOp(Chunk chunk, byte slot)
         {
-            int argCount = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-            
-            PushCallFrameFromValue(Peek(argCount), argCount);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetUpvalueOp(Chunk chunk)
-        {
-            var slot = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             var upval = _currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
             if (!upval.isClosed)
                 _valueStack[upval.index] = Peek();
@@ -808,13 +739,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetUpvalueOp(Chunk chunk)
+        private void DoGetUpvalueOp(Chunk chunk, byte slot)
         {
-            var slot = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             var upval = _currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
             if (!upval.isClosed)
                 Push(_valueStack[upval.index]);
@@ -823,111 +749,39 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetLocalOp(Chunk chunk)
+        private void DoSetLocalOp(Chunk chunk, byte slot)
         {
-            var slot = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             _valueStack[_currentCallFrame.StackStart + slot] = Peek();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetLocalOp(Chunk chunk)
+        private void DoGetLocalOp(Chunk chunk, byte slot)
         {
-            var slot = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             Push(_valueStack[_currentCallFrame.StackStart + slot]);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoLoopOp(Chunk chunk)
+        private void DoLoopOp(Chunk chunk, ushort jump)
         {
-            ushort jump = ReadUShort(chunk);
-            //rest of packet
-            ReadByte(chunk);
-
             _currentCallFrame.InstructionPointer -= jump;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoJumpOp(Chunk chunk)
+        private void DoJumpOp(Chunk chunk, ushort jump)
         {
-            ushort jump = ReadUShort(chunk);
-            //rest of packet
-            ReadByte(chunk);
-
             _currentCallFrame.InstructionPointer += jump;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoJumpIfFalseOp(Chunk chunk)
+        private void DoJumpIfFalseOp(Chunk chunk, ushort jump)
         {
-            ushort jump = ReadUShort(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            
             if (Peek().IsFalsey())
                 _currentCallFrame.InstructionPointer += jump;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoPushByteOp(Chunk chunk)
+        private void DoValidateOp(Chunk chunk, ValidateOp validateOp)
         {
-            var b = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-            
-            Push(Value.New(b));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNullOp()
-        {
-            Push(Value.Null());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoPushBoolOp(Chunk chunk)
-        {
-            var b = ReadByte(chunk);
-            //rest of packet
-            ReadByte(chunk); 
-            ReadByte(chunk);
-            
-            Push(Value.New(b == 1));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNotOp()
-        {
-            Push(Value.New(Pop().IsFalsey()));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoConstantOp(Chunk chunk)
-        {
-            var constantIndex = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-            
-            Push(chunk.ReadConstant(constantIndex));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoValidateOp(Chunk chunk)
-        {
-            var validateOp = (ValidateOp)ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-            
             switch (validateOp)
             {
             case ValidateOp.MultiReturnMatches:
@@ -993,14 +847,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoAssignGlobalOp(Chunk chunk)
+        private void DoAssignGlobalOp(Chunk chunk, byte globalId)
         {
-            var global = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
-            var globalName = chunk.ReadConstant(global);
+            var globalName = chunk.ReadConstant(globalId);
             var actualName = globalName.val.asString;
             if (!_globals.ContainsKey(actualName))
             {
@@ -1010,14 +859,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoFetchGlobalOp(Chunk chunk)
+        private void DoFetchGlobalOp(Chunk chunk, byte globalId)
         {
-            var global = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-            
-            var globalName = chunk.ReadConstant(global);
+            var globalName = chunk.ReadConstant(globalId);
             var actualName = globalName.val.asString;
 
             if (_globals.TryGetValue(actualName, out var found))
@@ -1031,23 +875,18 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoDefineGlobalOp(Chunk chunk)
+        private void DoDefineGlobalOp(Chunk chunk, byte globalId)
         {
-            var global = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
-            var globalName = chunk.ReadConstant(global);
+            var globalName = chunk.ReadConstant(globalId);
             _globals[globalName.val.asString] = Pop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoClosureOp(Chunk chunk)
+        private void DoClosureOp(Chunk chunk, ByteCodePacket.ClosureDetails closureDetails)
         {
-            var type = (ClosureType)ReadByte(chunk);
-            var b1 = ReadByte(chunk);
-            var b2 = ReadByte(chunk);
+            var type = closureDetails.ClosureType;
+            var b1 = closureDetails.b1;
+            var b2 = closureDetails.b2;
             ClosureInternal closure = default;
             
             if (type == ClosureType.Closure)
@@ -1069,10 +908,9 @@ namespace ULox
             
             for (int i = 0; i < closure.upvalues.Length; i++)
             {
-                ReadByte(chunk);   //op
-                var _ = (ClosureType)ReadByte(chunk);   //type
-                var isLocal = ReadByte(chunk);
-                var index = ReadByte(chunk);
+                var packet = ReadPacket(chunk);
+                var isLocal = packet.closureDetails.b1;
+                var index = packet.closureDetails.b2;
                 if (isLocal == 1)
                 {
                     var local = _currentCallFrame.StackStart + index;
@@ -1086,14 +924,10 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoReturnOp(Chunk chunk)
+        private bool DoReturnOp(Chunk chunk, ReturnMode returnMode)
         {
             var origCallFrameCount = _callFrames.Count;
             var wantsToYieldOnReturn = _currentCallFrame.YieldOnReturn;
-            var returnMode = (ReturnMode)ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
             
             switch (returnMode)
             {
@@ -1440,17 +1274,17 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoUserTypeOp(Chunk chunk)
+        private void DoUserTypeOp(Chunk chunk, ByteCodePacket.TypeDetails typeDetails)
         {
-            var constantIndex = ReadByte(chunk);
+            var constantIndex = typeDetails.stringConstantId;
             var name = chunk.ReadConstant(constantIndex);
-            var userType = (UserType)ReadByte(chunk);
+            var userType = typeDetails.UserType;
             UserTypeInternal klass = userType == UserType.Enum
                 ? new EnumClass(name.val.asString)
                 : new UserTypeInternal(name.val.asString, userType);
             var klassValue = Value.New(klass);
             Push(klassValue);
-            var initChainLabelID = ReadByte(chunk);
+            var initChainLabelID = typeDetails.initLabelId;
             var initChain = chunk.Labels[initChainLabelID];
             if (initChain != 0)
             {
@@ -1479,13 +1313,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInjectOp(Chunk chunk)
+        private void DoInjectOp(Chunk chunk, byte constantIndex)
         {
-            var constantIndex = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             var name = chunk.ReadConstant(constantIndex).val.asString;
             if (DiContainer.TryGetValue(name, out var found))
                 Push(found);
@@ -1494,20 +1323,15 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoRegisterOp(Chunk chunk)
+        private void DoRegisterOp(Chunk chunk, byte constantIndex)
         {
-            var constantIndex = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             var name = chunk.ReadConstant(constantIndex).val.asString;
             var implementation = Pop();
             DiContainer.Set(name, implementation);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetPropertyOp(Chunk chunk)
+        private void DoGetPropertyOp(Chunk chunk, byte constantIndex)
         {
             //use class to build a cached route to the field, introduce an cannot cache instruction
             //  once there are class vars this can be done through that as those are known and safe, not
@@ -1534,12 +1358,7 @@ namespace ULox
                 instance = targetVal.val.asInstance;
                 break;
             }
-
-            var constantIndex = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
+            
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
             if (instance.TryGetField(name, out var val))
@@ -1553,7 +1372,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetPropertyOp(Chunk chunk)
+        private void DoSetPropertyOp(Chunk chunk, byte constantIndex)
         {
             var targetVal = Peek(1);
 
@@ -1572,12 +1391,7 @@ namespace ULox
                 instance = targetVal.val.asInstance;
                 break;
             }
-
-            var constantIndex = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
+            
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
             instance.SetField(name, Peek());
@@ -1588,12 +1402,10 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInvokeOp(Chunk chunk)
+        private void DoInvokeOp(Chunk chunk, ByteCodePacket packet)
         {
-            var constantIndex = ReadByte(chunk);
-            var argCount = ReadByte(chunk);
-            //read the rest of the packet
-            ReadByte(chunk);
+            var constantIndex = packet.b1;
+            var argCount = packet.b2;
             
             var methodName = chunk.ReadConstant(constantIndex).val.asString;
 
@@ -1642,13 +1454,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMethodOp(Chunk chunk)
+        private void DoMethodOp(Chunk chunk, byte constantIndex)
         {
-            var constantIndex = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             var name = chunk.ReadConstant(constantIndex).val.asString;
             Value method = Peek();
             var klass = Peek(1).val.asClass;
@@ -1657,13 +1464,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoFieldOp(Chunk chunk)
+        private void DoFieldOp(Chunk chunk, byte constantIndex)
         {
-            var constantIndex = ReadByte(chunk);
-            //rest of the packet
-            ReadByte(chunk);
-            ReadByte(chunk);
-
             var klass = Pop().val.asClass;
             klass.AddFieldName(chunk.ReadConstant(constantIndex).val.asString);
         }

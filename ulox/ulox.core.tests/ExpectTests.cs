@@ -51,7 +51,7 @@ expect true and 1 == 2/2 : ""a message"";"
 expect false;"
             );
 
-            StringAssert.Contains("Expect failed, got falsey at ip:'12'", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, got falsey at ip:'3'", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -61,7 +61,7 @@ expect false;"
 expect false : ""a message"";"
             );
 
-            StringAssert.Contains("Expect failed, got a message at ip:'12'", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, got a message at ip:'3'", testEngine.InterpreterResult);
         }
 
         [Test]

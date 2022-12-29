@@ -30,15 +30,10 @@
             CurrentChunk = chunk;
             for (CurrentInstructionIndex = 0; CurrentInstructionIndex < chunk.Instructions.Count; CurrentInstructionIndex++)
             {
-                var opCode = (OpCode)chunk.Instructions[CurrentInstructionIndex];
+                var packet = chunk.Instructions[CurrentInstructionIndex];
 
                 CurrentInstructionIndex++;
-                var b1 = chunk.Instructions[CurrentInstructionIndex];
-                CurrentInstructionIndex++;
-                var b2 = chunk.Instructions[CurrentInstructionIndex];
-                CurrentInstructionIndex++;
-                var b3 = chunk.Instructions[CurrentInstructionIndex];
-                ProcessPacket(new ByteCodePacket(opCode, b1, b2, b3));
+                ProcessPacket(packet);
             }
         }
 

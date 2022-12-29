@@ -21,7 +21,7 @@ namespace ULox
         private readonly Dictionary<byte, int> _labelIdToInstruction = new Dictionary<byte, int>();
         private int instructionCount = -1;
 
-        public List<byte> Instructions { get; private set; } = new List<byte>(InstructionStartingCapacity);
+        public List<ByteCodePacket> Instructions { get; private set; } = new List<ByteCodePacket>(InstructionStartingCapacity);
         public List<byte> ArgumentConstantIds { get; private set; } = new List<byte>(50);
         public IReadOnlyList<Value> Constants => _constants.AsReadOnly();
         public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
@@ -56,34 +56,18 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteByte(byte b, int line)
-        {
-            Instructions.Add(b);
-            AddLine(line);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddConstantAndWriteInstruction(Value val, int line)
         {
             var at = AddConstant(val);
             WritePacket(new ByteCodePacket(OpCode.CONSTANT, at, 0, 0), line);
             return at;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteSimple(OpCode opCode, int line)
-        {
-            Instructions.Add((byte)opCode);
-            AddLine(line);
-        }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WritePacket(ByteCodePacket packet, int line)
         {
-            WriteByte(packet._opCode, line);
-            WriteByte(packet.b1, line);
-            WriteByte(packet.b2, line);
-            WriteByte(packet.b3, line);
+            Instructions.Add(packet);
+            AddLine(line);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

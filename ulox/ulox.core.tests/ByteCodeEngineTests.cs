@@ -686,7 +686,7 @@ Assert.AreEqual(1,1);
 Assert.AreEqual(1,2);
 Assert.AreEqual(1,1);");
 
-            StringAssert.StartsWith("'1' does not equal '2' at ip:'4' in native:'AreEqual'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("'1' does not equal '2' at ip:'1' in native:'AreEqual'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -861,7 +861,7 @@ fun InnerMain()
 var innerVM = VM();
 innerVM.Start(InnerMain);");
 
-            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'8' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
+            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'2' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
         }
 
         [Test]
@@ -923,7 +923,7 @@ register Seven 7;");
             testEngine.Run(@"
 var s = inject Seven;");
 
-            StringAssert.StartsWith("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'4' in chunk:'unnamed_chunk(test:2)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'1' in chunk:'unnamed_chunk(test:2)'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1024,7 +1024,7 @@ var c = b + a;
 "
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'28' in chunk:'unnamed_chunk(test:4)'.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'7' in chunk:'unnamed_chunk(test:4)'.
 ===Stack===
 <closure unnamed_chunk upvals:0>
 
@@ -1046,7 +1046,7 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'12' in chunk:'f(test:5)'.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'3' in chunk:'f(test:5)'.
 ===Stack===
 1
 null

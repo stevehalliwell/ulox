@@ -53,9 +53,9 @@ namespace ULox
             compiler.Expression();
 
             compiler.EmitReturnPacket(ReturnMode.MarkMultiReturnAssignEnd);
-
-            compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)varNames.Count);
-            compiler.EmitOpAndBytes(OpCode.VALIDATE, (byte)ValidateOp.MultiReturnMatches);
+            
+            compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, (byte)varNames.Count,0,0));
+            compiler.EmitValidatePacket(ValidateOp.MultiReturnMatches);
 
             //we don't really want to reverse these, as we want things kike (a,b) = fun return (1,2,3); ends up with 1,2
             for (int i = 0; i < varNames.Count; i++)

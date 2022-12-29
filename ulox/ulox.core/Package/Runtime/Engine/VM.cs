@@ -740,6 +740,10 @@ namespace ULox
         private void DoNativeTypeOp(Chunk chunk)
         {
             var nativeTypeRequested = (NativeType)ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             switch (nativeTypeRequested)
             {
             case NativeType.List:
@@ -770,6 +774,10 @@ namespace ULox
         private void DoCallOp(Chunk chunk)
         {
             int argCount = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+            
             PushCallFrameFromValue(Peek(argCount), argCount);
         }
 
@@ -835,6 +843,10 @@ namespace ULox
         private void DoPushByteOp(Chunk chunk)
         {
             var b = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+            
             Push(Value.New(b));
         }
 
@@ -865,6 +877,10 @@ namespace ULox
         private void DoConstantOp(Chunk chunk)
         {
             var constantIndex = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+            
             Push(chunk.ReadConstant(constantIndex));
         }
 
@@ -872,6 +888,10 @@ namespace ULox
         private void DoValidateOp(Chunk chunk)
         {
             var validateOp = (ValidateOp)ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+            
             switch (validateOp)
             {
             case ValidateOp.MultiReturnMatches:
@@ -970,6 +990,10 @@ namespace ULox
         private void DoDefineGlobalOp(Chunk chunk)
         {
             var global = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var globalName = chunk.ReadConstant(global);
             _globals[globalName.val.asString] = Pop();
         }
@@ -1009,6 +1033,7 @@ namespace ULox
             //rest of the packet
             ReadByte(chunk);
             ReadByte(chunk);
+            
             switch (returnMode)
             {
             case ReturnMode.One:
@@ -1442,6 +1467,10 @@ namespace ULox
             }
 
             var constantIndex = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
             if (instance.TryGetField(name, out var val))
@@ -1476,6 +1505,10 @@ namespace ULox
             }
 
             var constantIndex = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
             instance.SetField(name, Peek());
@@ -1540,6 +1573,10 @@ namespace ULox
         private void DoMethodOp(Chunk chunk)
         {
             var constantIndex = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var name = chunk.ReadConstant(constantIndex).val.asString;
             Value method = Peek();
             var klass = Peek(1).val.asClass;

@@ -65,10 +65,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddConstantAndWriteInstruction(Value val, int line)
         {
-            Instructions.Add((byte)OpCode.CONSTANT);
             var at = AddConstant(val);
-            Instructions.Add(at);
-            AddLine(line);
+            WritePacket(new ByteCodePacket(OpCode.CONSTANT, at, 0, 0), line);
             return at;
         }
 

@@ -61,7 +61,7 @@ expect false;"
 expect false : ""a message"";"
             );
 
-            StringAssert.Contains("Expect failed, got a message at ip:'10'", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, got a message at ip:'12'", testEngine.InterpreterResult);
         }
 
         [Test]

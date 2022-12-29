@@ -250,13 +250,15 @@ namespace ULox
             case OpCode.NONE:
                 break;
             case OpCode.CONSTANT:
-                break;
+                DoConstant(packet);
+            break;
             case OpCode.NULL:
                 break;
             case OpCode.PUSH_BOOL:
                 stringBuilder.Append($"({packet.BoolValue})");
                 break;
             case OpCode.PUSH_BYTE:
+                stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.POP:
                 break;
@@ -265,6 +267,7 @@ namespace ULox
             case OpCode.DUPLICATE:
                 break;
             case OpCode.DEFINE_GLOBAL:
+                DoConstant(packet);
                 break;
             case OpCode.FETCH_GLOBAL:
                 break;
@@ -307,6 +310,7 @@ namespace ULox
             case OpCode.MODULUS:
                 break;
             case OpCode.CALL:
+                stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.CLOSURE:
                 break;
@@ -320,14 +324,18 @@ namespace ULox
             case OpCode.THROW:
                 break;
             case OpCode.VALIDATE:
+                stringBuilder.Append($"({packet.ValidateOp})");
                 break;
             case OpCode.TYPE:
                 break;
             case OpCode.GET_PROPERTY:
+                DoConstant(packet);
                 break;
             case OpCode.SET_PROPERTY:
+                DoConstant(packet);
                 break;
             case OpCode.METHOD:
+                DoConstant(packet);
                 break;
             case OpCode.FIELD:
                 break;
@@ -346,6 +354,7 @@ namespace ULox
             case OpCode.INJECT:
                 break;
             case OpCode.NATIVE_TYPE:
+                stringBuilder.Append($"({packet.NativeType})");
                 break;
             case OpCode.GET_INDEX:
                 break;
@@ -376,6 +385,12 @@ namespace ULox
             default:
                 break;
             }
+        }
+
+        private void DoConstant(ByteCodePacket packet)
+        {
+            var sc = packet.b1;
+            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
         }
     }
 }

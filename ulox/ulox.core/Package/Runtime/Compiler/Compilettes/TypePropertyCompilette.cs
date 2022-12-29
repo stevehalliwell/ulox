@@ -69,7 +69,7 @@
                 }
 
                 //emit set prop
-                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant,0,0));
                 compiler.EmitPop();
                 //emit jump // to move to next prop init fragment, defaults to jump nowhere return
                 _typeCompilette.PreviousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitFragmentJump");

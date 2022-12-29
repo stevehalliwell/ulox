@@ -8,6 +8,8 @@ namespace ULox
     {
         public OpCode OpCode => (OpCode)_opCode;
         public ReturnMode ReturnMode => (ReturnMode)b1;
+        public NativeType NativeType => (NativeType)b1;
+        public ValidateOp ValidateOp => (ValidateOp)b1;
         public bool BoolValue => b1 != 0;
 
         [FieldOffset(0)]
@@ -34,6 +36,16 @@ namespace ULox
         public ByteCodePacket(OpCode opCode, ReturnMode returnMode) : this(opCode)
         {
             b1 = (byte)returnMode;
+        }
+
+        public ByteCodePacket(OpCode opCode, NativeType nativeType) : this(opCode)
+        {
+            b1 = (byte)nativeType;
+        }
+
+        public ByteCodePacket(OpCode opCode, ValidateOp validateOp) : this(opCode)
+        {
+            b1 = (byte)validateOp;
         }
 
         public ByteCodePacket(OpCode opCode, bool b) : this(opCode)
@@ -101,6 +113,15 @@ namespace ULox
                 case OpCode.BUILD:
                 case OpCode.RETURN:
                 case OpCode.PUSH_BOOL:
+                case OpCode.PUSH_BYTE:
+                case OpCode.CALL:
+                case OpCode.NATIVE_TYPE:
+                case OpCode.VALIDATE:
+                case OpCode.CONSTANT:
+                case OpCode.DEFINE_GLOBAL:
+                case OpCode.GET_PROPERTY:
+                case OpCode.SET_PROPERTY:
+                case OpCode.METHOD:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -123,14 +144,10 @@ namespace ULox
                     ProcessOp(opCode);
                     break;
 
-                case OpCode.PUSH_BYTE:
                 case OpCode.GET_LOCAL:
                 case OpCode.SET_LOCAL:
                 case OpCode.GET_UPVALUE:
                 case OpCode.SET_UPVALUE:
-                case OpCode.CALL:
-                case OpCode.NATIVE_TYPE:
-                case OpCode.VALIDATE:
                 {
                     CurrentInstructionIndex++;
                     var b = chunk.Instructions[CurrentInstructionIndex];
@@ -138,13 +155,8 @@ namespace ULox
                 }
                 break;
 
-                case OpCode.CONSTANT:
-                case OpCode.DEFINE_GLOBAL:
                 case OpCode.FETCH_GLOBAL:
                 case OpCode.ASSIGN_GLOBAL:
-                case OpCode.GET_PROPERTY:
-                case OpCode.SET_PROPERTY:
-                case OpCode.METHOD:
                 case OpCode.FIELD:
                 case OpCode.REGISTER:
                 case OpCode.INJECT:

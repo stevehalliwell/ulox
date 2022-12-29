@@ -39,7 +39,7 @@ namespace ULox
                 compiler.DeclareAndDefineCustomVariable("testDataRow");
                 compiler.EmitNULL();
                 compiler.DeclareAndDefineCustomVariable("testDataIndex");
-                compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 0,0,0));
                 compiler.Expression();
                 var (_, _, res) = compiler.ResolveNameLookupOpCode("testDataSource");
                 testDataSourceLocalId = res;
@@ -152,7 +152,7 @@ namespace ULox
         public static void IncrementLocalByOne(Compiler compiler, byte indexArgID)
         {
             compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
-            compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 1);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 1,0,0));
             compiler.EmitOpCode(OpCode.ADD);
             compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
             compiler.EmitPop();

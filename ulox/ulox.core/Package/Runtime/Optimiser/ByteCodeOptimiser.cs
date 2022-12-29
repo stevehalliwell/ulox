@@ -123,10 +123,6 @@ namespace ULox
         {
         }
 
-        protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
-        {
-        }
-
         private void AddLabelUsage(byte labelId)
         {
             _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));

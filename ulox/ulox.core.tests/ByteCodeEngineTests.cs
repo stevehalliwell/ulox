@@ -861,7 +861,7 @@ fun InnerMain()
 var innerVM = VM();
 innerVM.Start(InnerMain);");
 
-            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'6' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
+            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'8' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1024,7 +1024,7 @@ var c = b + a;
 "
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'24' in chunk:'unnamed_chunk(test:4)'.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'28' in chunk:'unnamed_chunk(test:4)'.
 ===Stack===
 <closure unnamed_chunk upvals:0>
 
@@ -1046,7 +1046,7 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'8' in chunk:'f(test:5)'.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'12' in chunk:'f(test:5)'.
 ===Stack===
 1
 null

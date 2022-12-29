@@ -49,7 +49,7 @@ namespace ULox
                 }
 
 
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
+                compiler.EmitPacketByte(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
                 compiler.EmitPacket(OpCode.ENUM_VALUE);
                 
                 compiler.TokenIterator.Match(TokenType.COMMA);

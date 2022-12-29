@@ -97,11 +97,6 @@ namespace ULox
             }
         }
 
-        protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
-        {
-            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
-        }
-
         protected override void ProcessOpAndByte(OpCode opCode, byte b)
         {
             stringBuilder.Append($"({b})");
@@ -180,16 +175,22 @@ namespace ULox
                 DoConstant(packet);
                 break;
             case OpCode.FETCH_GLOBAL:
+                DoConstant(packet);
                 break;
             case OpCode.ASSIGN_GLOBAL:
+                DoConstant(packet);
                 break;
             case OpCode.GET_LOCAL:
+                stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.SET_LOCAL:
+                stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.GET_UPVALUE:
+                stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.SET_UPVALUE:
+                stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.CLOSE_UPVALUE:
                 break;

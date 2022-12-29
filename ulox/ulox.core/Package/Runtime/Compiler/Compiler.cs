@@ -136,11 +136,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetPrattRule(TokenType tt, IParseRule rule)
             => _prattParser.SetPrattRule(tt, rule);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitOpCode(OpCode op)
-            => CurrentChunk.WriteSimple(op, TokenIterator.PreviousToken.Line);
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(ByteCodePacket packet)
             => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
@@ -176,18 +172,15 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(OpCode opCode)
             => EmitPacket(new ByteCodePacket(opCode));
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitPacketByte(OpCode opCode, byte b)
+            => EmitPacket(new ByteCodePacket(opCode, b,0,0));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitNULL()
             => EmitPacket(OpCode.NULL);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitOpCodes(params OpCode[] ops)
-        {
-            for (int i = 0; i < ops.Length; i++)
-                EmitOpCode(ops[i]);
-        }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddStringConstant()
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
@@ -199,18 +192,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddCustomStringConstant(string str)
             => CurrentChunk.AddConstant(Value.New(str));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitOpAndBytes(OpCode op, params byte[] b)
-        {
-            EmitOpCode(op);
-            EmitBytes(b);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUShortAt(int at, ushort us)
-            => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WriteBytesAt(int at, params byte[] b)
         {
@@ -219,20 +201,7 @@ namespace ULox
                 CurrentChunk.Instructions[at + i] = b[i];
             }
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-
-        public void EmitBytes(params byte[] b)
-        {
-            for (int i = 0; i < b.Length; i++)
-            {
-                CurrentChunk.WriteByte(b[i], TokenIterator.PreviousToken.Line);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitUShort(ushort us)
-            => EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
-
+       
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndScope()
         {
@@ -372,7 +341,7 @@ namespace ULox
 
             if (!canAssign)
             {
-                EmitOpAndBytes(getOp, argId);
+                EmitPacketByte(getOp, argId);
                 return;
             }
 
@@ -381,7 +350,7 @@ namespace ULox
                 Expression();
                 ConfirmWrite(name, argId);
 
-                EmitOpAndBytes(setOp, argId);
+                EmitPacketByte(setOp, argId);
                 return;
             }
 
@@ -391,7 +360,7 @@ namespace ULox
                 return;
             }
 
-            EmitOpAndBytes(getOp, argId);
+            EmitPacketByte(getOp, argId);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -429,7 +398,7 @@ namespace ULox
                 Expression();
 
                 //expand the compound op
-                EmitOpAndBytes(getOp, argId);
+                EmitPacketByte(getOp, argId);
                 EmitPacket(OpCode.SWAP);
 
                 // self assign ops have to be done here as they tail the previous ordered instructions
@@ -456,7 +425,7 @@ namespace ULox
                     break;
                 }
 
-                EmitOpAndBytes(setOp, argId);
+                EmitPacketByte(setOp, argId);
                 return true;
             }
             return false;
@@ -520,7 +489,7 @@ namespace ULox
         private void PreEmptyReturnEmit()
         {
             if (CurrentCompilerState.functionType == FunctionType.Init)
-                EmitOpAndBytes(OpCode.GET_LOCAL, 0);
+                EmitPacketByte(OpCode.GET_LOCAL, 0);
             else
                 EmitNULL();
         }
@@ -676,7 +645,7 @@ namespace ULox
             CurrentCompilerState.MarkInitialised();
             var itemArgId = (byte)CurrentCompilerState.ResolveLocal(this, itemName);
             EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 0, 0, 0));
-            EmitOpAndBytes(OpCode.SET_LOCAL, itemArgId);
+            EmitPacketByte(OpCode.SET_LOCAL, itemArgId);
             return itemArgId;
         }
 
@@ -969,7 +938,7 @@ namespace ULox
                     compiler.EmitLabel((byte)lastElseLabel);
 
                 compiler.Expression();
-                compiler.EmitOpAndBytes(matchGetOp, matchArgID);
+                compiler.EmitPacketByte(matchGetOp, matchArgID);
                 compiler.EmitPacket(OpCode.EQUAL);
                 lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
@@ -1104,7 +1073,7 @@ namespace ULox
                 if (!requirePop)
                 {
                     var (getOp, _, argId) = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
-                    compiler.EmitOpAndBytes(getOp, argId);
+                    compiler.EmitPacketByte(getOp, argId);
                 }
             }
         }

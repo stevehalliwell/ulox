@@ -796,6 +796,10 @@ namespace ULox
         private void DoSetUpvalueOp(Chunk chunk)
         {
             var slot = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var upval = _currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
             if (!upval.isClosed)
                 _valueStack[upval.index] = Peek();
@@ -807,6 +811,10 @@ namespace ULox
         private void DoGetUpvalueOp(Chunk chunk)
         {
             var slot = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var upval = _currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
             if (!upval.isClosed)
                 Push(_valueStack[upval.index]);
@@ -818,6 +826,10 @@ namespace ULox
         private void DoSetLocalOp(Chunk chunk)
         {
             var slot = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             _valueStack[_currentCallFrame.StackStart + slot] = Peek();
         }
 
@@ -825,6 +837,10 @@ namespace ULox
         private void DoGetLocalOp(Chunk chunk)
         {
             var slot = ReadByte(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             Push(_valueStack[_currentCallFrame.StackStart + slot]);
         }
 
@@ -980,6 +996,10 @@ namespace ULox
         private void DoAssignGlobalOp(Chunk chunk)
         {
             var global = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+
             var globalName = chunk.ReadConstant(global);
             var actualName = globalName.val.asString;
             if (!_globals.ContainsKey(actualName))
@@ -993,6 +1013,10 @@ namespace ULox
         private void DoFetchGlobalOp(Chunk chunk)
         {
             var global = ReadByte(chunk);
+            //rest of the packet
+            ReadByte(chunk);
+            ReadByte(chunk);
+            
             var globalName = chunk.ReadConstant(global);
             var actualName = globalName.val.asString;
 

@@ -23,7 +23,7 @@
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name.");
                 byte nameConstant = compiler.AddStringConstant();
 
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
+                compiler.EmitPacketByte(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
 
                 //if = consume it and then
                 //eat 1 expression or a push null

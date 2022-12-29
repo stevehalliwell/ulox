@@ -211,7 +211,6 @@ namespace ULox
                 case OpCode.NATIVE_TYPE:
                 case OpCode.VALIDATE:
                 case OpCode.CONSTANT:
-                case OpCode.DEFINE_GLOBAL:
                 case OpCode.GET_PROPERTY:
                 case OpCode.SET_PROPERTY:
                 case OpCode.METHOD:
@@ -237,6 +236,13 @@ namespace ULox
                 case OpCode.EQUAL:
                 case OpCode.TEST:
                 case OpCode.CLOSURE:
+                case OpCode.DEFINE_GLOBAL:
+                case OpCode.FETCH_GLOBAL:
+                case OpCode.ASSIGN_GLOBAL:
+                case OpCode.GET_LOCAL:
+                case OpCode.SET_LOCAL:
+                case OpCode.GET_UPVALUE:
+                case OpCode.SET_UPVALUE:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -247,26 +253,6 @@ namespace ULox
                     ProcessPacket(new ByteCodePacket(opCode,b1,b2,b3));
                 }
                     break;
-
-                case OpCode.GET_LOCAL:
-                case OpCode.SET_LOCAL:
-                case OpCode.GET_UPVALUE:
-                case OpCode.SET_UPVALUE:
-                {
-                    CurrentInstructionIndex++;
-                    var b = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessOpAndByte(opCode, b);
-                }
-                break;
-
-                case OpCode.FETCH_GLOBAL:
-                case OpCode.ASSIGN_GLOBAL:
-                {
-                    CurrentInstructionIndex++;
-                    var sc = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessOpAndStringConstant(opCode, sc);
-                }
-                break;
                 
                 default:
                     throw new UloxException($"Unhandled OpCode '{opCode}'.");
@@ -276,7 +262,6 @@ namespace ULox
             }
         }
         
-        protected abstract void ProcessOpAndStringConstant(OpCode opCode, byte sc);
         protected abstract void PostChunkIterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void PreChunkInterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void DefaultOpCode(OpCode opCode);
@@ -284,17 +269,5 @@ namespace ULox
         protected abstract void ProcessOpAndByte(OpCode opCode, byte b);
         protected abstract void ProcessOp(OpCode opCode);
         protected abstract void ProcessPacket(ByteCodePacket packet);
-
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int ReadUShort(Chunk chunk, int i, out ushort ushortValue)
-        {
-            i++;
-            var bhi = chunk.Instructions[i];
-            i++;
-            var blo = chunk.Instructions[i];
-            ushortValue = (ushort)((bhi << 8) | blo);
-            return i;
-        }
     }
 }

@@ -154,6 +154,10 @@ namespace ULox
             => EmitPacket(new ByteCodePacket(OpCode.VALIDATE, validateOp));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitInvokePacket(byte constantNameId, byte argCount)
+            => EmitPacket(new ByteCodePacket(OpCode.INVOKE,constantNameId, argCount,0));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitBoolPacket(bool b)
             => EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, b));
 
@@ -820,8 +824,9 @@ namespace ULox
 
                 if (isList)
                 {
-                    var addNameID = compiler.AddCustomStringConstant("Add");
-                    compiler.EmitOpAndBytes(OpCode.INVOKE, addNameID, 1);
+                    var constantNameId = compiler.AddCustomStringConstant("Add");
+                    var argCount = (byte)1;
+                    compiler.EmitInvokePacket(constantNameId, argCount);
                 }
                 else
                 {
@@ -868,7 +873,7 @@ namespace ULox
             else if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 var argCount = compiler.ArgumentList();
-                compiler.EmitOpAndBytes(OpCode.INVOKE, nameId, argCount);
+                compiler.EmitInvokePacket(nameId, argCount);
             }
             else
             {

@@ -21,6 +21,9 @@ namespace ULox
         [FieldOffset(3)]
         public readonly byte b3;
 
+        [FieldOffset(1)]
+        public readonly ushort u1;
+
         public ByteCodePacket(OpCode opCode) : this()
         {
             _opCode = (byte)opCode;
@@ -51,6 +54,11 @@ namespace ULox
         public ByteCodePacket(OpCode opCode, bool b) : this(opCode)
         {
             b1 = b ? (byte)1 : (byte)0;
+        }
+
+        public ByteCodePacket(OpCode opCode, ushort us) : this(opCode)
+        {
+            u1 = us;
         }
     }
 
@@ -128,6 +136,10 @@ namespace ULox
                 case OpCode.GOTO:
                 case OpCode.GOTO_IF_FALSE:
                 case OpCode.LABEL:
+                case OpCode.JUMP_IF_FALSE:
+                case OpCode.JUMP:
+                case OpCode.LOOP:
+                case OpCode.INVOKE:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -167,25 +179,6 @@ namespace ULox
                     CurrentInstructionIndex++;
                     var sc = chunk.Instructions[CurrentInstructionIndex];
                     ProcessOpAndStringConstant(opCode, sc);
-                }
-                break;
-                
-                case OpCode.JUMP_IF_FALSE:
-                case OpCode.JUMP:
-                case OpCode.LOOP:
-                {
-                    CurrentInstructionIndex = ReadUShort(chunk, CurrentInstructionIndex, out var ushortValue);
-                    ProcessOpAndUShort(opCode, ushortValue);
-                }
-                break;
-
-                case OpCode.INVOKE:
-                {
-                    CurrentInstructionIndex++;
-                    var sc = chunk.Instructions[CurrentInstructionIndex];
-                    CurrentInstructionIndex++;
-                    var b = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessOpAndStringConstantAndByte(opCode, sc, b);
                 }
                 break;
 
@@ -290,8 +283,7 @@ namespace ULox
                 DefaultPostOpCode();
             }
         }
-
-        protected abstract void ProcessOpAndStringConstantAndByte(OpCode opCode, byte sc, byte b);
+        
         protected abstract void ProcessOpAndStringConstant(OpCode opCode, byte sc);
         protected abstract void PostChunkIterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void PreChunkInterate(CompiledScript compiledScript, Chunk chunk);
@@ -306,7 +298,6 @@ namespace ULox
         protected abstract void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount);
         protected abstract void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex);
         protected abstract void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte initLabel);
-        protected abstract void ProcessOpAndUShort(OpCode opCode, ushort ushortValue);
         protected abstract void ProcessOpAndByte(OpCode opCode, byte b);
         protected abstract void ProcessOp(OpCode opCode);
         protected abstract void ProcessPacket(ByteCodePacket packet);

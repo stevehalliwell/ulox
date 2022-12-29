@@ -829,6 +829,9 @@ namespace ULox
         private void DoLoopOp(Chunk chunk)
         {
             ushort jump = ReadUShort(chunk);
+            //rest of packet
+            ReadByte(chunk);
+
             _currentCallFrame.InstructionPointer -= jump;
         }
 
@@ -836,6 +839,9 @@ namespace ULox
         private void DoJumpOp(Chunk chunk)
         {
             ushort jump = ReadUShort(chunk);
+            //rest of packet
+            ReadByte(chunk);
+
             _currentCallFrame.InstructionPointer += jump;
         }
 
@@ -843,6 +849,9 @@ namespace ULox
         private void DoJumpIfFalseOp(Chunk chunk)
         {
             ushort jump = ReadUShort(chunk);
+            //rest of packet
+            ReadByte(chunk);
+            
             if (Peek().IsFalsey())
                 _currentCallFrame.InstructionPointer += jump;
         }
@@ -1539,6 +1548,9 @@ namespace ULox
         {
             var constantIndex = ReadByte(chunk);
             var argCount = ReadByte(chunk);
+            //read the rest of the packet
+            ReadByte(chunk);
+            
             var methodName = chunk.ReadConstant(constantIndex).val.asString;
 
             var receiver = Peek(argCount);

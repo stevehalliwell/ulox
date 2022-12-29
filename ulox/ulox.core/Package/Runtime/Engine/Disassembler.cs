@@ -169,19 +169,6 @@ namespace ULox
             AppendSpace();
         }
 
-        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte sc, byte b)
-        {
-            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
-            AppendSpace();
-            stringBuilder.Append($"({b})");
-            AppendSpace();
-        }
-
-        protected override void ProcessOpAndUShort(OpCode opCode, ushort ushortValue)
-        {
-            stringBuilder.Append($"({ushortValue})");
-        }
-
         protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
         {
             stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
@@ -279,10 +266,13 @@ namespace ULox
             case OpCode.CLOSE_UPVALUE:
                 break;
             case OpCode.JUMP_IF_FALSE:
+                stringBuilder.Append($"({packet.u1})");
                 break;
             case OpCode.JUMP:
+                stringBuilder.Append($"({packet.u1})");
                 break;
             case OpCode.LOOP:
+                stringBuilder.Append($"({packet.u1})");
                 break;
             case OpCode.NOT:
                 break;
@@ -336,7 +326,15 @@ namespace ULox
                 DoConstant(packet);
                 break;
             case OpCode.INVOKE:
-                break;
+            {
+                var sc = packet.b1;
+                var b = packet.b2;
+                stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
+                AppendSpace();
+                stringBuilder.Append($"({b})");
+                AppendSpace();
+            }
+            break;
             case OpCode.FREEZE:
                 break;
             case OpCode.MIXIN:

@@ -127,17 +127,9 @@ namespace ULox
         {
         }
 
-        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte stringConstant, byte b)
-        {
-        }
-
         protected override void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte labelId)
         {
             AddLabelUsage(labelId);
-        }
-
-        protected override void ProcessOpAndUShort(OpCode opCode, ushort ushortValue)
-        {
         }
 
         protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)

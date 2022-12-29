@@ -1021,15 +1021,32 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoClosureOp(Chunk chunk)
         {
-            var constantIndex = ReadByte(chunk);
-            var func = chunk.ReadConstant(constantIndex);
-            var closureVal = Value.New(new ClosureInternal() { chunk = func.val.asChunk });
-            Push(closureVal);
+            var type = (ClosureType)ReadByte(chunk);
+            var b1 = ReadByte(chunk);
+            var b2 = ReadByte(chunk);
+            ClosureInternal closure = default;
+            
+            if (type == ClosureType.Closure)
+            {
+                var constantIndex = b1;
+                var func = chunk.ReadConstant(constantIndex);
+                var closureVal = Value.New(new ClosureInternal() { chunk = func.val.asChunk });
+                Push(closureVal);
 
-            var closure = closureVal.val.asClosure;
-
+                closure = closureVal.val.asClosure;
+            }
+            else
+            {
+                ThrowRuntimeException($"Closure type '{type}' unexpected.");
+            }
+            
+            if(b2 != closure.upvalues.Length)
+                ThrowRuntimeException($"Closure upvalue count mismatch. Expected '{b2}' but got '{closure.upvalues.Length}'");
+            
             for (int i = 0; i < closure.upvalues.Length; i++)
             {
+                ReadByte(chunk);   //op
+                var _ = (ClosureType)ReadByte(chunk);   //type
                 var isLocal = ReadByte(chunk);
                 var index = ReadByte(chunk);
                 if (isLocal == 1)

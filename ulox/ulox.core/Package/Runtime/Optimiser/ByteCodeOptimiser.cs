@@ -127,14 +127,6 @@ namespace ULox
         {
         }
 
-        protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)
-        {
-        }
-
-        protected override void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex)
-        {
-        }
-
         private void AddLabelUsage(byte labelId)
         {
             _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));

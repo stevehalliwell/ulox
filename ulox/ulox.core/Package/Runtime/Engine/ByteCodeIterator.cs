@@ -27,6 +27,26 @@ namespace ULox
         }
 
         [StructLayout(LayoutKind.Explicit)]
+        public struct ClosureDetails
+        {
+            public ClosureType ClosureType => (ClosureType)_type;
+
+            [FieldOffset(0)]
+            public readonly byte _type;
+            [FieldOffset(1)]
+            public readonly byte b1;
+            [FieldOffset(2)]
+            public readonly byte b2;
+
+            public ClosureDetails(ClosureType testOpType, byte b1, byte b2) : this()
+            {
+                _type = (byte)testOpType;
+                this.b1 = b1;
+                this.b2 = b2;
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
         public struct TypeDetails
         {
             public UserType UserType => (UserType)_userType;
@@ -69,6 +89,9 @@ namespace ULox
 
         [FieldOffset(1)]
         public readonly TestOpDetails testOpDetails;
+
+        [FieldOffset(1)]
+        public readonly ClosureDetails closureDetails;
 
         public ByteCodePacket(OpCode opCode) : this()
         {
@@ -115,6 +138,11 @@ namespace ULox
         public ByteCodePacket(OpCode opCode, TestOpDetails testOpDetails) : this(opCode)
         {
             this.testOpDetails = testOpDetails;
+        }
+
+        public ByteCodePacket(OpCode opCode, ClosureDetails closureDetails) : this(opCode)
+        {
+            this.closureDetails = closureDetails;
         }
     }
 
@@ -208,6 +236,7 @@ namespace ULox
                 case OpCode.MODULUS:
                 case OpCode.EQUAL:
                 case OpCode.TEST:
+                case OpCode.CLOSURE:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -238,28 +267,6 @@ namespace ULox
                     ProcessOpAndStringConstant(opCode, sc);
                 }
                 break;
-
-                case OpCode.CLOSURE:
-                {
-                    CurrentInstructionIndex++;
-                    var ind = chunk.Instructions[CurrentInstructionIndex];
-                    var func = chunk.ReadConstant(ind);
-
-                    var count = func.val.asChunk.UpvalueCount;
-
-                    ProcessOpClosure(opCode, ind, func.val.asChunk, count);
-
-                    for (int upVal = 0; upVal < count; upVal++)
-                    {
-                        CurrentInstructionIndex++;
-                        var isLocal = chunk.Instructions[CurrentInstructionIndex];
-                        CurrentInstructionIndex++;
-                        var upvalIndex = chunk.Instructions[CurrentInstructionIndex];
-
-                        ProcessOpClosureUpValue(opCode, ind, count, upVal, isLocal, upvalIndex);
-                    }
-                }
-                break;
                 
                 default:
                     throw new UloxException($"Unhandled OpCode '{opCode}'.");
@@ -274,8 +281,6 @@ namespace ULox
         protected abstract void PreChunkInterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void DefaultOpCode(OpCode opCode);
         protected abstract void DefaultPostOpCode();
-        protected abstract void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount);
-        protected abstract void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex);
         protected abstract void ProcessOpAndByte(OpCode opCode, byte b);
         protected abstract void ProcessOp(OpCode opCode);
         protected abstract void ProcessPacket(ByteCodePacket packet);

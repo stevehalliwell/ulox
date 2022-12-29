@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices.ComTypes;
 using System.Text;
+using static ULox.CompilerState;
 
 namespace ULox
 {
     public sealed class Disassembler : ByteCodeIterator
     {
-        protected Func<Chunk, int, int>[] OpCodeHandlers { get; set; } = new Func<Chunk, int, int>[Enum.GetValues(typeof(OpCode)).Length];
+        private Func<Chunk, int, int>[] OpCodeHandlers { get; set; } = new Func<Chunk, int, int>[Enum.GetValues(typeof(OpCode)).Length];
 
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private int _currentInstructionCount;
@@ -95,26 +97,6 @@ namespace ULox
             }
         }
 
-        protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)
-        {
-            stringBuilder.Append($"({funcID})" + asChunk.ToString());
-            if (upValueCount > 0)
-                stringBuilder.AppendLine();
-        }
-
-        protected override void ProcessOpClosureUpValue(
-            OpCode opCode,
-            byte fundID,
-            int count,
-            int upVal,
-            byte isLocal,
-            byte upvalIndex)
-        {
-            stringBuilder.Append($"     {(isLocal == 1 ? "local" : "upvalue")} {upvalIndex}");
-            if (upVal < count - 1)
-                stringBuilder.AppendLine();
-        }
-
         protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
         {
             stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
@@ -179,7 +161,7 @@ namespace ULox
                 break;
             case OpCode.CONSTANT:
                 DoConstant(packet);
-            break;
+                break;
             case OpCode.NULL:
                 break;
             case OpCode.PUSH_BOOL:
@@ -244,7 +226,24 @@ namespace ULox
                 stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.CLOSURE:
-                break;
+            {
+                //todo
+                stringBuilder.Append($"({packet.closureDetails.ClosureType}) ");
+                switch (packet.closureDetails.ClosureType)
+                {
+                case ClosureType.Closure:
+                    var funcID = packet.closureDetails.b1;
+                    var asChunk = CurrentChunk.Constants[funcID].val.asChunk;
+                    stringBuilder.Append($"({funcID}) {asChunk}  upvals:{packet.closureDetails.b2})");
+                    break;
+                case ClosureType.UpValueInfo:
+                    stringBuilder.Append($"{(packet.closureDetails.b1 == 1 ? "local" : "upvalue")} {packet.closureDetails.b2}");
+                    break;
+                default:
+                    break;
+                }
+            }
+            break;
             case OpCode.NATIVE_CALL:
                 break;
             case OpCode.RETURN:
@@ -332,7 +331,7 @@ namespace ULox
                     break;
                 }
             }
-                break;
+            break;
             case OpCode.BUILD:
                 break;
             case OpCode.REGISTER:

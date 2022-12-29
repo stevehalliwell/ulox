@@ -187,5 +187,10 @@ namespace ULox
                 AddLabelUsage(labelId);
             }
         }
+
+        protected override void ProcessPacket(ByteCodePacket packet)
+        {
+            //nothing for now
+        }
     }
 }

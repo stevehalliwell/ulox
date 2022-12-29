@@ -242,5 +242,10 @@ namespace ULox
         {
             stringBuilder.Append($"({labelID}){chunk.Constants[labelID]}@{chunk.Labels[labelID]}");
         }
+
+        protected override void ProcessPacket(ByteCodePacket packet)
+        {
+            //nothing for now
+        }
     }
 }

@@ -246,6 +246,7 @@ namespace ULox
 
                 case OpCode.NEGATE:
                     Push(Value.New(-Pop().val.asDouble));
+                    ReadRestOfPacket(chunk);
                     break;
 
                 case OpCode.ADD:
@@ -473,6 +474,14 @@ namespace ULox
                     break;
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ReadRestOfPacket(Chunk chunk)
+        {
+            ReadByte(chunk);
+            ReadByte(chunk);
+            ReadByte(chunk);
         }
 
         public void ThrowRuntimeException(string msg)

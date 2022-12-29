@@ -142,6 +142,10 @@ namespace ULox
             => CurrentChunk.WriteSimple(op, TokenIterator.PreviousToken.Line);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitPacket(ByteCodePacket packet)
+            => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitNULL()
             => EmitOpCode(OpCode.NULL);
 
@@ -1084,7 +1088,7 @@ namespace ULox
 
             switch (op)
             {
-            case TokenType.MINUS: compiler.EmitOpCode(OpCode.NEGATE); break;
+            case TokenType.MINUS: compiler.EmitPacket(new ByteCodePacket(OpCode.NEGATE)); break;
             case TokenType.BANG: compiler.EmitOpCode(OpCode.NOT); break;
             default:
                 break;

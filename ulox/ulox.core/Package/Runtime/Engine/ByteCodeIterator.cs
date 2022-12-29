@@ -1,7 +1,35 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace ULox
 {
+    [StructLayout(LayoutKind.Explicit)]
+    public struct ByteCodePacket
+    {
+        public OpCode OpCode => (OpCode)_opCode;
+
+        [FieldOffset(0)]
+        public readonly byte _opCode;
+        [FieldOffset(1)]
+        public readonly byte b1;
+        [FieldOffset(2)]
+        public readonly byte b2;
+        [FieldOffset(3)]
+        public readonly byte b3;
+
+        public ByteCodePacket(OpCode opCode) : this()
+        {
+            _opCode = (byte)opCode;
+        }
+
+        public ByteCodePacket(OpCode opCode, byte b1, byte b2, byte b3) : this(opCode)
+        {
+            this.b1 = b1;
+            this.b2 = b2;
+            this.b3 = b3;
+        }
+    }
+
     public abstract class ByteCodeIterator
     {
         public int CurrentInstructionIndex { get; private set; }
@@ -37,8 +65,18 @@ namespace ULox
 
                 switch (opCode)
                 {
-                case OpCode.NONE:
                 case OpCode.NEGATE:
+                {
+                    CurrentInstructionIndex++;
+                    var b1 = chunk.Instructions[CurrentInstructionIndex];
+                    CurrentInstructionIndex++;
+                    var b2 = chunk.Instructions[CurrentInstructionIndex];
+                    CurrentInstructionIndex++;
+                    var b3 = chunk.Instructions[CurrentInstructionIndex];
+                    ProcessPacket(new ByteCodePacket(opCode,b1,b2,b3));
+                }
+                    break;
+                case OpCode.NONE:
                 case OpCode.ADD:
                 case OpCode.SUBTRACT:
                 case OpCode.MULTIPLY:
@@ -255,6 +293,7 @@ namespace ULox
         protected abstract void ProcessOpAndUShort(OpCode opCode, ushort ushortValue);
         protected abstract void ProcessOpAndByte(OpCode opCode, byte b);
         protected abstract void ProcessOp(OpCode opCode);
+        protected abstract void ProcessPacket(ByteCodePacket packet);
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

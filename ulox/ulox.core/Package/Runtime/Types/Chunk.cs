@@ -78,6 +78,15 @@ namespace ULox
             Instructions.Add((byte)opCode);
             AddLine(line);
         }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void WritePacket(ByteCodePacket packet, int line)
+        {
+            WriteByte(packet._opCode, line);
+            WriteByte(packet.b1, line);
+            WriteByte(packet.b2, line);
+            WriteByte(packet.b3, line);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddConstant(Value val)

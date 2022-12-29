@@ -12,7 +12,7 @@ namespace ulox.core.tests
 
             chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(1), 1);
-            chunk.WriteSimple(OpCode.NEGATE, 1);
+            chunk.WritePacket(new ByteCodePacket(OpCode.NEGATE), 1);
             chunk.WriteSimple(OpCode.ADD, 1);
             chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
             chunk.WriteSimple(OpCode.MULTIPLY, 1);

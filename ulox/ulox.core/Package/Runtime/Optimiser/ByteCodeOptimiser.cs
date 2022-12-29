@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace ULox
 {
-    public sealed class ByteCodeOptimiser : ByteCodeIterator
+    public sealed class ByteCodeOptimiser : CompiledScriptIterator
     {
         public bool Enabled { get; set; } = false;
         private List<(Chunk chunk, int b)> _deadBytes = new List<(Chunk, int)>();
@@ -85,8 +85,22 @@ namespace ULox
             _deadCodeStart = -1;
         }
 
-        protected override void DefaultOpCode(OpCode opCode)
+        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
         {
+        }
+
+        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
+        {
+        }
+
+        private void AddLabelUsage(byte labelId)
+        {
+            _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));
+        }
+
+        protected override void ProcessPacket(ByteCodePacket packet)
+        {
+            var opCode = packet.OpCode;
             if (_deadCodeStart == -1
                 && _prevOoCode == OpCode.GOTO
                 && opCode != OpCode.LABEL)
@@ -101,35 +115,8 @@ namespace ULox
                 _deadCodeStart = -1;
             }
             _prevOoCode = opCode;
-        }
 
-        protected override void DefaultPostOpCode()
-        {
-        }
-
-        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
-        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
-        protected override void ProcessOp(OpCode opCode)
-        {
-        }
-
-        protected override void ProcessOpAndByte(OpCode opCode, byte b)
-        {
-        }
-
-        private void AddLabelUsage(byte labelId)
-        {
-            _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));
-        }
-
-        protected override void ProcessPacket(ByteCodePacket packet)
-        {
+            
             switch (packet.OpCode)
             {
             case OpCode.NONE:

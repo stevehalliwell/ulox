@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
@@ -7,7 +8,7 @@ using static ULox.CompilerState;
 
 namespace ULox
 {
-    public sealed class Disassembler : ByteCodeIterator
+    public sealed class Disassembler : CompiledScriptIterator
     {
         private Func<Chunk, int, int>[] OpCodeHandlers { get; set; } = new Func<Chunk, int, int>[Enum.GetValues(typeof(OpCode)).Length];
 
@@ -97,29 +98,6 @@ namespace ULox
             }
         }
 
-        protected override void ProcessOpAndByte(OpCode opCode, byte b)
-        {
-            stringBuilder.Append($"({b})");
-        }
-
-        protected override void ProcessOp(OpCode opCode)
-        {
-        }
-
-        protected override void DefaultOpCode(OpCode opCode)
-        {
-            stringBuilder.Append(CurrentInstructionIndex.ToString("00000"));
-            DoLineNumber(CurrentChunk);
-            stringBuilder.Append(opCode);
-            AppendSpace();
-        }
-
-        protected override void DefaultPostOpCode()
-        {
-            stringBuilder.AppendLine();
-            _currentInstructionCount++;
-        }
-
         protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
         {
             DoLabels(chunk);
@@ -150,6 +128,11 @@ namespace ULox
 
         protected override void ProcessPacket(ByteCodePacket packet)
         {
+            stringBuilder.Append(CurrentInstructionIndex.ToString("00000"));
+            DoLineNumber(CurrentChunk);
+            stringBuilder.Append(packet.OpCode);
+            AppendSpace();
+
             switch (packet.OpCode)
             {
             case OpCode.NONE:
@@ -374,8 +357,12 @@ namespace ULox
             case OpCode.READ_ONLY:
                 break;
             default:
-                break;
+                throw new UloxException($"Unhandled OpCode '{packet.OpCode}'.");
             }
+
+
+            stringBuilder.AppendLine();
+            _currentInstructionCount++;
         }
 
         private void DoConstant(ByteCodePacket packet)

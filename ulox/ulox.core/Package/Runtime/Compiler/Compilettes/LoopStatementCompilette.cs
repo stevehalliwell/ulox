@@ -107,7 +107,7 @@ namespace ULox
         {
             compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgId);
             compiler.EmitOpAndBytes(OpCode.GET_LOCAL, countArgId);
-            compiler.EmitOpAndBytes(OpCode.LESS);
+            compiler.EmitPacket(OpCode.LESS);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -115,7 +115,7 @@ namespace ULox
         {
             compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
             compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 1,0,0));
-            compiler.EmitOpCode(OpCode.ADD);
+            compiler.EmitPacket(OpCode.ADD);
             compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
             compiler.EmitPop();
         }

@@ -127,11 +127,6 @@ namespace ULox
         {
         }
 
-        protected override void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte labelId)
-        {
-            AddLabelUsage(labelId);
-        }
-
         protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)
         {
         }
@@ -248,6 +243,7 @@ namespace ULox
             case OpCode.VALIDATE:
                 break;
             case OpCode.TYPE:
+                AddLabelUsage(packet.typeDetails.initLabelId);
                 break;
             case OpCode.GET_PROPERTY:
                 break;

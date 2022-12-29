@@ -428,23 +428,23 @@ namespace ULox
                 switch (assignTokenType)
                 {
                 case TokenType.PLUS_EQUAL:
-                    EmitOpCode(OpCode.ADD);
+                    EmitPacket(OpCode.ADD);
                     break;
 
                 case TokenType.MINUS_EQUAL:
-                    EmitOpCode(OpCode.SUBTRACT);
+                    EmitPacket(OpCode.SUBTRACT);
                     break;
 
                 case TokenType.STAR_EQUAL:
-                    EmitOpCode(OpCode.MULTIPLY);
+                    EmitPacket(OpCode.MULTIPLY);
                     break;
 
                 case TokenType.SLASH_EQUAL:
-                    EmitOpCode(OpCode.DIVIDE);
+                    EmitPacket(OpCode.DIVIDE);
                     break;
 
                 case TokenType.PERCENT_EQUAL:
-                    EmitOpCode(OpCode.MODULUS);
+                    EmitPacket(OpCode.MODULUS);
                     break;
                 }
 
@@ -700,17 +700,17 @@ namespace ULox
 
             switch (operatorType)
             {
-            case TokenType.PLUS: compiler.EmitOpCode(OpCode.ADD); break;
-            case TokenType.MINUS: compiler.EmitOpCode(OpCode.SUBTRACT); break;
-            case TokenType.STAR: compiler.EmitOpCode(OpCode.MULTIPLY); break;
-            case TokenType.SLASH: compiler.EmitOpCode(OpCode.DIVIDE); break;
-            case TokenType.PERCENT: compiler.EmitOpCode(OpCode.MODULUS); break;
-            case TokenType.EQUALITY: compiler.EmitOpCode(OpCode.EQUAL); break;
-            case TokenType.GREATER: compiler.EmitOpCode(OpCode.GREATER); break;
-            case TokenType.LESS: compiler.EmitOpCode(OpCode.LESS); break;
-            case TokenType.BANG_EQUAL: compiler.EmitOpCode(OpCode.EQUAL); compiler.EmitPacket(OpCode.NOT); break;
-            case TokenType.GREATER_EQUAL: compiler.EmitOpCode(OpCode.LESS); compiler.EmitPacket(OpCode.NOT); break;
-            case TokenType.LESS_EQUAL: compiler.EmitOpCode(OpCode.GREATER); compiler.EmitPacket(OpCode.NOT); break;
+            case TokenType.PLUS: compiler.EmitPacket(OpCode.ADD); break;
+            case TokenType.MINUS: compiler.EmitPacket(OpCode.SUBTRACT); break;
+            case TokenType.STAR: compiler.EmitPacket(OpCode.MULTIPLY); break;
+            case TokenType.SLASH: compiler.EmitPacket(OpCode.DIVIDE); break;
+            case TokenType.PERCENT: compiler.EmitPacket(OpCode.MODULUS); break;
+            case TokenType.EQUALITY: compiler.EmitPacket(OpCode.EQUAL); break;
+            case TokenType.GREATER: compiler.EmitPacket(OpCode.GREATER); break;
+            case TokenType.LESS: compiler.EmitPacket(OpCode.LESS); break;
+            case TokenType.BANG_EQUAL: compiler.EmitPacket(OpCode.EQUAL); compiler.EmitPacket(OpCode.NOT); break;
+            case TokenType.GREATER_EQUAL: compiler.EmitPacket(OpCode.LESS); compiler.EmitPacket(OpCode.NOT); break;
+            case TokenType.LESS_EQUAL: compiler.EmitPacket(OpCode.GREATER); compiler.EmitPacket(OpCode.NOT); break;
 
             default:
                 break;
@@ -960,7 +960,7 @@ namespace ULox
 
                 compiler.Expression();
                 compiler.EmitOpAndBytes(matchGetOp, matchArgID);
-                compiler.EmitOpCode(OpCode.EQUAL);
+                compiler.EmitPacket(OpCode.EQUAL);
                 lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
                 compiler.Statement();

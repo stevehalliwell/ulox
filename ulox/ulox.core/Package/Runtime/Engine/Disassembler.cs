@@ -159,16 +159,6 @@ namespace ULox
                 stringBuilder.AppendLine();
         }
 
-        protected override void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte initLabel)
-        {
-            stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
-            AppendSpace();
-            stringBuilder.Append($"({b})");
-            AppendSpace();
-            PrintLabel(initLabel);
-            AppendSpace();
-        }
-
         protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
         {
             stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
@@ -312,7 +302,16 @@ namespace ULox
                 stringBuilder.Append($"({packet.ValidateOp})");
                 break;
             case OpCode.TYPE:
-                break;
+            {
+                var sc = packet.typeDetails.stringConstantId;
+                stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
+                AppendSpace();
+                stringBuilder.Append($"({packet.typeDetails.UserType})");
+                AppendSpace();
+                PrintLabel(packet.typeDetails.initLabelId);
+                AppendSpace();
+            }
+            break;
             case OpCode.GET_PROPERTY:
                 DoConstant(packet);
                 break;

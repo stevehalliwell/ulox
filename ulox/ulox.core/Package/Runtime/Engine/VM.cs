@@ -45,7 +45,7 @@ namespace ULox
         public Vm()
         {
             var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native", FunctionType.Function);
-            nativeChunk.WriteByte((byte)OpCode.NATIVE_CALL, 0);
+            nativeChunk.WritePacket(new ByteCodePacket(OpCode.NATIVE_CALL), 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }
 
@@ -255,12 +255,14 @@ namespace ULox
                 case OpCode.MULTIPLY:
                 case OpCode.DIVIDE:
                 case OpCode.MODULUS:
+                    ReadRestOfPacket(chunk);
                     DoMathOp(opCode);
                     break;
 
                 case OpCode.EQUAL:
                 case OpCode.LESS:
                 case OpCode.GREATER:
+                    ReadRestOfPacket(chunk);
                     DoComparisonOp(opCode);
                     break;
 
@@ -368,6 +370,7 @@ namespace ULox
                     break;
 
                 case OpCode.NATIVE_CALL:
+                    ReadRestOfPacket(chunk);
                     DoNativeCall(opCode);
                     break;
 
@@ -937,7 +940,7 @@ namespace ULox
         {
             if (_currentCallFrame.nativeFunc == null)
                 ThrowRuntimeException($"{opCode} without nativeFunc encountered. This is not allowed");
-
+            
             var argCount = CurrentFrameStackValues;
             var res = _currentCallFrame.nativeFunc.Invoke(this, argCount);
 

@@ -6,6 +6,27 @@ namespace ULox
     [StructLayout(LayoutKind.Explicit)]
     public struct ByteCodePacket
     {
+
+        [StructLayout(LayoutKind.Explicit)]
+        public struct TypeDetails
+        {
+            public UserType UserType => (UserType)_userType;
+
+            [FieldOffset(0)]
+            public byte stringConstantId;
+            [FieldOffset(1)]
+            public byte _userType;
+            [FieldOffset(2)]
+            public byte initLabelId;
+
+            public TypeDetails(byte nameConstant, UserType userType, byte initChainLabelId) : this()
+            {
+                stringConstantId = nameConstant;
+                _userType = (byte)userType;
+                initLabelId = initChainLabelId;
+            }
+        }
+
         public OpCode OpCode => (OpCode)_opCode;
         public ReturnMode ReturnMode => (ReturnMode)b1;
         public NativeType NativeType => (NativeType)b1;
@@ -23,6 +44,9 @@ namespace ULox
 
         [FieldOffset(1)]
         public readonly ushort u1;
+
+        [FieldOffset(1)]
+        public readonly TypeDetails typeDetails;
 
         public ByteCodePacket(OpCode opCode) : this()
         {
@@ -59,6 +83,11 @@ namespace ULox
         public ByteCodePacket(OpCode opCode, ushort us) : this(opCode)
         {
             u1 = us;
+        }
+
+        public ByteCodePacket(OpCode opCode, TypeDetails typeDetails) : this(opCode)
+        {
+            this.typeDetails = typeDetails;
         }
     }
 
@@ -97,6 +126,7 @@ namespace ULox
 
                 switch (opCode)
                 {
+                case OpCode.NONE:
                 case OpCode.NEGATE:
                 case OpCode.NOT:
                 case OpCode.NULL:
@@ -140,6 +170,16 @@ namespace ULox
                 case OpCode.JUMP:
                 case OpCode.LOOP:
                 case OpCode.INVOKE:
+                case OpCode.TYPE:
+                case OpCode.NATIVE_CALL:
+                case OpCode.ADD:
+                case OpCode.SUBTRACT:
+                case OpCode.MULTIPLY:
+                case OpCode.DIVIDE:
+                case OpCode.LESS:
+                case OpCode.GREATER:
+                case OpCode.MODULUS:
+                case OpCode.EQUAL:
                 {
                     CurrentInstructionIndex++;
                     var b1 = chunk.Instructions[CurrentInstructionIndex];
@@ -149,17 +189,6 @@ namespace ULox
                     var b3 = chunk.Instructions[CurrentInstructionIndex];
                     ProcessPacket(new ByteCodePacket(opCode,b1,b2,b3));
                 }
-                    break;
-                case OpCode.NONE:
-                case OpCode.ADD:
-                case OpCode.SUBTRACT:
-                case OpCode.MULTIPLY:
-                case OpCode.DIVIDE:
-                case OpCode.LESS:
-                case OpCode.GREATER:
-                case OpCode.MODULUS:
-                case OpCode.EQUAL:
-                    ProcessOp(opCode);
                     break;
 
                 case OpCode.GET_LOCAL:
@@ -179,18 +208,6 @@ namespace ULox
                     CurrentInstructionIndex++;
                     var sc = chunk.Instructions[CurrentInstructionIndex];
                     ProcessOpAndStringConstant(opCode, sc);
-                }
-                break;
-
-                case OpCode.TYPE:
-                {
-                    CurrentInstructionIndex++;
-                    var sc = chunk.Instructions[CurrentInstructionIndex];
-                    CurrentInstructionIndex++;
-                    var b = chunk.Instructions[CurrentInstructionIndex];
-                    CurrentInstructionIndex++;
-                    var label = chunk.Instructions[CurrentInstructionIndex];
-                    ProcessTypeOp(opCode, sc, b, label);
                 }
                 break;
 
@@ -273,7 +290,6 @@ namespace ULox
                 }
                 break;
 
-                case OpCode.NATIVE_CALL:
                     break;
 
                 default:
@@ -297,7 +313,6 @@ namespace ULox
         protected abstract void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b);
         protected abstract void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount);
         protected abstract void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex);
-        protected abstract void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte initLabel);
         protected abstract void ProcessOpAndByte(OpCode opCode, byte b);
         protected abstract void ProcessOp(OpCode opCode);
         protected abstract void ProcessPacket(ByteCodePacket packet);

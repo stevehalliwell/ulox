@@ -13,11 +13,10 @@ namespace ulox.core.tests
             chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(1), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.NEGATE), 1);
-            chunk.WriteSimple(OpCode.ADD, 1);
+            chunk.WritePacket(new ByteCodePacket(OpCode.ADD), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
-            chunk.WriteSimple(OpCode.MULTIPLY, 1);
+            chunk.WritePacket(new ByteCodePacket(OpCode.MULTIPLY), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One), 2);
-            chunk.WriteByte((byte)ReturnMode.One, 2);
 
             return chunk;
         }
@@ -687,7 +686,7 @@ Assert.AreEqual(1,1);
 Assert.AreEqual(1,2);
 Assert.AreEqual(1,1);");
 
-            StringAssert.StartsWith("'1' does not equal '2' at ip:'1' in native:'AreEqual'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("'1' does not equal '2' at ip:'4' in native:'AreEqual'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1025,7 +1024,7 @@ var c = b + a;
 "
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'21' in chunk:'unnamed_chunk(test:4)'.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'24' in chunk:'unnamed_chunk(test:4)'.
 ===Stack===
 <closure unnamed_chunk upvals:0>
 
@@ -1047,7 +1046,7 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'5' in chunk:'f(test:5)'.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'8' in chunk:'f(test:5)'.
 ===Stack===
 1
 null

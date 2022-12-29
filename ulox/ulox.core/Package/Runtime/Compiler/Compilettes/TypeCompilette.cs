@@ -177,7 +177,7 @@ namespace ULox
             compiler.DeclareVariable();
 
             InitChainLabelId = compiler.UniqueChunkStringConstant("InitChain");
-            compiler.EmitOpAndBytes(OpCode.TYPE, nameConstant, (byte)UserType, InitChainLabelId);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.TYPE, new ByteCodePacket.TypeDetails(nameConstant, UserType, InitChainLabelId)));
             
             compiler.DefineVariable(nameConstant);
             compiler.NamedVariable(CurrentTypeName, false);

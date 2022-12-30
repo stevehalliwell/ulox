@@ -32,7 +32,6 @@
             {
                 var packet = chunk.Instructions[CurrentInstructionIndex];
 
-                CurrentInstructionIndex++;
                 ProcessPacket(packet);
             }
         }

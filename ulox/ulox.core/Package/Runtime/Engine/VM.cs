@@ -272,7 +272,7 @@ namespace ULox
                     break;
 
                 case OpCode.POP:
-                    DiscardPop();
+                    DiscardPop(packet.b1);
                     break;
 
                 case OpCode.SWAP:
@@ -284,15 +284,16 @@ namespace ULox
                     break;
 
                 case OpCode.JUMP_IF_FALSE:
-                    DoJumpIfFalseOp(chunk, packet.u1);
+                    if (Peek().IsFalsey())
+                        _currentCallFrame.InstructionPointer += packet.u1;
                     break;
 
                 case OpCode.JUMP:
-                    DoJumpOp(chunk, packet.u1);
+                    _currentCallFrame.InstructionPointer += packet.u1;
                     break;
 
                 case OpCode.LOOP:
-                    DoLoopOp(chunk, packet.u1);
+                    _currentCallFrame.InstructionPointer -= packet.u1;
                     break;
 
                 case OpCode.GET_LOCAL:
@@ -758,25 +759,6 @@ namespace ULox
         private void DoGetLocalOp(Chunk chunk, byte slot)
         {
             Push(_valueStack[_currentCallFrame.StackStart + slot]);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoLoopOp(Chunk chunk, ushort jump)
-        {
-            _currentCallFrame.InstructionPointer -= jump;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoJumpOp(Chunk chunk, ushort jump)
-        {
-            _currentCallFrame.InstructionPointer += jump;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoJumpIfFalseOp(Chunk chunk, ushort jump)
-        {
-            if (Peek().IsFalsey())
-                _currentCallFrame.InstructionPointer += jump;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

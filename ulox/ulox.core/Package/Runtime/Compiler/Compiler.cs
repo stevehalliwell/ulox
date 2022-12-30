@@ -206,15 +206,35 @@ namespace ULox
 
             comp.scopeDepth--;
 
+            // We want to group these, so we count them and then write them all at once
+            //  the alt is to always combine trailing pops at the write stage but that's more 
+            //  of a pure optimisation, as it breaks the line numbering.
+            var popCount = default(byte);
+
             while (comp.localCount > 0 &&
                 comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
             {
                 if (comp.locals[comp.localCount - 1].IsCaptured)
+                {
+                    if (popCount > 0)
+                    {
+                        EmitPop(popCount);
+                        popCount = 0;
+                    }
+                    
                     EmitPacket(OpCode.CLOSE_UPVALUE);
+                }
                 else
-                    EmitPop();
-
+                {
+                    popCount++;
+                }
                 CurrentCompilerState.localCount--;
+            }
+
+            if (popCount > 0)
+            {
+                EmitPop(popCount);
+                popCount = 0;
             }
         }
 
@@ -1255,9 +1275,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void EmitPop()
+        internal void EmitPop(byte popCount = 1)
         {
-            EmitPacket(OpCode.POP);
+            EmitPacketByte(OpCode.POP, popCount);
         }
     }
 }

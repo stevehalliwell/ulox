@@ -164,7 +164,7 @@ namespace ULox
             _labelIdToInstruction[id] = currentChunkInstructinCount;
         }
 
-        internal void RemoveByteAt(int b)
+        internal void RemoveInstructionAt(int b)
         {
             Instructions.RemoveAt(b);
             AdjustLabelIndicies(b, -1);

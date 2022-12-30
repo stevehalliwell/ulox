@@ -6,7 +6,7 @@ namespace ULox
     public sealed class ByteCodeOptimiser : CompiledScriptIterator
     {
         public bool Enabled { get; set; } = false;
-        private List<(Chunk chunk, int b)> _deadBytes = new List<(Chunk, int)>();
+        private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
         private List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
         private OpCode _prevOoCode;
         private int _deadCodeStart = -1;
@@ -20,7 +20,7 @@ namespace ULox
 
             MarkNoJumpGotoLabelAsDead(compiledScript);
             MarkUnsedLabelsAsDead(compiledScript);
-            RemoveDeadBytes();
+            RemoveMarkedInstructions();
         }
 
         private void MarkNoJumpGotoLabelAsDead(CompiledScript compiledScript)
@@ -35,7 +35,7 @@ namespace ULox
                 var found = false;
                 for (int i = labelUsage.from + 1; i < labelLoc; i++)
                 {
-                    if (!_deadBytes.Any(d => d.chunk == labelUsage.chunk && d.b == i))
+                    if (!_toRemove.Any(d => d.chunk == labelUsage.chunk && d.inst == i))
                     {
                         found = true;
                         break;
@@ -44,8 +44,7 @@ namespace ULox
 
                 if (!found)
                 {
-                    _deadBytes.Add((labelUsage.chunk, labelUsage.from - 1));
-                    _deadBytes.Add((labelUsage.chunk, labelUsage.from));
+                    _toRemove.Add((labelUsage.chunk, labelUsage.from));
                 }
             }
         }
@@ -57,31 +56,30 @@ namespace ULox
                 foreach (var label in chunk.Labels)
                 {
                     var matches = _labelUsage.Where(x => x.chunk == chunk && x.label == label.Key);
-                    var used = matches.Any(x => !_deadBytes.Any(y => y.chunk == chunk && y.b == x.from));
+                    var used = matches.Any(x => !_toRemove.Any(y => y.chunk == chunk && y.inst == x.from));
                     if (!used)
                     {
-                        _deadBytes.Add((chunk, label.Value));
-                        _deadBytes.Add((chunk, label.Value + 1));
+                        _toRemove.Add((chunk, label.Value));
                     }
                 }
             }
         }
 
-        private void RemoveDeadBytes()
+        private void RemoveMarkedInstructions()
         {
-            _deadBytes.Sort((x, y) => x.b.CompareTo(y.b));
-            _deadBytes = _deadBytes.Distinct().ToList();
+            _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
+            _toRemove = _toRemove.Distinct().ToList();
 
-            for (int i = _deadBytes.Count - 1; i >= 0; i--)
+            for (int i = _toRemove.Count - 1; i >= 0; i--)
             {
-                var (chunk, b) = _deadBytes[i];
-                chunk.RemoveByteAt(b);
+                var (chunk, b) = _toRemove[i];
+                chunk.RemoveInstructionAt(b);
             }
         }
 
         public void Reset()
         {
-            _deadBytes.Clear();
+            _toRemove.Clear();
             _deadCodeStart = -1;
         }
 
@@ -111,11 +109,10 @@ namespace ULox
             if (opCode == OpCode.LABEL
                 && _deadCodeStart != -1)
             {
-                _deadBytes.AddRange(Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart).Select(b => (CurrentChunk, b)));
+                _toRemove.AddRange(Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart).Select(b => (CurrentChunk, b)));
                 _deadCodeStart = -1;
             }
             _prevOoCode = opCode;
-
             
             switch (packet.OpCode)
             {
@@ -239,10 +236,10 @@ namespace ULox
             case OpCode.EXPECT:
                 break;
             case OpCode.GOTO:
-                AddLabelUsage(packet.b1);
+                ProcessGoto(packet);
                 break;
             case OpCode.GOTO_IF_FALSE:
-                AddLabelUsage(packet.b1);
+                ProcessGoto(packet);
                 break;
             case OpCode.LABEL:
                 break;
@@ -253,6 +250,15 @@ namespace ULox
             default:
                 break;
             }
+        }
+
+        private void ProcessGoto(ByteCodePacket packet)
+        {
+            var endingLocation = CurrentChunk.Labels[packet.b1];
+            if (endingLocation != CurrentInstructionIndex + 1)
+                AddLabelUsage(packet.b1);
+            else
+                _toRemove.Add((CurrentChunk, CurrentInstructionIndex));
         }
     }
 }

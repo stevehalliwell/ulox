@@ -1,17 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Reflection.Emit;
+﻿using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
-using static ULox.CompilerState;
 
 namespace ULox
 {
     public sealed class Disassembler : CompiledScriptIterator
     {
-        private Func<Chunk, int, int>[] OpCodeHandlers { get; set; } = new Func<Chunk, int, int>[Enum.GetValues(typeof(OpCode)).Length];
-
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private int _currentInstructionCount;
         private int _prevLine;
@@ -149,6 +143,7 @@ namespace ULox
                 stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.POP:
+                stringBuilder.Append($"({packet.b1})");
                 break;
             case OpCode.SWAP:
                 break;

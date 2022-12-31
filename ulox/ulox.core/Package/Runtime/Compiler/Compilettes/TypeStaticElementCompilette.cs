@@ -23,7 +23,7 @@
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name.");
                 byte nameConstant = compiler.AddStringConstant();
 
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
+                compiler.EmitPacketByte(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
 
                 //if = consume it and then
                 //eat 1 expression or a push null
@@ -37,7 +37,7 @@
                 }
 
                 //emit set prop
-                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant, 0, 0));
                 compiler.EmitPop();
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
@@ -52,7 +52,7 @@
             var name = compiler.CurrentChunk.ReadConstant(constant).val.asString;
 
             compiler.Function(name.String, FunctionType.Function);
-            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.METHOD, constant, 0, 0));
         }
 
         public void Start(TypeCompilette typeCompilette)

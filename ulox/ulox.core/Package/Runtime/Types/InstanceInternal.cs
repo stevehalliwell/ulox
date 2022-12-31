@@ -36,15 +36,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetField(HashedString key)
-        {
-            if (Fields.TryGetValue(key, out var ret))
-                return ret;
-
-            throw new UloxException($"Attempted to Get a new field '{key}', but none exists.");
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool TryGetField(HashedString key, out Value val)
             => Fields.TryGetValue(key, out val);
 

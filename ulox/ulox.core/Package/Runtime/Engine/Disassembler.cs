@@ -1,14 +1,11 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ULox
 {
-    public sealed class Disassembler : ByteCodeIterator
+    public sealed class Disassembler : CompiledScriptIterator
     {
-        protected Func<Chunk, int, int>[] OpCodeHandlers { get; set; } = new Func<Chunk, int, int>[Enum.GetValues(typeof(OpCode)).Length];
-
         private readonly StringBuilder stringBuilder = new StringBuilder();
         private int _currentInstructionCount;
         private int _prevLine;
@@ -95,121 +92,6 @@ namespace ULox
             }
         }
 
-        protected override void ProcessTestOp(OpCode opCode, TestOpType testOpType)
-        {
-            Append(testOpType.ToString());
-            AppendSpace();
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b)
-        {
-            stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
-            AppendSpace();
-            stringBuilder.Append($"({b})");
-            AppendSpace();
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label)
-        {
-            PrintLabel(CurrentChunk, label);
-            if (it < testCount - 1)
-                Append(", ");
-            else
-                Append(" ] ");
-        }
-
-        protected override void ProcessTestOpAndByteAndByte(OpCode opCode, TestOpType testOpType, byte b1, byte b2)
-        {
-            stringBuilder.Append($"({b1})");
-            AppendSpace();
-            stringBuilder.Append($"({b2})");
-            AppendSpace();
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount)
-        {
-            stringBuilder.Append($"({stringConstantID}){CurrentChunk.Constants[stringConstantID]}");
-            Append("  [");
-            AppendSpace();
-        }
-
-        protected override void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte labelId)
-        {
-            PrintLabel(CurrentChunk, labelId);
-            AppendSpace();
-        }
-
-        protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)
-        {
-            stringBuilder.Append($"({funcID})" + asChunk.ToString());
-            if (upValueCount > 0)
-                stringBuilder.AppendLine();
-        }
-
-        protected override void ProcessOpClosureUpValue(
-            OpCode opCode,
-            byte fundID,
-            int count,
-            int upVal,
-            byte isLocal,
-            byte upvalIndex)
-        {
-            stringBuilder.Append($"     {(isLocal == 1 ? "local" : "upvalue")} {upvalIndex}");
-            if (upVal < count - 1)
-                stringBuilder.AppendLine();
-        }
-
-        protected override void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte initLabel)
-        {
-            stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
-            AppendSpace();
-            stringBuilder.Append($"({b})");
-            AppendSpace();
-            PrintLabel(CurrentChunk, initLabel);
-            AppendSpace();
-        }
-
-        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte sc, byte b)
-        {
-            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
-            AppendSpace();
-            stringBuilder.Append($"({b})");
-            AppendSpace();
-        }
-
-        protected override void ProcessOpAndUShort(OpCode opCode, ushort ushortValue)
-        {
-            stringBuilder.Append($"({ushortValue})");
-        }
-
-        protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
-        {
-            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
-        }
-
-        protected override void ProcessOpAndByte(OpCode opCode, byte b)
-        {
-            stringBuilder.Append($"({b})");
-        }
-
-        protected override void ProcessOp(OpCode opCode)
-        {
-        }
-
-        protected override void DefaultOpCode(OpCode opCode)
-        {
-            stringBuilder.Append(CurrentInstructionIndex.ToString("00000"));
-            DoLineNumber(CurrentChunk);
-            stringBuilder.Append(opCode);
-            AppendSpace();
-        }
-
-        protected override void DefaultPostOpCode()
-        {
-            stringBuilder.AppendLine();
-            _currentInstructionCount++;
-        }
-
         protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
         {
             DoLabels(chunk);
@@ -233,14 +115,152 @@ namespace ULox
             _prevLine = -1;
         }
 
-        protected override void ProcessOpAndLabel(OpCode opCode, byte labelID)
+        private void PrintLabel(byte labelID)
         {
-            PrintLabel(CurrentChunk, labelID);
+            stringBuilder.Append($"({labelID}){CurrentChunk.Constants[labelID]}@{CurrentChunk.Labels[labelID]}");
         }
 
-        private void PrintLabel(Chunk chunk, byte labelID)
+        protected override void ProcessPacket(ByteCodePacket packet)
         {
-            stringBuilder.Append($"({labelID}){chunk.Constants[labelID]}@{chunk.Labels[labelID]}");
+            stringBuilder.Append(CurrentInstructionIndex.ToString("00000"));
+            DoLineNumber(CurrentChunk);
+            stringBuilder.Append(packet.OpCode);
+            AppendSpace();
+
+            switch (packet.OpCode)
+            {
+            case OpCode.CONSTANT:
+            case OpCode.DEFINE_GLOBAL:
+            case OpCode.FETCH_GLOBAL:
+            case OpCode.ASSIGN_GLOBAL:
+            case OpCode.GET_PROPERTY:
+            case OpCode.SET_PROPERTY:
+            case OpCode.METHOD:
+            case OpCode.FIELD:
+            case OpCode.REGISTER:
+            case OpCode.INJECT:
+                DoConstant(packet);
+                break;
+            case OpCode.PUSH_BOOL:
+                stringBuilder.Append($"({packet.BoolValue})");
+                break;
+            case OpCode.PUSH_BYTE:
+            case OpCode.POP:
+            case OpCode.GET_LOCAL:
+            case OpCode.SET_LOCAL:
+            case OpCode.GET_UPVALUE:
+            case OpCode.SET_UPVALUE:
+            case OpCode.CALL:
+                stringBuilder.Append($"({packet.b1})");
+                break;
+            case OpCode.JUMP_IF_FALSE:
+            case OpCode.JUMP:
+            case OpCode.LOOP:
+                stringBuilder.Append($"({packet.u1})");
+                break;
+            case OpCode.CLOSURE:
+            {
+                //todo
+                stringBuilder.Append($"({packet.closureDetails.ClosureType}) ");
+                switch (packet.closureDetails.ClosureType)
+                {
+                case ClosureType.Closure:
+                    var funcID = packet.closureDetails.b1;
+                    var asChunk = CurrentChunk.Constants[funcID].val.asChunk;
+                    stringBuilder.Append($"({funcID}) {asChunk}  upvals:{packet.closureDetails.b2})");
+                    break;
+                case ClosureType.UpValueInfo:
+                    stringBuilder.Append($"{(packet.closureDetails.b1 == 1 ? "local" : "upvalue")} {packet.closureDetails.b2}");
+                    break;
+                default:
+                    break;
+                }
+            }
+            break;
+            case OpCode.RETURN:
+                stringBuilder.Append($"({packet.ReturnMode})");
+                break;
+            case OpCode.VALIDATE:
+                stringBuilder.Append($"({packet.ValidateOp})");
+                break;
+            case OpCode.TYPE:
+            {
+                var sc = packet.typeDetails.stringConstantId;
+                stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
+                AppendSpace();
+                stringBuilder.Append($"({packet.typeDetails.UserType})");
+                AppendSpace();
+                PrintLabel(packet.typeDetails.initLabelId);
+                AppendSpace();
+            }
+            break;
+            case OpCode.INVOKE:
+            {
+                var sc = packet.b1;
+                var b = packet.b2;
+                stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
+                AppendSpace();
+                stringBuilder.Append($"({b})");
+                AppendSpace();
+            }
+            break;
+            case OpCode.TEST:
+            {
+                var testOpType = packet.testOpDetails.TestOpType;
+                Append(testOpType.ToString());
+                AppendSpace();
+
+                switch (testOpType)
+                {
+                case TestOpType.TestFixtureBodyInstruction:
+                    PrintLabel(packet.testOpDetails.b1);
+                    AppendSpace();
+                    break;
+                case TestOpType.TestCase:
+                {
+                    var label = packet.testOpDetails.b1;
+                    var stringConstant = packet.testOpDetails.b2;
+                    stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
+                    AppendSpace();
+                    PrintLabel(label);
+                }
+                break;
+                case TestOpType.CaseStart:
+                case TestOpType.CaseEnd:
+                {
+                    var stringConstant = packet.testOpDetails.b1;
+                    var b = packet.testOpDetails.b2;
+                    stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
+                    AppendSpace();
+                    stringBuilder.Append($"({b})");
+                    AppendSpace();
+                }
+                break;
+                case TestOpType.TestSetEnd:
+                    break;
+                default:
+                    break;
+                }
+            }
+            break;
+            case OpCode.NATIVE_TYPE:
+                stringBuilder.Append($"({packet.NativeType})");
+                break;
+            case OpCode.GOTO:
+            case OpCode.GOTO_IF_FALSE:
+            case OpCode.LABEL:
+                PrintLabel(packet.b1);
+                break;
+            }
+            
+            stringBuilder.AppendLine();
+            _currentInstructionCount++;
+        }
+
+        private void DoConstant(ByteCodePacket packet)
+        {
+            var sc = packet.b1;
+            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
         }
     }
 }

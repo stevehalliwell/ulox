@@ -12,12 +12,11 @@ namespace ulox.core.tests
 
             chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(1), 1);
-            chunk.WriteSimple(OpCode.NEGATE, 1);
-            chunk.WriteSimple(OpCode.ADD, 1);
+            chunk.WritePacket(new ByteCodePacket(OpCode.NEGATE), 1);
+            chunk.WritePacket(new ByteCodePacket(OpCode.ADD), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
-            chunk.WriteSimple(OpCode.MULTIPLY, 1);
-            chunk.WriteSimple(OpCode.RETURN, 2);
-            chunk.WriteByte((byte)ReturnMode.One, 2);
+            chunk.WritePacket(new ByteCodePacket(OpCode.MULTIPLY), 1);
+            chunk.WritePacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One), 2);
 
             return chunk;
         }
@@ -862,7 +861,7 @@ fun InnerMain()
 var innerVM = VM();
 innerVM.Start(InnerMain);");
 
-            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'4' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
+            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'2' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
         }
 
         [Test]
@@ -908,36 +907,6 @@ loop
 
             Assert.AreEqual("112358", testEngine.InterpreterResult);
         }
-
-        [Test]
-        public void Engine_Register_Unused()
-        {
-            testEngine.Run(@"
-register Seven 7;");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Inject_Error()
-        {
-            testEngine.Run(@"
-var s = inject Seven;");
-
-            StringAssert.StartsWith("Inject failure. Nothing has been registered (yet) with name 'Seven' at ip:'2' in chunk:'unnamed_chunk(test:2)'.", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_RegisterAndInject()
-        {
-            testEngine.Run(@"
-register Seven 7;
-var s = inject Seven;
-print(s);");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
         [Test]
         public void Engine_Duplicate_Number_Matches()
         {
@@ -1025,7 +994,7 @@ var c = b + a;
 "
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'12' in chunk:'unnamed_chunk(test:4)'.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'7' in chunk:'unnamed_chunk(test:4)'.
 ===Stack===
 <closure unnamed_chunk upvals:0>
 
@@ -1047,7 +1016,7 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'5' in chunk:'f(test:5)'.
+            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'3' in chunk:'f(test:5)'.
 ===Stack===
 1
 null
@@ -1060,5 +1029,61 @@ chunk:'unnamed_chunk(test)'
 
 ", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Var_OwnInitialiser_ShouldError()
+        {
+            testEngine.Run(@"
+fun Foo()
+{
+    var a = a;
+}");
+
+            StringAssert.StartsWith("Cannot referenece variable 'a' in it's own initialiser", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Var_Redeclare_ShouldError()
+        {
+            testEngine.Run(@"
+fun Foo()
+{
+    var a = 1;
+    var a = 2; 
+}");
+
+            StringAssert.StartsWith("Already a variable with name 'a'", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void VarNumber_UsedAsInstance_ShouldError()
+        {
+            testEngine.Run(@"
+var a = 1;
+a.val = 2;");
+
+            StringAssert.StartsWith("Only classes and instances have", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void VarNumber_UsedAsArray_ShouldError()
+        {
+            testEngine.Run(@"
+var a = 1;
+a[1] = 2;");
+
+            StringAssert.StartsWith("Cannot perform set index on type", testEngine.InterpreterResult);
+        }
+
+        //        [Test]
+        //        public void Engine_Cycle_Minus_Equals_Expression()
+        //        {
+        //            testEngine.Run(@"
+        //var a = 1;
+        //a -= 2;
+        //print (a);");
+
+        //            Assert.AreEqual("-1", testEngine.InterpreterResult);
+        //        }
     }
 }

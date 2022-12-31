@@ -35,7 +35,7 @@ namespace ULox
             var testFixtureBodyLabel = compiler.LabelUniqueChunkLabel("TestFixtureBody");
 
             compiler.Block();
-            compiler.EmitOpCode(OpCode.YIELD);
+            compiler.EmitPacket(OpCode.YIELD);
             compiler.EndScope();
             compiler.EmitLabel(labelID);
 
@@ -43,19 +43,23 @@ namespace ULox
             if (testcaseCount > byte.MaxValue)
                 compiler.ThrowCompilerException($"{testcaseCount} has more than {byte.MaxValue} testcases, this is not allowed.");
 
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestFixtureBodyInstruction, testFixtureBodyLabel);
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestSetStart, testSetNameID, (byte)testcaseCount);
+            EmitTestPacket(compiler, TestOpType.TestFixtureBodyInstruction, testFixtureBodyLabel, 0);
 
             for (int i = 0; i < _currentTestcaseLabels.Count; i++)
             {
-                compiler.EmitBytes(_currentTestcaseLabels[i]);
+                EmitTestPacket(compiler, TestOpType.TestCase, _currentTestcaseLabels[i], testSetNameID);
             }
 
             _currentTestcaseLabels.Clear();
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.TestSetEnd, 0, 0);
+            EmitTestPacket(compiler, TestOpType.TestSetEnd, 0, 0);
 
             CurrentTestSetName = null;
         }
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void EmitTestPacket(Compiler compiler, TestOpType opType, byte b1, byte b2)
+            => compiler.EmitPacket(new ByteCodePacket(OpCode.TEST, new ByteCodePacket.TestOpDetails(opType, b1, b2)));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AddTestCaseLabel(byte labelUniqueChunkLabel)

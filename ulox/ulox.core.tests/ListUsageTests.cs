@@ -70,7 +70,7 @@ var arr = null;
 print(countof arr);
 ");
 
-            StringAssert.StartsWith("Cannot perform countof on 'null' at ip:'8' in chunk:'unnamed_chunk(test:3)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot perform countof on 'null' at ip:'5' in chunk:'unnamed_chunk(test:3)'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -183,6 +183,20 @@ print(arr[5]);
 ");
 
             Assert.AreEqual("8", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_NativeList_SetNonTrivialWhenReadOnly_ShouldFail()
+        {
+            testEngine.Run(@"
+var arr = [];
+arr.Resize(10, null);
+readonly arr;
+arr[5] = 2*4;
+print(arr[5]);
+");
+
+            StringAssert.StartsWith("Attempted to Set index '5' to '8', but list is read only.", testEngine.InterpreterResult);
         }
 
         [Test]

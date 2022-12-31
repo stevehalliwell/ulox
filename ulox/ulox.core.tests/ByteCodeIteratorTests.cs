@@ -14,7 +14,7 @@ namespace ulox.core.tests
         [Test]
         public void InstructionAndConstantCount_WhenVarInit_ShouldBeExpected()
         {
-            var expectedInstructionCount = 7;
+            var expectedInstructionCount = 4;
             var expectedConstantCount = 1;
             var compiled = CompileByteCode(@"
 var i = 0;");

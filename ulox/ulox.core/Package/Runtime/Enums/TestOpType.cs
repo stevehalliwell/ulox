@@ -3,7 +3,7 @@
     public enum TestOpType : byte
     {
         TestFixtureBodyInstruction,
-        TestSetStart,
+        TestCase,
         CaseStart,
         CaseEnd,
         TestSetEnd,

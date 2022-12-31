@@ -21,7 +21,7 @@ namespace ULox
         private readonly Dictionary<byte, int> _labelIdToInstruction = new Dictionary<byte, int>();
         private int instructionCount = -1;
 
-        public List<byte> Instructions { get; private set; } = new List<byte>(InstructionStartingCapacity);
+        public List<ByteCodePacket> Instructions { get; private set; } = new List<ByteCodePacket>(InstructionStartingCapacity);
         public List<byte> ArgumentConstantIds { get; private set; } = new List<byte>(50);
         public IReadOnlyList<Value> Constants => _constants.AsReadOnly();
         public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
@@ -56,26 +56,17 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteByte(byte b, int line)
-        {
-            Instructions.Add(b);
-            AddLine(line);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddConstantAndWriteInstruction(Value val, int line)
         {
-            Instructions.Add((byte)OpCode.CONSTANT);
             var at = AddConstant(val);
-            Instructions.Add(at);
-            AddLine(line);
+            WritePacket(new ByteCodePacket(OpCode.CONSTANT, at, 0, 0), line);
             return at;
         }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteSimple(OpCode opCode, int line)
+        public void WritePacket(ByteCodePacket packet, int line)
         {
-            Instructions.Add((byte)opCode);
+            Instructions.Add(packet);
             AddLine(line);
         }
 
@@ -100,17 +91,14 @@ namespace ULox
         {
             switch (val.type)
             {
-            case ValueType.Null:
-                throw new UloxException("Attempted to add a null constant");
             case ValueType.Double:
                 return _constants.FindIndex(x => x.type == val.type && val.val.asDouble == x.val.asDouble);
-
-            case ValueType.Bool:
-                return _constants.FindIndex(x => x.type == val.type && val.val.asBool == x.val.asBool);
-
+                
             case ValueType.String:
                 return _constants.FindIndex(x => x.type == val.type && val.val.asString == x.val.asString);
             // none of those are going to be duplicated by the compiler anyway
+            case ValueType.Bool:
+            case ValueType.Null:
             case ValueType.Object:
             case ValueType.Chunk:
             case ValueType.NativeFunction:
@@ -173,7 +161,7 @@ namespace ULox
             _labelIdToInstruction[id] = currentChunkInstructinCount;
         }
 
-        internal void RemoveByteAt(int b)
+        internal void RemoveInstructionAt(int b)
         {
             Instructions.RemoveAt(b);
             AdjustLabelIndicies(b, -1);

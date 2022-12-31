@@ -151,7 +151,7 @@ namespace ULox
             else
                 compiler.CurrentCompilerState.chunk.AddLabel(InitChainLabelId, 0);
 
-            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
 
             compiler.EmitLabel(classReturnEnd);
         }
@@ -177,7 +177,7 @@ namespace ULox
             compiler.DeclareVariable();
 
             InitChainLabelId = compiler.UniqueChunkStringConstant("InitChain");
-            compiler.EmitOpAndBytes(OpCode.TYPE, nameConstant, (byte)UserType, InitChainLabelId);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.TYPE, new ByteCodePacket.TypeDetails(nameConstant, UserType, InitChainLabelId)));
             
             compiler.DefineVariable(nameConstant);
             compiler.NamedVariable(CurrentTypeName, false);
@@ -189,14 +189,14 @@ namespace ULox
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
             if (IsFrozenAtEnd)
-                compiler.EmitOpCode(OpCode.FREEZE);
+                compiler.EmitPacket(OpCode.FREEZE);
             else
                 compiler.EmitPop();
             
             if(IsReadOnlyAtEnd)
             {
                 compiler.NamedVariable(CurrentTypeName, false);
-                compiler.EmitOpCode(OpCode.READ_ONLY);
+                compiler.EmitPacket(OpCode.READ_ONLY);
             }
         }
 

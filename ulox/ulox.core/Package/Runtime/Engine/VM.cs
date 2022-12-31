@@ -45,7 +45,7 @@ namespace ULox
         public Vm()
         {
             var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native", FunctionType.Function);
-            nativeChunk.WriteByte((byte)OpCode.NATIVE_CALL, 0);
+            nativeChunk.WritePacket(new ByteCodePacket(OpCode.NATIVE_CALL), 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }
 
@@ -127,7 +127,7 @@ namespace ULox
         public void CopyFrom(Vm otherVM)
         {
             Engine = otherVM.Engine;
-            
+
             foreach (var val in otherVM._globals)
             {
                 SetGlobal(val.Key, val.Value);
@@ -155,16 +155,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte ReadByte(Chunk chunk)
+        public ByteCodePacket ReadPacket(Chunk chunk)
             => chunk.Instructions[_currentCallFrame.InstructionPointer++];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort ReadUShort(Chunk chunk)
-        {
-            var bhi = chunk.Instructions[_currentCallFrame.InstructionPointer++];
-            var blo = chunk.Instructions[_currentCallFrame.InstructionPointer++];
-            return (ushort)((bhi << 8) | blo);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PushNewCallframe(CallFrame callFrame)
@@ -220,23 +212,21 @@ namespace ULox
 
         public InterpreterResult Run()
         {
-            if (_currentCallFrame.Closure == null && _currentCallFrame.nativeFunc == null)
-                return InterpreterResult.NOTHING;
-
             while (true)
             {
                 var chunk = _currentCallFrame.Closure.chunk;
 
-                OpCode opCode = (OpCode)ReadByte(chunk);
+                var packet = ReadPacket(chunk);
+                var opCode = packet.OpCode;
 
                 switch (opCode)
                 {
                 case OpCode.CONSTANT:
-                    DoConstantOp(chunk);
+                    Push(chunk.ReadConstant(packet.b1));
                     break;
 
                 case OpCode.RETURN:
-                    if (DoReturnOp(chunk))
+                    if (DoReturnOp(chunk, packet.ReturnMode))
                         return InterpreterResult.OK;
 
                     break;
@@ -263,23 +253,23 @@ namespace ULox
                     break;
 
                 case OpCode.NOT:
-                    DoNotOp();
+                    Push(Value.New(Pop().IsFalsey()));
                     break;
 
                 case OpCode.PUSH_BOOL:
-                    DoPushBoolOp(chunk);
+                    Push(Value.New(packet.BoolValue));
                     break;
 
                 case OpCode.NULL:
-                    DoNullOp();
+                    Push(Value.Null());
                     break;
 
                 case OpCode.PUSH_BYTE:
-                    DoPushByteOp(chunk);
+                    Push(Value.New(packet.b1));
                     break;
 
                 case OpCode.POP:
-                    DiscardPop();
+                    DiscardPop(packet.b1);
                     break;
 
                 case OpCode.SWAP:
@@ -291,51 +281,70 @@ namespace ULox
                     break;
 
                 case OpCode.JUMP_IF_FALSE:
-                    DoJumpIfFalseOp(chunk);
+                    if (Peek().IsFalsey())
+                        _currentCallFrame.InstructionPointer += packet.u1;
                     break;
 
                 case OpCode.JUMP:
-                    DoJumpOp(chunk);
+                    _currentCallFrame.InstructionPointer += packet.u1;
                     break;
 
                 case OpCode.LOOP:
-                    DoLoopOp(chunk);
+                    _currentCallFrame.InstructionPointer -= packet.u1;
                     break;
 
                 case OpCode.GET_LOCAL:
-                    DoGetLocalOp(chunk);
+                    Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
                     break;
 
                 case OpCode.SET_LOCAL:
-                    DoSetLocalOp(chunk);
+                    _valueStack[_currentCallFrame.StackStart + packet.b1] = Peek();
                     break;
 
                 case OpCode.GET_UPVALUE:
-                    DoGetUpvalueOp(chunk);
+                    DoGetUpvalueOp(chunk, packet.b1);
                     break;
 
                 case OpCode.SET_UPVALUE:
-                    DoSetUpvalueOp(chunk);
+                    DoSetUpvalueOp(chunk, packet.b1);
                     break;
 
                 case OpCode.DEFINE_GLOBAL:
-                    DoDefineGlobalOp(chunk);
-                    break;
+                {
+                    var globalName = chunk.ReadConstant(packet.b1);
+                    _globals[globalName.val.asString] = Pop();
+                }
+                break;
 
                 case OpCode.FETCH_GLOBAL:
-                    DoFetchGlobalOp(chunk);
-                    break;
+                {
+                    var globalName = chunk.ReadConstant(packet.b1);
+                    var actualName = globalName.val.asString;
+
+                    if (_globals.TryGetValue(actualName, out var found))
+                    {
+                        Push(found);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"No global of name {actualName} could be found");
+                    }
+                }
+                break;
 
                 case OpCode.ASSIGN_GLOBAL:
-                    DoAssignGlobalOp(chunk);
+                    DoAssignGlobalOp(chunk, packet.b1);
                     break;
 
                 case OpCode.CALL:
-                    DoCallOp(chunk);
-                    break;
+                {
+                    var argCount = packet.b1;
+                    PushCallFrameFromValue(Peek(argCount), argCount);
+                }
+                break;
 
                 case OpCode.CLOSURE:
-                    DoClosureOp(chunk);
+                    DoClosureOp(chunk, packet.closureDetails);
                     break;
 
                 case OpCode.CLOSE_UPVALUE:
@@ -362,27 +371,27 @@ namespace ULox
                     break;
 
                 case OpCode.VALIDATE:
-                    DoValidateOp(chunk);
+                    DoValidateOp(chunk, packet.ValidateOp);
                     break;
 
                 case OpCode.GET_PROPERTY:
-                    DoGetPropertyOp(chunk);
+                    DoGetPropertyOp(chunk, packet.b1);
                     break;
 
                 case OpCode.SET_PROPERTY:
-                    DoSetPropertyOp(chunk);
+                    DoSetPropertyOp(chunk, packet.b1);
                     break;
 
                 case OpCode.TYPE:
-                    DoUserTypeOp(chunk);
+                    DoUserTypeOp(chunk, packet.typeDetails);
                     break;
 
                 case OpCode.METHOD:
-                    DoMethodOp(chunk);
+                    DoMethodOp(chunk, packet.b1);
                     break;
 
                 case OpCode.FIELD:
-                    DoFieldOp(chunk);
+                    DoFieldOp(chunk, packet.b1);
                     break;
 
                 case OpCode.MIXIN:
@@ -390,19 +399,19 @@ namespace ULox
                     break;
 
                 case OpCode.INVOKE:
-                    DoInvokeOp(chunk);
+                    DoInvokeOp(chunk, packet);
                     break;
 
                 case OpCode.TEST:
-                    TestRunner.DoTestOpCode(this, chunk);
+                    TestRunner.DoTestOpCode(this, chunk, packet.testOpDetails);
                     break;
 
                 case OpCode.REGISTER:
-                    DoRegisterOp(chunk);
+                    DoRegisterOp(chunk, packet.b1);
                     break;
 
                 case OpCode.INJECT:
-                    DoInjectOp(chunk);
+                    DoInjectOp(chunk, packet.b1);
                     break;
 
                 case OpCode.FREEZE:
@@ -410,7 +419,7 @@ namespace ULox
                     break;
 
                 case OpCode.NATIVE_TYPE:
-                    DoNativeTypeOp(chunk);
+                    DoNativeTypeOp(chunk, packet.NativeType);
                     break;
 
                 case OpCode.GET_INDEX:
@@ -448,15 +457,15 @@ namespace ULox
                     break;
 
                 case OpCode.GOTO:
-                    DoGotoOp(chunk);
+                    _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
                     break;
 
                 case OpCode.GOTO_IF_FALSE:
-                    DoGotoIfFalseOp(chunk);
+                    if (Peek().IsFalsey())
+                        _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
                     break;
 
                 case OpCode.LABEL:
-                    ReadByte(chunk);
                     break;
 
                 case OpCode.ENUM_VALUE:
@@ -566,25 +575,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGotoOp(Chunk chunk)
-        {
-            var labelID = ReadByte(chunk);
-            var labelPos = chunk.GetLabelPosition(labelID);
-
-            _currentCallFrame.InstructionPointer = labelPos;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGotoIfFalseOp(Chunk chunk)
-        {
-            var labelID = ReadByte(chunk);
-            var labelPos = chunk.GetLabelPosition(labelID);
-
-            if (Peek().IsFalsey())
-                _currentCallFrame.InstructionPointer = labelPos;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoEnumValueOp(Chunk chunk)
         {
             var enumObject = Pop();
@@ -656,11 +646,9 @@ namespace ULox
             }
 
             //attempt overload method call
-            if (listValue.type == ValueType.Instance)
-            {
-                if (DoCustomOverloadOp(opCode, listValue, index, newValue))
-                    return;
-            }
+            if (listValue.type == ValueType.Instance
+                && DoCustomOverloadOp(opCode, listValue, index, newValue))
+                return;
 
             ThrowRuntimeException($"Cannot perform set index on type '{listValue.type}'");
         }
@@ -707,9 +695,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNativeTypeOp(Chunk chunk)
+        private void DoNativeTypeOp(Chunk chunk, NativeType nativeTypeRequested)
         {
-            var nativeTypeRequested = (NativeType)ReadByte(chunk);
             switch (nativeTypeRequested)
             {
             case NativeType.List:
@@ -737,16 +724,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoCallOp(Chunk chunk)
+        private void DoSetUpvalueOp(Chunk chunk, byte slot)
         {
-            int argCount = ReadByte(chunk);
-            PushCallFrameFromValue(Peek(argCount), argCount);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetUpvalueOp(Chunk chunk)
-        {
-            var slot = ReadByte(chunk);
             var upval = _currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
             if (!upval.isClosed)
                 _valueStack[upval.index] = Peek();
@@ -755,9 +734,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetUpvalueOp(Chunk chunk)
+        private void DoGetUpvalueOp(Chunk chunk, byte slot)
         {
-            var slot = ReadByte(chunk);
             var upval = _currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
             if (!upval.isClosed)
                 Push(_valueStack[upval.index]);
@@ -766,78 +744,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetLocalOp(Chunk chunk)
+        private void DoValidateOp(Chunk chunk, ValidateOp validateOp)
         {
-            var slot = ReadByte(chunk);
-            _valueStack[_currentCallFrame.StackStart + slot] = Peek();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetLocalOp(Chunk chunk)
-        {
-            var slot = ReadByte(chunk);
-            Push(_valueStack[_currentCallFrame.StackStart + slot]);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoLoopOp(Chunk chunk)
-        {
-            ushort jump = ReadUShort(chunk);
-            _currentCallFrame.InstructionPointer -= jump;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoJumpOp(Chunk chunk)
-        {
-            ushort jump = ReadUShort(chunk);
-            _currentCallFrame.InstructionPointer += jump;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoJumpIfFalseOp(Chunk chunk)
-        {
-            ushort jump = ReadUShort(chunk);
-            if (Peek().IsFalsey())
-                _currentCallFrame.InstructionPointer += jump;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoPushByteOp(Chunk chunk)
-        {
-            var b = ReadByte(chunk);
-            Push(Value.New(b));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNullOp()
-        {
-            Push(Value.Null());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoPushBoolOp(Chunk chunk)
-        {
-            var b = ReadByte(chunk);
-            Push(Value.New(b == 1));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNotOp()
-        {
-            Push(Value.New(Pop().IsFalsey()));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoConstantOp(Chunk chunk)
-        {
-            var constantIndex = ReadByte(chunk);
-            Push(chunk.ReadConstant(constantIndex));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoValidateOp(Chunk chunk)
-        {
-            var validateOp = (ValidateOp)ReadByte(chunk);
             switch (validateOp)
             {
             case ValidateOp.MultiReturnMatches:
@@ -903,10 +811,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoAssignGlobalOp(Chunk chunk)
+        private void DoAssignGlobalOp(Chunk chunk, byte globalId)
         {
-            var global = ReadByte(chunk);
-            var globalName = chunk.ReadConstant(global);
+            var globalName = chunk.ReadConstant(globalId);
             var actualName = globalName.val.asString;
             if (!_globals.ContainsKey(actualName))
             {
@@ -916,44 +823,31 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoFetchGlobalOp(Chunk chunk)
+        private void DoClosureOp(Chunk chunk, ByteCodePacket.ClosureDetails closureDetails)
         {
-            var global = ReadByte(chunk);
-            var globalName = chunk.ReadConstant(global);
-            var actualName = globalName.val.asString;
+            var type = closureDetails.ClosureType;
+            var b1 = closureDetails.b1;
+            var b2 = closureDetails.b2;
+            ClosureInternal closure = default;
 
-            if (_globals.TryGetValue(actualName, out var found))
-            {
-                Push(found);
-            }
-            else
-            {
-                ThrowRuntimeException($"No global of name {actualName} could be found");
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoDefineGlobalOp(Chunk chunk)
-        {
-            var global = ReadByte(chunk);
-            var globalName = chunk.ReadConstant(global);
-            _globals[globalName.val.asString] = Pop();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoClosureOp(Chunk chunk)
-        {
-            var constantIndex = ReadByte(chunk);
+            if (type != ClosureType.Closure)
+                ThrowRuntimeException($"Closure type '{type}' unexpected.");
+            
+            var constantIndex = b1;
             var func = chunk.ReadConstant(constantIndex);
             var closureVal = Value.New(new ClosureInternal() { chunk = func.val.asChunk });
             Push(closureVal);
 
-            var closure = closureVal.val.asClosure;
+            closure = closureVal.val.asClosure;
+
+            if (b2 != closure.upvalues.Length)
+                ThrowRuntimeException($"Closure upvalue count mismatch. Expected '{b2}' but got '{closure.upvalues.Length}'");
 
             for (int i = 0; i < closure.upvalues.Length; i++)
             {
-                var isLocal = ReadByte(chunk);
-                var index = ReadByte(chunk);
+                var packet = ReadPacket(chunk);
+                var isLocal = packet.closureDetails.b1;
+                var index = packet.closureDetails.b2;
                 if (isLocal == 1)
                 {
                     var local = _currentCallFrame.StackStart + index;
@@ -967,11 +861,11 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoReturnOp(Chunk chunk)
+        private bool DoReturnOp(Chunk chunk, ReturnMode returnMode)
         {
             var origCallFrameCount = _callFrames.Count;
             var wantsToYieldOnReturn = _currentCallFrame.YieldOnReturn;
-            var returnMode = (ReturnMode)ReadByte(chunk);
+
             switch (returnMode)
             {
             case ReturnMode.One:
@@ -1187,9 +1081,7 @@ namespace ULox
         {
             var value = Peek(peekVal);
             if (!value.IsPure)
-            {
                 ThrowRuntimeException($"Pure call '{closureInternal.chunk.Name}' with non-pure confirming argument '{value}'");
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1317,17 +1209,17 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoUserTypeOp(Chunk chunk)
+        private void DoUserTypeOp(Chunk chunk, ByteCodePacket.TypeDetails typeDetails)
         {
-            var constantIndex = ReadByte(chunk);
+            var constantIndex = typeDetails.stringConstantId;
             var name = chunk.ReadConstant(constantIndex);
-            var userType = (UserType)ReadByte(chunk);
+            var userType = typeDetails.UserType;
             UserTypeInternal klass = userType == UserType.Enum
                 ? new EnumClass(name.val.asString)
                 : new UserTypeInternal(name.val.asString, userType);
             var klassValue = Value.New(klass);
             Push(klassValue);
-            var initChainLabelID = ReadByte(chunk);
+            var initChainLabelID = typeDetails.initLabelId;
             var initChain = chunk.Labels[initChainLabelID];
             if (initChain != 0)
             {
@@ -1356,9 +1248,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInjectOp(Chunk chunk)
+        private void DoInjectOp(Chunk chunk, byte constantIndex)
         {
-            var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;
             if (DiContainer.TryGetValue(name, out var found))
                 Push(found);
@@ -1367,16 +1258,15 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoRegisterOp(Chunk chunk)
+        private void DoRegisterOp(Chunk chunk, byte constantIndex)
         {
-            var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;
             var implementation = Pop();
             DiContainer.Set(name, implementation);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetPropertyOp(Chunk chunk)
+        private void DoGetPropertyOp(Chunk chunk, byte constantIndex)
         {
             //use class to build a cached route to the field, introduce an cannot cache instruction
             //  once there are class vars this can be done through that as those are known and safe, not
@@ -1404,7 +1294,6 @@ namespace ULox
                 break;
             }
 
-            var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
             if (instance.TryGetField(name, out var val))
@@ -1418,7 +1307,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetPropertyOp(Chunk chunk)
+        private void DoSetPropertyOp(Chunk chunk, byte constantIndex)
         {
             var targetVal = Peek(1);
 
@@ -1438,7 +1327,6 @@ namespace ULox
                 break;
             }
 
-            var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
             instance.SetField(name, Peek());
@@ -1449,10 +1337,11 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInvokeOp(Chunk chunk)
+        private void DoInvokeOp(Chunk chunk, ByteCodePacket packet)
         {
-            var constantIndex = ReadByte(chunk);
-            var argCount = ReadByte(chunk);
+            var constantIndex = packet.b1;
+            var argCount = packet.b2;
+
             var methodName = chunk.ReadConstant(constantIndex).val.asString;
 
             var receiver = Peek(argCount);
@@ -1500,9 +1389,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMethodOp(Chunk chunk)
+        private void DoMethodOp(Chunk chunk, byte constantIndex)
         {
-            var constantIndex = ReadByte(chunk);
             var name = chunk.ReadConstant(constantIndex).val.asString;
             Value method = Peek();
             var klass = Peek(1).val.asClass;
@@ -1511,9 +1399,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoFieldOp(Chunk chunk)
+        private void DoFieldOp(Chunk chunk, byte constantIndex)
         {
-            var constantIndex = ReadByte(chunk);
             var klass = Pop().val.asClass;
             klass.AddFieldName(chunk.ReadConstant(constantIndex).val.asString);
         }

@@ -29,7 +29,7 @@
                 ? FunctionType.LocalMethod
                 : FunctionType.Method);
             compiler.Function(name, funcType);
-            compiler.EmitOpAndBytes(OpCode.METHOD, constant);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.METHOD, constant,0,0));
         }
 
         public void Start(TypeCompilette typeCompilette)

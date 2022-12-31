@@ -78,7 +78,7 @@ namespace ULox
                 if (name == local.Name)
                 {
                     if (local.Depth == -1)
-                        compiler.ThrowCompilerException($"{name}. Cannot referenece a variable in it's own initialiser.");
+                        compiler.ThrowCompilerException($"Cannot referenece variable '{name}' in it's own initialiser");
                     return i;
                 }
             }
@@ -142,7 +142,7 @@ namespace ULox
                     break;
 
                 if (declName == local.Name)
-                    compiler.ThrowCompilerException($"Already a variable with name '{declName}' in this scope.");
+                    compiler.ThrowCompilerException($"Already a variable with name '{declName}' in this scope");
             }
 
             AddLocal(compiler, declName);

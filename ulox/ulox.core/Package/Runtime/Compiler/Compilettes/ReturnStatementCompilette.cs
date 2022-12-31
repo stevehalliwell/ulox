@@ -31,18 +31,18 @@ namespace ULox
             else
             {
                 compiler.Expression();
-                compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void MultiReturnBody(Compiler compiler)
         {
-            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.Begin);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.Begin));
             var returnCount = compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
             if (returnCount == 0)
                 compiler.EmitNULL();
-            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.End);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.End));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

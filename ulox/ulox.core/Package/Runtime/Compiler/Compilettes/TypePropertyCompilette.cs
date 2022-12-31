@@ -41,7 +41,7 @@
                 byte nameConstant = compiler.AddStringConstant();
                 
                 compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                compiler.EmitOpAndBytes(OpCode.FIELD, nameConstant);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.FIELD, nameConstant,0,0));
 
                 //emit jump // to skip this during imperative
                 var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
@@ -55,7 +55,7 @@
                     compiler.EmitLabel((byte)_typeCompilette.InitChainLabelId);
                 }
 
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
+                compiler.EmitPacketByte(OpCode.GET_LOCAL, 0);//get class or inst this on the stack
 
                 //if = consume it and then
                 //eat 1 expression or a push null
@@ -69,7 +69,7 @@
                 }
 
                 //emit set prop
-                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, nameConstant);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant,0,0));
                 compiler.EmitPop();
                 //emit jump // to move to next prop init fragment, defaults to jump nowhere return
                 _typeCompilette.PreviousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitFragmentJump");

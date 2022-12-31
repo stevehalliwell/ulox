@@ -33,7 +33,7 @@ namespace ULox
                 {
                     compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
                     compiler.NamedVariable(contractName, false);
-                    compiler.EmitOpCode(OpCode.SIGNS);
+                    compiler.EmitPacket( OpCode.SIGNS);
                 }
             };
         }

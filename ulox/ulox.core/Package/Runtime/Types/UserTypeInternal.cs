@@ -79,9 +79,7 @@ namespace ULox
                     var existingArity = existing.val.asClosure.chunk.Arity;
                     var newArity = method.val.asClosure.chunk.Arity;
                     if (existingArity != newArity)
-                    {
                         vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
-                    }
 
                     //make a combine
                     var temp = Value.Combined();
@@ -94,9 +92,7 @@ namespace ULox
                     var existingArity = existing.val.asCombined[0].chunk.Arity;
                     var newArity = method.val.asClosure.chunk.Arity;
                     if (existingArity != newArity)
-                    {
                         vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
-                    }
 
                     existing.val.asCombined.Insert(0, method.val.asClosure);
                 }

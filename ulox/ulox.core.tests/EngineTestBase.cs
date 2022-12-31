@@ -7,7 +7,7 @@ namespace ulox.core.tests
         protected ByteCodeInterpreterTestEngine testEngine;
 
         [SetUp]
-        public void Setup()
+        public virtual void Setup()
         {
             testEngine = new ByteCodeInterpreterTestEngine(System.Console.WriteLine);
         }

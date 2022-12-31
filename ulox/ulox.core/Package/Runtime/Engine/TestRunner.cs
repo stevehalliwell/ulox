@@ -40,7 +40,7 @@ namespace ULox
             var id = MakeId(name);
             if (_testStatus.ContainsKey(id))
                 _testStatus[id] = true;
-            else if(_lastId.StartsWith(id))
+            else if (_lastId.StartsWith(id))
                 _testStatus[_lastId] = true;
 
             _lastId = null;
@@ -66,19 +66,19 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DoTestOpCode(Vm vm, Chunk chunk)
+        public void DoTestOpCode(Vm vm, Chunk chunk, ByteCodePacket.TestOpDetails testOpDetails)
         {
-            var testOpType = (TestOpType)vm.ReadByte(chunk);
+            var testOpType = testOpDetails.TestOpType;
+            var b1 = testOpDetails.b1;
+            var b2 = testOpDetails.b2;
             switch (testOpType)
             {
             case TestOpType.CaseStart:
             {
-                var nameId = vm.ReadByte(chunk);
-                var argCount = vm.ReadByte(chunk);
-                var stringName = chunk.ReadConstant(nameId).val.asString.String;
-                if (argCount != 0)
+                var stringName = chunk.ReadConstant(b1).val.asString.String;
+                if (b2 != 0)
                 {
-                    stringName += $"({ArgDescriptionString(vm, argCount)})";
+                    stringName += $"({ArgDescriptionString(vm, b2)})";
                 }
                 StartTest(vm, stringName);
             }
@@ -86,28 +86,35 @@ namespace ULox
 
             case TestOpType.CaseEnd:
             {
-                var nameId = vm.ReadByte(chunk);
-                var argCount = vm.ReadByte(chunk);
-                var stringName = chunk.ReadConstant(nameId).val.asString.String;
+                var stringName = chunk.ReadConstant(b1).val.asString.String;
                 EndTest(stringName);
             }
             break;
 
-            case TestOpType.TestSetStart:
-                DoTestSet(vm, chunk);
-                break;
+            case TestOpType.TestCase:
+            {
+                var name = chunk.ReadConstant(b2).val.asString;
+                var label = b1;
+                var loc = (ushort)chunk.Labels[label];
+
+                CurrentTestSetName = name;
+                if (Enabled)
+                {
+                    RunTestCase(vm, chunk, loc);
+                }
+            }
+            break;
 
             case TestOpType.TestSetEnd:
                 CurrentTestSetName = new HashedString(string.Empty);
-                vm.ReadByte(chunk);//byte we don't use
-                vm.ReadByte(chunk);//byte we don't use
                 SetFixtureLoc(ushort.MaxValue);
                 break;
             case TestOpType.TestFixtureBodyInstruction:
-                var labelId = vm.ReadByte(chunk);
-                var loc = (ushort)chunk.Labels[labelId];
+            {
+                var loc = (ushort)chunk.Labels[b1];
                 SetFixtureLoc(loc);
-                break;
+            }
+            break;
             }
         }
 
@@ -128,25 +135,6 @@ namespace ULox
                     sb.Append(", ");
             }
             return sb.ToString();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoTestSet(Vm vm, Chunk chunk)
-        {
-            var name = chunk.ReadConstant(vm.ReadByte(chunk)).val.asString;
-            var testcaseCount = vm.ReadByte(chunk);
-
-            CurrentTestSetName = name;
-
-            for (int i = 0; i < testcaseCount; i++)
-            {
-                var label = vm.ReadByte(chunk);
-                var loc = (ushort)chunk.Labels[label];
-                if (Enabled)
-                {
-                    RunTestCase(vm, chunk, loc);
-                }
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

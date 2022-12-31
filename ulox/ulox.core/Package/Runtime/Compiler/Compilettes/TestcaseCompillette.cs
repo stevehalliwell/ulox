@@ -39,11 +39,11 @@ namespace ULox
                 compiler.DeclareAndDefineCustomVariable("testDataRow");
                 compiler.EmitNULL();
                 compiler.DeclareAndDefineCustomVariable("testDataIndex");
-                compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 0,0,0));
                 compiler.Expression();
                 var (_, _, res) = compiler.ResolveNameLookupOpCode("testDataSource");
                 testDataSourceLocalId = res;
-                compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataSourceLocalId);
+                compiler.EmitPacketByte(OpCode.SET_LOCAL, testDataSourceLocalId);
                 compiler.EmitPop();
 
                 //jump for moving back to start
@@ -62,7 +62,7 @@ namespace ULox
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if (string.IsNullOrEmpty(testDeclName))
-                compiler.ThrowCompilerException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
+                compiler.ThrowCompilerException($"Unexpected testcase, testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
@@ -98,21 +98,21 @@ namespace ULox
                 compiler.EmitPop(); // Condition.
 
                 //get row from array index
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataSourceLocalId);
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataIndexLocalId);
-                compiler.EmitOpCode(OpCode.GET_INDEX);
+                compiler.EmitPacketByte(OpCode.GET_LOCAL, testDataSourceLocalId);
+                compiler.EmitPacketByte(OpCode.GET_LOCAL, testDataIndexLocalId);
+                compiler.EmitPacket(OpCode.GET_INDEX);
                 var (_, _, testDataRowLocalId) = compiler.ResolveNameLookupOpCode("testDataRow");
-                compiler.EmitOpAndBytes(OpCode.SET_LOCAL, testDataRowLocalId);
+                compiler.EmitPacketByte(OpCode.SET_LOCAL, testDataRowLocalId);
                 compiler.EmitPop();
                 //appy row as inputs to the test
-                compiler.EmitOpAndBytes(OpCode.GET_LOCAL, testDataRowLocalId);
-                compiler.EmitOpCode(OpCode.EXPAND_COPY_TO_STACK);
+                compiler.EmitPacketByte(OpCode.GET_LOCAL, testDataRowLocalId);
+                compiler.EmitPacket(OpCode.EXPAND_COPY_TO_STACK);
             }
 
             // The body.
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.CaseStart, nameConstantID, numArgs);
+            TestDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseStart, nameConstantID, numArgs);
             compiler.BlockStatement();
-            compiler.EmitOpAndBytes(OpCode.TEST, (byte)TestOpType.CaseEnd, nameConstantID, 0x00);
+            TestDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseEnd, nameConstantID, 0);
             compiler.EndScope();
 
             if (dataExpExecuteLocation != -1)
@@ -123,7 +123,7 @@ namespace ULox
             }
 
             compiler.EmitNULL();
-            compiler.EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
 
             compiler.EndScope();
             
@@ -142,19 +142,19 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)
         {
-            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
-            compiler.EmitOpAndBytes(arrayGetOp, arrayArgId);
-            compiler.EmitOpCode(OpCode.COUNT_OF);
-            compiler.EmitOpAndBytes(OpCode.LESS);
+            compiler.EmitPacketByte(OpCode.GET_LOCAL, indexArgID);
+            compiler.EmitPacketByte(arrayGetOp, arrayArgId);
+            compiler.EmitPacket(OpCode.COUNT_OF);
+            compiler.EmitPacket(OpCode.LESS);
         }
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void IncrementLocalByOne(Compiler compiler, byte indexArgID)
         {
-            compiler.EmitOpAndBytes(OpCode.GET_LOCAL, indexArgID);
-            compiler.EmitOpAndBytes(OpCode.PUSH_BYTE, 1);
-            compiler.EmitOpCode(OpCode.ADD);
-            compiler.EmitOpAndBytes(OpCode.SET_LOCAL, indexArgID);
+            compiler.EmitPacketByte(OpCode.GET_LOCAL, indexArgID);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 1,0,0));
+            compiler.EmitPacket(OpCode.ADD);
+            compiler.EmitPacketByte(OpCode.SET_LOCAL, indexArgID);
             compiler.EmitPop();
         }
     }

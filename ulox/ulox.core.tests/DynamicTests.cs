@@ -78,6 +78,16 @@ print(obj.c);
         }
 
         [Test]
+        public void Dynamic_WhenInvalid_ShouldFail()
+        {
+            testEngine.Run(@"
+var obj = {7};
+");
+
+            StringAssert.StartsWith("Expect identifier or ':' after '{'", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Dyanic_RemoveFieldWhenReadOnly_ShouldError()
         {
             testEngine.Run(@"

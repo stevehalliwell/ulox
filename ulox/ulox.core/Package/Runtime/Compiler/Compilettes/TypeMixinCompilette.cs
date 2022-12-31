@@ -21,7 +21,7 @@
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
                 compiler.NamedVariable(compiler.TokenIterator.PreviousToken.Literal as string, false);
                 compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                compiler.EmitOpAndBytes(OpCode.MIXIN);
+                compiler.EmitPacket( new ByteCodePacket(OpCode.MIXIN));
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
             
             compiler.ConsumeEndStatement("mixin declaration");

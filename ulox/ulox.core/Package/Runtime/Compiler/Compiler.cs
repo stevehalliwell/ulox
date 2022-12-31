@@ -138,19 +138,20 @@ namespace ULox
             => _prattParser.SetPrattRule(tt, rule);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitOpCode(OpCode op)
-            => CurrentChunk.WriteSimple(op, TokenIterator.PreviousToken.Line);
+        public void EmitPacket(ByteCodePacket packet)
+            => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitPacket(OpCode opCode)
+            => EmitPacket(new ByteCodePacket(opCode));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitPacketByte(OpCode opCode, byte b)
+            => EmitPacket(new ByteCodePacket(opCode, b, 0, 0));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitNULL()
-            => EmitOpCode(OpCode.NULL);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitOpCodes(params OpCode[] ops)
-        {
-            for (int i = 0; i < ops.Length; i++)
-                EmitOpCode(ops[i]);
-        }
+            => EmitPacket(OpCode.NULL);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddStringConstant()
@@ -165,37 +166,10 @@ namespace ULox
             => CurrentChunk.AddConstant(Value.New(str));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitOpAndBytes(OpCode op, params byte[] b)
+        public void WriteAt(int at, ByteCodePacket packet)
         {
-            EmitOpCode(op);
-            EmitBytes(b);
+            CurrentChunk.Instructions[at] = packet;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteUShortAt(int at, ushort us)
-            => WriteBytesAt(at, (byte)((us >> 8) & 0xff), (byte)(us & 0xff));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void WriteBytesAt(int at, params byte[] b)
-        {
-            for (int i = 0; i < b.Length; i++)
-            {
-                CurrentChunk.Instructions[at + i] = b[i];
-            }
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-
-        public void EmitBytes(params byte[] b)
-        {
-            for (int i = 0; i < b.Length; i++)
-            {
-                CurrentChunk.WriteByte(b[i], TokenIterator.PreviousToken.Line);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitUShort(ushort us)
-            => EmitBytes((byte)((us >> 8) & 0xff), (byte)(us & 0xff));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndScope()
@@ -204,15 +178,35 @@ namespace ULox
 
             comp.scopeDepth--;
 
+            // We want to group these, so we count them and then write them all at once
+            //  the alt is to always combine trailing pops at the write stage but that's more 
+            //  of a pure optimisation, as it breaks the line numbering.
+            var popCount = default(byte);
+
             while (comp.localCount > 0 &&
                 comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
             {
                 if (comp.locals[comp.localCount - 1].IsCaptured)
-                    EmitOpCode(OpCode.CLOSE_UPVALUE);
+                {
+                    if (popCount > 0)
+                    {
+                        EmitPop(popCount);
+                        popCount = 0;
+                    }
+                    
+                    EmitPacket(OpCode.CLOSE_UPVALUE);
+                }
                 else
-                    EmitPop();
-
+                {
+                    popCount++;
+                }
                 CurrentCompilerState.localCount--;
+            }
+
+            if (popCount > 0)
+            {
+                EmitPop(popCount);
+                popCount = 0;
             }
         }
 
@@ -336,7 +330,7 @@ namespace ULox
 
             if (!canAssign)
             {
-                EmitOpAndBytes(getOp, argId);
+                EmitPacketByte(getOp, argId);
                 return;
             }
 
@@ -345,7 +339,7 @@ namespace ULox
                 Expression();
                 ConfirmWrite(name, argId);
 
-                EmitOpAndBytes(setOp, argId);
+                EmitPacketByte(setOp, argId);
                 return;
             }
 
@@ -355,7 +349,7 @@ namespace ULox
                 return;
             }
 
-            EmitOpAndBytes(getOp, argId);
+            EmitPacketByte(getOp, argId);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -393,34 +387,34 @@ namespace ULox
                 Expression();
 
                 //expand the compound op
-                EmitOpAndBytes(getOp, argId);
-                EmitOpCode(OpCode.SWAP);
+                EmitPacketByte(getOp, argId);
+                EmitPacket(OpCode.SWAP);
 
                 // self assign ops have to be done here as they tail the previous ordered instructions
                 switch (assignTokenType)
                 {
                 case TokenType.PLUS_EQUAL:
-                    EmitOpCode(OpCode.ADD);
+                    EmitPacket(OpCode.ADD);
                     break;
 
                 case TokenType.MINUS_EQUAL:
-                    EmitOpCode(OpCode.SUBTRACT);
+                    EmitPacket(OpCode.SUBTRACT);
                     break;
 
                 case TokenType.STAR_EQUAL:
-                    EmitOpCode(OpCode.MULTIPLY);
+                    EmitPacket(OpCode.MULTIPLY);
                     break;
 
                 case TokenType.SLASH_EQUAL:
-                    EmitOpCode(OpCode.DIVIDE);
+                    EmitPacket(OpCode.DIVIDE);
                     break;
 
                 case TokenType.PERCENT_EQUAL:
-                    EmitOpCode(OpCode.MODULUS);
+                    EmitPacket(OpCode.MODULUS);
                     break;
                 }
 
-                EmitOpAndBytes(setOp, argId);
+                EmitPacketByte(setOp, argId);
                 return true;
             }
             return false;
@@ -477,14 +471,14 @@ namespace ULox
         {
             PreEmptyReturnEmit();
 
-            EmitOpAndBytes(OpCode.RETURN, (byte)ReturnMode.One);
+            EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PreEmptyReturnEmit()
         {
             if (CurrentCompilerState.functionType == FunctionType.Init)
-                EmitOpAndBytes(OpCode.GET_LOCAL, 0);
+                EmitPacketByte(OpCode.GET_LOCAL, 0);
             else
                 EmitNULL();
         }
@@ -583,12 +577,15 @@ namespace ULox
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
             var function = EndCompile();
-            EmitOpAndBytes(OpCode.CLOSURE, CurrentChunk.AddConstant(Value.New(function)));
+            EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount)));
 
             for (int i = 0; i < function.UpvalueCount; i++)
             {
-                EmitBytes(comp.upvalues[i].isLocal ? (byte)1 : (byte)0);
-                EmitBytes(comp.upvalues[i].index);
+                EmitPacket(
+                    new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(
+                    ClosureType.UpValueInfo,
+                    comp.upvalues[i].isLocal ? (byte)1 : (byte)0,
+                    comp.upvalues[i].index)));
             }
         }
 
@@ -615,7 +612,7 @@ namespace ULox
                 return;
             }
 
-            EmitOpAndBytes(OpCode.DEFINE_GLOBAL, global);
+            EmitPacket(new ByteCodePacket(OpCode.DEFINE_GLOBAL, global, 0, 0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -631,14 +628,13 @@ namespace ULox
         public byte DeclareAndDefineLocal(string itemName, string errorPrefix)
         {
             if (CurrentCompilerState.ResolveLocal(this, itemName) != -1)
-            {
                 ThrowCompilerException($"{errorPrefix} '{itemName}' already exists at this scope");
-            }
+            
             CurrentCompilerState.DeclareVariableByName(this, itemName);
             CurrentCompilerState.MarkInitialised();
             var itemArgId = (byte)CurrentCompilerState.ResolveLocal(this, itemName);
-            EmitOpAndBytes(OpCode.PUSH_BYTE, 0);
-            EmitOpAndBytes(OpCode.SET_LOCAL, itemArgId);
+            EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 0, 0, 0));
+            EmitPacketByte(OpCode.SET_LOCAL, itemArgId);
             return itemArgId;
         }
 
@@ -672,17 +668,17 @@ namespace ULox
 
             switch (operatorType)
             {
-            case TokenType.PLUS: compiler.EmitOpCode(OpCode.ADD); break;
-            case TokenType.MINUS: compiler.EmitOpCode(OpCode.SUBTRACT); break;
-            case TokenType.STAR: compiler.EmitOpCode(OpCode.MULTIPLY); break;
-            case TokenType.SLASH: compiler.EmitOpCode(OpCode.DIVIDE); break;
-            case TokenType.PERCENT: compiler.EmitOpCode(OpCode.MODULUS); break;
-            case TokenType.EQUALITY: compiler.EmitOpCode(OpCode.EQUAL); break;
-            case TokenType.GREATER: compiler.EmitOpCode(OpCode.GREATER); break;
-            case TokenType.LESS: compiler.EmitOpCode(OpCode.LESS); break;
-            case TokenType.BANG_EQUAL: compiler.EmitOpCodes(OpCode.EQUAL, OpCode.NOT); break;
-            case TokenType.GREATER_EQUAL: compiler.EmitOpCodes(OpCode.LESS, OpCode.NOT); break;
-            case TokenType.LESS_EQUAL: compiler.EmitOpCodes(OpCode.GREATER, OpCode.NOT); break;
+            case TokenType.PLUS: compiler.EmitPacket(OpCode.ADD); break;
+            case TokenType.MINUS: compiler.EmitPacket(OpCode.SUBTRACT); break;
+            case TokenType.STAR: compiler.EmitPacket(OpCode.MULTIPLY); break;
+            case TokenType.SLASH: compiler.EmitPacket(OpCode.DIVIDE); break;
+            case TokenType.PERCENT: compiler.EmitPacket(OpCode.MODULUS); break;
+            case TokenType.EQUALITY: compiler.EmitPacket(OpCode.EQUAL); break;
+            case TokenType.GREATER: compiler.EmitPacket(OpCode.GREATER); break;
+            case TokenType.LESS: compiler.EmitPacket(OpCode.LESS); break;
+            case TokenType.BANG_EQUAL: compiler.EmitPacket(OpCode.EQUAL); compiler.EmitPacket(OpCode.NOT); break;
+            case TokenType.GREATER_EQUAL: compiler.EmitPacket(OpCode.LESS); compiler.EmitPacket(OpCode.NOT); break;
+            case TokenType.LESS_EQUAL: compiler.EmitPacket(OpCode.GREATER); compiler.EmitPacket(OpCode.NOT); break;
 
             default:
                 break;
@@ -693,7 +689,7 @@ namespace ULox
         public static void FreezeStatement(Compiler compiler)
         {
             compiler.Expression();
-            compiler.EmitOpCode(OpCode.FREEZE);
+            compiler.EmitPacket(OpCode.FREEZE);
             compiler.ConsumeEndStatement();
         }
 
@@ -711,7 +707,7 @@ namespace ULox
                 {
                     compiler.EmitNULL();
                 }
-                compiler.EmitOpCode(OpCode.EXPECT);
+                compiler.EmitPacket(OpCode.EXPECT);
             }
             while (compiler.TokenIterator.Match(TokenType.COMMA));
 
@@ -725,16 +721,16 @@ namespace ULox
             if (compiler.TokenIterator.Match(TokenType.COLON)
                   && compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
             {
-                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Dynamic);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
             }
             else if (compiler.TokenIterator.Check(TokenType.IDENTIFIER))
             {
-                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Dynamic);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
 
                 while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
                 {
                     //we need to copy the dynamic inst
-                    compiler.EmitOpCode(OpCode.DUPLICATE);
+                    compiler.EmitPacket(OpCode.DUPLICATE);
                     compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier.");
                     //add the constant
                     var identConstantID = compiler.AddStringConstant();
@@ -743,7 +739,7 @@ namespace ULox
                     //do expression
                     compiler.Expression();
                     //we need a set property
-                    compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, identConstantID);
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, identConstantID, 0, 0));
                     compiler.EmitPop();
 
                     //if comma consume
@@ -752,7 +748,7 @@ namespace ULox
             }
             else
             {
-                compiler.ThrowCompilerException("Expect identifier or ':' after '{'.");
+                compiler.ThrowCompilerException("Expect identifier or ':' after '{'");
             }
         }
 
@@ -762,7 +758,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after typeof.");
             compiler.Expression();
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after typeof.");
-            compiler.EmitOpCode(OpCode.TYPEOF);
+            compiler.EmitPacket(OpCode.TYPEOF);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -771,19 +767,19 @@ namespace ULox
             if (compiler.TokenIterator.Match(TokenType.COLON)
                 && compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
             {
-                compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.Map);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Map));
                 return;
             }
 
             var nativeTypeInstruction = compiler.CurrentChunkInstructinCount;
-            compiler.EmitOpAndBytes(OpCode.NATIVE_TYPE, (byte)NativeType.List);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.List));
 
             var firstLoop = true;
             var isList = true;
 
             while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
             {
-                compiler.EmitOpCode(OpCode.DUPLICATE);
+                compiler.EmitPacket(OpCode.DUPLICATE);
                 compiler.Expression();
 
                 if (firstLoop
@@ -791,19 +787,20 @@ namespace ULox
                 {
                     //switch to map
                     isList = false;
-                    compiler.WriteBytesAt(nativeTypeInstruction, (byte)OpCode.NATIVE_TYPE, (byte)NativeType.Map);
+                    compiler.WriteAt(nativeTypeInstruction, new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Map));
                 }
 
                 if (isList)
                 {
-                    var addNameID = compiler.AddCustomStringConstant("Add");
-                    compiler.EmitOpAndBytes(OpCode.INVOKE, addNameID, 1);
+                    var constantNameId = compiler.AddCustomStringConstant("Add");
+                    var argCount = (byte)1;
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount,0));
                 }
                 else
                 {
                     compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after key");
                     compiler.Expression();
-                    compiler.EmitOpCode(OpCode.SET_INDEX);
+                    compiler.EmitPacket(OpCode.SET_INDEX);
                 }
                 compiler.EmitPop();
 
@@ -822,11 +819,11 @@ namespace ULox
             if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
             {
                 compiler.Expression();
-                compiler.EmitOpCode(OpCode.SET_INDEX);
+                compiler.EmitPacket(OpCode.SET_INDEX);
             }
             else
             {
-                compiler.EmitOpCode(OpCode.GET_INDEX);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_INDEX));
             }
         }
 
@@ -834,21 +831,21 @@ namespace ULox
         public static void Dot(Compiler compiler, bool canAssign)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
-            byte name = compiler.AddStringConstant();
+            byte nameId = compiler.AddStringConstant();
 
             if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
             {
                 compiler.Expression();
-                compiler.EmitOpAndBytes(OpCode.SET_PROPERTY, name);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameId, 0, 0));
             }
             else if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 var argCount = compiler.ArgumentList();
-                compiler.EmitOpAndBytes(OpCode.INVOKE, name, argCount);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, nameId, argCount,0));
             }
             else
             {
-                compiler.EmitOpAndBytes(OpCode.GET_PROPERTY, name);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_PROPERTY, nameId, 0, 0));
             }
         }
 
@@ -872,7 +869,7 @@ namespace ULox
             }
 
             compiler.ConsumeEndStatement();
-            compiler.EmitOpCode(OpCode.THROW);
+            compiler.EmitPacket(OpCode.THROW);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -893,7 +890,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
             compiler.Expression();
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
-            
+
             var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if");
             compiler.EmitPop();
 
@@ -920,9 +917,9 @@ namespace ULox
             var (matchGetOp, _, matchArgID) = compiler.ResolveNameLookupOpCode(matchArgName);
 
             var lastElseLabel = -1;
-            
+
             var matchEndLabelID = compiler.UniqueChunkStringConstant(nameof(MatchStatement));
-            
+
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
             do
             {
@@ -930,8 +927,8 @@ namespace ULox
                     compiler.EmitLabel((byte)lastElseLabel);
 
                 compiler.Expression();
-                compiler.EmitOpAndBytes(matchGetOp, matchArgID);
-                compiler.EmitOpCode(OpCode.EQUAL);
+                compiler.EmitPacketByte(matchGetOp, matchArgID);
+                compiler.EmitPacket(OpCode.EQUAL);
                 lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
                 compiler.Statement();
@@ -942,7 +939,7 @@ namespace ULox
                 compiler.EmitLabel((byte)lastElseLabel);
 
             compiler.AddConstantAndWriteOp(Value.New($"Match on '{matchArgName}' did have a matching case."));
-            compiler.EmitOpCode(OpCode.THROW);
+            compiler.EmitPacket(OpCode.THROW);
 
             compiler.EmitLabel(matchEndLabelID);
 
@@ -975,7 +972,7 @@ namespace ULox
         public static void ReadOnlyStatement(Compiler compiler)
         {
             compiler.Expression();
-            compiler.EmitOpCode(OpCode.READ_ONLY);
+            compiler.EmitPacket(OpCode.READ_ONLY);
 
             compiler.ConsumeEndStatement();
         }
@@ -997,7 +994,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void YieldStatement(Compiler compiler)
         {
-            compiler.EmitOpCode(OpCode.YIELD);
+            compiler.EmitPacket(OpCode.YIELD);
 
             compiler.ConsumeEndStatement();
         }
@@ -1017,7 +1014,7 @@ namespace ULox
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
             byte name = compiler.AddStringConstant();
-            compiler.EmitOpAndBytes(OpCode.INJECT, name);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.INJECT, name, 0, 0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1026,7 +1023,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Must provide name after a 'register' statement.");
             var stringConst = compiler.AddStringConstant();
             compiler.Expression();
-            compiler.EmitOpAndBytes(OpCode.REGISTER, stringConst);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.REGISTER, stringConst, 0, 0));
             compiler.ConsumeEndStatement();
         }
 
@@ -1065,7 +1062,7 @@ namespace ULox
                 if (!requirePop)
                 {
                     var (getOp, _, argId) = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
-                    compiler.EmitOpAndBytes(getOp, argId);
+                    compiler.EmitPacketByte(getOp, argId);
                 }
             }
         }
@@ -1084,8 +1081,8 @@ namespace ULox
 
             switch (op)
             {
-            case TokenType.MINUS: compiler.EmitOpCode(OpCode.NEGATE); break;
-            case TokenType.BANG: compiler.EmitOpCode(OpCode.NOT); break;
+            case TokenType.MINUS: compiler.EmitPacket(OpCode.NEGATE); break;
+            case TokenType.BANG: compiler.EmitPacket(OpCode.NOT); break;
             default:
                 break;
             }
@@ -1096,8 +1093,8 @@ namespace ULox
         {
             switch (compiler.PreviousTokenType)
             {
-            case TokenType.TRUE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 1); break;
-            case TokenType.FALSE: compiler.EmitOpAndBytes(OpCode.PUSH_BOOL, 0); break;
+            case TokenType.TRUE: compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, true)); break;
+            case TokenType.FALSE: compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, false)); break;
             case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
             {
@@ -1122,7 +1119,7 @@ namespace ULox
             var isInt = number == System.Math.Truncate(number);
 
             if (isInt && number < 255 && number >= 0)
-                EmitOpAndBytes(OpCode.PUSH_BYTE, (byte)number);
+                EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, (byte)number, 0, 0));
             else
                 //todo push to compiler
                 AddConstantAndWriteOp(Value.New(number));
@@ -1176,28 +1173,28 @@ namespace ULox
         public static void CountOf(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
-            compiler.EmitOpCode(OpCode.COUNT_OF);
+            compiler.EmitPacket(OpCode.COUNT_OF);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Call(Compiler compiler, bool canAssign)
         {
             var argCount = compiler.ArgumentList();
-            compiler.EmitOpAndBytes(OpCode.CALL, argCount);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.CALL, argCount, 0, 0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Meets(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
-            compiler.EmitOpCode(OpCode.MEETS);
+            compiler.EmitPacket(OpCode.MEETS);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void Signs(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
-            compiler.EmitOpCode(OpCode.SIGNS);
+            compiler.EmitPacket(OpCode.SIGNS);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1211,7 +1208,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EmitGoto(byte labelNameID)
         {
-            EmitOpAndBytes(OpCode.GOTO, labelNameID);
+            EmitPacket(new ByteCodePacket(OpCode.GOTO, labelNameID, 0, 0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1225,7 +1222,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void EmitGotoIf(byte labelNameID)
         {
-            EmitOpAndBytes(OpCode.GOTO_IF_FALSE, labelNameID);
+            EmitPacket(new ByteCodePacket(OpCode.GOTO_IF_FALSE, labelNameID, 0, 0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1246,13 +1243,13 @@ namespace ULox
         public void EmitLabel(byte id)
         {
             CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
-            EmitOpAndBytes(OpCode.LABEL, id);
+            EmitPacket(new ByteCodePacket(OpCode.LABEL, id, 0, 0));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void EmitPop()
+        internal void EmitPop(byte popCount = 1)
         {
-            EmitOpCode(OpCode.POP);
+            EmitPacketByte(OpCode.POP, popCount);
         }
     }
 }

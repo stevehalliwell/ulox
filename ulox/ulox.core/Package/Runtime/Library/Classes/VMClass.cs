@@ -80,9 +80,10 @@ namespace ULox
 
         private Vm GetArg0Vm(Vm vm)
         {
-            var inst = vm.GetArg(0);
-            var ourVM = inst.val.asInstance.GetField(VMFieldName).val.asObject as Vm;
-            return ourVM;
+            var instVal = vm.GetArg(0);
+            var inst = instVal.val.asInstance;
+
+            return inst.Fields[VMFieldName].val.asObject as Vm;
         }
     }
 }

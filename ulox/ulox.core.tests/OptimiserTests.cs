@@ -4,16 +4,22 @@ using System.Linq;
 namespace ulox.core.tests
 {
     [TestFixture]
-    [Ignore("presently optimiser is hard disabled")]
     public class OptimiserTests : EngineTestBase
     {
+        [SetUp]
+        public override void Setup()
+        {
+            base.Setup();
+            testEngine.MyEngine.Context.Program.Optimiser.Enabled = true;
+        }
+        
         [Test]
         public void Optimiser_NothingToOptimise_DoesNothing()
         {
             testEngine.Run("print (1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -24,7 +30,19 @@ label unused;
 print (1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+
+        [Test]
+        public void Optimiser_UnusedLabelNotAtStart_RemovesDeadCode()
+        {
+            testEngine.Run(@"
+print (1+2);
+label unused;
+print (1+2);");
+
+            Assert.AreEqual("33", testEngine.InterpreterResult);
+            Assert.AreEqual(14, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -38,7 +56,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -51,7 +69,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -63,10 +81,11 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
-
+        
         [Test]
+        [Ignore("Not yet expected to work")]
         public void Optimiser_Pong_Smaller()
         {
             var unoptCounts = new (string name, int count)[]

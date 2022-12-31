@@ -3,10 +3,10 @@ using System.Linq;
 
 namespace ULox
 {
-    public sealed class ByteCodeOptimiser : ByteCodeIterator
+    public sealed class ByteCodeOptimiser : CompiledScriptIterator
     {
         public bool Enabled { get; set; } = false;
-        private List<(Chunk chunk, int b)> _deadBytes = new List<(Chunk, int)>();
+        private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
         private List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
         private OpCode _prevOoCode;
         private int _deadCodeStart = -1;
@@ -20,7 +20,7 @@ namespace ULox
 
             MarkNoJumpGotoLabelAsDead(compiledScript);
             MarkUnsedLabelsAsDead(compiledScript);
-            RemoveDeadBytes();
+            RemoveMarkedInstructions();
         }
 
         private void MarkNoJumpGotoLabelAsDead(CompiledScript compiledScript)
@@ -35,7 +35,7 @@ namespace ULox
                 var found = false;
                 for (int i = labelUsage.from + 1; i < labelLoc; i++)
                 {
-                    if (!_deadBytes.Any(d => d.chunk == labelUsage.chunk && d.b == i))
+                    if (!_toRemove.Any(d => d.chunk == labelUsage.chunk && d.inst == i))
                     {
                         found = true;
                         break;
@@ -44,8 +44,7 @@ namespace ULox
 
                 if (!found)
                 {
-                    _deadBytes.Add((labelUsage.chunk, labelUsage.from - 1));
-                    _deadBytes.Add((labelUsage.chunk, labelUsage.from));
+                    _toRemove.Add((labelUsage.chunk, labelUsage.from));
                 }
             }
         }
@@ -57,54 +56,31 @@ namespace ULox
                 foreach (var label in chunk.Labels)
                 {
                     var matches = _labelUsage.Where(x => x.chunk == chunk && x.label == label.Key);
-                    var used = matches.Any(x => !_deadBytes.Any(y => y.chunk == chunk && y.b == x.from));
+                    var used = matches.Any(x => !_toRemove.Any(y => y.chunk == chunk && y.inst == x.from));
                     if (!used)
                     {
-                        _deadBytes.Add((chunk, label.Value));
-                        _deadBytes.Add((chunk, label.Value + 1));
+                        _toRemove.Add((chunk, label.Value));
                     }
                 }
             }
         }
 
-        private void RemoveDeadBytes()
+        private void RemoveMarkedInstructions()
         {
-            _deadBytes.Sort((x, y) => x.b.CompareTo(y.b));
-            _deadBytes = _deadBytes.Distinct().ToList();
+            _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
+            _toRemove = _toRemove.Distinct().ToList();
 
-            for (int i = _deadBytes.Count - 1; i >= 0; i--)
+            for (int i = _toRemove.Count - 1; i >= 0; i--)
             {
-                var (chunk, b) = _deadBytes[i];
-                chunk.RemoveByteAt(b);
+                var (chunk, b) = _toRemove[i];
+                chunk.RemoveInstructionAt(b);
             }
         }
 
         public void Reset()
         {
-            _deadBytes.Clear();
+            _toRemove.Clear();
             _deadCodeStart = -1;
-        }
-
-        protected override void DefaultOpCode(OpCode opCode)
-        {
-            if (_deadCodeStart == -1
-                && _prevOoCode == OpCode.GOTO
-                && opCode != OpCode.LABEL)
-            {
-                _deadCodeStart = CurrentInstructionIndex;
-            }
-
-            if (opCode == OpCode.LABEL
-                && _deadCodeStart != -1)
-            {
-                _deadBytes.AddRange(Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart).Select(b => (CurrentChunk, b)));
-                _deadCodeStart = -1;
-            }
-            _prevOoCode = opCode;
-        }
-
-        protected override void DefaultPostOpCode()
-        {
         }
 
         protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
@@ -115,77 +91,54 @@ namespace ULox
         {
         }
 
-        protected override void ProcessOp(OpCode opCode)
-        {
-        }
-
-        protected override void ProcessOpAndByte(OpCode opCode, byte b)
-        {
-        }
-
-        protected override void ProcessOpAndStringConstant(OpCode opCode, byte sc)
-        {
-        }
-
-        protected override void ProcessOpAndStringConstantAndByte(OpCode opCode, byte stringConstant, byte b)
-        {
-        }
-
-        protected override void ProcessTypeOp(OpCode opCode, byte stringConstant, byte b, byte labelId)
-        {
-            AddLabelUsage(labelId);
-        }
-
-        protected override void ProcessOpAndUShort(OpCode opCode, ushort ushortValue)
-        {
-        }
-
-        protected override void ProcessOpClosure(OpCode opCode, byte funcID, Chunk asChunk, int upValueCount)
-        {
-        }
-
-        protected override void ProcessOpClosureUpValue(OpCode opCode, byte fundID, int count, int upVal, byte isLocal, byte upvalIndex)
-        {
-        }
-
-        protected override void ProcessTestOp(OpCode opCode, TestOpType testOpType)
-        {
-        }
-
-        protected override void ProcessTestOpAndByteAndByte(OpCode opCode, TestOpType testOpType, byte b1, byte b2)
-        {
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndByte(OpCode opCode, TestOpType testOpType, byte stringConstant, byte b)
-        {
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndTestCount(OpCode opCode, byte stringConstantID, byte testCount)
-        {
-        }
-
-        protected override void ProcessTestOpAndStringConstantAndTestCountAndTestIndexAndTestLabel(OpCode opCode, byte sc, byte testCount, int it, byte label)
-        {
-            AddLabelUsage(label);
-        }
-
         private void AddLabelUsage(byte labelId)
         {
             _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));
         }
 
-        protected override void ProcessTestOpAndLabel(OpCode opCode, TestOpType testOpType, byte label)
+        protected override void ProcessPacket(ByteCodePacket packet)
         {
-            AddLabelUsage(label);
+            var opCode = packet.OpCode;
+            if (_deadCodeStart == -1
+                && _prevOoCode == OpCode.GOTO
+                && opCode != OpCode.LABEL)
+            {
+                _deadCodeStart = CurrentInstructionIndex;
+            }
+
+            if (opCode == OpCode.LABEL
+                && _deadCodeStart != -1)
+            {
+                _toRemove.AddRange(Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart).Select(b => (CurrentChunk, b)));
+                _deadCodeStart = -1;
+            }
+            _prevOoCode = opCode;
+
+            switch (packet.OpCode)
+            {
+            case OpCode.TYPE:
+                AddLabelUsage(packet.typeDetails.initLabelId);
+                break;
+            case OpCode.TEST:
+                if (packet.testOpDetails.TestOpType == TestOpType.TestFixtureBodyInstruction)
+                    AddLabelUsage(packet.testOpDetails.b1);
+                else if (packet.testOpDetails.TestOpType == TestOpType.TestCase)
+                    AddLabelUsage(packet.testOpDetails.b2);
+                break;
+            case OpCode.GOTO:
+            case OpCode.GOTO_IF_FALSE:
+                ProcessGoto(packet);
+                break;
+            }
         }
 
-        protected override void ProcessOpAndLabel(OpCode opCode, byte labelId)
+        private void ProcessGoto(ByteCodePacket packet)
         {
-            if (opCode == OpCode.GOTO
-                || opCode == OpCode.GOTO_IF_FALSE)
-            {
-                AddLabelUsage(labelId);
-            }
+            var endingLocation = CurrentChunk.Labels[packet.b1];
+            if (endingLocation != CurrentInstructionIndex + 1)
+                AddLabelUsage(packet.b1);
+            else
+                _toRemove.Add((CurrentChunk, CurrentInstructionIndex));
         }
     }
 }

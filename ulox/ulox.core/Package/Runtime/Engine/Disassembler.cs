@@ -129,80 +129,34 @@ namespace ULox
 
             switch (packet.OpCode)
             {
-            case OpCode.NONE:
-                break;
             case OpCode.CONSTANT:
+            case OpCode.DEFINE_GLOBAL:
+            case OpCode.FETCH_GLOBAL:
+            case OpCode.ASSIGN_GLOBAL:
+            case OpCode.GET_PROPERTY:
+            case OpCode.SET_PROPERTY:
+            case OpCode.METHOD:
+            case OpCode.FIELD:
+            case OpCode.REGISTER:
+            case OpCode.INJECT:
                 DoConstant(packet);
-                break;
-            case OpCode.NULL:
                 break;
             case OpCode.PUSH_BOOL:
                 stringBuilder.Append($"({packet.BoolValue})");
                 break;
             case OpCode.PUSH_BYTE:
-                stringBuilder.Append($"({packet.b1})");
-                break;
             case OpCode.POP:
-                stringBuilder.Append($"({packet.b1})");
-                break;
-            case OpCode.SWAP:
-                break;
-            case OpCode.DUPLICATE:
-                break;
-            case OpCode.DEFINE_GLOBAL:
-                DoConstant(packet);
-                break;
-            case OpCode.FETCH_GLOBAL:
-                DoConstant(packet);
-                break;
-            case OpCode.ASSIGN_GLOBAL:
-                DoConstant(packet);
-                break;
             case OpCode.GET_LOCAL:
-                stringBuilder.Append($"({packet.b1})");
-                break;
             case OpCode.SET_LOCAL:
-                stringBuilder.Append($"({packet.b1})");
-                break;
             case OpCode.GET_UPVALUE:
-                stringBuilder.Append($"({packet.b1})");
-                break;
             case OpCode.SET_UPVALUE:
-                stringBuilder.Append($"({packet.b1})");
-                break;
-            case OpCode.CLOSE_UPVALUE:
-                break;
-            case OpCode.JUMP_IF_FALSE:
-                stringBuilder.Append($"({packet.u1})");
-                break;
-            case OpCode.JUMP:
-                stringBuilder.Append($"({packet.u1})");
-                break;
-            case OpCode.LOOP:
-                stringBuilder.Append($"({packet.u1})");
-                break;
-            case OpCode.NOT:
-                break;
-            case OpCode.EQUAL:
-                break;
-            case OpCode.LESS:
-                break;
-            case OpCode.GREATER:
-                break;
-            case OpCode.NEGATE:
-                break;
-            case OpCode.ADD:
-                break;
-            case OpCode.SUBTRACT:
-                break;
-            case OpCode.MULTIPLY:
-                break;
-            case OpCode.DIVIDE:
-                break;
-            case OpCode.MODULUS:
-                break;
             case OpCode.CALL:
                 stringBuilder.Append($"({packet.b1})");
+                break;
+            case OpCode.JUMP_IF_FALSE:
+            case OpCode.JUMP:
+            case OpCode.LOOP:
+                stringBuilder.Append($"({packet.u1})");
                 break;
             case OpCode.CLOSURE:
             {
@@ -223,14 +177,8 @@ namespace ULox
                 }
             }
             break;
-            case OpCode.NATIVE_CALL:
-                break;
             case OpCode.RETURN:
                 stringBuilder.Append($"({packet.ReturnMode})");
-                break;
-            case OpCode.YIELD:
-                break;
-            case OpCode.THROW:
                 break;
             case OpCode.VALIDATE:
                 stringBuilder.Append($"({packet.ValidateOp})");
@@ -246,18 +194,6 @@ namespace ULox
                 AppendSpace();
             }
             break;
-            case OpCode.GET_PROPERTY:
-                DoConstant(packet);
-                break;
-            case OpCode.SET_PROPERTY:
-                DoConstant(packet);
-                break;
-            case OpCode.METHOD:
-                DoConstant(packet);
-                break;
-            case OpCode.FIELD:
-                DoConstant(packet);
-                break;
             case OpCode.INVOKE:
             {
                 var sc = packet.b1;
@@ -268,10 +204,6 @@ namespace ULox
                 AppendSpace();
             }
             break;
-            case OpCode.FREEZE:
-                break;
-            case OpCode.MIXIN:
-                break;
             case OpCode.TEST:
             {
                 var testOpType = packet.testOpDetails.TestOpType;
@@ -311,51 +243,16 @@ namespace ULox
                 }
             }
             break;
-            case OpCode.BUILD:
-                break;
-            case OpCode.REGISTER:
-                DoConstant(packet);
-                break;
-            case OpCode.INJECT:
-                DoConstant(packet);
-                break;
             case OpCode.NATIVE_TYPE:
                 stringBuilder.Append($"({packet.NativeType})");
                 break;
-            case OpCode.GET_INDEX:
-                break;
-            case OpCode.SET_INDEX:
-                break;
-            case OpCode.EXPAND_COPY_TO_STACK:
-                break;
-            case OpCode.TYPEOF:
-                break;
-            case OpCode.MEETS:
-                break;
-            case OpCode.SIGNS:
-                break;
-            case OpCode.COUNT_OF:
-                break;
-            case OpCode.EXPECT:
-                break;
             case OpCode.GOTO:
-                PrintLabel(packet.b1);
-                break;
             case OpCode.GOTO_IF_FALSE:
-                PrintLabel(packet.b1);
-                break;
             case OpCode.LABEL:
                 PrintLabel(packet.b1);
                 break;
-            case OpCode.ENUM_VALUE:
-                break;
-            case OpCode.READ_ONLY:
-                break;
-            default:
-                throw new UloxException($"Unhandled OpCode '{packet.OpCode}'.");
             }
-
-
+            
             stringBuilder.AppendLine();
             _currentInstructionCount++;
         }

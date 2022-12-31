@@ -110,9 +110,9 @@ namespace ULox
             }
 
             // The body.
-            compiler.EmitTestPacket(TestOpType.CaseStart, nameConstantID, numArgs);
+            TestDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseStart, nameConstantID, numArgs);
             compiler.BlockStatement();
-            compiler.EmitTestPacket(TestOpType.CaseEnd, nameConstantID, 0);
+            TestDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseEnd, nameConstantID, 0);
             compiler.EndScope();
 
             if (dataExpExecuteLocation != -1)
@@ -123,7 +123,7 @@ namespace ULox
             }
 
             compiler.EmitNULL();
-            compiler.EmitReturnPacket(ReturnMode.One);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
 
             compiler.EndScope();
             

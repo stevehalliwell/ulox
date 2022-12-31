@@ -151,7 +151,7 @@ namespace ULox
             else
                 compiler.CurrentCompilerState.chunk.AddLabel(InitChainLabelId, 0);
 
-            compiler.EmitReturnPacket(ReturnMode.One);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
 
             compiler.EmitLabel(classReturnEnd);
         }

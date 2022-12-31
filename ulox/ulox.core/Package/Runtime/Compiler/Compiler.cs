@@ -142,34 +142,6 @@ namespace ULox
             => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitReturnPacket(ReturnMode returnMode)
-            => EmitPacket(new ByteCodePacket(OpCode.RETURN, returnMode));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitValidatePacket(ValidateOp validateOp)
-            => EmitPacket(new ByteCodePacket(OpCode.VALIDATE, validateOp));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitClosurePacket(ClosureType closureType, byte b1, byte b2)
-            => EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(closureType, b1, b2)));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitInvokePacket(byte constantNameId, byte argCount)
-            => EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount, 0));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitBoolPacket(bool b)
-            => EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, b));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitNativeTypePacket(NativeType nativeType)
-            => EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, nativeType));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitTestPacket(TestOpType opType, byte b1, byte b2)
-            => EmitPacket(new ByteCodePacket(OpCode.TEST, new ByteCodePacket.TestOpDetails(opType, b1, b2)));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(OpCode opCode)
             => EmitPacket(new ByteCodePacket(opCode));
 
@@ -499,7 +471,7 @@ namespace ULox
         {
             PreEmptyReturnEmit();
 
-            EmitReturnPacket(ReturnMode.One);
+            EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -605,14 +577,15 @@ namespace ULox
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
             var function = EndCompile();
-            EmitClosurePacket(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount);
+            EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount)));
 
             for (int i = 0; i < function.UpvalueCount; i++)
             {
-                EmitClosurePacket(
+                EmitPacket(
+                    new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(
                     ClosureType.UpValueInfo,
                     comp.upvalues[i].isLocal ? (byte)1 : (byte)0,
-                    comp.upvalues[i].index);
+                    comp.upvalues[i].index)));
             }
         }
 
@@ -748,11 +721,11 @@ namespace ULox
             if (compiler.TokenIterator.Match(TokenType.COLON)
                   && compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
             {
-                compiler.EmitNativeTypePacket(NativeType.Dynamic);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
             }
             else if (compiler.TokenIterator.Check(TokenType.IDENTIFIER))
             {
-                compiler.EmitNativeTypePacket(NativeType.Dynamic);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
 
                 while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
                 {
@@ -794,12 +767,12 @@ namespace ULox
             if (compiler.TokenIterator.Match(TokenType.COLON)
                 && compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
             {
-                compiler.EmitNativeTypePacket(NativeType.Map);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Map));
                 return;
             }
 
             var nativeTypeInstruction = compiler.CurrentChunkInstructinCount;
-            compiler.EmitNativeTypePacket(NativeType.List);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.List));
 
             var firstLoop = true;
             var isList = true;
@@ -821,7 +794,7 @@ namespace ULox
                 {
                     var constantNameId = compiler.AddCustomStringConstant("Add");
                     var argCount = (byte)1;
-                    compiler.EmitInvokePacket(constantNameId, argCount);
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount,0));
                 }
                 else
                 {
@@ -868,7 +841,7 @@ namespace ULox
             else if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 var argCount = compiler.ArgumentList();
-                compiler.EmitInvokePacket(nameId, argCount);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, nameId, argCount,0));
             }
             else
             {
@@ -1120,8 +1093,8 @@ namespace ULox
         {
             switch (compiler.PreviousTokenType)
             {
-            case TokenType.TRUE: compiler.EmitBoolPacket(true); break;
-            case TokenType.FALSE: compiler.EmitBoolPacket(false); break;
+            case TokenType.TRUE: compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, true)); break;
+            case TokenType.FALSE: compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, false)); break;
             case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
             {

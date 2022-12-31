@@ -20,6 +20,17 @@ namespace ulox.core.tests
         }
 
         [Test]
+        public void CompareTo_WhenSameValues_ShouldReturnTrue()
+        {
+            var doesExist = new HashedString("doesExist");
+            var doesExist2 = new HashedString("doesExist");
+
+            var compareRes = doesExist.CompareTo(doesExist2);
+
+            Assert.AreEqual(0, compareRes);
+        }
+
+        [Test]
         public void Compare_WhenDictDoesNotContain_ShouldReturnFalse()
         {
             var doesNotExist = new HashedString("doesNotExist");

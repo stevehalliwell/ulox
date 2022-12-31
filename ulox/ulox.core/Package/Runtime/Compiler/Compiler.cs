@@ -655,9 +655,8 @@ namespace ULox
         public byte DeclareAndDefineLocal(string itemName, string errorPrefix)
         {
             if (CurrentCompilerState.ResolveLocal(this, itemName) != -1)
-            {
                 ThrowCompilerException($"{errorPrefix} '{itemName}' already exists at this scope");
-            }
+            
             CurrentCompilerState.DeclareVariableByName(this, itemName);
             CurrentCompilerState.MarkInitialised();
             var itemArgId = (byte)CurrentCompilerState.ResolveLocal(this, itemName);
@@ -776,7 +775,7 @@ namespace ULox
             }
             else
             {
-                compiler.ThrowCompilerException("Expect identifier or ':' after '{'.");
+                compiler.ThrowCompilerException("Expect identifier or ':' after '{'");
             }
         }
 

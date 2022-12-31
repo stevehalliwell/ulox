@@ -124,11 +124,6 @@ namespace ULox
             b1 = b ? (byte)1 : (byte)0;
         }
 
-        public ByteCodePacket(OpCode opCode, ushort us) : this(opCode)
-        {
-            u1 = us;
-        }
-
         public ByteCodePacket(OpCode opCode, TypeDetails typeDetails) : this(opCode)
         {
             this.typeDetails = typeDetails;

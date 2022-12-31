@@ -186,6 +186,20 @@ print(arr[5]);
         }
 
         [Test]
+        public void Engine_NativeList_SetNonTrivialWhenReadOnly_ShouldFail()
+        {
+            testEngine.Run(@"
+var arr = [];
+arr.Resize(10, null);
+readonly arr;
+arr[5] = 2*4;
+print(arr[5]);
+");
+
+            StringAssert.StartsWith("Attempted to Set index '5' to '8', but list is read only.", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void ListLiteral_WhenSingleItemAndAssigned_ShouldMatchValues()
         {
             testEngine.Run(@"

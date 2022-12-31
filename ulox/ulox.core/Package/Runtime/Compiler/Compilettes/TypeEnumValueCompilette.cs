@@ -1,12 +1,20 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
     public class TypeEnumValueCompilette : ITypeBodyCompilette
     {
+        private enum Mode
+        {
+            Unknown,
+            Manual,
+            Auto,
+        }
+
         private readonly List<string> _enumKeys = new List<string>();
         private double _previousNumber = -1;
-        private bool _manualAssign = false;
+        private Mode _mode = Mode.Unknown;
 
         public TokenType Match
             => TokenType.NONE;
@@ -17,7 +25,7 @@ namespace ULox
         {
             _enumKeys.Clear();
             _previousNumber = -1;
-            _manualAssign = false;
+            _mode = Mode.Unknown;
         }
 
         public void Process(Compiler compiler)
@@ -37,14 +45,12 @@ namespace ULox
 
                 if (compiler.TokenIterator.Match(TokenType.ASSIGN))
                 {
+                    SetMode(compiler, Mode.Manual);
                     compiler.Expression(); 
-                    _manualAssign = true;
                 }
                 else
                 {
-                    if(_manualAssign)
-                        compiler.ThrowCompilerException($"Enum Key '{enumKey}' must be assigned a value. Cannot mix and match.");
-                    
+                    SetMode(compiler, Mode.Auto);
                     compiler.DoNumberConstant(++_previousNumber);
                 }
 
@@ -54,6 +60,17 @@ namespace ULox
                 
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (compiler.TokenIterator.Match(TokenType.IDENTIFIER));
+        }
+
+        private void SetMode(Compiler compiler, Mode mode)
+        {
+            if (_mode == Mode.Unknown)
+            {
+                _mode = mode;
+                return;
+            }
+            if (mode != _mode)
+                compiler.ThrowCompilerException($"Cannot mix and match enum assignment modes. Current mode is '{_mode}' but encounted a '{mode}'");
         }
     }
 }

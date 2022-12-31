@@ -62,7 +62,7 @@ namespace ULox
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if (string.IsNullOrEmpty(testDeclName))
-                compiler.ThrowCompilerException($"testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
+                compiler.ThrowCompilerException($"Unexpected testcase, testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 

@@ -182,6 +182,24 @@ test T
         }
 
         [Test]
+        public void Testcase_WhenDuplicate_ShouldFail()
+        {
+            testEngine.Run(@"
+test T
+{
+    testcase A
+    {
+    }
+    testcase A
+    {
+    }
+}"
+            );
+
+            StringAssert.StartsWith("TestRunner found a duplicate test 'T:A' at ip:", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_TestCase_MultipleSimple()
         {
             testEngine.Run(@"
@@ -501,6 +519,20 @@ test T
 
             Assert.AreEqual("123", testEngine.InterpreterResult);
             StringAssert.DoesNotContain("Incomplete", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
+        }
+
+        [Test]
+        public void TestCase_InvalidLocation_ShouldFail()
+        {
+            testEngine.Run(@"
+    testcase ([1,2,3]) One(val)
+    {
+        print(val);
+    }
+"
+            );
+            
+            StringAssert.StartsWith("Unexpected testcase, testcase can only appear within a test set,", testEngine.InterpreterResult);
         }
 
         [Test]

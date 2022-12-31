@@ -24,16 +24,13 @@ namespace ulox.core.tests
         public const string BiggerTestObjectString = @"
 class T
 {
-    var a = 1, b = 2, c = 3;
+    var a = 1, b = 2, c = 3, d = [4,5,6,];
 }
 
 var objInList = T();
 objInList.b = ""pretty deep in here"";
 
-var l = [];
-l.Add(""a"");
-l.Add(""b"");
-l.Add(objInList);
+var l = [""a"", ""b"", objInList, ];
 
 var obj = T();
 obj.a = T();
@@ -48,14 +45,29 @@ obj.a.a = l;";
       {
         ""a"": 1.0,
         ""b"": ""pretty deep in here"",
-        ""c"": 3.0
+        ""c"": 3.0,
+        ""d"": [
+          4.0,
+          5.0,
+          6.0
+        ]
       }
     ],
     ""b"": 2.0,
-    ""c"": 3.0
+    ""c"": 3.0,
+    ""d"": [
+      4.0,
+      5.0,
+      6.0
+    ]
   },
   ""b"": 4.0,
-  ""c"": true
+  ""c"": true,
+  ""d"": [
+    4.0,
+    5.0,
+    6.0
+  ]
 }";
 
         [Test]

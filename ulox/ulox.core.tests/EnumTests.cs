@@ -303,6 +303,38 @@ print(Foo.Baz.Value);
         }
 
         [Test]
+        public void EnumValue_WhenAutoThenManual_ShouldError()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz = ""World"",
+}
+
+print(Foo.Bar.Value);
+");
+
+            StringAssert.StartsWith("Cannot mix and match enum assignment modes. Current", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void EnumValue_WhenManualThenAuto_ShouldError()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar = ""Hello"",
+    Baz,
+}
+
+print(Foo.Bar.Value);
+");
+
+            StringAssert.StartsWith("Cannot mix and match enum assignment modes. Current mode is 'Manual' but encounted a 'Auto'", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void EnumValue_WhenDotName_ShouldBeBarBaz()
         {
             testEngine.Run(@"

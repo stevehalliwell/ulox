@@ -91,17 +91,14 @@ namespace ULox
         {
             switch (val.type)
             {
-            case ValueType.Null:
-                throw new UloxException("Attempted to add a null constant");
             case ValueType.Double:
                 return _constants.FindIndex(x => x.type == val.type && val.val.asDouble == x.val.asDouble);
-
-            case ValueType.Bool:
-                return _constants.FindIndex(x => x.type == val.type && val.val.asBool == x.val.asBool);
-
+                
             case ValueType.String:
                 return _constants.FindIndex(x => x.type == val.type && val.val.asString == x.val.asString);
             // none of those are going to be duplicated by the compiler anyway
+            case ValueType.Bool:
+            case ValueType.Null:
             case ValueType.Object:
             case ValueType.Chunk:
             case ValueType.NativeFunction:

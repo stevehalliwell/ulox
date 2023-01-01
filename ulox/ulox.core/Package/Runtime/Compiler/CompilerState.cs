@@ -13,7 +13,7 @@ namespace ULox
                 Depth = depth;
             }
 
-            public string Name { get; private set; }
+            public string Name { get; }
             public int Depth { get; set; }
             public bool IsCaptured { get; set; }
         }
@@ -57,7 +57,7 @@ namespace ULox
             functionType = funcType;
         }
 
-        public Stack<LoopState> LoopStates { get; private set; } = new Stack<LoopState>();
+        public Stack<LoopState> LoopStates { get; } = new Stack<LoopState>();
         private Local LastLocal => locals[localCount - 1];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -90,12 +90,9 @@ namespace ULox
         public int AddUpvalue(Compiler compiler, byte index, bool isLocal)
         {
             int upvalueCount = chunk.UpvalueCount;
-
-            Upvalue upvalue = default;
-
             for (int i = 0; i < upvalueCount; i++)
             {
-                upvalue = upvalues[i];
+                Upvalue upvalue = upvalues[i];
                 if (upvalue.index == index && upvalue.isLocal == isLocal)
                 {
                     return i;

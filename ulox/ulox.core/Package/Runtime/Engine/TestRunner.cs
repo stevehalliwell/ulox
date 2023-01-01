@@ -21,7 +21,7 @@ namespace ULox
         public bool AllPassed => !_testStatus.Any(x => !x.Value);
         public int TestsFound => _testStatus.Count;
         public HashedString CurrentTestSetName { get; set; } = new HashedString(string.Empty);
-        public Func<Vm> CreateVM { get; private set; }
+        public Func<Vm> CreateVM { get; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void StartTest(Vm vm, string name)
@@ -125,7 +125,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private string ArgDescriptionString(Vm vm, byte argCount)
+        private static string ArgDescriptionString(Vm vm, byte argCount)
         {
             var sb = new StringBuilder();
             for (int i = argCount - 1; i >= 0; i--)

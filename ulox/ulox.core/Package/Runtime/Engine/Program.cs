@@ -8,11 +8,10 @@ namespace ULox
     {
         private readonly Scanner _scanner = new Scanner();
         private readonly Compiler _compiler = new Compiler();
-        private readonly ByteCodeOptimiser _optimiser = new ByteCodeOptimiser();
 
-        public List<CompiledScript> CompiledScripts { get; private set; } = new List<CompiledScript>();
+        public List<CompiledScript> CompiledScripts { get; } = new List<CompiledScript>();
 
-        public ByteCodeOptimiser Optimiser => _optimiser;
+        public ByteCodeOptimiser Optimiser { get; } = new ByteCodeOptimiser();
 
         public string Disassembly
         {
@@ -33,18 +32,18 @@ namespace ULox
         {
             var hash = script.GetHashCode();
 
-            var existing = CompiledScripts.FirstOrDefault(x => x.ScriptHash == hash);
+            var existing = CompiledScripts.Find(x => x.ScriptHash == hash);
             if (existing != null)
                 return existing;
 
             _scanner.Reset();
             _compiler.Reset();
-            _optimiser.Reset();
+            Optimiser.Reset();
             
             var compiled = _compiler.Compile(_scanner, script);
             
             CompiledScripts.Add(compiled);
-            _optimiser.Optimise(compiled);
+            Optimiser.Optimise(compiled);
             
             return compiled;
         }

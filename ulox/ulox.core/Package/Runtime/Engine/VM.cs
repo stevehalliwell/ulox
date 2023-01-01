@@ -36,6 +36,7 @@ namespace ULox
         private readonly FastStack<Value> _returnStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         private CallFrame _currentCallFrame;
+        private Chunk _currentChunk;
         public Engine Engine { get; private set; }
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private readonly Table _globals = new Table();
@@ -152,6 +153,7 @@ namespace ULox
             }
 
             _currentCallFrame = vm._currentCallFrame;
+            _currentChunk = vm._currentChunk;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -168,6 +170,7 @@ namespace ULox
             }
 
             _currentCallFrame = callFrame;
+            _currentChunk = _currentCallFrame.Closure.chunk;
             _callFrames.Push(callFrame);
         }
 
@@ -180,10 +183,15 @@ namespace ULox
 
             //update cache
             if (_callFrames.Count > 0)
+            {
                 _currentCallFrame = _callFrames.Peek();
+                _currentChunk = _currentCallFrame.Closure.chunk;
+            }
             else
+            {
                 _currentCallFrame = default;
-
+                _currentChunk = default;
+            }
             return poppedStackStart;
         }
 
@@ -214,7 +222,7 @@ namespace ULox
         {
             while (true)
             {
-                var chunk = _currentCallFrame.Closure.chunk;
+                var chunk = _currentChunk;
 
                 var packet = ReadPacket(chunk);
                 var opCode = packet.OpCode;
@@ -239,18 +247,138 @@ namespace ULox
                     break;
 
                 case OpCode.ADD:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type == ValueType.Double
+                        && rhs.type == ValueType.Double)
+                    {
+                        Push(Value.New(lhs.val.asDouble + rhs.val.asDouble));
+                        break;
+                    }
+
+                    if (lhs.type == ValueType.String
+                         || rhs.type == ValueType.String)
+                    {
+                        Push(Value.New(lhs.str() + rhs.str()));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
                 case OpCode.SUBTRACT:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type == ValueType.Double
+                        && rhs.type == ValueType.Double)
+                    {
+                        Push(Value.New(lhs.val.asDouble - rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
                 case OpCode.MULTIPLY:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type == ValueType.Double
+                        && rhs.type == ValueType.Double)
+                    {
+                        Push(Value.New(lhs.val.asDouble * rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
                 case OpCode.DIVIDE:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type == ValueType.Double
+                        && rhs.type == ValueType.Double)
+                    {
+                        Push(Value.New(lhs.val.asDouble / rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
                 case OpCode.MODULUS:
-                    DoMathOp(opCode);
-                    break;
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type == ValueType.Double
+                        && rhs.type == ValueType.Double)
+                    {
+                        Push(Value.New(lhs.val.asDouble % rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
 
                 case OpCode.EQUAL:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type != ValueType.Instance)
+                    {
+                        Push(Value.New(Value.Compare(ref lhs, ref rhs)));
+                        break;
+                    }
+
+                    if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                        Push(Value.New(Value.Compare(ref lhs, ref rhs)));
+                }
+                break;
+
                 case OpCode.LESS:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type != ValueType.Instance)
+                    {
+                        if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
+                            ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
+
+                        Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
                 case OpCode.GREATER:
-                    DoComparisonOp(opCode);
-                    break;
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type != ValueType.Instance)
+                    {
+                        if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
+                            ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
+
+                        Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
 
                 case OpCode.NOT:
                     Push(Value.New(Pop().IsFalsey()));
@@ -484,6 +612,19 @@ namespace ULox
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoInstanceOverload(OpCode opCode, Value rhs, Value lhs)
+        {
+            if (lhs.type != rhs.type)
+                ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
+
+            if (lhs.type != ValueType.Instance)
+                ThrowRuntimeException($"Cannot perform op on non math types '{lhs.type}' and '{rhs.type}'");
+
+            if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
+        }
+
         public void ThrowRuntimeException(string msg)
         {
             var frame = _currentCallFrame;
@@ -527,16 +668,16 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMeetsOp()
         {
-            var res = ProcessContract();
-            Push(Value.New(res.meets));
+            var (meets, _) = ProcessContract();
+            Push(Value.New(meets));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSignsOp()
         {
-            var res = ProcessContract();
-            if (!res.meets)
-                ThrowRuntimeException($"Sign failure with msg '{res.msg}'");
+            var (meets, msg) = ProcessContract();
+            if (!meets)
+                ThrowRuntimeException($"Sign failure with msg '{msg}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -832,7 +973,7 @@ namespace ULox
 
             if (type != ClosureType.Closure)
                 ThrowRuntimeException($"Closure type '{type}' unexpected.");
-            
+
             var constantIndex = b1;
             var func = chunk.ReadConstant(constantIndex);
             var closureVal = Value.New(new ClosureInternal() { chunk = func.val.asChunk });
@@ -940,12 +1081,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DiscardPopToCount(byte prevStackStart)
         {
-            if (prevStackStart >= 0)
-            {
-                var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
+            var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
 
-                DiscardPop(toRemove);
-            }
+            DiscardPop(toRemove);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1100,103 +1238,6 @@ namespace ULox
                 nativeFunc = nativeCallDel,
                 InstructionPointer = 0
             });
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMathOp(OpCode opCode)
-        {
-            var rhs = Pop();
-            var lhs = Pop();
-
-            if (lhs.type == ValueType.Double
-                && rhs.type == ValueType.Double)
-            {
-                DoDoubleMathOp(opCode, rhs, lhs);
-                return;
-            }
-
-            if (opCode == OpCode.ADD
-                &&
-                (
-                 lhs.type == ValueType.String
-                 || rhs.type == ValueType.String)
-                )
-            {
-                Push(Value.New(lhs.str() + rhs.str()));
-                return;
-            }
-
-            if (lhs.type != rhs.type)
-                ThrowRuntimeException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'");
-
-            if (lhs.type != ValueType.Instance)
-                ThrowRuntimeException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'");
-
-            if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                return;
-
-            ThrowRuntimeException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoDoubleMathOp(OpCode opCode, Value rhs, Value lhs)
-        {
-            var res = Value.New(0);
-            switch (opCode)
-            {
-            case OpCode.ADD:
-                res.val.asDouble = lhs.val.asDouble + rhs.val.asDouble;
-                break;
-
-            case OpCode.SUBTRACT:
-                res.val.asDouble = lhs.val.asDouble - rhs.val.asDouble;
-                break;
-
-            case OpCode.MULTIPLY:
-                res.val.asDouble = lhs.val.asDouble * rhs.val.asDouble;
-                break;
-
-            case OpCode.DIVIDE:
-                res.val.asDouble = lhs.val.asDouble / rhs.val.asDouble;
-                break;
-
-            case OpCode.MODULUS:
-                res.val.asDouble = lhs.val.asDouble % rhs.val.asDouble;
-                break;
-            }
-            Push(res);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoComparisonOp(OpCode opCode)
-        {
-            var rhs = Pop();
-            var lhs = Pop();
-
-            if (lhs.type == ValueType.Instance)
-                if (DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                    return;
-
-            if (opCode == OpCode.EQUAL)
-            {
-                Push(Value.New(lhs.Compare(ref lhs, ref rhs)));
-                return;
-            }
-
-            if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
-
-            //do we need specific handling of NaNs on either side
-            switch (opCode)
-            {
-            case OpCode.LESS:
-                Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
-                break;
-
-            case OpCode.GREATER:
-                Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
-                break;
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1474,20 +1515,17 @@ namespace ULox
                 ThrowRuntimeException($"Args given for a class that does not have an 'init' method");
             }
 
-            foreach (var initChain in klass.InitChains)
+            foreach (var (closure, instruction) in klass.InitChains)
             {
-                if (initChain.instruction != -1)
-                {
-                    if (!klass.Initialiser.IsNull())
-                        Push(inst);
+                if (!klass.Initialiser.IsNull())
+                    Push(inst);
 
-                    PushNewCallframe(new CallFrame()
-                    {
-                        Closure = initChain.closure,
-                        InstructionPointer = initChain.instruction,
-                        StackStart = (byte)(_valueStack.Count - 1), //last thing checked
-                    });
-                }
+                PushNewCallframe(new CallFrame()
+                {
+                    Closure = closure,
+                    InstructionPointer = instruction,
+                    StackStart = (byte)(_valueStack.Count - 1), //last thing checked
+                });
             }
         }
 

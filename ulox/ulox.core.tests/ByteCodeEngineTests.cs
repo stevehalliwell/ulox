@@ -994,7 +994,7 @@ var c = b + a;
 "
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'7' in chunk:'unnamed_chunk(test:4)'.
+            Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'7' in chunk:'unnamed_chunk(test:4)'.
 ===Stack===
 <closure unnamed_chunk upvals:0>
 
@@ -1016,7 +1016,7 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform math op across types 'Double' and 'Null' at ip:'3' in chunk:'f(test:5)'.
+            Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'3' in chunk:'f(test:5)'.
 ===Stack===
 1
 null

@@ -6,7 +6,7 @@ namespace ULox
 {
     public class JsonDocValueHeirarchyTraverser : DocValueHeirarchyTraverser
     {
-        private JsonTextReader _reader;
+        private readonly JsonTextReader _reader;
 
         public JsonDocValueHeirarchyTraverser(
             IValueObjectBuilder valBuilder,

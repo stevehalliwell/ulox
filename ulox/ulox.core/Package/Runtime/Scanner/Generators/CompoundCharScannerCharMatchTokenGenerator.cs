@@ -26,7 +26,7 @@ namespace ULox
             case '>':
                 return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.GREATER : TokenType.GREATER_EQUAL);
             default:
-                return scanner.SharedNoToken;
+                return Scanner.SharedNoToken;
             }
         }
 

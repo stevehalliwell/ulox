@@ -7,7 +7,7 @@ namespace ULox
     {
         public bool Enabled { get; set; } = false;
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
-        private List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
+        private readonly List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
         private OpCode _prevOoCode;
         private int _deadCodeStart = -1;
 
@@ -25,17 +25,17 @@ namespace ULox
 
         private void MarkNoJumpGotoLabelAsDead(CompiledScript compiledScript)
         {
-            foreach (var labelUsage in _labelUsage)
+            foreach (var (chunk, from, label) in _labelUsage)
             {
-                var labelLoc = labelUsage.chunk.Labels[labelUsage.label];
+                var labelLoc = chunk.Labels[label];
 
-                if (labelUsage.from - 1 >= labelLoc)
+                if (from - 1 >= labelLoc)
                     continue;
 
                 var found = false;
-                for (int i = labelUsage.from + 1; i < labelLoc; i++)
+                for (int i = from + 1; i < labelLoc; i++)
                 {
-                    if (!_toRemove.Any(d => d.chunk == labelUsage.chunk && d.inst == i))
+                    if (!_toRemove.Any(d => d.chunk == chunk && d.inst == i))
                     {
                         found = true;
                         break;
@@ -44,7 +44,7 @@ namespace ULox
 
                 if (!found)
                 {
-                    _toRemove.Add((labelUsage.chunk, labelUsage.from));
+                    _toRemove.Add((chunk, from));
                 }
             }
         }

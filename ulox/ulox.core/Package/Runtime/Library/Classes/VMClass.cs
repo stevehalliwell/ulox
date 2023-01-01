@@ -6,7 +6,7 @@ namespace ULox
     {
         private static readonly HashedString VMFieldName = new HashedString("vm");
 
-        public Func<Vm> CreateVM { get; private set; }
+        public Func<Vm> CreateVM { get; }
 
         public VMClass(Func<Vm> createVM) : base(new HashedString("VM"), UserType.Native)
         {
@@ -78,7 +78,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private Vm GetArg0Vm(Vm vm)
+        private static Vm GetArg0Vm(Vm vm)
         {
             var instVal = vm.GetArg(0);
             var inst = instVal.val.asInstance;

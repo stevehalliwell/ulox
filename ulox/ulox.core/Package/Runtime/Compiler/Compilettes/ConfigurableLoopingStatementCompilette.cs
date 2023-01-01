@@ -4,7 +4,7 @@ namespace ULox
 {
     public abstract class ConfigurableLoopingStatementCompilette : ICompilette
     {
-        public TokenType Match { get; private set; }
+        public TokenType Match { get; }
 
         protected ConfigurableLoopingStatementCompilette(TokenType match)
         {

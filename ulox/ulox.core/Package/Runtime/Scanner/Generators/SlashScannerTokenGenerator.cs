@@ -7,7 +7,7 @@
             if (scanner.Match('/'))
             {
                 scanner.ReadLine();
-                return scanner.SharedNoToken;
+                return Scanner.SharedNoToken;
             }
             else if (scanner.Match('*'))
             {
@@ -19,7 +19,7 @@
             }
         }
 
-        private Token ConsumeBlockComment(Scanner scanner)
+        private static Token ConsumeBlockComment(Scanner scanner)
         {
             while (!scanner.IsAtEnd())
             {
@@ -32,7 +32,7 @@
                     scanner.Advance();
                 }
             }
-            return scanner.SharedNoToken;
+            return Scanner.SharedNoToken;
         }
         
         public bool DoesMatchChar(char ch)

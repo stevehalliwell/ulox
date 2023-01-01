@@ -14,7 +14,7 @@ namespace ULox
             Match = match;
         }
 
-        public TokenType Match { get; private set; }
+        public TokenType Match { get; }
 
         public void Process(Compiler compiler)
             => processAction.Invoke(compiler);

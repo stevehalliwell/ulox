@@ -10,7 +10,7 @@ namespace ULox
         public char CurrentChar => _stringIterator.CurrentChar;
 
         public static readonly Token NoTokenFound = new Token(TokenType.NONE, string.Empty, null, 0, 0);
-        public Token SharedNoToken => NoTokenFound;
+        public static Token SharedNoToken => NoTokenFound;
 
         private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
 
@@ -112,7 +112,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token Next()
         {
-            var lastToken = default(Token);
             while (!IsAtEnd())
             {
                 Advance();

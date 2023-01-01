@@ -14,9 +14,9 @@ namespace ULox
 
         public void Add(params (string name, TokenType tt)[] toAdd)
         {
-            foreach (var item in toAdd)
+            foreach (var (name, tt) in toAdd)
             {
-                Add(item.name, item.tt);
+                Add(name, tt);
             }
         }
 

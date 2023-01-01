@@ -39,9 +39,9 @@
 
         public static void SetPrattRules(this Compiler comp, params (TokenType tt, IParseRule rule)[] rules)
         {
-            foreach (var item in rules)
+            foreach (var (tt, rule) in rules)
             {
-                comp.SetPrattRule(item.tt, item.rule);
+                comp.SetPrattRule(tt, rule);
             }
         }
     }

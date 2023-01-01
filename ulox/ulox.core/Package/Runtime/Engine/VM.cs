@@ -265,20 +265,54 @@ namespace ULox
                         break;
                     }
 
-                    if (lhs.type != rhs.type)
-                        ThrowRuntimeException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'");
-
-                    if (lhs.type != ValueType.Instance)
-                        ThrowRuntimeException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'");
-
-                    if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                        ThrowRuntimeException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
-
+                    DoInstanceOverload(opCode, rhs, lhs);
                 }
                 break;
                 case OpCode.SUBTRACT:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type == ValueType.Double
+                        && rhs.type == ValueType.Double)
+                    {
+                        Push(Value.New(lhs.val.asDouble - rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
                 case OpCode.MULTIPLY:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type == ValueType.Double
+                        && rhs.type == ValueType.Double)
+                    {
+                        Push(Value.New(lhs.val.asDouble * rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
                 case OpCode.DIVIDE:
+                {
+                    var rhs = Pop();
+                    var lhs = Pop();
+
+                    if (lhs.type == ValueType.Double
+                        && rhs.type == ValueType.Double)
+                    {
+                        Push(Value.New(lhs.val.asDouble / rhs.val.asDouble));
+                        break;
+                    }
+
+                    DoInstanceOverload(opCode, rhs, lhs);
+                }
+                break;
                 case OpCode.MODULUS:
                 {
                     var rhs = Pop();
@@ -287,38 +321,11 @@ namespace ULox
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        var res = Value.New(0);
-                        switch (opCode)
-                        {
-                        case OpCode.SUBTRACT:
-                            res.val.asDouble = lhs.val.asDouble - rhs.val.asDouble;
-                            break;
-
-                        case OpCode.MULTIPLY:
-                            res.val.asDouble = lhs.val.asDouble * rhs.val.asDouble;
-                            break;
-
-                        case OpCode.DIVIDE:
-                            res.val.asDouble = lhs.val.asDouble / rhs.val.asDouble;
-                            break;
-
-                        case OpCode.MODULUS:
-                            res.val.asDouble = lhs.val.asDouble % rhs.val.asDouble;
-                            break;
-                        }
-                        Push(res);
+                        Push(Value.New(lhs.val.asDouble % rhs.val.asDouble));
                         break;
                     }
 
-                    if (lhs.type != rhs.type)
-                        ThrowRuntimeException($"Cannot perform math op across types '{lhs.type}' and '{rhs.type}'");
-
-                    if (lhs.type != ValueType.Instance)
-                        ThrowRuntimeException($"Cannot perform math op on non math types '{lhs.type}' and '{rhs.type}'");
-
-                    if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                        ThrowRuntimeException($"Cannot perform math op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
-
+                    DoInstanceOverload(opCode, rhs, lhs);
                 }
                 break;
 
@@ -327,11 +334,14 @@ namespace ULox
                     var rhs = Pop();
                     var lhs = Pop();
 
-                    if (lhs.type == ValueType.Instance
-                        && DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                    if (lhs.type != ValueType.Instance)
+                    {
+                        Push(Value.New(Value.Compare(ref lhs, ref rhs)));
                         break;
+                    }
 
-                    Push(Value.New(Value.Compare(ref lhs, ref rhs)));
+                    if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                        Push(Value.New(Value.Compare(ref lhs, ref rhs)));
                 }
                 break;
 
@@ -340,15 +350,16 @@ namespace ULox
                     var rhs = Pop();
                     var lhs = Pop();
 
-                    if (lhs.type == ValueType.Instance
-                        && DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                    if (lhs.type != ValueType.Instance)
+                    {
+                        if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
+                            ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
+
+                        Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
                         break;
+                    }
 
-                    if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                        ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
-
-                    Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
-
+                    DoInstanceOverload(opCode, rhs, lhs);
                 }
                 break;
                 case OpCode.GREATER:
@@ -356,14 +367,16 @@ namespace ULox
                     var rhs = Pop();
                     var lhs = Pop();
 
-                    if (lhs.type == ValueType.Instance
-                        && DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                    if (lhs.type != ValueType.Instance)
+                    {
+                        if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
+                            ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
+
+                        Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
                         break;
+                    }
 
-                    if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                        ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
-
-                    Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
+                    DoInstanceOverload(opCode, rhs, lhs);
                 }
                 break;
 
@@ -597,6 +610,19 @@ namespace ULox
                     break;
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoInstanceOverload(OpCode opCode, Value rhs, Value lhs)
+        {
+            if (lhs.type != rhs.type)
+                ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
+
+            if (lhs.type != ValueType.Instance)
+                ThrowRuntimeException($"Cannot perform op on non math types '{lhs.type}' and '{rhs.type}'");
+
+            if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
+                ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
         }
 
         public void ThrowRuntimeException(string msg)

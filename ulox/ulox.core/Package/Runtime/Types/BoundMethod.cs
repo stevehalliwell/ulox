@@ -10,7 +10,7 @@
             Method = method;
         }
 
-        public Value Receiver { get; private set; }
-        public ClosureInternal Method { get; private set; }
+        public Value Receiver { get; }
+        public ClosureInternal Method { get; }
     }
 }

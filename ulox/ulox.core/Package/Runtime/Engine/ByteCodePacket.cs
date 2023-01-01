@@ -3,10 +3,10 @@
 namespace ULox
 {
     [StructLayout(LayoutKind.Explicit)]
-    public struct ByteCodePacket
+    public readonly struct ByteCodePacket
     {
         [StructLayout(LayoutKind.Explicit)]
-        public struct TestOpDetails
+        public readonly struct TestOpDetails
         {
             public TestOpType TestOpType => (TestOpType)_testOp;
 
@@ -26,7 +26,7 @@ namespace ULox
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        public struct ClosureDetails
+        public readonly struct ClosureDetails
         {
             public ClosureType ClosureType => (ClosureType)_type;
 
@@ -46,16 +46,16 @@ namespace ULox
         }
 
         [StructLayout(LayoutKind.Explicit)]
-        public struct TypeDetails
+        public readonly struct TypeDetails
         {
             public UserType UserType => (UserType)_userType;
 
             [FieldOffset(0)]
-            public byte stringConstantId;
+            public readonly byte stringConstantId;
             [FieldOffset(1)]
-            public byte _userType;
+            public readonly byte _userType;
             [FieldOffset(2)]
-            public byte initLabelId;
+            public readonly byte initLabelId;
 
             public TypeDetails(byte nameConstant, UserType userType, byte initChainLabelId) : this()
             {

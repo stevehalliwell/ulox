@@ -114,7 +114,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private void ThrowIfReadOnly(Vm vm)
+        private static void ThrowIfReadOnly(Vm vm)
         {
             var inst = vm.GetArg(0);
             var nativeMapInstance = inst.val.asInstance as NativeMapInstance;

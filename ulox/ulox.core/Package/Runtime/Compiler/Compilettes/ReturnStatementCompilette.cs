@@ -7,7 +7,7 @@ namespace ULox
         public TokenType Match => TokenType.RETURN;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ReturnStatement(Compiler compiler)
+        public static void ReturnStatement(Compiler compiler)
         {
             //TODO refactor out
             if (compiler.CurrentCompilerState.functionType == FunctionType.Init)
@@ -22,7 +22,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SimpleReturnBody(Compiler compiler)
+        private static void SimpleReturnBody(Compiler compiler)
         {
             if (compiler.TokenIterator.Check(TokenType.END_STATEMENT))
             {
@@ -36,7 +36,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void MultiReturnBody(Compiler compiler)
+        private static void MultiReturnBody(Compiler compiler)
         {
             compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.Begin));
             var returnCount = compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");

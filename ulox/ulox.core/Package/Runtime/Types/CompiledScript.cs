@@ -4,9 +4,9 @@ namespace ULox
 {
     public sealed class CompiledScript
     {
-        public Chunk TopLevelChunk { get; private set; }
-        public int ScriptHash { get; private set; }
-        public List<Chunk> AllChunks { get; private set; }
+        public Chunk TopLevelChunk { get; }
+        public int ScriptHash { get; }
+        public List<Chunk> AllChunks { get; }
 
         public CompiledScript(
             Chunk topLevelChunk,

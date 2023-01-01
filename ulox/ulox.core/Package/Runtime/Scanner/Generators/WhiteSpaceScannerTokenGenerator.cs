@@ -2,7 +2,7 @@
 {
     public sealed class WhiteSpaceScannerTokenGenerator : IScannerTokenGenerator
     {
-        public Token Consume(Scanner scanner) => scanner.SharedNoToken;
+        public Token Consume(Scanner scanner) => Scanner.SharedNoToken;
 
         public bool DoesMatchChar(char ch)
         {

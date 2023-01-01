@@ -18,9 +18,9 @@ namespace ULox
             Vm = vm;
         }
 
-        public IScriptLocator ScriptLocator { get; private set; }
-        public Program Program { get; private set; }
-        public Vm Vm { get; private set; }
+        public IScriptLocator ScriptLocator { get; }
+        public Program Program { get; }
+        public Vm Vm { get; }
         public event Action<string> OnLog;
 
         public void AddLibrary(IULoxLibrary lib)

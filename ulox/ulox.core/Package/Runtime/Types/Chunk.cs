@@ -21,12 +21,12 @@ namespace ULox
         private readonly Dictionary<byte, int> _labelIdToInstruction = new Dictionary<byte, int>();
         private int instructionCount = -1;
 
-        public List<ByteCodePacket> Instructions { get; private set; } = new List<ByteCodePacket>(InstructionStartingCapacity);
-        public List<byte> ArgumentConstantIds { get; private set; } = new List<byte>(50);
+        public List<ByteCodePacket> Instructions { get; } = new List<ByteCodePacket>(InstructionStartingCapacity);
+        public List<byte> ArgumentConstantIds { get; } = new List<byte>(50);
         public IReadOnlyList<Value> Constants => _constants.AsReadOnly();
         public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
         public string Name { get; set; }
-        public string SourceName { get; private set; }
+        public string SourceName { get; }
         public FunctionType FunctionType { get; internal set; }
         public bool IsLocal => FunctionType == FunctionType.LocalFunction || FunctionType == FunctionType.LocalMethod;
         public bool IsPure => FunctionType == FunctionType.PureFunction;

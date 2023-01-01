@@ -32,7 +32,7 @@ namespace ULox
             case '?':
                 return scanner.EmitTokenSingle(TokenType.QUESTION);
             default:
-                return scanner.SharedNoToken;
+                return Scanner.SharedNoToken;
 
             }
         }

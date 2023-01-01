@@ -9,7 +9,7 @@ namespace ULox
         private readonly ObjectType _objectType;
 
         private Value _value;
-        private List<(string name, ValueObjectBuilder builder)> _children = new List<(string, ValueObjectBuilder)>();
+        private readonly List<(string name, ValueObjectBuilder builder)> _children = new List<(string, ValueObjectBuilder)>();
 
         public ValueObjectBuilder(ObjectType ot)
         {
@@ -32,9 +32,9 @@ namespace ULox
         {
             for (int i = _children.Count - 1; i >= 0; i--)
             {
-                var item = _children[i];
-                var childVal = item.builder.Finish();
-                _value.val.asInstance.SetField(new HashedString(item.name), childVal);
+                var (name, builder) = _children[i];
+                var childVal = builder.Finish();
+                _value.val.asInstance.SetField(new HashedString(name), childVal);
             }
 
             return _value;

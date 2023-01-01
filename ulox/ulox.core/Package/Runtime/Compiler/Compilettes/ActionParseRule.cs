@@ -2,9 +2,9 @@
 {
     public class ActionParseRule : IParseRule
     {
-        public System.Action<Compiler, bool> PrefixAction { get; private set; }
-        public System.Action<Compiler, bool> InfixAction { get; private set; }
-        public Precedence Precedence { get; private set; }
+        public System.Action<Compiler, bool> PrefixAction { get; }
+        public System.Action<Compiler, bool> InfixAction { get; }
+        public Precedence Precedence { get; }
 
         public ActionParseRule(
             System.Action<Compiler, bool> prefix,

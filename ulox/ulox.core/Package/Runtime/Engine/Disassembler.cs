@@ -64,7 +64,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AppendSpace()
         {
-            stringBuilder.Append(" ");
+            stringBuilder.Append(' ');
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

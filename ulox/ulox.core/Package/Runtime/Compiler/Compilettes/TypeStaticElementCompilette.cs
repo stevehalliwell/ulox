@@ -16,7 +16,7 @@
                 StaticMethod(compiler);
         }
 
-        protected void StaticProperty(Compiler compiler)
+        protected static void StaticProperty(Compiler compiler)
         {
             do
             {
@@ -44,7 +44,7 @@
             compiler.ConsumeEndStatement();
         }
 
-        protected void StaticMethod(Compiler compiler)
+        protected static void StaticMethod(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name.");
             byte constant = compiler.AddStringConstant();

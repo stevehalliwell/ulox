@@ -10,9 +10,9 @@ namespace ULox
             params (string name, Value val)[] bind)
         {
             var resTable = new Table();
-            foreach (var item in bind)
+            foreach (var (name, val) in bind)
             {
-                resTable.Add(new HashedString(item.name), item.val);
+                resTable.Add(new HashedString(name), val);
             }
             return resTable;
         }
@@ -22,9 +22,9 @@ namespace ULox
             this InstanceInternal self,
             params (string name, Value val)[] bind)
         {
-            foreach (var item in bind)
+            foreach (var (name, val) in bind)
             {
-                self.SetField(new HashedString(item.name), item.val);
+                self.SetField(new HashedString(name), val);
             }
         }
 
@@ -33,9 +33,9 @@ namespace ULox
             this UserTypeInternal self,
             params (string name, Value val)[] bind)
         {
-            foreach (var item in bind)
+            foreach (var (name, val) in bind)
             {
-                self.AddMethod(new HashedString(item.name), item.val, null);
+                self.AddMethod(new HashedString(name), val, null);
             }
         }
     }

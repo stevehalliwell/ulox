@@ -27,7 +27,7 @@ namespace ULox
 
             compiler.ConsumeEndStatement("signs declaration");
 
-            _typeCompilette.OnPostBody += x =>
+            _typeCompilette.OnPostBody += (_) =>
             {
                 foreach (var contractName in contractNames)
                 {

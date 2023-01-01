@@ -17,8 +17,7 @@ namespace ULox
             public override bool Equals(object obj)
             {
                 return obj is TypeNameClass customDummyClass
-                    ? Equals(customDummyClass)
-                    : false;
+                    && Equals(customDummyClass);
             }
 
             public bool Equals(TypeNameClass other)
@@ -209,7 +208,7 @@ namespace ULox
             => !(left == right);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool Compare(ref Value lhs, ref Value rhs)
+        public static bool Compare(ref Value lhs, ref Value rhs)
         {
             if (lhs.type != rhs.type)
             {

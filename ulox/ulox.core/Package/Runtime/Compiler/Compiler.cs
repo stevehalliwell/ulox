@@ -193,7 +193,7 @@ namespace ULox
                         EmitPop(popCount);
                         popCount = 0;
                     }
-                    
+
                     EmitPacket(OpCode.CLOSE_UPVALUE);
                 }
                 else
@@ -206,7 +206,6 @@ namespace ULox
             if (popCount > 0)
             {
                 EmitPop(popCount);
-                popCount = 0;
             }
         }
 
@@ -367,8 +366,7 @@ namespace ULox
         {
             if (IsFunctionLocal())
             {
-                if (getOp != OpCode.GET_LOCAL
-                    || setOp != OpCode.SET_LOCAL)
+                if (getOp != OpCode.GET_LOCAL || setOp != OpCode.SET_LOCAL)
                     ThrowCompilerException($"Identifiier '{name}' could not be found locally in local function '{CurrentCompilerState.chunk.Name}'");
             }
         }
@@ -594,8 +592,10 @@ namespace ULox
         {
             while (!TokenIterator.Check(TokenType.CLOSE_BRACE)
                 && !TokenIterator.Check(TokenType.EOF))
+            {
                 Declaration();
-
+            }
+            
             TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after block.");
         }
 
@@ -629,7 +629,7 @@ namespace ULox
         {
             if (CurrentCompilerState.ResolveLocal(this, itemName) != -1)
                 ThrowCompilerException($"{errorPrefix} '{itemName}' already exists at this scope");
-            
+
             CurrentCompilerState.DeclareVariableByName(this, itemName);
             CurrentCompilerState.MarkInitialised();
             var itemArgId = (byte)CurrentCompilerState.ResolveLocal(this, itemName);
@@ -710,8 +710,7 @@ namespace ULox
                 compiler.EmitPacket(OpCode.EXPECT);
             }
             while (compiler.TokenIterator.Match(TokenType.COMMA));
-
-
+            
             compiler.ConsumeEndStatement();
         }
 
@@ -793,8 +792,8 @@ namespace ULox
                 if (isList)
                 {
                     var constantNameId = compiler.AddCustomStringConstant("Add");
-                    var argCount = (byte)1;
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount,0));
+                    const byte argCount = 1;
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount, 0));
                 }
                 else
                 {
@@ -841,7 +840,7 @@ namespace ULox
             else if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
                 var argCount = compiler.ArgumentList();
-                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, nameId, argCount,0));
+                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, nameId, argCount, 0));
             }
             else
             {

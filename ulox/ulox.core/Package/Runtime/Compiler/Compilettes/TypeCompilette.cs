@@ -67,24 +67,11 @@ namespace ULox
             TypeCompiletteStage.Complete
         };
 
-        private static readonly TypeCompiletteStage[] PostBodyCompileStageOrder = new[]
-        {
-            TypeCompiletteStage.Invalid,
-            TypeCompiletteStage.Begin,
-            TypeCompiletteStage.Static,
-            TypeCompiletteStage.Mixin,
-            TypeCompiletteStage.Var,
-            TypeCompiletteStage.Init,
-            TypeCompiletteStage.Method,
-            TypeCompiletteStage.Signs,
-            TypeCompiletteStage.Complete
-        };
-
         public TokenType Match { get; private set; }
 
         public static readonly HashedString InitMethodName = new HashedString("init");
 
-        private Dictionary<TokenType, ITypeBodyCompilette> _innerDeclarationCompilettes = new Dictionary<TokenType, ITypeBodyCompilette>();
+        private readonly Dictionary<TokenType, ITypeBodyCompilette> _innerDeclarationCompilettes = new Dictionary<TokenType, ITypeBodyCompilette>();
         private ITypeBodyCompilette _bodyCompiletteFallback;
 
         private TypeCompiletteStage _stage = TypeCompiletteStage.Invalid;
@@ -95,7 +82,6 @@ namespace ULox
         public bool IsFrozenAtEnd { get; set; } = true;
         public bool IsReadOnlyAtEnd { get; set; } = false;
         private ITypeBodyCompilette[] BodyCompilettesProcessingOrdered;
-        private ITypeBodyCompilette[] BodyCompilettesPostBodyOrdered;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddInnerDeclarationCompilette(ITypeBodyCompilette compilette)
@@ -161,9 +147,6 @@ namespace ULox
         {
             BodyCompilettesProcessingOrdered = _innerDeclarationCompilettes.Values
                 .OrderBy(x => System.Array.IndexOf(BodyCompileStageOrder, x.Stage))
-                .ToArray();
-            BodyCompilettesPostBodyOrdered = _innerDeclarationCompilettes.Values
-                .OrderBy(x => System.Array.IndexOf(PostBodyCompileStageOrder, x.Stage))
                 .ToArray();
         }
 

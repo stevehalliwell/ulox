@@ -36,6 +36,7 @@ namespace ULox
         private readonly FastStack<Value> _returnStack = new FastStack<Value>();
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         private CallFrame _currentCallFrame;
+        private Chunk _currentChunk;
         public Engine Engine { get; private set; }
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private readonly Table _globals = new Table();
@@ -152,6 +153,7 @@ namespace ULox
             }
 
             _currentCallFrame = vm._currentCallFrame;
+            _currentChunk = vm._currentChunk;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -168,6 +170,7 @@ namespace ULox
             }
 
             _currentCallFrame = callFrame;
+            _currentChunk = _currentCallFrame.Closure.chunk;
             _callFrames.Push(callFrame);
         }
 
@@ -180,10 +183,15 @@ namespace ULox
 
             //update cache
             if (_callFrames.Count > 0)
+            {
                 _currentCallFrame = _callFrames.Peek();
+                _currentChunk = _currentCallFrame.Closure.chunk;
+            }
             else
+            {
                 _currentCallFrame = default;
-
+                _currentChunk = default;
+            }
             return poppedStackStart;
         }
 
@@ -214,7 +222,7 @@ namespace ULox
         {
             while (true)
             {
-                var chunk = _currentCallFrame.Closure.chunk;
+                var chunk = _currentChunk;
 
                 var packet = ReadPacket(chunk);
                 var opCode = packet.OpCode;
@@ -250,8 +258,8 @@ namespace ULox
                         break;
                     }
 
-                    if ( lhs.type == ValueType.String
-                         || rhs.type == ValueType.String )
+                    if (lhs.type == ValueType.String
+                         || rhs.type == ValueType.String)
                     {
                         Push(Value.New(lhs.str() + rhs.str()));
                         break;
@@ -323,7 +331,7 @@ namespace ULox
                         && DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
                         break;
 
-                    Push(Value.New(lhs.Compare(ref lhs, ref rhs)));
+                    Push(Value.New(Value.Compare(ref lhs, ref rhs)));
                 }
                 break;
 
@@ -634,16 +642,16 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMeetsOp()
         {
-            var res = ProcessContract();
-            Push(Value.New(res.meets));
+            var (meets, _) = ProcessContract();
+            Push(Value.New(meets));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSignsOp()
         {
-            var res = ProcessContract();
-            if (!res.meets)
-                ThrowRuntimeException($"Sign failure with msg '{res.msg}'");
+            var (meets, msg) = ProcessContract();
+            if (!meets)
+                ThrowRuntimeException($"Sign failure with msg '{msg}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1047,12 +1055,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DiscardPopToCount(byte prevStackStart)
         {
-            if (prevStackStart >= 0)
-            {
-                var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
+            var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
 
-                DiscardPop(toRemove);
-            }
+            DiscardPop(toRemove);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1484,20 +1489,17 @@ namespace ULox
                 ThrowRuntimeException($"Args given for a class that does not have an 'init' method");
             }
 
-            foreach (var initChain in klass.InitChains)
+            foreach (var (closure, instruction) in klass.InitChains)
             {
-                if (initChain.instruction != -1)
-                {
-                    if (!klass.Initialiser.IsNull())
-                        Push(inst);
+                if (!klass.Initialiser.IsNull())
+                    Push(inst);
 
-                    PushNewCallframe(new CallFrame()
-                    {
-                        Closure = initChain.closure,
-                        InstructionPointer = initChain.instruction,
-                        StackStart = (byte)(_valueStack.Count - 1), //last thing checked
-                    });
-                }
+                PushNewCallframe(new CallFrame()
+                {
+                    Closure = closure,
+                    InstructionPointer = instruction,
+                    StackStart = (byte)(_valueStack.Count - 1), //last thing checked
+                });
             }
         }
 

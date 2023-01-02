@@ -1,0 +1,53 @@
+// You can create vms within the program. This is actually how test and testcases
+//  are run internally.
+
+fun InnerMain()
+{
+    print("Hello from inner " + a);
+}
+
+var a = "10";
+
+var innerVM1 = VM();
+// this gives the inner vm access to everything in us, the outer vm
+innerVM1.InheritFromEnclosing();
+
+innerVM1.Start(InnerMain);
+
+// Vms can yeild and resume for co-operative multitasking or Enumerator like behaviour
+fun InnerMainYeilder()
+{
+    globalOut = 1;
+    yield;
+    globalOut = 1;
+    yield;
+    globalOut = 2;
+    yield;
+    globalOut = 3;
+    yield;
+    globalOut = 5;
+    yield;
+    globalOut = 8;
+    yield;
+    globalOut = null;
+}
+
+var globalOut = 0;
+
+var innerVM2 = VM();
+innerVM2.AddGlobal("globalOut",globalOut);
+
+innerVM2.Start(InnerMainYeilder);
+loop
+{
+    var curVal = innerVM2.GetGlobal("globalOut");
+    if(curVal != null)
+    {
+        print(curVal);
+        innerVM2.Resume();
+    }
+    else
+    {
+        break;
+    }
+}

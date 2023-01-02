@@ -1,0 +1,35 @@
+enum Foo
+{
+    A,
+    B,
+    C
+}
+
+test EnumTests
+{
+    testcase EnumInstance
+    {
+        var f = Foo.A;
+
+        expect f == Foo.A;
+        expect f.Key == "A";
+        expect f.Value == 0;
+    }
+
+    testcase EnumAll
+    {
+        var all = Foo.All;
+
+        expect all.Count() == 3;
+        expect all[0] == Foo.A;
+        expect all[1] == Foo.B;
+        expect all[2] == Foo.C;
+    }
+
+    testcase EnumFind
+    {
+        var found = Foo.All.First(fun (x) {return x.Value == 0;});
+
+        expect found == Foo.A;
+    }
+}

@@ -4,7 +4,7 @@
     {
         private TypeCompilette _typeCompilette;
 
-        public TokenType Match
+        public TokenType MatchingToken
             => TokenType.MIXIN;
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Mixin;

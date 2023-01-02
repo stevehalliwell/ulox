@@ -27,7 +27,7 @@ namespace ULox
             compilette.AddInnerDeclarationCompilette(TypePropertyCompilette.CreateForClass());
             compilette.GenerateCompiletteByStageArray();
             compilette.UserType = UserType.Class;
-            compilette.Match = TokenType.CLASS;
+            compilette.MatchingToken = TokenType.CLASS;
             return compilette;
         }
 
@@ -39,7 +39,7 @@ namespace ULox
             compilette.AddInnerDeclarationCompilette(TypePropertyCompilette.CreateForData());
             compilette.GenerateCompiletteByStageArray();
             compilette.UserType = UserType.Data;
-            compilette.Match = TokenType.DATA;
+            compilette.MatchingToken = TokenType.DATA;
             return compilette;
         }
 
@@ -49,7 +49,7 @@ namespace ULox
             compilette.AddInnerDeclarationCompilette(new TypeEnumValueCompilette());
             compilette.GenerateCompiletteByStageArray();
             compilette.UserType = UserType.Enum;
-            compilette.Match = TokenType.ENUM;
+            compilette.MatchingToken = TokenType.ENUM;
             compilette.IsReadOnlyAtEnd = true;
             return compilette;
         }
@@ -67,7 +67,7 @@ namespace ULox
             TypeCompiletteStage.Complete
         };
 
-        public TokenType Match { get; private set; }
+        public TokenType MatchingToken { get; private set; }
 
         public static readonly HashedString InitMethodName = new HashedString("init");
 
@@ -86,8 +86,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddInnerDeclarationCompilette(ITypeBodyCompilette compilette)
         {
-            _innerDeclarationCompilettes[compilette.Match] = compilette;
-            if (compilette.Match == TokenType.NONE)
+            _innerDeclarationCompilettes[compilette.MatchingToken] = compilette;
+            if (compilette.MatchingToken == TokenType.NONE)
                 _bodyCompiletteFallback = compilette;
         }
 
@@ -159,7 +159,7 @@ namespace ULox
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
 
-            InitChainLabelId = compiler.UniqueChunkStringConstant("InitChain");
+            InitChainLabelId = compiler.UniqueChunkLabelStringConstant("InitChain");
             compiler.EmitPacket(new ByteCodePacket(OpCode.TYPE, new ByteCodePacket.TypeDetails(nameConstant, UserType, InitChainLabelId)));
             
             compiler.DefineVariable(nameConstant);

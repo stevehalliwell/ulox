@@ -4,11 +4,11 @@ namespace ULox
 {
     public abstract class ConfigurableLoopingStatementCompilette : ICompilette
     {
-        public TokenType Match { get; }
+        public TokenType MatchingToken { get; }
 
         protected ConfigurableLoopingStatementCompilette(TokenType match)
         {
-            Match = match;
+            MatchingToken = match;
         }
 
         public void Process(Compiler compiler)
@@ -21,7 +21,7 @@ namespace ULox
             compiler.BeginScope();
 
             var comp = compiler.CurrentCompilerState;
-            var loopState = new LoopState(compiler.UniqueChunkStringConstant("loop_exit"));
+            var loopState = new LoopState(compiler.UniqueChunkLabelStringConstant("loop_exit"));
             comp.LoopStates.Push(loopState);
 
             PreLoop(compiler, loopState);

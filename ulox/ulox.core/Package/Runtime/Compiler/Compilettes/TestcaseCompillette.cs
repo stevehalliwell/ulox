@@ -4,7 +4,7 @@ namespace ULox
 {
     public class TestcaseCompillette : ICompilette
     {
-        public TokenType Match => TokenType.TESTCASE;
+        public TokenType MatchingToken => TokenType.TESTCASE;
         public string TestCaseName { get; private set; }
 
         private readonly TestDeclarationCompilette _testDeclarationCompilette;

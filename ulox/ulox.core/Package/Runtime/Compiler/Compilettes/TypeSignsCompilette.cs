@@ -6,7 +6,7 @@ namespace ULox
     {
         private TypeCompilette _typeCompilette;
 
-        public TokenType Match
+        public TokenType MatchingToken
             => TokenType.SIGNS;
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Signs;

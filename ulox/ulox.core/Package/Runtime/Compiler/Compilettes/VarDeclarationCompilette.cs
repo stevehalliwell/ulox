@@ -5,7 +5,7 @@ namespace ULox
 {
     public class VarDeclarationCompilette : ICompilette
     {
-        public TokenType Match => TokenType.VAR;
+        public TokenType MatchingToken => TokenType.VAR;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void VarDeclaration(Compiler compiler)

@@ -16,7 +16,7 @@ namespace ULox
         private double _previousNumber = -1;
         private Mode _mode = Mode.Unknown;
 
-        public TokenType Match
+        public TokenType MatchingToken
             => TokenType.NONE;
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Var;

@@ -2,7 +2,7 @@
 {
     public class TypeMethodCompilette : ITypeBodyCompilette
     {
-        public TokenType Match 
+        public TokenType MatchingToken 
             => TokenType.NONE;
 
         public TypeCompiletteStage Stage 

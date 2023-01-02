@@ -1451,7 +1451,7 @@ namespace ULox
         {
             var klass = Pop();
             var mixin = Pop();
-            klass.val.asClass.AddMixin(mixin, this);
+            klass.val.asClass.MixinClass(mixin, this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

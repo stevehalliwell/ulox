@@ -4,7 +4,7 @@ namespace ULox
 {
     public class ReturnStatementCompilette : ICompilette
     {
-        public TokenType Match => TokenType.RETURN;
+        public TokenType MatchingToken => TokenType.RETURN;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReturnStatement(Compiler compiler)

@@ -424,10 +424,11 @@ enum Foo
     Baz,
 }
 
-print(Foo.All.First(fun (x) {return x.Value == 0;}).Key);
+var res = Foo.All.First(fun (x) {return x.Value == 0;});
+print(res == Foo.Bar);
 ");
 
-            Assert.AreEqual("Bar", testEngine.InterpreterResult);
+            Assert.AreEqual("True", testEngine.InterpreterResult);
         }
 
         [Test]

@@ -11,10 +11,10 @@ namespace ULox
             Action<Compiler> processAction)
         {
             this.processAction = processAction;
-            Match = match;
+            MatchingToken = match;
         }
 
-        public TokenType Match { get; }
+        public TokenType MatchingToken { get; }
 
         public void Process(Compiler compiler)
             => processAction.Invoke(compiler);

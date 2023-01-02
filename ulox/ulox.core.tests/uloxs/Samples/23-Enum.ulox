@@ -1,0 +1,56 @@
+// Enum's are enumerations, being either auto incremented numbers of manually assigned lists.
+// They are a class internally but are filled with static members and are readonly.
+
+// Auto incremented enum
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+// Manually assigned enum
+enum Moo
+{
+    Bar = "Hello",
+    Baz = "World",
+}
+
+
+//match against specific enum
+var b = Foo.Bar;
+match b
+{
+Foo.Bar: print("something");
+Foo.Baz: print("something else");
+}
+
+
+//match against specific enum value
+var bval = Foo.Bar.Value;
+match bval
+{
+0: print("Bar");
+1: print("Baz");
+}
+
+//match against specific enum key
+var bkey = Foo.Bar.Key;
+match bkey
+{
+"Bar": print("Bar");
+"Baz": print("Baz");
+}
+
+//get all the enums in a set
+var all = Foo.All;
+
+loop (all)
+{
+    print(item);
+}
+
+//the set can also be use to go from value to enum, without a match.
+
+var foundB = all.First(fun (x) {return x.Value == bval;});
+
+print(foundB);

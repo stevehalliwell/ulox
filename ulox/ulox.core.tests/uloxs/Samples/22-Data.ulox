@@ -1,0 +1,14 @@
+// Data is used as sorthand for classes that have no methods, only vars.
+// They can still use signs, meets, and mixins, just only for data.
+
+data Foo 
+{
+    A = true, 
+    review, 
+    taste = "Full"
+}
+
+var b = Foo();
+print (b.A);
+print (b.review);
+print (b.taste);

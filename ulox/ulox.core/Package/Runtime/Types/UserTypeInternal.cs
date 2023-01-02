@@ -119,15 +119,12 @@ namespace ULox
 
             InitChains.Add((closure, initChainStartOp));
         }
-
-        public void AddMixin(Value flavourValue, Vm vm)
-        {
-            MixinClass(flavourValue, vm);
-        }
-
-        private void MixinClass(Value flavourValue, Vm vm)
+        
+        public void MixinClass(Value flavourValue, Vm vm)
         {
             var flavour = flavourValue.val.asClass;
+            ValidateMixin(flavour, vm);
+
             flavours[flavour.Name] = flavourValue;
 
             foreach (var flavourMeth in flavour.methods)
@@ -141,6 +138,24 @@ namespace ULox
                 {
                     AddInitChain(flavourInitChain.closure, flavourInitChain.instruction);
                 }
+            }
+        }
+
+        private void ValidateMixin(UserTypeInternal flavour, Vm vm)
+        {
+            switch (UserType)
+            {
+            case UserType.Data:
+                if (flavour.UserType != UserType.Data)
+                    vm.ThrowRuntimeException($"Cannot mixin '{flavour.Name}' into data '{Name}' as flavour is '{flavour.UserType}'");
+                break;
+            case UserType.Class:
+                break;
+            case UserType.Enum:
+            case UserType.Native:
+            default:
+                vm.ThrowRuntimeException($"Encounted unexpected mixin type on type '{this.Name}'");
+                break;
             }
         }
 

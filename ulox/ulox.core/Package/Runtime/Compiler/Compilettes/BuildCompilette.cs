@@ -4,7 +4,7 @@ namespace ULox
 {
     public sealed class BuildCompilette : ICompilette
     {
-        public TokenType Match => TokenType.BUILD;
+        public TokenType MatchingToken => TokenType.BUILD;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)

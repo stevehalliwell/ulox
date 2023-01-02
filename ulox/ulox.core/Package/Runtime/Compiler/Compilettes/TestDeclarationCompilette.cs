@@ -7,7 +7,7 @@ namespace ULox
     {
         private readonly List<byte> _currentTestcaseLabels = new List<byte>();
 
-        public TokenType Match
+        public TokenType MatchingToken
             => TokenType.TEST;
 
         public string CurrentTestSetName { get; internal set; }

@@ -2,7 +2,7 @@
 {
     public interface ICompilette
     {
-        TokenType Match { get; }
+        TokenType MatchingToken { get; }
 
         void Process(Compiler compiler);
     }

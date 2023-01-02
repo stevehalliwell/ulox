@@ -2,7 +2,7 @@
 {
     public class TypeStaticElementCompilette : ITypeBodyCompilette
     {
-        public TokenType Match 
+        public TokenType MatchingToken 
             => TokenType.STATIC;
         
         public TypeCompiletteStage Stage 

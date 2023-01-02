@@ -61,6 +61,46 @@ print (b.taste);");
         }
 
         [Test]
+        public void DataMixin_WhenCreated_ShouldHaveValues()
+        {
+            testEngine.Run(@"
+data Foo {A = true, review, taste = ""Full""}
+data Bar {
+    mixin Foo; 
+    B = 1;
+}
+var b = Bar();
+print (b.A);
+print (b.review);
+print (b.taste);
+print (b.B);");
+
+            Assert.AreEqual("TruenullFull1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void DataMixin_WhenClassIsMixedIn_ShouldFail()
+        {
+            testEngine.Run(@"
+class Foo 
+{
+    var A = true, 
+        review, 
+        taste = ""Full"";
+}
+
+data Bar {
+    mixin Foo; 
+    B = 1;
+}
+
+var b = Bar();
+");
+
+            StringAssert.StartsWith("Cannot mixin 'Foo' into data 'Bar' as flavour is 'Class'", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void OutOfOrder_WhenVarThenSigns_ShouldFail()
         {
             testEngine.Run(@"

@@ -127,11 +127,11 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddDeclarationCompilette(ICompilette compilette)
-            => declarationCompilettes[compilette.Match] = compilette;
+            => declarationCompilettes[compilette.MatchingToken] = compilette;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddStatementCompilette(ICompilette compilette)
-            => statementCompilettes[compilette.Match] = compilette;
+            => statementCompilettes[compilette.MatchingToken] = compilette;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetPrattRule(TokenType tt, IParseRule rule)
@@ -917,7 +917,7 @@ namespace ULox
 
             var lastElseLabel = -1;
 
-            var matchEndLabelID = compiler.UniqueChunkStringConstant(nameof(MatchStatement));
+            var matchEndLabelID = compiler.UniqueChunkLabelStringConstant(nameof(MatchStatement));
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
             do
@@ -1199,7 +1199,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte GotoUniqueChunkLabel(string v)
         {
-            byte labelNameID = UniqueChunkStringConstant(v);
+            byte labelNameID = UniqueChunkLabelStringConstant(v);
             EmitGoto(labelNameID);
             return labelNameID;
         }
@@ -1213,7 +1213,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte GotoIfUniqueChunkLabel(string v)
         {
-            byte labelNameID = UniqueChunkStringConstant(v);
+            byte labelNameID = UniqueChunkLabelStringConstant(v);
             EmitGotoIf(labelNameID);
             return labelNameID;
         }
@@ -1225,7 +1225,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal byte UniqueChunkStringConstant(string v)
+        internal byte UniqueChunkLabelStringConstant(string v)
         {
             return AddCustomStringConstant($"{v}_{CurrentChunk.Labels.Count}");
         }
@@ -1233,7 +1233,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte LabelUniqueChunkLabel(string v)
         {
-            byte labelNameID = UniqueChunkStringConstant(v);
+            byte labelNameID = UniqueChunkLabelStringConstant(v);
             EmitLabel(labelNameID);
             return labelNameID;
         }

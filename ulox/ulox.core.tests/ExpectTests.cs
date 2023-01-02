@@ -5,7 +5,17 @@ namespace ulox.core.tests
     public class ExpectTests : EngineTestBase
     {
         [Test]
-        public void Expect_Truthy_Continues()
+        public void Expect_TruthyVar_Continues()
+        {
+            testEngine.Run(@"
+var a = true;
+expect a;"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+        [Test]
+        public void Expect_TruthyLiteral_Continues()
         {
             testEngine.Run(@"
 expect true;"

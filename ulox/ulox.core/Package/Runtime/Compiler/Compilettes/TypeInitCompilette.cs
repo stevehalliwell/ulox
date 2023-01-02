@@ -2,7 +2,7 @@
 {
     public class TypeInitCompilette : ITypeBodyCompilette
     {
-        public TokenType Match 
+        public TokenType MatchingToken 
             => TokenType.INIT;
 
         public TypeCompiletteStage Stage 

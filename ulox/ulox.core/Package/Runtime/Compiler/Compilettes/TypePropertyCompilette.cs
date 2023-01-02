@@ -22,7 +22,7 @@
             return compilette;
         }
 
-        public TokenType Match
+        public TokenType MatchingToken
             => _matchToken;
 
         public TypeCompiletteStage Stage

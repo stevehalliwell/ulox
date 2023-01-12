@@ -66,7 +66,7 @@ namespace ULox.Demo
             }
             Application.logMessageReceived -= Application_logMessageReceived;
 
-            state.text = sharedVM.Engine.Context.Vm.GenerateGlobalsDump();
+            state.text = VmUtil.GenerateGlobalsDump(sharedVM.Engine.Context.Vm);
             bytecode.text = sharedVM.Engine.Context.Program.Disassembly;
             output.text += "\n";
         }

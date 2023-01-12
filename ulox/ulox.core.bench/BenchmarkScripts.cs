@@ -89,37 +89,6 @@ class Ball
 		
 		//this.go = CreateFromPrefab(ballName);
 	}
-
-	Tick()
-	{
-  		this.posx = this.posx + this.velx * dt;
-  		this.posy = this.posy + this.vely * dt;
-
-		this.Contain(limit);
-		//this.UpdateGoPosition();
-	}
-	
-	Contain(lim)
-	{
-		var x = this.posx;
-		var y = this.posy;
-		var vx = this.velx;
-		var vy = this.vely;
-
-		if((x < -lim and vx < 0) or 
-		  (x > lim  and vx > 0) )
-		{
-			vx *= -1;
-			this.velx = vx;
-		}
-
-		if((y < -lim and vy < 0) or
-		  (y > lim  and vy > 0) )
-		{
-			vy *= -1;
-			this.vely = vy;
-		}
-	}
 }
 
 fun SetupGame()
@@ -135,10 +104,33 @@ fun SetupGame()
 fun Update()
 {
 	print (""Updating"");
+	var lim = limit;
+
 	loop(balls)
 	{
-		item.Tick();
+  		item.posx = item.posx + item.velx * dt;
+  		item.posy = item.posy + item.vely * dt;
+
+		var x = item.posx;
+		var y = item.posy;
+		var vx = item.velx;
+		var vy = item.vely;
+
+		if((x < -lim and vx < 0) or 
+		  (x > lim  and vx > 0) )
+		{
+			vx *= -1;
+			item.velx = vx;
+		}
+
+		if((y < -lim and vy < 0) or
+		  (y > lim  and vy > 0) )
+		{
+			vy *= -1;
+			item.vely = vy;
+		}
 	}
-}");
+}
+");
     }
 }

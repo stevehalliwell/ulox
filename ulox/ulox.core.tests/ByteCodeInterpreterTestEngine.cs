@@ -48,8 +48,8 @@ namespace ulox.core.tests
                 _logger(MyEngine.Context.Vm.TestRunner.GenerateDump());
                 _logger(InterpreterResult);
                 _logger(MyEngine.Context.Program.Disassembly);
-                _logger(MyEngine.Context.Vm.GenerateGlobalsDump());
-                _logger(MyEngine.Context.Vm.GenerateValueStackDump());
+                _logger(VmUtil.GenerateGlobalsDump(MyEngine.Context.Vm));
+                _logger(VmUtil.GenerateValueStackDump(MyEngine.Context.Vm));
             }
         }
 

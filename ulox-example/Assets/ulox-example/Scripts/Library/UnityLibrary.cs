@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Xml.Linq;
+using Unity.Profiling;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,6 +10,7 @@ namespace ULox
     {
         private readonly List<GameObject> _availablePrefabs;
         private readonly System.Action<string> _outputText;
+        private readonly Dictionary<string, ProfilerMarker> _profilerMarkers = new Dictionary<string, ProfilerMarker>();
 
         public string Name => nameof(UnityLibrary);
 
@@ -34,7 +37,10 @@ namespace ULox
                 (nameof(GetKey), Value.New(GetKey)),
                 (nameof(DestroyUnityObject), Value.New(DestroyUnityObject)),
                 (nameof(GetRigidBody2DFromGameObject), Value.New(GetRigidBody2DFromGameObject)),
-                (nameof(SetRigidBody2DVelocity), Value.New(SetRigidBody2DVelocity))
+                (nameof(SetRigidBody2DVelocity), Value.New(SetRigidBody2DVelocity)),
+                (nameof(ProfileBegin), Value.New(ProfileBegin)),
+                (nameof(ProfileEnd), Value.New(ProfileEnd)),
+                (nameof(SetListOfGoToListOfPositions), Value.New(SetListOfGoToListOfPositions))
             );
 
         private NativeCallResult RandRange(Vm vm, int argCount)
@@ -132,6 +138,26 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
+        private NativeCallResult SetListOfGoToListOfPositions(Vm vm, int argCount)
+        {
+            var gos = (vm.GetArg(1).val.asObject as NativeListInstance).List;
+            var pos2ds = (vm.GetArg(2).val.asObject as NativeListInstance).List;
+            var len = gos.Count;
+            var xField = vm.GetArg(3).val.asString;
+            var yField = vm.GetArg(4).val.asString;
+
+            for (var i = 0; i < len; i++)
+            {
+                var posObj = pos2ds[i].val.asInstance;
+                var x = posObj.Fields[xField].val.asDouble;
+                var y = posObj.Fields[yField].val.asDouble;
+                var pos = new Vector2((float)x, (float)y);
+                (gos[i].val.asObject as GameObject).transform.position = pos;
+            }
+            
+            return NativeCallResult.SuccessfulExpression;
+        }
+
         private NativeCallResult SetGameObjectScale(Vm vm, int argCount)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
@@ -157,6 +183,25 @@ namespace ULox
             else
                 Debug.LogError($"Unable to find prefab of name '{targetName}'.");
 
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult ProfileBegin(Vm vm, int argCount)
+        {
+            var name = vm.GetArg(1).val.asString.String;
+            if (!_profilerMarkers.TryGetValue(name, out var marker))
+            {
+                marker = new ProfilerMarker(name);
+                _profilerMarkers[name] = marker;
+            }
+            marker.Begin();
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult ProfileEnd(Vm vm, int argCount)
+        {
+            var name = vm.GetArg(1).val.asString.String;
+            _profilerMarkers[name].End();
             return NativeCallResult.SuccessfulExpression;
         }
     }

@@ -416,7 +416,6 @@ print(Foo.Bar.Enum == Foo);
         [Test]
         public void FirstAll_WhenExists_ShouldReturnMatch()
         {
-            //todo could do first or null on the all
             testEngine.Run(@"
 enum Foo
 {
@@ -489,6 +488,3 @@ fb.Value = 7;
         }
     }
 }
-
-//todo should print print the value and what we have now be the typeof result
-//todo how else can user use readonly

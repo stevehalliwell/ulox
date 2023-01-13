@@ -1,21 +1,10 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    //todo introduce labels so that instructions can be modified freely
-    //  and afterwards labels can be removed with offsets by an optimizer step.
-    //todo delay calls to end of scope
-    //todo introduce optimiser, pass after compile, have compile build slim ast as it goes
-    //  convert labels to offsets
-    //  identify and remove unused constants
-    //  identify push local 0 and paired get or set member, replace with specific this accessing ops
     //todo better string parsing token support
-    //todo add conditional
-    //todo better, standardisead errors, including from native
     //todo track and output class information from compile
-    //todo self asign needs safety to prevent their use in declarations.
     public sealed class Vm
     {
         public delegate NativeCallResult NativeCallDelegate(Vm vm, int argc);
@@ -33,13 +22,17 @@ namespace ULox
         private readonly ClosureInternal NativeCallClosure;
 
         private readonly FastStack<Value> _valueStack = new FastStack<Value>();
+        internal FastStack<Value> ValueStack => _valueStack;
         private readonly FastStack<Value> _returnStack = new FastStack<Value>();
+        internal FastStack<Value> ReturnStack => _returnStack;
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
+        internal FastStack<CallFrame> CallFrames => _callFrames;
         private CallFrame _currentCallFrame;
         private Chunk _currentChunk;
         public Engine Engine { get; private set; }
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         private readonly Table _globals = new Table();
+        public Table Globals => _globals;
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
         public DiContainer DiContainer { get; private set; } = new DiContainer();
 
@@ -55,42 +48,27 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Pop() => _valueStack.Pop();
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public (Value,Value) Pop2()
+        {
+            _valueStack.DiscardPop(2);
+            return (_valueStack.Peek(-2), _valueStack.Peek(-1));
+        }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public (Value, Value, Value) Pop3()
+        {
+            _valueStack.DiscardPop(3);
+            return (_valueStack.Peek(-3), _valueStack.Peek(-2), _valueStack.Peek(-1));
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Peek(int ind = 0) => _valueStack.Peek(ind);
-
-        public string GenerateValueStackDump() => DumpStack(_valueStack);
-
-        public string GenerateReturnDump() => DumpStack(_returnStack);
-
-        public string GenerateGlobalsDump()
-        {
-            var sb = new System.Text.StringBuilder();
-
-            foreach (var item in _globals)
-            {
-                sb.Append($"{item.Key} : {item.Value}");
-            }
-
-            return sb.ToString();
-        }
-
-        public string GenerateCallStackDump()
-        {
-            var sb = new System.Text.StringBuilder();
-
-            for (int i = 0; i < _callFrames.Count; i++)
-            {
-                var cf = _callFrames.Peek(i);
-                sb.AppendLine(GetLocationNameFromFrame(cf));
-            }
-
-            return sb.ToString();
-        }
-
+        
         public Value GetGlobal(HashedString name) => _globals[name];
 
         public void SetGlobal(HashedString name, Value val) => _globals[name] = val;
@@ -248,8 +226,7 @@ namespace ULox
 
                 case OpCode.ADD:
                 {
-                    var rhs = Pop();
-                    var lhs = Pop();
+                    var (rhs,lhs) = Pop2();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -270,8 +247,7 @@ namespace ULox
                 break;
                 case OpCode.SUBTRACT:
                 {
-                    var rhs = Pop();
-                    var lhs = Pop();
+                    var (rhs, lhs) = Pop2();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -285,8 +261,7 @@ namespace ULox
                 break;
                 case OpCode.MULTIPLY:
                 {
-                    var rhs = Pop();
-                    var lhs = Pop();
+                    var (rhs, lhs) = Pop2();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -300,8 +275,7 @@ namespace ULox
                 break;
                 case OpCode.DIVIDE:
                 {
-                    var rhs = Pop();
-                    var lhs = Pop();
+                    var (rhs, lhs) = Pop2();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -315,8 +289,7 @@ namespace ULox
                 break;
                 case OpCode.MODULUS:
                 {
-                    var rhs = Pop();
-                    var lhs = Pop();
+                    var (rhs, lhs) = Pop2();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -331,8 +304,7 @@ namespace ULox
 
                 case OpCode.EQUAL:
                 {
-                    var rhs = Pop();
-                    var lhs = Pop();
+                    var (rhs, lhs) = Pop2();
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -347,8 +319,7 @@ namespace ULox
 
                 case OpCode.LESS:
                 {
-                    var rhs = Pop();
-                    var lhs = Pop();
+                    var (rhs, lhs) = Pop2();
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -364,8 +335,7 @@ namespace ULox
                 break;
                 case OpCode.GREATER:
                 {
-                    var rhs = Pop();
-                    var lhs = Pop();
+                    var (rhs, lhs) = Pop2();
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -486,9 +456,9 @@ namespace ULox
                     throw new PanicException(
                         Pop().ToString(),
                         currentInstruction,
-                        GetLocationNameFromFrame(frame, currentInstruction),
-                        GenerateValueStackDump(),
-                        GenerateCallStackDump());
+                        VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
+                        VmUtil.GenerateValueStackDump(this),
+                        VmUtil.GenerateCallStackDump(this));
                 }
                 case OpCode.BUILD:
                     DoBuildOp(chunk);
@@ -629,40 +599,12 @@ namespace ULox
         {
             var frame = _currentCallFrame;
             var currentInstruction = frame.InstructionPointer;
-
+            
             throw new RuntimeUloxException(msg,
                 currentInstruction,
-                GetLocationNameFromFrame(frame, currentInstruction),
-                GenerateValueStackDump(),
-                GenerateCallStackDump());
-        }
-
-        private static string DumpStack(FastStack<Value> valueStack)
-        {
-            var stackVars = valueStack
-                .Select(x => x.ToString())
-                .Take(valueStack.Count)
-                .Reverse();
-
-            return string.Join(System.Environment.NewLine, stackVars);
-        }
-
-        private static string GetLocationNameFromFrame(CallFrame frame, int currentInstruction = -1)
-        {
-            if (frame.nativeFunc != null)
-            {
-                var name = frame.nativeFunc.Method.Name;
-                if (frame.nativeFunc.Target != null)
-                    name = frame.nativeFunc.Target.GetType().Name + "." + frame.nativeFunc.Method.Name;
-                return $"native:'{name}'";
-            }
-
-            var line = -1;
-            if (currentInstruction != -1)
-                line = frame.Closure?.chunk?.GetLineForInstruction(currentInstruction) ?? -1;
-
-            var locationName = frame.Closure?.chunk.GetLocationString(line);
-            return $"chunk:'{locationName}'";
+                VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
+                VmUtil.GenerateValueStackDump(this),
+                VmUtil.GenerateCallStackDump(this));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -706,8 +648,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoExpectOp()
         {
-            var msg = Pop();
-            var expected = Pop();
+            var (msg, expected) = Pop2();
 
             if (expected.IsFalsey())
             {
@@ -718,9 +659,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoEnumValueOp(Chunk chunk)
         {
-            var enumObject = Pop();
-            var val = Pop();
-            var key = Pop();
+            //pop3?
+            var (enumObject, val, key) = Pop3();
             (enumObject.val.asClass as EnumClass).AddEnumValue(key, val);
         }
 
@@ -738,8 +678,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (bool meets, string msg) ProcessContract()
         {
-            var rhs = Pop();
-            var lhs = Pop();
+            var (rhs, lhs) = Pop2();
 
             switch (lhs.type)
             {
@@ -776,9 +715,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSetIndexOp(OpCode opCode)
         {
-            var newValue = Pop();
-            var index = Pop();
-            var listValue = Pop();
+            //pop3?
+            var (newValue, index, listValue) = Pop3();
             if (listValue.val.asInstance is INativeCollection nativeCol)
             {
                 nativeCol.Set(index, newValue);
@@ -816,8 +754,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetIndexOp(OpCode opCode)
         {
-            var index = Pop();
-            var listValue = Pop();
+            var (index, listValue) = Pop2();
 
             if (listValue.val.asInstance is INativeCollection nativeCol)
             {
@@ -935,8 +872,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSwapOp()
         {
-            var n0 = Pop();
-            var n1 = Pop();
+            //pop2
+            var (n0,n1) = Pop2();
 
             Push(n0);
             Push(n1);
@@ -1094,8 +1031,7 @@ namespace ULox
                 Push(_returnStack[i]);
             }
         }
-
-        //todo the returning function can tell us how many we are about to receive we don't need to track it separately?
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessStackForMultiAssign()
         {
@@ -1449,8 +1385,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMixinOp(Chunk chunk)
         {
-            var klass = Pop();
-            var mixin = Pop();
+            //pop2
+            var (klass, mixin) = Pop2();
             klass.val.asClass.MixinClass(mixin, this);
         }
 

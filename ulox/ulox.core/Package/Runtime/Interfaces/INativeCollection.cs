@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    internal interface INativeCollection
+    public interface INativeCollection
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         Value Get(Value ind);

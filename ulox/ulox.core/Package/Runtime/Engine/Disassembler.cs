@@ -160,7 +160,6 @@ namespace ULox
                 break;
             case OpCode.CLOSURE:
             {
-                //todo
                 stringBuilder.Append($"({packet.closureDetails.ClosureType}) ");
                 switch (packet.closureDetails.ClosureType)
                 {

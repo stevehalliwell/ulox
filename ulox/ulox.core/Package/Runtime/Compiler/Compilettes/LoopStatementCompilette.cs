@@ -2,7 +2,6 @@
 
 namespace ULox
 {
-    //todo allow more expressive rename, loop (arr, item=it)
     public class LoopStatementCompilette : ConfigurableLoopingStatementCompilette
     {
         public LoopStatementCompilette()

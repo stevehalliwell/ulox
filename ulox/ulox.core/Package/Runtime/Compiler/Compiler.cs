@@ -4,8 +4,6 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    //todo for self assign to work, we need to route it through the assign path and
-    //  then dump into a grouping, once the grouping is back, we named var ourselves and then emit the math op
     public sealed class Compiler
     {
         private readonly IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
@@ -482,7 +480,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //TODO build commands should use this
         public byte ExpressionList(TokenType terminatorToken, string missingTermError)
         {
             byte argCount = 0;
@@ -1120,7 +1117,6 @@ namespace ULox
             if (isInt && number < 255 && number >= 0)
                 EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, (byte)number, 0, 0));
             else
-                //todo push to compiler
                 AddConstantAndWriteOp(Value.New(number));
         }
 

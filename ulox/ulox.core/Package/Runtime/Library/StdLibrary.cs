@@ -198,21 +198,21 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateStackDump(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(vm.GenerateValueStackDump()));
+            vm.PushReturn(Value.New(VmUtil.GenerateValueStackDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateGlobalsDump(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(vm.GenerateGlobalsDump()));
+            vm.PushReturn(Value.New(VmUtil.GenerateGlobalsDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateReturnDump(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(vm.GenerateReturnDump()));
+            vm.PushReturn(Value.New(VmUtil.GenerateReturnDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 

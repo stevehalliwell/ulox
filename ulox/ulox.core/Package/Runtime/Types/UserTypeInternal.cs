@@ -38,8 +38,7 @@ namespace ULox
         private readonly Table methods = new Table();
         private readonly Table flavours = new Table();
         private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
-
-        //TODO these props also need to be write protected by the freeze
+        
         public HashedString Name { get; protected set; }
 
         public UserType UserType { get; }

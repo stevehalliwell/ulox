@@ -4,7 +4,6 @@ using System.Runtime.CompilerServices;
 namespace ULox
 {
     //todo better string parsing token support
-    //todo add conditional
     //todo track and output class information from compile
     public sealed class Vm
     {

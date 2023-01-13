@@ -319,9 +319,6 @@ DoIt();");
             Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
         }
 
-        //TODO single take of a multi return
-        //todo multivar assign replace existing named variable
-
         [Test]
         public void Engine_Compile_Call_Mixed_Ops()
         {

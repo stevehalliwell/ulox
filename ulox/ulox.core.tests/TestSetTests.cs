@@ -245,10 +245,7 @@ test T
             Assert.AreEqual("", testEngine.InterpreterResult);
             Assert.AreEqual("", testEngine.MyEngine.Context.Vm.TestRunner.GenerateDump());
         }
-
-
-        //todo yield should be able to multi return, use a yield stack in the vm and clear it at each use?
-
+        
         [Test]
         public void Engine_Test_ContextNames()
         {

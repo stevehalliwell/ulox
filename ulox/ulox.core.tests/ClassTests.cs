@@ -965,5 +965,3 @@ print(t.A());
         }
     }
 }
-
-//TODO add class test for init with args and no init and using local vars

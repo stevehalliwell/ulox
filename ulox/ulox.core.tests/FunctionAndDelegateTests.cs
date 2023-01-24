@@ -147,5 +147,90 @@ foo.bar(1);
 
             Assert.AreEqual("Identifiier 'print' could not be found locally in local function 'anonymous' in chunk 'anonymous(test)' at 5:10 'print'.", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Fun_WhenNamedReturns_ShouldPass()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c)
+{
+    c = a+b;
+    return c;
+}
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenNamedReturnsC_ShouldPrint3()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c)
+{
+    c = a+b;
+    return c;
+}
+
+var res = T(1,2);
+print(res);
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenNamedReturnsImplicit_ShouldPrint3()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c)
+{
+    c = a+b;
+    return;
+}
+
+var res = T(1,2);
+print(res);
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenMultiNamedReturnsImplicit_ShouldPrint3AndNeg1()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c,d)
+{
+    c = a+b;
+    d = a-b;
+    return;
+}
+
+var (add, sub)= T(1,2);
+print(add);
+print(sub);
+");
+
+            Assert.AreEqual("3-1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenMultiNamedOmittedReturns_ShouldPrint3AndNeg1()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c,d)
+{
+    c = a+b;
+    d = a-b;
+}
+
+var (add, sub)= T(1,2);
+print(add);
+print(sub);
+");
+
+            Assert.AreEqual("3-1", testEngine.InterpreterResult);
+        }
     }
 }

@@ -465,9 +465,16 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitReturn()
         {
-            PreEmptyReturnEmit();
+            if (CurrentChunk.ReturnCount > 0)
+            {
+                EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.Implicit));
+            }
+            else
+            {
+                PreEmptyReturnEmit();
 
-            EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
+                EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -519,6 +526,7 @@ namespace ULox
 
             BeginScope();
             FunctionParamListOptional();
+            ReturnParamListOptional();
 
             // The body.
             TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
@@ -531,6 +539,12 @@ namespace ULox
         public void FunctionParamListOptional()
         {
             VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void ReturnParamListOptional()
+        {
+            VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -564,6 +578,14 @@ namespace ULox
             CurrentChunk.ArgumentConstantIds.Add(argNameConstant);
             if (CurrentChunk.Arity > 255)
                 ThrowCompilerException($"Can't have more than 255 parameters.");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void IncreaseReturn(byte argNameConstant)
+        {
+            CurrentChunk.ReturnConstantIds.Add(argNameConstant);
+            if (CurrentChunk.ReturnCount > 255)
+                ThrowCompilerException($"Can't have more than 255 returns.");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

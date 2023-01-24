@@ -150,6 +150,10 @@ namespace ULox
             _currentCallFrame = callFrame;
             _currentChunk = _currentCallFrame.Closure.chunk;
             _callFrames.Push(callFrame);
+            for (int i = 0; i < _currentChunk.ReturnCount; i++)
+            {
+                ValueStack.Push(Value.Null());
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -966,6 +970,18 @@ namespace ULox
             case ReturnMode.MarkMultiReturnAssignEnd:
                 ProcessStackForMultiAssign();
                 break;
+
+            case ReturnMode.Implicit:
+            {
+                _returnStack.Reset();
+                var returnStart = _currentCallFrame.StackStart + _currentChunk.Arity+1;
+                for (int i = 0; i < _currentChunk.ReturnCount; i++)
+                {
+                    _returnStack.Push(_valueStack[returnStart + i]);
+                }
+                FinishReturnOp();
+            }
+            break;
 
             default:
                 ThrowRuntimeException($"Unhandled return mode '{returnMode}'");

@@ -7,5 +7,6 @@
         End,
         MarkMultiReturnAssignStart,
         MarkMultiReturnAssignEnd,
+        Implicit,
     }
 }

@@ -465,16 +465,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitReturn()
         {
-            if (CurrentChunk.ReturnCount > 0)
-            {
-                EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.Implicit));
-            }
-            else
-            {
-                PreEmptyReturnEmit();
-
-                EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
-            }
+            EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.Implicit));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -614,7 +605,7 @@ namespace ULox
             {
                 Declaration();
             }
-            
+
             TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after block.");
         }
 
@@ -729,7 +720,7 @@ namespace ULox
                 compiler.EmitPacket(OpCode.EXPECT);
             }
             while (compiler.TokenIterator.Match(TokenType.COMMA));
-            
+
             compiler.ConsumeEndStatement();
         }
 

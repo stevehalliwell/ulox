@@ -225,7 +225,7 @@ fun T(a,b) (c,d)
     d = a-b;
 }
 
-var (add, sub)= T(1,2);
+var (add, sub) = T(1,2);
 print(add);
 print(sub);
 ");

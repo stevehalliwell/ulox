@@ -974,10 +974,17 @@ namespace ULox
             case ReturnMode.Implicit:
             {
                 _returnStack.Reset();
-                var returnStart = _currentCallFrame.StackStart + _currentChunk.Arity+1;
-                for (int i = 0; i < _currentChunk.ReturnCount; i++)
+                if (_currentChunk.ReturnCount == 0)
                 {
-                    _returnStack.Push(_valueStack[returnStart + i]);
+                    _returnStack.Push(Value.Null());
+                }
+                else
+                {
+                    var returnStart = _currentCallFrame.StackStart + _currentChunk.Arity + 1;
+                    for (int i = 0; i < _currentChunk.ReturnCount; i++)
+                    {
+                        _returnStack.Push(_valueStack[returnStart + i]);
+                    }
                 }
                 FinishReturnOp();
             }

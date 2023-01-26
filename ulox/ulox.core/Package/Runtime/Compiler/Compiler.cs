@@ -516,26 +516,19 @@ namespace ULox
             PushCompilerState(name, functionType);
 
             BeginScope();
-            FunctionParamListOptional();
-            ReturnParamListOptional();
+            VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
+            var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
 
+            if(returnCount == 0)
+            {
+                //TODO add retval to return list
+            }
+            
             // The body.
             TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             Block();
 
             EndFunction();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void FunctionParamListOptional()
-        {
-            VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ReturnParamListOptional()
-        {
-            VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

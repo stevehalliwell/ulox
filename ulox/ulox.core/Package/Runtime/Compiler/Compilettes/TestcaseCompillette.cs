@@ -122,8 +122,7 @@ namespace ULox
                 compiler.EmitLabel((byte)exitDataLoopJumpLoc);
             }
 
-            compiler.EmitNULL();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
+            compiler.EmitReturn();
 
             compiler.EndScope();
             

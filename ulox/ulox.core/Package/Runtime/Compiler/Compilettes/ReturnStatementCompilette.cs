@@ -9,14 +9,10 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReturnStatement(Compiler compiler)
         {
-            //TODO refactor out
             if (compiler.CurrentCompilerState.functionType == FunctionType.Init)
                 compiler.ThrowCompilerException("Cannot return an expression from an 'init'");
 
-            if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
-                MultiReturnBody(compiler);
-            else
-                SimpleReturnBody(compiler);
+            SimpleReturnBody(compiler);
 
             compiler.ConsumeEndStatement();
         }
@@ -24,6 +20,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void SimpleReturnBody(Compiler compiler)
         {
+            //TODO if we give all fun an implicit (retval), then we don't need this
             if (compiler.TokenIterator.Check(TokenType.END_STATEMENT))
             {
                 compiler.EmitReturn();
@@ -33,16 +30,6 @@ namespace ULox
                 compiler.Expression();
                 compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void MultiReturnBody(Compiler compiler)
-        {
-            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.Begin));
-            var returnCount = compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after arguments.");
-            if (returnCount == 0)
-                compiler.EmitNULL();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.End));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -863,7 +863,7 @@ namespace ULox
             if (res == NativeCallResult.SuccessfulExpression)
             {
                 if (_currentCallFrame.ReturnStart != 0)
-                    ReturnFromMark();
+                    ReturnFromMark();   //TODO this doesn't seem required anymore, can be refactored
                 else
                     ReturnOneValue(Value.Null());
             }
@@ -953,14 +953,6 @@ namespace ULox
             case ReturnMode.One:
                 var top = Pop();
                 ReturnOneValue(top);
-                break;
-
-            case ReturnMode.Begin:
-                _currentCallFrame.ReturnStart = (byte)StackCount;
-                break;
-
-            case ReturnMode.End:
-                ReturnFromMark();
                 break;
 
             case ReturnMode.MarkMultiReturnAssignStart:

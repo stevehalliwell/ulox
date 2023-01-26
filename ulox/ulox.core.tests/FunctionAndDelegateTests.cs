@@ -232,5 +232,29 @@ print(sub);
 
             Assert.AreEqual("3-1", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Fun_WhenManyMultiNamedOmittedReturns_ShouldPrintMany()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c,d,e,f,g)
+{
+    c = a+b;
+    d = a-b;
+    e = a*b;
+    f = a/b;
+    g = a%b;
+}
+
+var (add, sub, mul, div, mod) = T(1,2);
+print(add);
+print(sub);
+print(mul);
+print(div);
+print(mod);
+");
+
+            Assert.AreEqual("3-120.51", testEngine.InterpreterResult);
+        }
     }
 }

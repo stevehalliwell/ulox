@@ -521,7 +521,8 @@ namespace ULox
 
             if(returnCount == 0)
             {
-                //TODO add retval to return list
+                var retvalId = DeclareAndDefineCustomVariable("retval");
+                IncreaseReturn(retvalId);
             }
             
             // The body.
@@ -619,12 +620,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DeclareAndDefineCustomVariable(string varName)
+        public byte DeclareAndDefineCustomVariable(string varName)
         {
             //do equiv of ParseVariable, DefineVariable
             CurrentCompilerState.DeclareVariableByName(this, varName);
             var id = AddCustomStringConstant(varName);
             DefineVariable(id);
+            return id;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

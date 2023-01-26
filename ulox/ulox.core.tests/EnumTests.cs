@@ -423,7 +423,7 @@ enum Foo
     Baz,
 }
 
-var res = Foo.All.First(fun (x) {return x.Value == 0;});
+var res = Foo.All.First(fun (x) {retval = x.Value == 0;});
 print(res == Foo.Bar);
 ");
 

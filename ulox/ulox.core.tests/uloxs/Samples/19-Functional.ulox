@@ -9,12 +9,12 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 // Arrays have .Reduce, this takes a 2 parameter function, the first parameter is the current value, 
@@ -32,7 +32,7 @@ print(foldedResult);
 
 fun addone(val)
 {
-    return val + 1;
+    retval = val + 1;
 }
 
 // Arrays have .Map, this takes a single parameter function to be called with each value from the array, 
@@ -43,7 +43,7 @@ arrToMap = arrToMap.Map(addone);
 
 fun isEven(val)
 {
-    return ((val % 2) != 0);
+    retval = ((val % 2) != 0);
 }
 
 // Arrays have a .Filter, this takes a single parameter function, that returns a bool. A predicate.

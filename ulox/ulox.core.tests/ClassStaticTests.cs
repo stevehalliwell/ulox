@@ -39,7 +39,7 @@ class T
 {
     NoMemberMethod()
     {
-        return 7;
+        retval = 7;
     }
 }
 
@@ -56,7 +56,7 @@ class T
 {
     static StaticMethod()
     {
-        return 7;
+        retval = 7;
     }
 }
 
@@ -73,7 +73,7 @@ class T
 {
     static StaticMethod()
     {
-        return 7;
+        retval = 7;
     }
 }
 

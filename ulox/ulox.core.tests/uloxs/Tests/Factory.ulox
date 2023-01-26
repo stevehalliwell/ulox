@@ -3,7 +3,7 @@ class Foo
     var a = 1;
 }
 
-register Foo fun (){ return Foo(); };
+register Foo fun (){ retval = Foo(); };
 
 test FactoryTests
 {

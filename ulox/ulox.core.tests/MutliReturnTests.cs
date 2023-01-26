@@ -229,19 +229,6 @@ print(e);");
 
             Assert.AreEqual("12345", testEngine.InterpreterResult);
         }
-        
-        [Test]
-        public void Run_WhenReturnOneMultiReturn_ShouldReturnOne()
-        {
-            testEngine.Run(@"
-fun A(){return (1);}
-
-var res1 = A();
-
-print(res1);");
-
-            Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
 
         [Test]
         public void Run_WhenReturnNoneTake2_ShouldError()

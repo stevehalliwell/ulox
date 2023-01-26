@@ -1,7 +1,7 @@
 class StaticClass
 {
     static var a = 7;
-    static Meth {return 3;}
+    static Meth {retval = 3;}
 }
 
 test StaticClasses

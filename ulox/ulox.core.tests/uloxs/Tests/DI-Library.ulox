@@ -41,7 +41,7 @@ test DISimpleTests
         var serviceInst = 7;
         register Service1 serviceInst;
         register Service2 null;
-        fun ServiceFunction(a){return a;}
+        fun ServiceFunction(a){retval =a;}
         var result = "";
 
         result = DI.GenerateDump();

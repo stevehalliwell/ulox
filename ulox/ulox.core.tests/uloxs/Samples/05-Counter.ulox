@@ -5,7 +5,7 @@ fun makeCounter() {
     i = i + 1;
   }
 
-  return count;
+  retval = count;
 }
 
 var c1 = makeCounter();

@@ -17,12 +17,12 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 var arr = MakeTestArray();
@@ -48,12 +48,12 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 var arr = MakeTestArray();
@@ -79,17 +79,17 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 fun addone(val)
 {
-    return val + 1;
+    retval = val + 1;
 }
 
 var arr = MakeTestArray();
@@ -116,17 +116,17 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 fun isEven(val)
 {
-    return ((val % 2) != 0);
+    retval = ((val % 2) != 0);
 }
 
 var arr = MakeTestArray();
@@ -153,10 +153,10 @@ fun MakeTestArray()
         arr.Add(5-i);
     }
 
-    return arr;
+    retval = arr;
 }
 
-fun self(x) { return x; }
+fun self(x) { retval = x; }
 
 fun prnt(x) {print(x);}
 
@@ -183,16 +183,16 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
-fun isthree(x) { return x == 3; }
+fun isthree(x) { retval = x == 3; }
 
 var arr = MakeTestArray();
 var res = arr.First(isthree);
 print(res);
 
-fun isseven(x) { return x == 7; }
+fun isseven(x) { retval = x == 7; }
 
 var res = arr.First(isseven);
 print(res);
@@ -207,9 +207,9 @@ print(res);
         public void Fork_WhenGiven3Funcs_ShouldRunEachInOrderAndReturn3CountArray()
         {
             var script = @"
-fun One(x){print(1 + x); return true;}
-fun Two(x){print(2 + x); return true;}
-fun Three(x){print(3 + x); return true;}
+fun One(x){print(1 + x); retval = true;}
+fun Two(x){print(2 + x); retval = true;}
+fun Three(x){print(3 + x); retval = true;}
 var arr = [];
 arr.Add(One);
 arr.Add(Two);
@@ -217,7 +217,7 @@ arr.Add(Three);
 
 var runOn = "" Count"";
 
-fun andChainer(x, running) {return (x and running);}
+fun andChainer(x, running) {retval = (x and running);}
 
 var forkRes = arr.Fork(runOn);
 var forkReduceRes = forkRes.Reduce(andChainer);
@@ -233,9 +233,9 @@ print(forkReduceRes);
         public void Until_WhenGiven3FuncsSecondSuccess_ShouldRunFirstTwoOnly()
         {
             var script = @"
-fun One(x){print(1 + x); return false;}
-fun Two(x){print(2 + x); return true;}
-fun Three(x){print(3 + x); return true;}
+fun One(x){print(1 + x); retval = false;}
+fun Two(x){print(2 + x); retval = true;}
+fun Three(x){print(3 + x); retval = true;}
 var arr = [];
 arr.Add(One);
 arr.Add(Two);

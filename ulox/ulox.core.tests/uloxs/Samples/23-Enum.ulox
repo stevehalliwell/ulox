@@ -51,6 +51,6 @@ loop (all)
 
 //the set can also be use to go from value to enum, without a match.
 
-var foundB = all.First(fun (x) {return x.Value == bval;});
+var foundB = all.First(fun (x) {retval = x.Value == bval;});
 
 print(foundB);

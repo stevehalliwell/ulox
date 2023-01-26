@@ -2,8 +2,8 @@ class Simple {}
 
 class Method
 {
-    Meth(){return 1;}
-    MethBraceless{return 1;}
+    Meth(){retval =1;}
+    MethBraceless{retval =1;}
 }
 
 class WithInit
@@ -14,7 +14,7 @@ class WithInit
         this.b = b;
     }
 
-    Sum() { return this.a + this.b; }
+    Sum() { retval =this.a + this.b; }
 }
 
 class AutoInitVars
@@ -22,7 +22,7 @@ class AutoInitVars
     var a,b=10;
     init(a) { }
 
-    Sum() { return this.a + this.b; }
+    Sum() { retval =this.a + this.b; }
 }
 
 class Statics

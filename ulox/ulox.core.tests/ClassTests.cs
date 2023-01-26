@@ -86,7 +86,7 @@ var t = T(3);");
             testEngine.Run(@"
 class A 
 {
-    init(){return 7;}
+    init(){return;}
 }");
 
             Assert.AreEqual("Cannot return an expression from an 'init' in chunk 'init(test)' at 4:18 'return'.", testEngine.InterpreterResult);
@@ -181,7 +181,7 @@ class CoffeeMaker {
 
     brewLater()
     {
-        return this.brew;
+        retval = this.brew;
     }
 }
 
@@ -240,7 +240,7 @@ class CoffeeMaker {
 fun GetDelegate()
 {
     var maker = CoffeeMaker(""coffee and chicory"");
-    return maker.brew;
+    retval = maker.brew;
 }
 
 var delegate = GetDelegate();
@@ -278,7 +278,7 @@ class Nothing
 fun GetDelegate()
 {
     var maker = CoffeeMaker(""coffee and chicory"");
-    return maker.brew;
+    retval = maker.brew;
 }
 
 var delegate = GetDelegate();
@@ -534,7 +534,7 @@ class Foo
 {
     var n = cname;
 
-    Method(){return cname;}
+    Method(){retval = cname;}
 }
 
 var f = Foo();
@@ -575,7 +575,7 @@ class T
 {
     Meth
     {
-        return 7;
+        retval = 7;
     }
 }
 
@@ -604,7 +604,7 @@ class V
 {
     var a;
     init(a){}
-    _add(lhs,rhs){return V(lhs.a + rhs.a);}
+    _add(lhs,rhs){retval = V(lhs.a + rhs.a);}
 }
 
 var v1 = V(1);
@@ -762,7 +762,7 @@ t.Say();");
             testEngine.Run(@"
 class Brioche
 {
-    Meth(){return this;}
+    Meth(){retval = this;}
 }
 
 var b = Brioche();
@@ -841,7 +841,7 @@ class T
 
 fun PassedMethod()
 {
-    return 1;
+    retval = 1;
 }
 
 fun ExtrnGlobal(in)
@@ -871,7 +871,7 @@ class T
 
 fun PassedMethod()
 {
-    return 1;
+    retval = 1;
 }
 
 fun ExtrnGlobal(in)
@@ -952,7 +952,7 @@ class T
 {
     var a = 0;
     Inc(){this.a = this.a + 1;}
-    A{return this.a;}
+    A{retval = this.a;}
 }
 
 var t = T();

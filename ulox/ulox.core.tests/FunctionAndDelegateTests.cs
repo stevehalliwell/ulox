@@ -62,11 +62,11 @@ DelInvoker(del,1,2);
         public void Delegate_WhenPassedAsAnArgAndInvokedAndReturning_ShouldMatchExpected()
         {
             testEngine.Run(@"
-fun Del(a,b) {return a+b;}
+fun Del(a,b) {retval = a+b;}
 
 fun DelInvoker(d, lhs, rhs) 
 {
-    return d(lhs,rhs);
+    retval = d(lhs,rhs);
 }
 
 var del = Del;
@@ -84,12 +84,12 @@ print(res);
             testEngine.Run(@"
 fun Meth(lhs,rhs)
 {
-    return lhs+rhs;
+    retval = lhs+rhs;
 }
 
 fun Foo(a,b,c)
 {
-    return a(b,c);
+    retval = a(b,c);
 }
 
 var res = Foo(Meth,1,2);
@@ -155,7 +155,7 @@ foo.bar(1);
 fun T(a,b) (c)
 {
     c = a+b;
-    return c;
+    retval = c;
 }
 ");
 
@@ -169,7 +169,6 @@ fun T(a,b) (c)
 fun T(a,b) (c)
 {
     c = a+b;
-    return c;
 }
 
 var res = T(1,2);

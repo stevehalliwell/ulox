@@ -139,7 +139,7 @@ class T
 
     local Foo()
     {
-        return this.a;
+        retval = this.a;
     }
 }
 
@@ -215,12 +215,12 @@ Foo(Meth);
             testEngine.Run(@"
 fun pure Meth(lhs,rhs)
 {
-    return lhs+rhs;
+    retval = lhs+rhs;
 }
 
 fun pure Foo(a,b,c)
 {
-    return a(b,c);
+    retval = a(b,c);
 }
 
 var res = Foo(Meth,1,2);
@@ -294,12 +294,12 @@ class T
 {
     pure Foo()
     {
-        return this.a;
+        retval = this.a;
     }
 }
 ");
 
-            Assert.AreEqual("Identifiier 'this' could not be found locally in local function 'Foo' in chunk 'Foo(test)' at 6:20 'this'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Identifiier 'this' could not be found locally in local function 'Foo' in chunk 'Foo(test)' at 6:22 'this'.", testEngine.InterpreterResult);
         }
     }
 }

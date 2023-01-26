@@ -6,32 +6,32 @@
 
 fun MakeTestArray()
 {
-    return [0,1,2,3,4,];
+    retval = [0,1,2,3,4,];
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 fun addone(val)
 {
-    return val + 1;
+    retval = val + 1;
 }
 
 fun isEven(val)
 {
-    return ((val % 2) != 0);
+    retval = ((val % 2) != 0);
 }
 
 fun isthree(x) 
 { 
-    return x == 3; 
+    retval = x == 3; 
 }
 
-fun ByOne(x){return x*1;}
-fun ByTwo(x){return x*2;}
-fun ByThree(x){return x*3;}
+fun ByOne(x){retval = x*1;}
+fun ByTwo(x){retval = x*2;}
+fun ByThree(x){retval = x*3;}
 ";
 
         public const string FunctionalNative = CommonScript + @"
@@ -76,7 +76,7 @@ fun reduce(arr, fn)
     {
         res = fn(arr[i], res);
     }
-    return res;
+    retval = res;
 }
 
 fun fold(arr, fn, initVal)
@@ -86,7 +86,7 @@ fun fold(arr, fn, initVal)
     {
         res = fn(arr[i], res);
     }
-    return res;
+    retval = res;
 }
 
 fun map(arr, fn)
@@ -98,7 +98,7 @@ fun map(arr, fn)
     {
         res[i] = fn(arr[i]);
     }
-    return res;
+    retval = res;
 }
 
 fun filter(arr, fn)
@@ -110,7 +110,7 @@ fun filter(arr, fn)
         if(fn(val))
             res.Add(val);
     }
-    return res;
+    retval = res;
 }
 
 fun filter(arr, fn)
@@ -122,7 +122,7 @@ fun filter(arr, fn)
         if(fn(val))
             res.Add(val);
     }
-    return res;
+    retval = res;
 }
 
 fun first(arr, fn)
@@ -130,9 +130,12 @@ fun first(arr, fn)
     loop(arr)
     {
         if(fn(item))
-            return item;
+        {            
+            retval = item;
+            return;
+        }
     }
-    return null;
+    return;
 }
 
 fun fork(arr, runOn)
@@ -143,7 +146,7 @@ fun fork(arr, runOn)
         var fn = arr[i];
         res.Add(fn(runOn));
     }
-    return res;
+    retval = res;
 }
 
 var arr = MakeTestArray();

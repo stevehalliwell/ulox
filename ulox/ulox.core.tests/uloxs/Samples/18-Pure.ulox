@@ -7,19 +7,19 @@
 //This function is not marked but is pure, as it only uses it's own information.
 fun Foo()
 {
-    return 4;
+    retval = 4;
 }
 
 //This function is not local or pure. It makes use of Foo, via global lookup.
 fun NonLocal()
 {
-    return Foo();
+    retval = Foo();
 }
 
 //This function is local. Only access that which it is passed in.
 fun local CallArg(func)
 {
-    return func();
+    retval = func();
 }
 
 print(CallArg(NonLocal));
@@ -29,12 +29,12 @@ print(CallArg(NonLocal));
 //  If not pure, an error is thrown.
 fun pure PureCallArg(func)
 {
-    return func();
+    retval = func();
 }
 
 fun NonPureThrowing()
 {
-    return PureCallArg(Foo);
+    retval = PureCallArg(Foo);
 }
 
 Assert.Throws(NonPureThrowing);

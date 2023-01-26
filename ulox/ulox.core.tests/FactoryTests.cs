@@ -24,7 +24,7 @@ Assert.AreEqual(Fac, line);
         {
             testEngine.Run(@"
 class Foo {}
-register FooFac fun(){return Foo();};
+register FooFac fun(){retval = Foo();};
 
 var obj = inject FooFac();
 
@@ -39,8 +39,8 @@ Assert.AreEqual(typeof(obj), Foo);
         public void Factory_WhenMultiSimpleReg_ShouldReturnExpected()
         {
             testEngine.Run(@"
-register Fac1 fun(){return 1;};
-register Fac2 fun(){return 2;};
+register Fac1 fun(){retval = 1;};
+register Fac2 fun(){retval = 2;};
 
 var val = inject Fac2();
 
@@ -58,7 +58,7 @@ class Foo
 {
 }
 
-fun FooCreator() {return Foo();}
+fun FooCreator() {retval = Foo();}
 
 register Foo FooCreator;
 
@@ -78,7 +78,7 @@ class Foo
 {
 }
 
-register Foo fun () {return Foo();};
+register Foo fun () {retval = Foo();};
 
 var fooLine = inject Foo;
 var foo = fooLine();

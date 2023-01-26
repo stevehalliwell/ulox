@@ -142,8 +142,8 @@ test MapTests
 
     testcase InlineCreation
     {
-	    var dogNoise = "woof";
-	    var catNoise = "meow";
+        var dogNoise = "woof";
+        var catNoise = "meow";
         var m = ["dog":dogNoise, "cat":catNoise];
         
         Assert.AreEqual(dogNoise, m.Read("dog"));

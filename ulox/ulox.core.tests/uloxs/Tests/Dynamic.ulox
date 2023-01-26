@@ -17,7 +17,7 @@ test DynamicTests
         var expected = 3;
         var result = 0;
         var o = {:};
-        fun Method(){return expected;}
+        fun Method(){retval =expected;}
         o.Meth = Method;
 
         result = o.Meth();
@@ -29,7 +29,7 @@ test DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = {val:expected, Meth: fun (self) {return self.val;},};
+        var o = {val:expected, Meth: fun (self) {retval =self.val;},};
        
         result = o.Meth(o);
 
@@ -40,7 +40,7 @@ test DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = {val:expected, Meth: fun (self) {return self.val;},};
+        var o = {val:expected, Meth: fun (self) {retval =self.val;},};
        
         result = o.Meth(o);
 

@@ -465,7 +465,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitReturn()
         {
-            EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.Implicit));
+            EmitPacket(new ByteCodePacket(OpCode.RETURN));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -48,9 +48,9 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Pop() => _valueStack.Pop();
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public (Value,Value) Pop2()
+        public (Value, Value) Pop2()
         {
             _valueStack.DiscardPop(2);
             return (_valueStack.Peek(-2), _valueStack.Peek(-1));
@@ -62,13 +62,13 @@ namespace ULox
             _valueStack.DiscardPop(3);
             return (_valueStack.Peek(-3), _valueStack.Peek(-2), _valueStack.Peek(-1));
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Peek(int ind = 0) => _valueStack.Peek(ind);
-        
+
         public Value GetGlobal(HashedString name) => _globals[name];
 
         public void SetGlobal(HashedString name, Value val) => _globals[name] = val;
@@ -216,11 +216,13 @@ namespace ULox
                     break;
 
                 case OpCode.RETURN:
-                    if (DoReturnOp(chunk, packet.ReturnMode))
+                    if (DoReturnOp(chunk))
                         return InterpreterResult.OK;
 
                     break;
-
+                case OpCode.MULTI_VAR:
+                    DoMultiVarOp(chunk, packet.BoolValue);
+                    break;
                 case OpCode.YIELD:
                     return InterpreterResult.YIELD;
 
@@ -230,7 +232,7 @@ namespace ULox
 
                 case OpCode.ADD:
                 {
-                    var (rhs,lhs) = Pop2();
+                    var (rhs, lhs) = Pop2();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -603,7 +605,7 @@ namespace ULox
         {
             var frame = _currentCallFrame;
             var currentInstruction = frame.InstructionPointer;
-            
+
             throw new RuntimeUloxException(msg,
                 currentInstruction,
                 VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
@@ -877,7 +879,7 @@ namespace ULox
         private void DoSwapOp()
         {
             //pop2
-            var (n0,n1) = Pop2();
+            var (n0, n1) = Pop2();
 
             Push(n0);
             Push(n1);
@@ -943,47 +945,37 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoReturnOp(Chunk chunk, ReturnMode returnMode)
+        private bool DoReturnOp(Chunk chunk)
         {
             var origCallFrameCount = _callFrames.Count;
             var wantsToYieldOnReturn = _currentCallFrame.YieldOnReturn;
-
-            switch (returnMode)
+            
+            _returnStack.Reset();
+            if (_currentChunk.ReturnCount != 0)
             {
-            case ReturnMode.MarkMultiReturnAssignStart:
-                _currentCallFrame.ReturnStart = (byte)StackCount;
-                break;
-
-            case ReturnMode.MarkMultiReturnAssignEnd:
-                ProcessStackForMultiAssign();
-                break;
-
-            case ReturnMode.Implicit:
+                var returnStart = _currentCallFrame.StackStart + _currentChunk.Arity + 1;
+                for (int i = 0; i < _currentChunk.ReturnCount; i++)
+                {
+                    _returnStack.Push(_valueStack[returnStart + i]);
+                }
+            }
+            else
             {
-                _returnStack.Reset();
-                if (_currentChunk.ReturnCount != 0)
-                {
-                    var returnStart = _currentCallFrame.StackStart + _currentChunk.Arity + 1;
-                    for (int i = 0; i < _currentChunk.ReturnCount; i++)
-                    {
-                        _returnStack.Push(_valueStack[returnStart + i]);
-                    }
-                }
-                else
-                {
-                    _returnStack.Push(ValueStack[_currentCallFrame.StackStart]);
-                }
-                FinishReturnOp();
+                _returnStack.Push(ValueStack[_currentCallFrame.StackStart]);
             }
-            break;
-
-            default:
-                ThrowRuntimeException($"Unhandled return mode '{returnMode}'");
-                break;
-            }
+            FinishReturnOp();
 
             return _callFrames.Count == 0
                 || (_callFrames.Count < origCallFrameCount && wantsToYieldOnReturn);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoMultiVarOp(Chunk chunk, bool start)
+        {
+            if (start)
+                _currentCallFrame.ReturnStart = (byte)StackCount;
+            else
+                ProcessStackForMultiAssign();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1041,7 +1033,7 @@ namespace ULox
                 Push(_returnStack[i]);
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessStackForMultiAssign()
         {

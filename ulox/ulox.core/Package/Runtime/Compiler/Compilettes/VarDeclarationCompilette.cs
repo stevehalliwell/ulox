@@ -57,7 +57,6 @@ namespace ULox
             compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, (byte)varNames.Count,0,0));
             compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.MultiReturnMatches));
 
-            //we don't really want to reverse these, as we want things kike (a,b) = fun return (1,2,3); ends up with 1,2
             for (int i = 0; i < varNames.Count; i++)
             {
                 var varName = varNames[i];

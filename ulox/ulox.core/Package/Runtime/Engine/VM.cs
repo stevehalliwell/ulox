@@ -950,11 +950,6 @@ namespace ULox
 
             switch (returnMode)
             {
-            case ReturnMode.One:
-                var top = Pop();
-                ReturnOneValue(top);
-                break;
-
             case ReturnMode.MarkMultiReturnAssignStart:
                 _currentCallFrame.ReturnStart = (byte)StackCount;
                 break;
@@ -966,17 +961,17 @@ namespace ULox
             case ReturnMode.Implicit:
             {
                 _returnStack.Reset();
-                if (_currentChunk.ReturnCount == 0)
-                {
-                    _returnStack.Push(Value.Null());
-                }
-                else
+                if (_currentChunk.ReturnCount != 0)
                 {
                     var returnStart = _currentCallFrame.StackStart + _currentChunk.Arity + 1;
                     for (int i = 0; i < _currentChunk.ReturnCount; i++)
                     {
                         _returnStack.Push(_valueStack[returnStart + i]);
                     }
+                }
+                else
+                {
+                    _returnStack.Push(ValueStack[_currentCallFrame.StackStart]);
                 }
                 FinishReturnOp();
             }

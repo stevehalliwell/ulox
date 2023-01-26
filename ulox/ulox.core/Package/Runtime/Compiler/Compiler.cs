@@ -519,7 +519,13 @@ namespace ULox
             VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
             var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
 
-            if(returnCount == 0)
+
+            if (functionType == FunctionType.Init)
+            {
+                if (returnCount != 0)
+                    ThrowCompilerException("Init functions cannot specify named return vars.");
+            }
+            else if (returnCount == 0)
             {
                 var retvalId = DeclareAndDefineCustomVariable("retval");
                 IncreaseReturn(retvalId);

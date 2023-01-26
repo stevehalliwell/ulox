@@ -17,7 +17,7 @@ namespace ulox.core.tests
             chunk.WritePacket(new ByteCodePacket(OpCode.ADD), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.MULTIPLY), 1);
-            chunk.WritePacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One), 2);
+            chunk.WritePacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.Implicit), 2);
 
             return chunk;
         }

@@ -15,6 +15,35 @@ print (Brioche);");
         }
 
         [Test]
+        public void Class_Instance()
+        {
+            testEngine.Run(@"
+class T
+{
+}
+
+var t = T();
+print(t);");
+
+            Assert.AreEqual("<inst T>", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Class_Instance_Init()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(){}
+}
+
+var t = T();
+print(t);");
+
+            Assert.AreEqual("<inst T>", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_2Var()
         {
             testEngine.Run(@"

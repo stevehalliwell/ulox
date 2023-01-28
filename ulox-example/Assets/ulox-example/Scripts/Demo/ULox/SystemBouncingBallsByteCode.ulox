@@ -21,9 +21,10 @@ var ballName = "BouncyBall";
 var balls = [];
 var gos = [];
 
-fun RandVec2()
+fun RandVec2() (x,y)
 {
-	return (RandRange(-3,3),RandRange(-3,3));
+	x = RandRange(-3,3);
+	y = RandRange(-3,3);
 }
 
 class Ball

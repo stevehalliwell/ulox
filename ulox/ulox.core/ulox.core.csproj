@@ -20,6 +20,9 @@
 		<Optimize>true</Optimize>
 	</PropertyGroup>
 	<ItemGroup>
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+	</ItemGroup>
+	<ItemGroup>
 		<Reference Include="Newtonsoft.Json">
 			<HintPath>Package\Runtime\Plugins\Newtonsoft.Json.dll</HintPath>
 		</Reference>

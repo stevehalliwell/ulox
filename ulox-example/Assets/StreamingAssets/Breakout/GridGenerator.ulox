@@ -13,12 +13,12 @@ class GridGenerator
             var inner = [].Grow(cols, 1);
             outer[i] = inner;
         }
-        return this.FromArrays(outer);
+        retval = this.FromArrays(outer);
     }
 
     FromArrays(arrays)
     {
-        var retval = [];
+        retval = [];
 
         var cols = countof arrays[0];
 
@@ -36,8 +36,6 @@ class GridGenerator
                 }
             }
         }
-
-        return retval;
     }
 }
 

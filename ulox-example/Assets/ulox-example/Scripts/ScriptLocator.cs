@@ -51,5 +51,3 @@ namespace ULox
         }
     }
 }
-
-//TODO: provide a function to be called when a collision or trigger occures

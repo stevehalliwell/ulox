@@ -112,6 +112,11 @@ namespace ULox
                 SetGlobal(val.Key, val.Value);
             }
 
+            foreach (var val in otherVM._valueStack)
+            {
+                Push(val);
+            }
+
             TestRunner = otherVM.TestRunner;
             DiContainer = otherVM.DiContainer.ShallowCopy();
         }
@@ -426,13 +431,9 @@ namespace ULox
                     var actualName = globalName.val.asString;
 
                     if (_globals.TryGetValue(actualName, out var found))
-                    {
                         Push(found);
-                    }
                     else
-                    {
                         ThrowRuntimeException($"No global of name {actualName} could be found");
-                    }
                 }
                 break;
 
@@ -1144,10 +1145,11 @@ namespace ULox
                 for (int i = 0; i < argCount; i++)
                     ValidatePureArg(i, closureInternal);
             }
-
+            
+            var stackStart = (byte)System.Math.Max(0,_valueStack.Count - argCount - 1);
             PushNewCallframe(new CallFrame()
             {
-                StackStart = (byte)(_valueStack.Count - argCount - 1),
+                StackStart = stackStart,
                 Closure = closureInternal
             });
         }

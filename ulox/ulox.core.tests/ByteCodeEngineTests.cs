@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ULox;
 
 namespace ulox.core.tests

@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,9 +23,7 @@ namespace ULox.Demo
             var scriptLocator = new ScriptLocator(null, Application.streamingAssetsPath);
             Engine = new Engine(new Context(scriptLocator, new Program(), new Vm()));
 
-            AddDefaultLibraries(
-                x => Debug.Log(x),
-                () => new Vm());
+            Engine.Context.AddLibrary(new PrintLibrary(x => Debug.Log(x)));
 
             List<GameObject> prefabs = null;
             if (prefabCollectionSO != null)
@@ -62,13 +58,6 @@ namespace ULox.Demo
             }
 
             return Value.Null();
-        }
-
-        private void AddDefaultLibraries(
-            Action<string> logger,
-            Func<Vm> createVM)
-        {
-            Engine.Context.AddLibrary(new PrintLibrary(logger));
         }
     }
 }

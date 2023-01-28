@@ -5,34 +5,34 @@ class Vec2
 		var ret = Vec2();
 		ret.x = x;
 		ret.y = y;
-		return ret;
+		retval = ret;
 	}
     
     static Scale(v2, scalar)
     {
-        return Vec2.Create(v2.x* scalar, v2.y*scalar);
+        retval = Vec2.Create(v2.x* scalar, v2.y*scalar);
     }
 
 	var x = 0, y = 0;
 
 	_add(lhs, rhs)
 	{
-		return Vec2.Create(lhs.x + rhs.x, lhs.y + rhs.y);
+		retval = Vec2.Create(lhs.x + rhs.x, lhs.y + rhs.y);
 	}
 
 	_sub(lhs, rhs)
 	{
-		return Vec2.Create(lhs.x - rhs.x, lhs.y - rhs.y);
+		retval = Vec2.Create(lhs.x - rhs.x, lhs.y - rhs.y);
 	}
 
 	_mul(lhs, rhs)
 	{
-		return Vec2.Create(lhs.x * rhs.x, lhs.y * rhs.y);
+		retval = Vec2.Create(lhs.x * rhs.x, lhs.y * rhs.y);
 	}
 
 	_eq(lhs, rhs)
 	{
-		return lhs.x == rhs.x and lhs.y == rhs.y;
+		retval = lhs.x == rhs.x and lhs.y == rhs.y;
 	}
 }
 

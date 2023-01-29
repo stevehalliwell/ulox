@@ -91,9 +91,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushReturn(Value val)
         {
-            if (_currentCallFrame.ReturnStart == 0)
-                _currentCallFrame.ReturnStart = (byte)StackCount;
-
             _valueStack.Push(val);
         }
 
@@ -860,13 +857,16 @@ namespace ULox
             if (_currentCallFrame.nativeFunc == null)
                 ThrowRuntimeException($"{opCode} without nativeFunc encountered. This is not allowed");
 
+            
+            //TODO natives need to declare their return count, same as langugae chunks, then we don't need special handling
             var argCount = CurrentFrameStackValues;
+            _currentCallFrame.ReturnStart = (byte)StackCount;
             var res = _currentCallFrame.nativeFunc.Invoke(this, argCount);
-
+            
             if (res == NativeCallResult.SuccessfulExpression)
             {
-                if (_currentCallFrame.ReturnStart != 0)
-                    ReturnFromMark();   //TODO this doesn't seem required anymore, can be refactored
+                if (_currentCallFrame.ReturnStart != StackCount)
+                    ReturnFromMark(); 
                 else
                     ReturnOneValue(Value.Null());
             }

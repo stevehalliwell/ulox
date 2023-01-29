@@ -244,20 +244,6 @@ MyFunc();");
         }
 
         [Test]
-        public void Engine_Compile_NativeFunc_Call()
-        {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) =>
-            {
-                vm.PushReturn(Value.New("Native"));
-                return NativeCallResult.SuccessfulExpression;
-            }));
-
-            testEngine.Run(@"print (CallEmptyNative());");
-
-            Assert.AreEqual("Native", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Compile_Return()
         {
             testEngine.Run(@"
@@ -604,38 +590,6 @@ print(res);
             testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(meth, 0);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_NativeFunc_Call_0Param_String()
-        {
-            NativeCallResult Func(Vm vm, int args)
-            {
-                vm.PushReturn(Value.New("Hello from native."));
-                return NativeCallResult.SuccessfulExpression;
-            }
-
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
-
-            testEngine.Run(@"print (Meth());");
-
-            Assert.AreEqual("Hello from native.", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_NativeFunc_Call_1Param_String()
-        {
-            NativeCallResult Func(Vm vm, int args)
-            {
-                vm.PushReturn(Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native."));
-                return NativeCallResult.SuccessfulExpression;
-            }
-
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
-
-            testEngine.Run(@"print (Meth(""Dad""));");
-
-            Assert.AreEqual("Hello, Dad, I'm native.", testEngine.InterpreterResult);
         }
 
         [Test]

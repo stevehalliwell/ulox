@@ -16,7 +16,7 @@ namespace ULox
         public HashedString asString;
 
         [FieldOffset(8 * 1)]
-        public Vm.NativeCallDelegate asNativeFunc;
+        public CallFrame.NativeCallDelegate asNativeFunc;
 
         [FieldOffset(8 * 1)]
         public object asObject;

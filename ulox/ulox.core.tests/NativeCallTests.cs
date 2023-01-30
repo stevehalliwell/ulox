@@ -21,7 +21,7 @@ namespace ulox.core.tests
         {
             testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) =>
             {
-                vm.PushReturn(Value.New("Native"));
+                vm.SetNativeReturn(0, Value.New("Native"));
                 return NativeCallResult.SuccessfulExpression;
             }));
 
@@ -35,7 +35,7 @@ namespace ulox.core.tests
         {
             NativeCallResult Func(Vm vm, int args)
             {
-                vm.PushReturn(Value.New("Hello from native."));
+                vm.SetNativeReturn(0, Value.New("Hello from native."));
                 return NativeCallResult.SuccessfulExpression;
             }
 
@@ -51,7 +51,7 @@ namespace ulox.core.tests
         {
             NativeCallResult Func(Vm vm, int args)
             {
-                vm.PushReturn(Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native."));
+                vm.SetNativeReturn(0, Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native."));
                 return NativeCallResult.SuccessfulExpression;
             }
 
@@ -67,7 +67,7 @@ namespace ulox.core.tests
         {
             testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A1"), Value.New((vm, args) =>
             {
-                vm.PushReturn(Value.New(1));
+                vm.SetNativeReturn(0, Value.New(1));
                 return NativeCallResult.SuccessfulExpression;
             }));
 
@@ -84,10 +84,10 @@ print(a);");
         {
             testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A2"), Value.New((vm, args) =>
             {
-                vm.PushReturn(Value.New(1));
-                vm.PushReturn(Value.New(2));
+                vm.SetNativeReturn(0, Value.New(1));
+                vm.SetNativeReturn(1, Value.New(2));
                 return NativeCallResult.SuccessfulExpression;
-            }));
+            }, 2));
 
             testEngine.Run(@"
 var (a,b) = A2();
@@ -103,13 +103,13 @@ print(b);");
         {
             testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A5"), Value.New((vm, args) =>
             {
-                vm.PushReturn(Value.New(1));
-                vm.PushReturn(Value.New(2));
-                vm.PushReturn(Value.New(3));
-                vm.PushReturn(Value.New(4));
-                vm.PushReturn(Value.New(5));
+                vm.SetNativeReturn(0, Value.New(1));
+                vm.SetNativeReturn(1, Value.New(2));
+                vm.SetNativeReturn(2, Value.New(3));
+                vm.SetNativeReturn(3, Value.New(4));
+                vm.SetNativeReturn(4, Value.New(5));
                 return NativeCallResult.SuccessfulExpression;
-            }));
+            }, 5));
 
             testEngine.Run(@"
 var (a,b,c,d,e) = A5();

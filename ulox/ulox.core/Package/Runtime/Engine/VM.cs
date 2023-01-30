@@ -7,18 +7,6 @@ namespace ULox
     //todo track and output class information from compile
     public sealed class Vm
     {
-        public delegate NativeCallResult NativeCallDelegate(Vm vm, int argc);
-
-        internal struct CallFrame
-        {
-            public int InstructionPointer;
-            public byte StackStart;
-            public byte ReturnStart;  //Used for return from mark and multi assign, as these do not overlap in the same callframe
-            public ClosureInternal Closure;
-            public NativeCallDelegate nativeFunc;
-            public bool YieldOnReturn;
-        }
-
         private readonly ClosureInternal NativeCallClosure;
 
         private readonly FastStack<Value> _valueStack = new FastStack<Value>();
@@ -82,16 +70,16 @@ namespace ULox
 
         public void SetEngine(Engine engine) => Engine = engine;
 
-        public InterpreterResult PushCallFrameAndRun(Value func, int args)
+        public InterpreterResult PushCallFrameAndRun(Value func, byte args)
         {
             PushCallFrameFromValue(func, args);
             return Run();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PushReturn(Value val)
+        public void SetNativeReturn(byte returnIndex, Value val)
         {
-            _valueStack.Push(val);
+            _valueStack[_currentCallFrame.StackStart + _currentCallFrame.ArgCount + returnIndex + 1] = val;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -852,31 +840,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNativeCall(OpCode opCode)
-        {
-            if (_currentCallFrame.nativeFunc == null)
-                ThrowRuntimeException($"{opCode} without nativeFunc encountered. This is not allowed");
-
-            
-            //TODO natives need to declare their return count, same as langugae chunks, then we don't need special handling
-            var argCount = CurrentFrameStackValues;
-            _currentCallFrame.ReturnStart = (byte)StackCount;
-            var res = _currentCallFrame.nativeFunc.Invoke(this, argCount);
-            
-            if (res == NativeCallResult.SuccessfulExpression)
-            {
-                if (_currentCallFrame.ReturnStart != StackCount)
-                    ReturnFromMark(); 
-                else
-                    ReturnOneValue(Value.Null());
-            }
-            else if (res == NativeCallResult.SuccessfulStatement)
-            {
-                PopFrameAndDiscard();
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSwapOp()
         {
             //pop2
@@ -950,12 +913,40 @@ namespace ULox
         {
             var origCallFrameCount = _callFrames.Count;
             var wantsToYieldOnReturn = _currentCallFrame.YieldOnReturn;
+
+            ProcessReturns();
+
+            return _callFrames.Count == 0
+                || (_callFrames.Count < origCallFrameCount && wantsToYieldOnReturn);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoNativeCall(OpCode opCode)
+        {
+            if (_currentCallFrame.nativeFunc == null)
+                ThrowRuntimeException($"{opCode} without nativeFunc encountered. This is not allowed");
             
-            _returnStack.Reset();
-            if (_currentChunk.ReturnCount != 0)
+            var argCount = CurrentFrameStackValues;
+            var res = _currentCallFrame.nativeFunc.Invoke(this, argCount);
+
+            if (res == NativeCallResult.SuccessfulExpression)
             {
-                var returnStart = _currentCallFrame.StackStart + _currentChunk.Arity + 1;
-                for (int i = 0; i < _currentChunk.ReturnCount; i++)
+                ProcessReturns();
+            }
+            else if (res == NativeCallResult.SuccessfulStatement)
+            {
+                PopFrameAndDiscard();
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void ProcessReturns()
+        {
+            _returnStack.Reset();
+            if (_currentCallFrame.ReturnCount != 0)
+            {
+                var returnStart = _currentCallFrame.StackStart + _currentCallFrame.ArgCount + 1;
+                for (int i = 0; i < _currentCallFrame.ReturnCount; i++)
                 {
                     _returnStack.Push(_valueStack[returnStart + i]);
                 }
@@ -965,26 +956,15 @@ namespace ULox
                 _returnStack.Push(ValueStack[_currentCallFrame.StackStart]);
             }
             FinishReturnOp();
-
-            return _callFrames.Count == 0
-                || (_callFrames.Count < origCallFrameCount && wantsToYieldOnReturn);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMultiVarOp(Chunk chunk, bool start)
         {
             if (start)
-                _currentCallFrame.ReturnStart = (byte)StackCount;
+                _currentCallFrame.MultiAssignStart = (byte)StackCount;
             else
                 ProcessStackForMultiAssign();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReturnOneValue(Value top)
-        {
-            _returnStack.Reset();
-            _returnStack.Push(top);
-            FinishReturnOp();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -994,21 +974,6 @@ namespace ULox
 
             PopFrameAndDiscard();
             TransferReturnToStack();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ReturnFromMark()
-        {
-            var returnStart = _currentCallFrame.ReturnStart;
-            _returnStack.Reset();
-            for (int i = returnStart; i < StackCount; i++)
-            {
-                _returnStack.Push(_valueStack[i]);
-            }
-
-            DiscardPop(StackCount - returnStart);
-
-            FinishReturnOp();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1039,7 +1004,7 @@ namespace ULox
         private void ProcessStackForMultiAssign()
         {
             _returnStack.Reset();
-            while (_valueStack.Count > _currentCallFrame.ReturnStart)
+            while (_valueStack.Count > _currentCallFrame.MultiAssignStart)
                 _returnStack.Push(Pop());
 
             for (int i = 0; i < _returnStack.Count; i++)
@@ -1089,12 +1054,12 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void PushCallFrameFromValue(Value callee, int argCount)
+        public void PushCallFrameFromValue(Value callee, byte argCount)
         {
             switch (callee.type)
             {
             case ValueType.NativeFunction:
-                PushFrameCallNative(callee.val.asNativeFunc, argCount);
+                PushFrameCallNative(callee.val.asNativeFunc, argCount, (byte)callee.val.asDouble);
                 break;
 
             case ValueType.Closure:
@@ -1120,7 +1085,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallCombinedClosures(Value callee, int argCount)
+        private void CallCombinedClosures(Value callee, byte argCount)
         {
             var combinedClosures = callee.val.asCombined;
             var stackCopyStartIndex = _valueStack.Count - argCount - 1;
@@ -1134,7 +1099,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Call(ClosureInternal closureInternal, int argCount)
+        private void Call(ClosureInternal closureInternal, byte argCount)
         {
             if (argCount != closureInternal.chunk.Arity)
                 ThrowRuntimeException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
@@ -1145,12 +1110,14 @@ namespace ULox
                 for (int i = 0; i < argCount; i++)
                     ValidatePureArg(i, closureInternal);
             }
-            
-            var stackStart = (byte)System.Math.Max(0,_valueStack.Count - argCount - 1);
+
+            var stackStart = (byte)System.Math.Max(0, _valueStack.Count - argCount - 1);
             PushNewCallframe(new CallFrame()
             {
                 StackStart = stackStart,
-                Closure = closureInternal
+                Closure = closureInternal,
+                ArgCount = argCount,
+                ReturnCount = closureInternal.chunk.ReturnCount
             });
         }
 
@@ -1163,20 +1130,22 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PushFrameCallNative(NativeCallDelegate nativeCallDel, int argCount)
+        private void PushFrameCallNative(CallFrame.NativeCallDelegate nativeCallDel, byte argCount, byte returnCount)
         {
-            PushFrameCallNativeWithFixedStackStart(nativeCallDel, (byte)(_valueStack.Count - argCount - 1));
+            PushFrameCallNativeWithFixedStackStart(nativeCallDel, (byte)(_valueStack.Count - argCount - 1), argCount, returnCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PushFrameCallNativeWithFixedStackStart(NativeCallDelegate nativeCallDel, byte stackStart)
+        private void PushFrameCallNativeWithFixedStackStart(CallFrame.NativeCallDelegate nativeCallDel, byte stackStart, byte argCount, byte returnCount)
         {
             PushNewCallframe(new CallFrame()
             {
                 StackStart = stackStart,
                 Closure = NativeCallClosure,
                 nativeFunc = nativeCallDel,
-                InstructionPointer = 0
+                InstructionPointer = 0,
+                ArgCount = argCount,
+                ReturnCount = returnCount,
             });
         }
 
@@ -1412,14 +1381,14 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallMethod(BoundMethod asBoundMethod, int argCount)
+        private void CallMethod(BoundMethod asBoundMethod, byte argCount)
         {
             _valueStack[_valueStack.Count - 1 - argCount] = asBoundMethod.Receiver;
             Call(asBoundMethod.Method, argCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CreateInstance(UserTypeInternal asClass, int argCount)
+        private void CreateInstance(UserTypeInternal asClass, byte argCount)
         {
             var instInternal = asClass.MakeInstance();
             var inst = Value.New(instInternal);
@@ -1429,13 +1398,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InitNewInstance(UserTypeInternal klass, int argCount, Value inst)
+        private void InitNewInstance(UserTypeInternal klass, byte argCount, Value inst)
         {
             var stackCount = _valueStack.Count;
             var instLocOnStack = (byte)(stackCount - argCount - 1);
 
             DuplicateStackValuesNew(instLocOnStack, argCount);
-            PushFrameCallNativeWithFixedStackStart(ClassFinishCreation, instLocOnStack);
+            PushFrameCallNativeWithFixedStackStart(ClassFinishCreation, instLocOnStack, argCount, 1);
 
             if (!klass.Initialiser.IsNull())
             {
@@ -1447,7 +1416,7 @@ namespace ULox
                     klass.Initialiser.val.asClosure.chunk.Arity > 0)
                 {
                     DuplicateStackValuesNew(instLocOnStack, argCount);
-                    PushFrameCallNative(CopyMatchingParamsToFields, argCount);
+                    PushFrameCallNative(CopyMatchingParamsToFields, argCount, 1);
                 }
             }
             else if (argCount != 0)
@@ -1504,7 +1473,7 @@ namespace ULox
             var instVal = vm.GetArg(0);
             var inst = instVal.val.asInstance;
             inst.FromUserType.FinishCreation(inst);
-            vm.PushReturn(instVal);
+            vm.SetNativeReturn(0, instVal);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -1567,6 +1536,8 @@ namespace ULox
             {
                 Closure = opClosure,
                 StackStart = (byte)(_valueStack.Count - 1 - arity),
+                ArgCount = arity,
+                ReturnCount = 1,
             });
         }
 

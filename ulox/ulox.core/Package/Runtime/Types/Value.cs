@@ -149,9 +149,11 @@ namespace ULox
             => New(ValueType.Chunk, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(Vm.NativeCallDelegate val)
-            => New(ValueType.NativeFunction, new ValueTypeDataUnion() { asNativeFunc = val });
-
+        public static Value New(CallFrame.NativeCallDelegate val, byte returnCount = 1)
+        { 
+            return New(ValueType.NativeFunction, new ValueTypeDataUnion() { asNativeFunc = val , asDouble = returnCount});
+        }
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(ClosureInternal val)
         {

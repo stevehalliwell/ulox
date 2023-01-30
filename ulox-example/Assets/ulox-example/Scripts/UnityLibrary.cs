@@ -46,14 +46,14 @@ namespace ULox
         {
             var min = vm.GetArg(1).val.asDouble;
             var max = vm.GetArg(2).val.asDouble;
-            vm.PushReturn(Value.New(Random.Range((float)min, (float)max)));
+            vm.SetNativeReturn(0,Value.New(Random.Range((float)min, (float)max)));
             return NativeCallResult.SuccessfulExpression;
         }
 
         private NativeCallResult GetKey(Vm vm, int argCount)
         {
             var keyName = vm.GetArg(1).val.asString;
-            vm.PushReturn(Value.New(Input.GetKey(keyName.String)));
+            vm.SetNativeReturn(0, Value.New(Input.GetKey(keyName.String)));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -69,7 +69,7 @@ namespace ULox
             var go = vm.GetArg(1).val.asObject as GameObject;
             var rb2d = go.GetComponent<Rigidbody2D>();
             if (rb2d != null)
-                vm.PushReturn(Value.Object(rb2d));
+                vm.SetNativeReturn(0, Value.Object(rb2d));
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -123,7 +123,7 @@ namespace ULox
         private NativeCallResult GetGameObjectTag(Vm vm, int argCount)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
-            vm.PushReturn(Value.New(go.tag));
+            vm.SetNativeReturn(0, Value.New(go.tag));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -178,7 +178,7 @@ namespace ULox
             var targetName = vm.GetArg(1).val.asString.String;
             var loc = _availablePrefabs.Find(x => x.name == targetName);
             if (loc != null)
-                vm.PushReturn(Value.Object(Object.Instantiate(loc)));
+                vm.SetNativeReturn(0, Value.Object(Object.Instantiate(loc)));
             else
                 Debug.LogError($"Unable to find prefab of name '{targetName}'.");
 

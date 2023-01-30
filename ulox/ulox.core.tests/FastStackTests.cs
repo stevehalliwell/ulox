@@ -113,5 +113,18 @@ namespace ulox.core.tests
             Assert.AreEqual(2, fastStack.Count);
             Assert.AreSame(givenObject, fastStack[0]);
         }
+
+        [Test]
+        public void Grow_WhenPushTwiceStartingCapByGrowFactor_ShouldNotThrow()
+        {
+            var fastStack = new FastStack<object>();
+
+            for (int i = 0; i < FastStack<object>.StartingSize * FastStack<object>.GrowFactor * 2; i++)
+            {
+                fastStack.Push(new object());
+            }
+
+            Assert.Less(FastStack<object>.StartingSize, fastStack.Count);
+        }
     }
 }

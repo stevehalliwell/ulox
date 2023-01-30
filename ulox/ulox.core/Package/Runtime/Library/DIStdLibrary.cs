@@ -19,7 +19,7 @@ namespace ULox
         private static NativeCallResult Count(Vm vm, int argCount)
         {
             var di = FromVm(vm);
-            vm.PushReturn(Value.New(di.Count));
+            vm.SetNativeReturn(0, Value.New(di.Count));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -27,7 +27,7 @@ namespace ULox
         private static NativeCallResult GenerateDump(Vm vm, int argCount)
         {
             var di = FromVm(vm);
-            vm.PushReturn(Value.New(di.GenerateDump()));
+            vm.SetNativeReturn(0, Value.New(di.GenerateDump()));
             return NativeCallResult.SuccessfulExpression;
         }
 

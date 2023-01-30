@@ -398,9 +398,28 @@ Func();");
         }
 
         [Test]
+        public void Engine_Compile_MinorRecursive()
+        {
+            testEngine.Run(@"
+fun Recur(a)
+{
+    if(a > 0)
+    {
+        print (a);
+        Recur(a-1);
+    }
+}
+
+Recur(3);");
+
+            Assert.AreEqual("321", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Compile_Recursive()
         {
-            testEngine.Run(@"fun Recur(a)
+            testEngine.Run(@"
+fun Recur(a)
 {
     if(a > 0)
     {
@@ -412,6 +431,24 @@ Func();");
 Recur(5);");
 
             Assert.AreEqual("54321", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Compile_MajorRecursive()
+        {
+            testEngine.Run(@"
+fun Recur(a)
+{
+    if(a > 0)
+    {
+        print (a);
+        Recur(a-1);
+    }
+}
+
+Recur(15);");
+
+            Assert.AreEqual("151413121110987654321", testEngine.InterpreterResult);
         }
 
         [Test]

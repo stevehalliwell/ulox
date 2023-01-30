@@ -48,7 +48,7 @@ namespace ULox
 
         private NativeCallResult Count(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(GetArg0NativeListInstance(vm).Count));
+            vm.SetNativeReturn(0, Value.New(GetArg0NativeListInstance(vm).Count));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -106,7 +106,7 @@ namespace ULox
             var inst = vm.GetArg(0);
             var nativeListinst = inst.val.asInstance as NativeListInstance;
             while (nativeListinst.List.Count < size) nativeListinst.List.Add(Value.Copy(val));
-            vm.PushReturn(inst);
+            vm.SetNativeReturn(0, inst);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -117,7 +117,7 @@ namespace ULox
             var inst = vm.GetArg(0);
             var nativeListinst = inst.val.asInstance as NativeListInstance;
             while (nativeListinst.List.Count > size) nativeListinst.List.RemoveAt(nativeListinst.List.Count-1);
-            vm.PushReturn(inst);
+            vm.SetNativeReturn(0, inst);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -140,7 +140,7 @@ namespace ULox
                 retvalList.Add(vm.Pop());
             }
 
-            vm.PushReturn(Value.New(retval));
+            vm.SetNativeReturn(0, Value.New(retval));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -161,7 +161,7 @@ namespace ULox
                 runningVal = vm.Pop();
             }
 
-            vm.PushReturn(runningVal);
+            vm.SetNativeReturn(0, runningVal);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -182,7 +182,7 @@ namespace ULox
                 runningVal = vm.Pop();
             }
 
-            vm.PushReturn(runningVal);
+            vm.SetNativeReturn(0, runningVal);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -210,7 +210,7 @@ namespace ULox
                     retvalList.Add(testVal);
             }
 
-            vm.PushReturn(Value.New(retval));
+            vm.SetNativeReturn(0, Value.New(retval));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -245,7 +245,7 @@ namespace ULox
                 retvalList.Add(list[orderByArr[i].index]);
             }
 
-            vm.PushReturn(Value.New(retval));
+            vm.SetNativeReturn(0, Value.New(retval));
             return NativeCallResult.SuccessfulExpression;
         }
         
@@ -299,12 +299,12 @@ namespace ULox
 
                 if (!filterRes.IsFalsey())
                 {
-                    vm.PushReturn(testVal);
+                    vm.SetNativeReturn(0, testVal);
                     return NativeCallResult.SuccessfulExpression;
                 }
             }
 
-            vm.PushReturn(Value.Null());
+            vm.SetNativeReturn(0, Value.Null());
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -330,7 +330,7 @@ namespace ULox
                 retvalList.Add(result);
             }
 
-            vm.PushReturn(Value.New(retval));
+            vm.SetNativeReturn(0, Value.New(retval));
             return NativeCallResult.SuccessfulExpression;
         }
 

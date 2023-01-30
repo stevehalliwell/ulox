@@ -23,7 +23,7 @@
             var inst = obj.val.asInstance;
             var b = inst.HasField(fieldName.val.asString);
 
-            vm.PushReturn(Value.New(b));
+            vm.SetNativeReturn(0, Value.New(b));
             return NativeCallResult.SuccessfulExpression;
         }
 

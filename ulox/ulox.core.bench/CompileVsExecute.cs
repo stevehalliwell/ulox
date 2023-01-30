@@ -12,7 +12,7 @@ class Foo { var b = 2, c, d = ""Hello""; }
 class Bar
 {
     var e = 3, f, g = ""World"";
-    Meth(){return this.e;}
+    Meth(){retval = this.e;}
 }
 
 class FooBar

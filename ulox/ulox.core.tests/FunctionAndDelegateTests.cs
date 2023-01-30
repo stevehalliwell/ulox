@@ -62,11 +62,11 @@ DelInvoker(del,1,2);
         public void Delegate_WhenPassedAsAnArgAndInvokedAndReturning_ShouldMatchExpected()
         {
             testEngine.Run(@"
-fun Del(a,b) {return a+b;}
+fun Del(a,b) {retval = a+b;}
 
 fun DelInvoker(d, lhs, rhs) 
 {
-    return d(lhs,rhs);
+    retval = d(lhs,rhs);
 }
 
 var del = Del;
@@ -84,12 +84,12 @@ print(res);
             testEngine.Run(@"
 fun Meth(lhs,rhs)
 {
-    return lhs+rhs;
+    retval = lhs+rhs;
 }
 
 fun Foo(a,b,c)
 {
-    return a(b,c);
+    retval = a(b,c);
 }
 
 var res = Foo(Meth,1,2);
@@ -146,6 +146,114 @@ foo.bar(1);
 ");
 
             Assert.AreEqual("Identifiier 'print' could not be found locally in local function 'anonymous' in chunk 'anonymous(test)' at 5:10 'print'.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenNamedReturns_ShouldPass()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c)
+{
+    c = a+b;
+    retval = c;
+}
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenNamedReturnsC_ShouldPrint3()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c)
+{
+    c = a+b;
+}
+
+var res = T(1,2);
+print(res);
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenNamedReturnsImplicit_ShouldPrint3()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c)
+{
+    c = a+b;
+    return;
+}
+
+var res = T(1,2);
+print(res);
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenMultiNamedReturnsImplicit_ShouldPrint3AndNeg1()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c,d)
+{
+    c = a+b;
+    d = a-b;
+    return;
+}
+
+var (add, sub)= T(1,2);
+print(add);
+print(sub);
+");
+
+            Assert.AreEqual("3-1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenMultiNamedOmittedReturns_ShouldPrint3AndNeg1()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c,d)
+{
+    c = a+b;
+    d = a-b;
+}
+
+var (add, sub) = T(1,2);
+print(add);
+print(sub);
+");
+
+            Assert.AreEqual("3-1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Fun_WhenManyMultiNamedOmittedReturns_ShouldPrintMany()
+        {
+            testEngine.Run(@"
+fun T(a,b) (c,d,e,f,g)
+{
+    c = a+b;
+    d = a-b;
+    e = a*b;
+    f = a/b;
+    g = a%b;
+}
+
+var (add, sub, mul, div, mod) = T(1,2);
+print(add);
+print(sub);
+print(mul);
+print(div);
+print(mod);
+");
+
+            Assert.AreEqual("3-120.51", testEngine.InterpreterResult);
         }
     }
 }

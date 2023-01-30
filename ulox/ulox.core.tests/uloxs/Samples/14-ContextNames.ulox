@@ -4,7 +4,7 @@
 class AClass
 {
     var n = cname;  // name of containing class
-    Method(){return fname;} // name of containing function
+    Method(){retval = fname;} // name of containing function
 }
 
 test ContextNames

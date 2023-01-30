@@ -17,22 +17,22 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 fun addone(val)
 {
-    return val + 1;
+    retval = val + 1;
 }
 
 fun isEven(val)
 {
-    return ((val % 2) != 0);
+    retval = ((val % 2) != 0);
 }
 
 var arr = MakeTestArray();
@@ -71,7 +71,7 @@ fun reduce(arr, fn)
     {
         res = fn(arr[i], res);
     }
-    return res;
+    retval = res;
 }
 
 fun fold(arr, fn, initVal)
@@ -82,7 +82,7 @@ fun fold(arr, fn, initVal)
     {
         res = fn(arr[i], res);
     }
-    return res;
+    retval = res;
 }
 
 fun map(arr, fn)
@@ -94,7 +94,7 @@ fun map(arr, fn)
     {
         res[i] = fn(arr[i]);
     }
-    return res;
+    retval = res;
 }
 
 fun filter(arr, fn)
@@ -107,7 +107,7 @@ fun filter(arr, fn)
         if(fn(val))
             res.Add(val);
     }
-    return res;
+    retval = res;
 }
 
 fun MakeTestArray()
@@ -119,12 +119,12 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 
@@ -153,7 +153,7 @@ test FunctionalCollectionTests
         var arr = MakeTestArray();
         fun addone(val)
         {
-            return val + 1;
+            retval = val + 1;
         }
 
         var result = map(arr, addone);
@@ -167,7 +167,7 @@ test FunctionalCollectionTests
         var arr = MakeTestArray();
         fun isEven(val)
         {
-            return ((val % 2) != 0);
+            retval = ((val % 2) != 0);
         }
 
         var result = filter(arr, isEven);

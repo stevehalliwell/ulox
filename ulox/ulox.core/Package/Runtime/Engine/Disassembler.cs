@@ -141,6 +141,7 @@ namespace ULox
             case OpCode.INJECT:
                 DoConstant(packet);
                 break;
+            case OpCode.MULTI_VAR:
             case OpCode.PUSH_BOOL:
                 stringBuilder.Append($"({packet.BoolValue})");
                 break;
@@ -176,9 +177,6 @@ namespace ULox
                 }
             }
             break;
-            case OpCode.RETURN:
-                stringBuilder.Append($"({packet.ReturnMode})");
-                break;
             case OpCode.VALIDATE:
                 stringBuilder.Append($"({packet.ValidateOp})");
                 break;

@@ -5,42 +5,42 @@ class Vec2
 
     _add(lhs,rhs)
     {
-        return Vec2(lhs.x + rhs.x, lhs.y + rhs.y);
+        retval = Vec2(lhs.x + rhs.x, lhs.y + rhs.y);
     }
 
     _sub(lhs,rhs)
     {
-        return Vec2(lhs.x - rhs.x, lhs.y - rhs.y);
+        retval = Vec2(lhs.x - rhs.x, lhs.y - rhs.y);
     }
 
     _mul(lhs,rhs)
     {
-        return Vec2(lhs.x * rhs.x, lhs.y * rhs.y);
+        retval = Vec2(lhs.x * rhs.x, lhs.y * rhs.y);
     }
 
     _div(lhs,rhs)
     {
-        return Vec2(lhs.x / rhs.x, lhs.y / rhs.y);
+        retval = Vec2(lhs.x / rhs.x, lhs.y / rhs.y);
     }
 
     _mod(lhs,rhs)
     {
-        return Vec2(lhs.x % rhs.x, lhs.y % rhs.y);
+        retval = Vec2(lhs.x % rhs.x, lhs.y % rhs.y);
     }
 
     _eq(lhs,rhs)
     {
-        return lhs.x == rhs.x and lhs.y == rhs.y;
+        retval = (lhs.x == rhs.x and lhs.y == rhs.y);
     }
 
     _ls(lhs,rhs)
     {
-        return !(lhs.x > rhs.x and lhs.y > rhs.y);
+        retval = !(lhs.x > rhs.x and lhs.y > rhs.y);
     }
 
     _gr(lhs,rhs)
     {
-        return !lhs._ls(lhs,rhs);
+        retval = !(lhs._ls(lhs,rhs));
     }
 }
 
@@ -52,24 +52,35 @@ class IndexableClass
     _gi(self, index)
     {
         if(index == "x")
-            return self.x;
+        {
+            retval = self.x;
+            return;
+        }
         if(index == "y")
-            return self.y;
-
-        return null;
+        {
+            retval = self.y;
+            return;
+        }
+        retval = null;
     }
 
     _si(self, index, value)
     {
         if(index == "x")
+        {
             self.x = value;
+            return;
+        }
         if(index == "y")
+        {    
             self.y = value;
+            return;
+        }
     }
 
     _co(self)
     {
-	    return 2;
+        retval = 2;
     }
 }
 

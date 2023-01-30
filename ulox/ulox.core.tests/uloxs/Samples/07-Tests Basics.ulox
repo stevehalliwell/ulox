@@ -1,5 +1,5 @@
-fun Add(a,b) {return a+b;}
-fun Sub(a,b) {return a-b;}
+fun Add(a,b) {retval = a+b;}
+fun Sub(a,b) {retval = a-b;}
 
 // built in testing, test defines a set of tests
 test SimpleTest

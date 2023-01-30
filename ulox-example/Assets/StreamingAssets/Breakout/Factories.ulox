@@ -3,8 +3,7 @@ register WallFactory fun (pos, scale)
     var newWall = CreateFromPrefab("Wall");
     SetGameObjectPosition(newWall, pos.x, pos.y,0);
     SetGameObjectScale(newWall, scale.x, scale.y,1);
-    var retval = GameObjectHolder(newWall);
-    return retval;
+    retval = GameObjectHolder(newWall);
 };
 
 register GutterFactory fun (pos, scale)
@@ -12,7 +11,7 @@ register GutterFactory fun (pos, scale)
     var gutter = inject WallFactory (pos, scale);
     SetSpriteColour(gutter.go, 0,0,0,0);
     SetGameObjectTag(gutter.go, "Gutter");
-    return gutter;
+    retval = gutter;
 };
 
 register BrickFactory fun (pos, hitCount)
@@ -23,7 +22,7 @@ register BrickFactory fun (pos, hitCount)
     SetCollisionCallback(go, "Ball", brick.OnHitByBall);
     SetGameObjectTag(go, "Brick");
     brick.SyncColour();
-    return brick;
+    retval = brick;
 };
 
 register BallFactory fun (pos)
@@ -37,7 +36,7 @@ register BallFactory fun (pos)
     
     var ball = Ball(pos, go, rb);
     SetCollisionCallback(ball.go, "Gutter", ball.OnHitGutter);
-    return ball;
+    retval = ball;
 };
 
 register PaddleFactory fun(pos, wallDist)
@@ -46,5 +45,5 @@ register PaddleFactory fun(pos, wallDist)
     SetGameObjectPosition(go, pos.x, pos.y, 0);
     var paddle = Paddle(go, pos, wallDist);
     SetGameObjectTag(go, "Paddle");
-    return paddle;
+    retval = paddle;
 };

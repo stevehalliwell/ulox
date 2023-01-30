@@ -23,7 +23,7 @@ namespace ULox
             var walker = new ValueHeirarchyWalker(jsonWriter);
             walker.Walk(obj);
             var result = jsonWriter.GetString();
-            vm.PushReturn(Value.New(result));
+            vm.SetNativeReturn(0, Value.New(result));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -35,7 +35,7 @@ namespace ULox
             var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
             creator.Process();
             var obj = creator.Finish();
-            vm.PushReturn(obj);
+            vm.SetNativeReturn(0, obj);
             return NativeCallResult.SuccessfulExpression;
         }
     }

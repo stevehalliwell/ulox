@@ -5,6 +5,6 @@ class Foo
 {
 }
 
-register Foo fun () { return Foo(); };
+register Foo fun () { retval = Foo(); };
 
 var createdFoo = inject Foo();

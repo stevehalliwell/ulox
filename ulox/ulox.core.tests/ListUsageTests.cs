@@ -241,7 +241,7 @@ print(arr[2]);
         {
             testEngine.Run(@"
 
-fun GetThree {return 3;}
+fun GetThree {retval = 3;}
 
 var arr = [1,(1+1),GetThree()];
 print(arr[0]);
@@ -275,7 +275,7 @@ print(list.Count());
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 print(list.Reduce(accum));
@@ -295,7 +295,7 @@ print(list.Count());
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 print(list.Reduce(accum));
@@ -327,7 +327,7 @@ print(list.Count());
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 print(list.Reduce(accum));

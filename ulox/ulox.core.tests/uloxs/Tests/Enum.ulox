@@ -28,7 +28,7 @@ test EnumTests
 
     testcase EnumFind
     {
-        var found = Foo.All.First(fun (x) {return x.Value == 0;});
+        var found = Foo.All.First(fun (x) {retval = x.Value == 0;});
 
         expect found == Foo.A;
     }

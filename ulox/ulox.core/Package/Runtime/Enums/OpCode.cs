@@ -46,6 +46,8 @@
         RETURN,
         YIELD,
 
+        MULTI_VAR,
+
         THROW,
 
         VALIDATE,

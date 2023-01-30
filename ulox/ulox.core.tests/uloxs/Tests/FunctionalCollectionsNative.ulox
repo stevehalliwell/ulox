@@ -7,12 +7,12 @@ fun MakeTestArray()
         arr.Add(i);
     }
 
-    return arr;
+    retval = arr;
 }
 
 fun accum(cur, running)
 {
-    return running + cur;
+    retval = running + cur;
 }
 
 test FunctionalCollectionNativeTests
@@ -40,7 +40,7 @@ test FunctionalCollectionNativeTests
         var arr = MakeTestArray();
         fun addone(val)
         {
-            return val + 1;
+            retval = val + 1;
         }
 
         var result = arr.Map(addone);
@@ -54,7 +54,7 @@ test FunctionalCollectionNativeTests
         var arr = MakeTestArray();
         fun isEven(val)
         {
-            return ((val % 2) != 0);
+            retval = ((val % 2) != 0);
         }
 
         var result = arr.Filter(isEven);

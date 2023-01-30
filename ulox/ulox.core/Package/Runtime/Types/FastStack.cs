@@ -6,9 +6,9 @@ namespace ULox
 {
     public sealed class FastStack<T> : IEnumerable<T>
     {
-        private const int StartingSize = 16;
-        private const int GrowFactor = 2;
-        private const int StartingBack = -1;
+        public const int StartingSize = 32;
+        public const int GrowFactor = 2;
+        public const int StartingBack = -1;
         private T[] _array = new T[StartingSize];
         private int _back = StartingBack;
 
@@ -29,7 +29,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Push(T val)
         {
-            if (_back >= _array.Length - 1)
+            if (_back >= _array.Length - 2)
                 System.Array.Resize(ref _array, _array.Length * GrowFactor);
 
             _array[++_back] = val;

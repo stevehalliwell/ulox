@@ -14,7 +14,7 @@ obj.d = d;
 print(obj.d);
 
 obj.val = "expected";
-fun Method(self){return self.val;}
+fun Method(self){retval = self.val;}
 obj.Meth = Method;
 
 print(obj.Meth(obj));

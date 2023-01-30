@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.TestPlatform.CrossPlatEngine;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using ULox;
 
 namespace ulox.core.tests
@@ -17,7 +16,7 @@ namespace ulox.core.tests
             chunk.WritePacket(new ByteCodePacket(OpCode.ADD), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.MULTIPLY), 1);
-            chunk.WritePacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One), 2);
+            chunk.WritePacket(new ByteCodePacket(OpCode.RETURN), 2);
 
             return chunk;
         }
@@ -245,24 +244,10 @@ MyFunc();");
         }
 
         [Test]
-        public void Engine_Compile_NativeFunc_Call()
-        {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm, stack) =>
-            {
-                vm.PushReturn(Value.New("Native"));
-                return NativeCallResult.SuccessfulExpression;
-            }));
-
-            testEngine.Run(@"print (CallEmptyNative());");
-
-            Assert.AreEqual("Native", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Compile_Return()
         {
             testEngine.Run(@"
-fun A(){return 1;}
+fun A(){retval = 1;}
 
 print (A());");
 
@@ -323,9 +308,9 @@ DoIt();");
         public void Engine_Compile_Call_Mixed_Ops()
         {
             testEngine.Run(@"
-fun A(){return 2;}
-fun B(){return 3;}
-fun C(){return 10;}
+fun A(){retval = 2;}
+fun B(){retval = 3;}
+fun C(){retval = 10;}
 
 print (A()+B()*C());");
 
@@ -366,12 +351,14 @@ AddPrint(t2);
             testEngine.Run(@"
 fun A(v)
 {
+    retval = 2;
+    
     if(v > 5)
-        return 2;
-    return -1;
+        return;
+    retval = -1;
 }
-fun B(){return 3;}
-fun C(){return 10;}
+fun B(){retval = 3;}
+fun C(){retval = 10;}
 
 print( A(1)+B()*C());
 
@@ -411,9 +398,28 @@ Func();");
         }
 
         [Test]
+        public void Engine_Compile_MinorRecursive()
+        {
+            testEngine.Run(@"
+fun Recur(a)
+{
+    if(a > 0)
+    {
+        print (a);
+        Recur(a-1);
+    }
+}
+
+Recur(3);");
+
+            Assert.AreEqual("321", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Compile_Recursive()
         {
-            testEngine.Run(@"fun Recur(a)
+            testEngine.Run(@"
+fun Recur(a)
 {
     if(a > 0)
     {
@@ -425,6 +431,24 @@ Func();");
 Recur(5);");
 
             Assert.AreEqual("54321", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Compile_MajorRecursive()
+        {
+            testEngine.Run(@"
+fun Recur(a)
+{
+    if(a > 0)
+    {
+        print (a);
+        Recur(a-1);
+    }
+}
+
+Recur(15);");
+
+            Assert.AreEqual("151413121110987654321", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -460,18 +484,18 @@ fun outer() {
     }
 
     print (""create inner closure"");
-    return inner;
+    retval = inner;
   }
 
-  print (""return from outer"");
-  return middle;
+  print (""retval = from outer"");
+  retval = middle;
 }
 
 var mid = outer();
 var in = mid();
 in();");
 
-            Assert.AreEqual(@"return from outercreate inner closurevalue", testEngine.InterpreterResult);
+            Assert.AreEqual(@"retval = from outercreate inner closurevalue", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -533,7 +557,7 @@ fun makeCounter() {
     print (i);
   }
 
-  return count;
+  retval = count;
 }
 
 var c1 = makeCounter();
@@ -558,10 +582,10 @@ fun makeCounter()
     fun count()
     {
         i = i + 1;
-        return i;
+        retval = i;
     }
 
-    return count;
+    retval = count;
 }
 
 var c1 = makeCounter();
@@ -606,43 +630,11 @@ print(res);
         }
 
         [Test]
-        public void Engine_NativeFunc_Call_0Param_String()
-        {
-            NativeCallResult Func(Vm vm, int args)
-            {
-                vm.PushReturn(Value.New("Hello from native."));
-                return NativeCallResult.SuccessfulExpression;
-            }
-
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
-
-            testEngine.Run(@"print (Meth());");
-
-            Assert.AreEqual("Hello from native.", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_NativeFunc_Call_1Param_String()
-        {
-            NativeCallResult Func(Vm vm, int args)
-            {
-                vm.PushReturn(Value.New($"Hello, {vm.GetArg(1).val.asString}, I'm native."));
-                return NativeCallResult.SuccessfulExpression;
-            }
-
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func));
-
-            testEngine.Run(@"print (Meth(""Dad""));");
-
-            Assert.AreEqual("Hello, Dad, I'm native.", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_NestedCalls()
         {
             testEngine.Run(@"
-fun A(){return 7;}
-fun B(v){return 1+v;}
+fun A(){retval = 7;}
+fun B(v){retval = 1+v;}
 
 var res = B(A());
 print (res);
@@ -718,7 +710,7 @@ Assert.Throws(WillThrow);");
             testEngine.Run(@"
 fun T
 {
-    return 7;
+    retval = 7;
 }
 
 print(T());");
@@ -866,6 +858,7 @@ f(null,1);"
 
             Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'3' in chunk:'f(test:5)'.
 ===Stack===
+null
 1
 null
 <closure f upvals:0>

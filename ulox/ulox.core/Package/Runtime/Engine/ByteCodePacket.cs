@@ -66,7 +66,6 @@ namespace ULox
         }
 
         public OpCode OpCode => (OpCode)_opCode;
-        public ReturnMode ReturnMode => (ReturnMode)b1;
         public NativeType NativeType => (NativeType)b1;
         public ValidateOp ValidateOp => (ValidateOp)b1;
         public bool BoolValue => b1 != 0;
@@ -102,11 +101,6 @@ namespace ULox
             this.b1 = b1;
             this.b2 = b2;
             this.b3 = b3;
-        }
-
-        public ByteCodePacket(OpCode opCode, ReturnMode returnMode) : this(opCode)
-        {
-            b1 = (byte)returnMode;
         }
 
         public ByteCodePacket(OpCode opCode, NativeType nativeType) : this(opCode)

@@ -465,9 +465,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitReturn()
         {
-            PreEmptyReturnEmit();
-
-            EmitPacket(new ByteCodePacket(OpCode.RETURN, ReturnMode.One));
+            EmitPacket(new ByteCodePacket(OpCode.RETURN));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -518,19 +516,26 @@ namespace ULox
             PushCompilerState(name, functionType);
 
             BeginScope();
-            FunctionParamListOptional();
+            VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
+            var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
 
+
+            if (functionType == FunctionType.Init)
+            {
+                if (returnCount != 0)
+                    ThrowCompilerException("Init functions cannot specify named return vars.");
+            }
+            else if (returnCount == 0)
+            {
+                var retvalId = DeclareAndDefineCustomVariable("retval");
+                IncreaseReturn(retvalId);
+            }
+            
             // The body.
             TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             Block();
 
             EndFunction();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void FunctionParamListOptional()
-        {
-            VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -567,6 +572,14 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void IncreaseReturn(byte argNameConstant)
+        {
+            CurrentChunk.ReturnConstantIds.Add(argNameConstant);
+            if (CurrentChunk.ReturnCount > 255)
+                ThrowCompilerException($"Can't have more than 255 returns.");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EndFunction()
         {
             // Create the function object.
@@ -592,7 +605,7 @@ namespace ULox
             {
                 Declaration();
             }
-            
+
             TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after block.");
         }
 
@@ -613,12 +626,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DeclareAndDefineCustomVariable(string varName)
+        public byte DeclareAndDefineCustomVariable(string varName)
         {
             //do equiv of ParseVariable, DefineVariable
             CurrentCompilerState.DeclareVariableByName(this, varName);
             var id = AddCustomStringConstant(varName);
             DefineVariable(id);
+            return id;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -707,7 +721,7 @@ namespace ULox
                 compiler.EmitPacket(OpCode.EXPECT);
             }
             while (compiler.TokenIterator.Match(TokenType.COMMA));
-            
+
             compiler.ConsumeEndStatement();
         }
 

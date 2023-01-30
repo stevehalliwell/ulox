@@ -10,7 +10,7 @@ result = inject SimpleService;
 
 class ConcreteService 
 {
-    Meth(){return 1;}
+    Meth(){retval = 1;}
 }
 
 register Service ConcreteService();
@@ -18,7 +18,7 @@ register Service ConcreteService();
 class Dependent
 {
     var service = inject Service;
-    Get{return this.service.Meth();}
+    Get{retval = this.service.Meth();}
 }
 
 var dep = Dependent();

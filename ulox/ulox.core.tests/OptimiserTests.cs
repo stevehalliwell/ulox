@@ -19,7 +19,7 @@ namespace ulox.core.tests
             testEngine.Run("print (1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -30,7 +30,7 @@ label unused;
 print (1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -42,7 +42,7 @@ label unused;
 print (1+2);");
 
             Assert.AreEqual("33", testEngine.InterpreterResult);
-            Assert.AreEqual(14, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -56,7 +56,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -69,7 +69,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -81,7 +81,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(8, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
         
         [Test]

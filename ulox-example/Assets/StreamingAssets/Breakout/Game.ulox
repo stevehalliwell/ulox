@@ -11,7 +11,7 @@ fun SetupGame()
 
 fun Update()
 {
-    if(GetKey("escape")){ReloadScene();}
+    if(GetKey("escape")){ReloadScene(); return;}
 
     breakout.UpdateGame(dt);
     breakout.UpdateOutputText();

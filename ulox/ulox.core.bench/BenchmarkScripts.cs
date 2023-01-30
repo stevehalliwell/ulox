@@ -70,9 +70,10 @@ var numBallsToSpawn = 200;
 var ballName = ""BouncyBall"";
 var balls = [];
 
-fun RandVec2()
+fun RandVec2() (x,y)
 {
-	return (-3,3);
+	x=-3;
+	y=3;
 }
 
 class Ball

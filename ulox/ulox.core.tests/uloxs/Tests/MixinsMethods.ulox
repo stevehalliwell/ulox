@@ -1,6 +1,6 @@
 class MixMe
 {
-    Speak(){return cname;}
+    Speak(){retval = cname;}
     Modify(obj){obj.text = obj.text + cname;}
 }
 

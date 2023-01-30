@@ -4,52 +4,58 @@ fun MakeVec2(x,y)
 
     fun _add(lhs,rhs)
     {
-        return MakeVec2(lhs.x + rhs.x, lhs.y + rhs.y);
+        retval = MakeVec2(lhs.x + rhs.x, lhs.y + rhs.y);
     }
 
     fun _sub(lhs,rhs)
     {
-        return MakeVec2(lhs.x - rhs.x, lhs.y - rhs.y);
+        retval = MakeVec2(lhs.x - rhs.x, lhs.y - rhs.y);
     }
 
     fun _mul(lhs,rhs)
     {
-        return MakeVec2(lhs.x * rhs.x, lhs.y * rhs.y);
+        retval = MakeVec2(lhs.x * rhs.x, lhs.y * rhs.y);
     }
 
     fun _div(lhs,rhs)
     {
-        return MakeVec2(lhs.x / rhs.x, lhs.y / rhs.y);
+        retval = MakeVec2(lhs.x / rhs.x, lhs.y / rhs.y);
     }
 
     fun _mod(lhs,rhs)
     {
-        return MakeVec2(lhs.x % rhs.x, lhs.y % rhs.y);
+        retval = MakeVec2(lhs.x % rhs.x, lhs.y % rhs.y);
     }
 
     fun _eq(lhs,rhs)
     {
-        return lhs.x == rhs.x and lhs.y == rhs.y;
+        retval = (lhs.x == rhs.x and lhs.y == rhs.y);
     }
 
     fun _ls(lhs,rhs)
     {
-        return !(lhs.x > rhs.x and lhs.y > rhs.y);
+        retval = !(lhs.x > rhs.x and lhs.y > rhs.y);
     }
 
     fun _gr(lhs,rhs)
     {
-        return !_ls(lhs,rhs);
+        retval = !(_ls(lhs,rhs));
     }
 
     fun _gi(self, index)
     {
         if(index == "x")
-            return self.x;
+        {
+            retval = self.x;
+            return;
+        }
         if(index == "y")
-            return self.y;
+        {
+            retval = self.y;
+            return;
+        }
 
-        return null;
+        retval =null;
     }
 
     fun _si(self, index, value)
@@ -75,7 +81,7 @@ fun MakeVec2(x,y)
     
     res.x = x;
     res.y = y;
-    return res;
+    retval =res;
 }
 
 test OperatorOverloading

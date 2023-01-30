@@ -54,7 +54,7 @@ print(innerVM.GetGlobal(""globalOut""));");
             testEngine.Run(@"
 fun InnerMain()
 {
-    return 10;
+    retval = 10;
 }
 
 var innerVM = VM();

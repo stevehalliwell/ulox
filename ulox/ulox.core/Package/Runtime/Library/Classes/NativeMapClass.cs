@@ -35,7 +35,7 @@ namespace ULox
 
         private NativeCallResult Count(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(GetArg0NativeMapInstance(vm).Count));
+            vm.SetNativeReturn(0, Value.New(GetArg0NativeMapInstance(vm).Count));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -48,12 +48,12 @@ namespace ULox
 
             if (map.ContainsKey(key))
             {
-                vm.PushReturn(Value.New(false));
+                vm.SetNativeReturn(0, Value.New(false));
                 return NativeCallResult.SuccessfulExpression;
             }
 
             map[key] = val;
-            vm.PushReturn(Value.New(true));
+            vm.SetNativeReturn(0, Value.New(true));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -64,7 +64,7 @@ namespace ULox
 
             if (map.TryGetValue(key, out var val))
             {
-                vm.PushReturn(val);
+                vm.SetNativeReturn(0, val);
                 return NativeCallResult.SuccessfulExpression;
             }
             
@@ -78,11 +78,11 @@ namespace ULox
 
             if (map.TryGetValue(key, out var val))
             {
-                vm.PushReturn(val);
+                vm.SetNativeReturn(0, val);
                 return NativeCallResult.SuccessfulExpression;
             }
 
-            vm.PushReturn(vm.GetArg(2));
+            vm.SetNativeReturn(0, vm.GetArg(2));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -95,12 +95,12 @@ namespace ULox
 
             if (!map.ContainsKey(key))
             {
-                vm.PushReturn(Value.New(false));
+                vm.SetNativeReturn(0, Value.New(false));
                 return NativeCallResult.SuccessfulExpression;
             }
 
             map[key] = val;
-            vm.PushReturn(Value.New(true));
+            vm.SetNativeReturn(0, Value.New(true));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -110,7 +110,7 @@ namespace ULox
             var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
 
-            vm.PushReturn(Value.New(map.Remove(key)));
+            vm.SetNativeReturn(0, Value.New(map.Remove(key)));
             return NativeCallResult.SuccessfulExpression;
         }
 

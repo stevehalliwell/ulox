@@ -1,0 +1,15 @@
+//Multiple values can be returned from functions
+
+fun MultiReturn() (a,b,c)
+{
+    a = 1;
+    b = 2;
+    c = 3;
+}
+
+//mismatching the count will result in an error
+var (a,b,c) = MultiReturn();
+
+print(a);
+print(b);
+print(c);

@@ -26,7 +26,7 @@ namespace ULox
         {
             var inst = vm.GetArg(0);
             inst.val.asInstance.SetField(VMFieldName, Value.Object(CreateVM()));
-            vm.PushReturn(inst);
+            vm.SetNativeReturn(0, inst);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -43,7 +43,7 @@ namespace ULox
         {
             Vm ourVM = GetArg0Vm(vm);
             var name = vm.GetArg(1).val.asString;
-            vm.PushReturn(ourVM.GetGlobal(name));
+            vm.SetNativeReturn(0, ourVM.GetGlobal(name));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -66,7 +66,7 @@ namespace ULox
             Vm ourVM = GetArg0Vm(vm);
             var chunk = vm.GetArg(1).val.asClosure.chunk;
             ourVM.Interpret(chunk);
-            vm.PushReturn(ourVM.StackTop);
+            vm.SetNativeReturn(0, ourVM.StackTop);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -74,7 +74,7 @@ namespace ULox
         {
             Vm ourVM = GetArg0Vm(vm);
             ourVM.Run();
-            vm.PushReturn(ourVM.StackTop);
+            vm.SetNativeReturn(0, ourVM.StackTop);
             return NativeCallResult.SuccessfulExpression;
         }
 

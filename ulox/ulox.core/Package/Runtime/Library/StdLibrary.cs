@@ -198,21 +198,21 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateStackDump(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(VmUtil.GenerateValueStackDump(vm)));
+            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateValueStackDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateGlobalsDump(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(VmUtil.GenerateGlobalsDump(vm)));
+            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateGlobalsDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateReturnDump(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.New(VmUtil.GenerateReturnDump(vm)));
+            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateReturnDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -221,9 +221,9 @@ namespace ULox
         {
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)
-                vm.PushReturn(Value.New(target.val.asInstance.IsFrozen));
+                vm.SetNativeReturn(0, Value.New(target.val.asInstance.IsFrozen));
             else if (target.type == ValueType.UserType)
-                vm.PushReturn(Value.New(target.val.asClass.IsFrozen));
+                vm.SetNativeReturn(0, Value.New(target.val.asClass.IsFrozen));
 
             return NativeCallResult.SuccessfulExpression;
         }
@@ -244,14 +244,14 @@ namespace ULox
         public static NativeCallResult str(Vm vm, int argCount)
         {
             var v = vm.GetArg(1);
-            vm.PushReturn(Value.New(v.str()));
+            vm.SetNativeReturn(0, Value.New(v.str()));
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult Duplicate(Vm vm, int argCount)
         {
-            vm.PushReturn(Value.Copy(vm.GetArg(1)));
+            vm.SetNativeReturn(0, Value.Copy(vm.GetArg(1)));
             return NativeCallResult.SuccessfulExpression;
         }
     }

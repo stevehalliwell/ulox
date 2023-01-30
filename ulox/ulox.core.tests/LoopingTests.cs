@@ -414,7 +414,7 @@ loop (arr)
         public void CountOf_WhenGivenFakeList_ShouldMatch()
         {
             testEngine.Run(@"
-class FakeList { _co(self) { return 1; } }
+class FakeList { _co(self) { retval = 1; } }
 var arr = FakeList();
 
 print(countof arr);
@@ -427,7 +427,7 @@ print(countof arr);
         public void Loop_WhenGivenFakeList_ShouldFailToInvoke()
         {
             testEngine.Run(@"
-class FakeList { _co(self) { return 1; } }
+class FakeList { _co(self) { retval = 1; } }
 var arr = FakeList();
 
 print(countof arr);
@@ -446,8 +446,8 @@ loop (arr)
             testEngine.Run(@"
 class FakeList 
 { 
-    _co(self) { return 1; }
-    _gi(self, i) { return ""Hello""; }
+    _co(self) { retval = 1; }
+    _gi(self, i) { retval = ""Hello""; }
 }
 var arr = FakeList();
 

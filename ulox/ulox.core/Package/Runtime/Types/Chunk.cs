@@ -22,7 +22,8 @@ namespace ULox
         private int instructionCount = -1;
 
         public List<ByteCodePacket> Instructions { get; } = new List<ByteCodePacket>(InstructionStartingCapacity);
-        public List<byte> ArgumentConstantIds { get; } = new List<byte>(50);
+        public List<byte> ArgumentConstantIds { get; } = new List<byte>(5);
+        public List<byte> ReturnConstantIds { get; } = new List<byte>(5);
         public IReadOnlyList<Value> Constants => _constants.AsReadOnly();
         public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
         public string Name { get; set; }
@@ -30,7 +31,8 @@ namespace ULox
         public FunctionType FunctionType { get; internal set; }
         public bool IsLocal => FunctionType == FunctionType.LocalFunction || FunctionType == FunctionType.LocalMethod;
         public bool IsPure => FunctionType == FunctionType.PureFunction;
-        public int Arity => ArgumentConstantIds.Count;
+        public byte Arity => (byte)ArgumentConstantIds.Count;
+        public byte ReturnCount => (byte)ReturnConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

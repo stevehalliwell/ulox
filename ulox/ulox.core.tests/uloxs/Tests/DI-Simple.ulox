@@ -32,7 +32,7 @@ test DISimpleTests
         register Service serviceInst;
         var expected = 8;
         var result = 0;
-        fun InjectedIsReturnedPlus1(a){return a+1;}
+        fun InjectedIsReturnedPlus1(a){retval =a+1;}
 
         result = InjectedIsReturnedPlus1(inject Service);
 

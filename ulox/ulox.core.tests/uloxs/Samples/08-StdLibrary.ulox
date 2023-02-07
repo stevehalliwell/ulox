@@ -2,3 +2,9 @@ var a = 7;
 var b = Duplicate(a);
 
 print(str(a) + " is a duplicate of " + str(b));
+
+// The standard lib also includes a range of basic math functions
+print("The square root of 9 is " + str(Math.Sqrt(9)));
+
+// This includes
+// Acos, Asin, Atan, Atan2, Cos, Deg2Rag, E, Exp, Ln, Log, Pi, Pow, Rad2Deg, Rand, Sin, Sqrt, Tan

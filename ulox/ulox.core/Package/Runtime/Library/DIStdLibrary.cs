@@ -8,7 +8,7 @@ namespace ULox
         {
             var diLibInst = new InstanceInternal();
             diLibInst.AddFieldsToInstance(
-            (nameof(Count), Value.New(Count)),
+                (nameof(Count), Value.New(Count)),
                 (nameof(GenerateDump), Value.New(GenerateDump)),
                 (nameof(Freeze), Value.New(Freeze)));
             diLibInst.Freeze();

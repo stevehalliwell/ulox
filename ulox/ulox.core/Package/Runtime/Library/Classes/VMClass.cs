@@ -11,18 +11,18 @@ namespace ULox
         public VMClass(Func<Vm> createVM) : base(new HashedString("VM"), UserType.Native)
         {
             CreateVM = createVM;
-            this.AddMethod(TypeCompilette.InitMethodName, Value.New(InitInstance), null);
+            this.AddMethod(TypeCompilette.InitMethodName, Value.New(InitInstance, 1, 0), null);
             this.AddMethodsToClass(
-                (nameof(AddGlobal), Value.New(AddGlobal)),
-                (nameof(GetGlobal), Value.New(GetGlobal)),
-                (nameof(Start), Value.New(Start)),
-                (nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing)),
-                (nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing)),
-                (nameof(Resume), Value.New(Resume))
+                (nameof(AddGlobal), Value.New(AddGlobal, 1, 2)),
+                (nameof(GetGlobal), Value.New(GetGlobal, 1, 1)),
+                (nameof(Start), Value.New(Start, 1, 1)),
+                (nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing, 1, 0)),
+                (nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing, 1, 0)),
+                (nameof(Resume), Value.New(Resume, 1, 0))
                                   );
         }
 
-        private NativeCallResult InitInstance(Vm vm, int argCount)
+        private NativeCallResult InitInstance(Vm vm)
         {
             var inst = vm.GetArg(0);
             inst.val.asInstance.SetField(VMFieldName, Value.Object(CreateVM()));
@@ -30,7 +30,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult AddGlobal(Vm vm, int argCount)
+        private NativeCallResult AddGlobal(Vm vm)
         {
             Vm ourVM = GetArg0Vm(vm);
             var name = vm.GetArg(1).val.asString;
@@ -39,7 +39,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult GetGlobal(Vm vm, int argCount)
+        private NativeCallResult GetGlobal(Vm vm)
         {
             Vm ourVM = GetArg0Vm(vm);
             var name = vm.GetArg(1).val.asString;
@@ -47,21 +47,21 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult InheritFromEnclosing(Vm vm, int argCount)
+        private NativeCallResult InheritFromEnclosing(Vm vm)
         {
             Vm ourVM = GetArg0Vm(vm);
             ourVM.CopyFrom(vm);
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult CopyBackToEnclosing(Vm vm, int argCount)
+        private NativeCallResult CopyBackToEnclosing(Vm vm)
         {
             Vm ourVM = GetArg0Vm(vm);
             vm.CopyFrom(ourVM);
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Start(Vm vm, int argCount)
+        private NativeCallResult Start(Vm vm)
         {
             Vm ourVM = GetArg0Vm(vm);
             var chunk = vm.GetArg(1).val.asClosure.chunk;
@@ -70,7 +70,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Resume(Vm vm, int argCount)
+        private NativeCallResult Resume(Vm vm)
         {
             Vm ourVM = GetArg0Vm(vm);
             ourVM.Run();

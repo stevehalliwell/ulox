@@ -925,9 +925,8 @@ namespace ULox
         {
             if (_currentCallFrame.nativeFunc == null)
                 ThrowRuntimeException($"{opCode} without nativeFunc encountered. This is not allowed");
-            
             var argCount = CurrentFrameStackValues;
-            var res = _currentCallFrame.nativeFunc.Invoke(this, argCount);
+            var res = _currentCallFrame.nativeFunc.Invoke(this);
 
             if (res == NativeCallResult.SuccessfulExpression)
             {
@@ -1059,7 +1058,10 @@ namespace ULox
             switch (callee.type)
             {
             case ValueType.NativeFunction:
-                PushFrameCallNative(callee.val.asNativeFunc, argCount, (byte)callee.val.asDouble);
+                if(argCount != callee.val.asByte1)
+                    ThrowRuntimeException($"Native function '{callee.val.asNativeFunc.Method.Name}' expected '{callee.val.asByte1}' arguments but got '{argCount}'");
+                
+                PushFrameCallNative(callee.val.asNativeFunc, argCount, callee.val.asByte0);
                 break;
 
             case ValueType.Closure:
@@ -1439,7 +1441,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private NativeCallResult CopyMatchingParamsToFields(Vm vm, int argCount)
+        private NativeCallResult CopyMatchingParamsToFields(Vm vm)
         {
             var instVal = vm.GetArg(0);
 
@@ -1468,7 +1470,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private NativeCallResult ClassFinishCreation(Vm vm, int argCount)
+        private NativeCallResult ClassFinishCreation(Vm vm)
         {
             var instVal = vm.GetArg(0);
             var inst = instVal.val.asInstance;

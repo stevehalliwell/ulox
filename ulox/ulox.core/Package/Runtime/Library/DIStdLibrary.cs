@@ -8,15 +8,15 @@ namespace ULox
         {
             var diLibInst = new InstanceInternal();
             diLibInst.AddFieldsToInstance(
-                (nameof(Count), Value.New(Count)),
-                (nameof(GenerateDump), Value.New(GenerateDump)),
-                (nameof(Freeze), Value.New(Freeze)));
+                (nameof(Count), Value.New(Count, 1, 0)),
+                (nameof(GenerateDump), Value.New(GenerateDump, 1, 0)),
+                (nameof(Freeze), Value.New(Freeze, 1, 0)));
             diLibInst.Freeze();
             return diLibInst;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult Count(Vm vm, int argCount)
+        private static NativeCallResult Count(Vm vm)
         {
             var di = FromVm(vm);
             vm.SetNativeReturn(0, Value.New(di.Count));
@@ -24,7 +24,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult GenerateDump(Vm vm, int argCount)
+        private static NativeCallResult GenerateDump(Vm vm)
         {
             var di = FromVm(vm);
             vm.SetNativeReturn(0, Value.New(di.GenerateDump()));
@@ -32,7 +32,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult Freeze(Vm vm, int argCount)
+        private static NativeCallResult Freeze(Vm vm)
         {
             var di = FromVm(vm);
             di.Freeze();

@@ -16,12 +16,12 @@ namespace ULox
             : base(new HashedString("NativeMap"), UserType.Native)
         {
             this.AddMethodsToClass(
-                (nameof(Count), Value.New(Count)),
-                (nameof(Create), Value.New(Create)),
-                (nameof(Read), Value.New(Read)),
-                (nameof(ReadOrDefault), Value.New(ReadOrDefault)),
-                (nameof(Update), Value.New(Update)),
-                (nameof(Delete), Value.New(Delete))
+                (nameof(Count), Value.New(Count,1, 0)),
+                (nameof(Create), Value.New(Create, 1, 2)),
+                (nameof(Read), Value.New(Read, 1, 1)),
+                (nameof(ReadOrDefault), Value.New(ReadOrDefault, 1, 2)),
+                (nameof(Update), Value.New(Update, 1, 2)),
+                (nameof(Delete), Value.New(Delete, 1, 1))
                                   );
         }
 
@@ -33,13 +33,13 @@ namespace ULox
             return nativeMapinst.Map;
         }
 
-        private NativeCallResult Count(Vm vm, int argCount)
+        private NativeCallResult Count(Vm vm)
         {
             vm.SetNativeReturn(0, Value.New(GetArg0NativeMapInstance(vm).Count));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Create(Vm vm, int argCount)
+        private NativeCallResult Create(Vm vm)
         {
             ThrowIfReadOnly(vm);
             var map = GetArg0NativeMapInstance(vm);
@@ -57,7 +57,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Read(Vm vm, int argCount)
+        private NativeCallResult Read(Vm vm)
         {
             var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
@@ -71,7 +71,7 @@ namespace ULox
             throw new UloxException($"Map contains no key of '{key}'.");
         }
 
-        private NativeCallResult ReadOrDefault(Vm vm, int argCount)
+        private NativeCallResult ReadOrDefault(Vm vm)
         {
             var map = GetArg0NativeMapInstance(vm);
             var key = vm.GetArg(1);
@@ -86,7 +86,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Update(Vm vm, int argCount)
+        private NativeCallResult Update(Vm vm)
         {
             ThrowIfReadOnly(vm);
             var map = GetArg0NativeMapInstance(vm);
@@ -104,7 +104,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Delete(Vm vm, int argCount)
+        private NativeCallResult Delete(Vm vm)
         {
             ThrowIfReadOnly(vm);
             var map = GetArg0NativeMapInstance(vm);

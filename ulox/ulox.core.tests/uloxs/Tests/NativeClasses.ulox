@@ -4,7 +4,7 @@ test NativeClassesLibraryTests
     {
         var list = [];
         var len = 5;
-        list.Resize(len);
+        list.Resize(len, null);
 
         for (var i = 0; i < list.Count(); i+= 1)
         {

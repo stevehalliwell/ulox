@@ -19,22 +19,22 @@ namespace ULox
             : base(new HashedString("NativeList"), UserType.Native)
         {
             this.AddMethodsToClass(
-                (nameof(Count), Value.New(Count)),
-                (nameof(Resize), Value.New(Resize)),
-                (nameof(Add), Value.New(Add)),
-                (nameof(Remove), Value.New(Remove)),
-                (nameof(Reverse), Value.New(Reverse)),
-                (nameof(Map), Value.New(Map)),
-                (nameof(Reduce), Value.New(Reduce)),
-                (nameof(Fold), Value.New(Fold)),
-                (nameof(Filter), Value.New(Filter)),
-                (nameof(OrderBy), Value.New(OrderBy)),
-                (nameof(First), Value.New(First)),
-                (nameof(Fork), Value.New(Fork)),
-                (nameof(Until), Value.New(Until)),
+                (nameof(Count), Value.New(Count,1,0)),
+                (nameof(Resize), Value.New(Resize, 1, 2)),
+                (nameof(Add), Value.New(Add, 1, 1)),
+                (nameof(Remove), Value.New(Remove, 1, 1)),
+                (nameof(Reverse), Value.New(Reverse, 1, 0)),
+                (nameof(Map), Value.New(Map,1,1)),
+                (nameof(Reduce), Value.New(Reduce, 1, 1)),
+                (nameof(Fold), Value.New(Fold, 1, 2)),
+                (nameof(Filter), Value.New(Filter, 1, 1)),
+                (nameof(OrderBy), Value.New(OrderBy, 1, 1)),
+                (nameof(First), Value.New(First, 1, 1)),
+                (nameof(Fork), Value.New(Fork, 1, 1)),
+                (nameof(Until), Value.New(Until, 1, 1)),
                 
-                (nameof(Grow), Value.New(Grow)),
-                (nameof(Shrink), Value.New(Shrink))
+                (nameof(Grow), Value.New(Grow, 1, 2)),
+                (nameof(Shrink), Value.New(Shrink, 1, 1))
                                   );
         }
 
@@ -46,13 +46,13 @@ namespace ULox
             return nativeListinst.List;
         }
 
-        private NativeCallResult Count(Vm vm, int argCount)
+        private NativeCallResult Count(Vm vm)
         {
             vm.SetNativeReturn(0, Value.New(GetArg0NativeListInstance(vm).Count));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Add(Vm vm, int argCount)
+        private NativeCallResult Add(Vm vm)
         {
             ThrowIfReadOnly(vm);
             var top = vm.GetArg(1);
@@ -70,7 +70,7 @@ namespace ULox
                 vm.ThrowRuntimeException($"Attempted to modify a read only list");
         }
 
-        private NativeCallResult Resize(Vm vm, int argCount)
+        private NativeCallResult Resize(Vm vm)
         {
             ThrowIfReadOnly(vm);
             var count = vm.GetArg(1);
@@ -83,7 +83,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Remove(Vm vm, int argCount)
+        private NativeCallResult Remove(Vm vm)
         {
             ThrowIfReadOnly(vm);
             var top = vm.GetArg(1);
@@ -91,14 +91,14 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Reverse(Vm vm, int argCount)
+        private NativeCallResult Reverse(Vm vm)
         {
             ThrowIfReadOnly(vm);
             GetArg0NativeListInstance(vm).Reverse();
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Grow(Vm vm, int argCount)
+        private NativeCallResult Grow(Vm vm)
         {
             ThrowIfReadOnly(vm);
             var size = vm.GetArg(1).val.asDouble;
@@ -110,7 +110,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Shrink(Vm vm, int argCount)
+        private NativeCallResult Shrink(Vm vm)
         {
             ThrowIfReadOnly(vm);
             var size = vm.GetArg(1).val.asDouble;
@@ -121,7 +121,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Map(Vm vm, int argCount)
+        private NativeCallResult Map(Vm vm)
         {
             var fn = vm.GetArg(1);
             var list = GetArg0NativeListInstance(vm);
@@ -144,7 +144,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Reduce(Vm vm, int argCount)
+        private NativeCallResult Reduce(Vm vm)
         {
             var fn = vm.GetArg(1);
             var list = GetArg0NativeListInstance(vm);
@@ -165,7 +165,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Fold(Vm vm, int argCount)
+        private NativeCallResult Fold(Vm vm)
         {
             var fn = vm.GetArg(1);
             var list = GetArg0NativeListInstance(vm);
@@ -186,7 +186,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Filter(Vm vm, int argCount)
+        private NativeCallResult Filter(Vm vm)
         {
             var fn = vm.GetArg(1);
             var list = GetArg0NativeListInstance(vm);
@@ -214,7 +214,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult OrderBy(Vm vm, int argCount)
+        private NativeCallResult OrderBy(Vm vm)
         {
             var fn = vm.GetArg(1);
             var list = GetArg0NativeListInstance(vm);
@@ -281,7 +281,7 @@ namespace ULox
             }
         }
 
-        private NativeCallResult First(Vm vm, int argCount)
+        private NativeCallResult First(Vm vm)
         {
             var fn = vm.GetArg(1);
             var list = GetArg0NativeListInstance(vm);
@@ -308,7 +308,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Fork(Vm vm, int argCount)
+        private NativeCallResult Fork(Vm vm)
         {
             var sharedVarToRunOn = vm.GetArg(1);
             var list = GetArg0NativeListInstance(vm);
@@ -334,7 +334,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult Until(Vm vm, int argCount)
+        private NativeCallResult Until(Vm vm)
         {
             var sharedVarToRunOn = vm.GetArg(1);
             var list = GetArg0NativeListInstance(vm);

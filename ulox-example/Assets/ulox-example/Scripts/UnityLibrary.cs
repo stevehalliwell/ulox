@@ -23,48 +23,48 @@ namespace ULox
 
         public Table GetBindings()
             => this.GenerateBindingTable(
-                (nameof(SetSpriteColour), Value.New(SetSpriteColour)),
-                (nameof(SetCollisionCallback), Value.New(SetCollisionCallback)),
-                (nameof(SetGameObjectTag), Value.New(SetGameObjectTag)),
-                (nameof(GetGameObjectTag), Value.New(GetGameObjectTag)),
-                (nameof(SetGameObjectPosition), Value.New(SetGameObjectPosition)),
-                (nameof(SetGameObjectScale), Value.New(SetGameObjectScale)),
-                (nameof(ReloadScene), Value.New(ReloadScene)),
-                (nameof(SetUIText), Value.New(SetUIText)),
-                (nameof(CreateFromPrefab), Value.New(CreateFromPrefab)),
-                (nameof(RandRange), Value.New(RandRange)),
-                (nameof(GetKey), Value.New(GetKey)),
-                (nameof(DestroyUnityObject), Value.New(DestroyUnityObject)),
-                (nameof(GetRigidBody2DFromGameObject), Value.New(GetRigidBody2DFromGameObject)),
-                (nameof(SetRigidBody2DVelocity), Value.New(SetRigidBody2DVelocity)),
-                (nameof(ProfileBegin), Value.New(ProfileBegin)),
-                (nameof(ProfileEnd), Value.New(ProfileEnd)),
-                (nameof(SetListOfGoToListOfPositions), Value.New(SetListOfGoToListOfPositions))
+                (nameof(SetSpriteColour), Value.New(SetSpriteColour, 1, 5)),
+                (nameof(SetCollisionCallback), Value.New(SetCollisionCallback, 1, 3)),
+                (nameof(SetGameObjectTag), Value.New(SetGameObjectTag, 1, 2)),
+                (nameof(GetGameObjectTag), Value.New(GetGameObjectTag, 1, 1)),
+                (nameof(SetGameObjectPosition), Value.New(SetGameObjectPosition, 1, 4)),
+                (nameof(SetGameObjectScale), Value.New(SetGameObjectScale, 1, 4)),
+                (nameof(ReloadScene), Value.New(ReloadScene, 1, 0)),
+                (nameof(SetUIText), Value.New(SetUIText, 1, 1)),
+                (nameof(CreateFromPrefab), Value.New(CreateFromPrefab, 1, 1)),
+                (nameof(RandRange), Value.New(RandRange, 1, 2)),
+                (nameof(GetKey), Value.New(GetKey, 1, 1)),
+                (nameof(DestroyUnityObject), Value.New(DestroyUnityObject, 1, 1)),
+                (nameof(GetRigidBody2DFromGameObject), Value.New(GetRigidBody2DFromGameObject, 1, 1)),
+                (nameof(SetRigidBody2DVelocity), Value.New(SetRigidBody2DVelocity, 1, 3)),
+                (nameof(ProfileBegin), Value.New(ProfileBegin, 1, 1)),
+                (nameof(ProfileEnd), Value.New(ProfileEnd, 1, 1)),
+                (nameof(SetListOfGoToListOfPositions), Value.New(SetListOfGoToListOfPositions, 1, 4))
             );
 
-        private NativeCallResult RandRange(Vm vm, int argCount)
+        private NativeCallResult RandRange(Vm vm)
         {
             var min = vm.GetArg(1).val.asDouble;
             var max = vm.GetArg(2).val.asDouble;
-            vm.SetNativeReturn(0,Value.New(Random.Range((float)min, (float)max)));
+            vm.SetNativeReturn(0, Value.New(Random.Range((float)min, (float)max)));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult GetKey(Vm vm, int argCount)
+        private NativeCallResult GetKey(Vm vm)
         {
             var keyName = vm.GetArg(1).val.asString;
             vm.SetNativeReturn(0, Value.New(Input.GetKey(keyName.String)));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult DestroyUnityObject(Vm vm, int argCount)
+        private NativeCallResult DestroyUnityObject(Vm vm)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
             Object.Destroy(go);
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult GetRigidBody2DFromGameObject(Vm vm, int argCount)
+        private NativeCallResult GetRigidBody2DFromGameObject(Vm vm)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
             var rb2d = go.GetComponent<Rigidbody2D>();
@@ -74,7 +74,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult SetRigidBody2DVelocity(Vm vm, int argCount)
+        private NativeCallResult SetRigidBody2DVelocity(Vm vm)
         {
             var rb2d = vm.GetArg(1).val.asObject as Rigidbody2D;
             float x = (float)vm.GetArg(2).val.asDouble;
@@ -83,13 +83,13 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult SetUIText(Vm vm, int argCount)
+        private NativeCallResult SetUIText(Vm vm)
         {
             _outputText?.Invoke(vm.GetArg(1).val.asString.String);
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult SetSpriteColour(Vm vm, int argCount)
+        private NativeCallResult SetSpriteColour(Vm vm)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
             var r = vm.GetArg(2).val.asDouble;
@@ -101,7 +101,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult SetCollisionCallback(Vm vm, int argCount)
+        private NativeCallResult SetCollisionCallback(Vm vm)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
             var tagHit = vm.GetArg(2).val.asString;
@@ -112,7 +112,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult SetGameObjectTag(Vm vm, int argCount)
+        private NativeCallResult SetGameObjectTag(Vm vm)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
             var tag = vm.GetArg(2).val.asString.String;
@@ -120,14 +120,14 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult GetGameObjectTag(Vm vm, int argCount)
+        private NativeCallResult GetGameObjectTag(Vm vm)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
             vm.SetNativeReturn(0, Value.New(go.tag));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult SetGameObjectPosition(Vm vm, int argCount)
+        private NativeCallResult SetGameObjectPosition(Vm vm)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
             float x = (float)vm.GetArg(2).val.asDouble;
@@ -137,7 +137,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult SetListOfGoToListOfPositions(Vm vm, int argCount)
+        private NativeCallResult SetListOfGoToListOfPositions(Vm vm)
         {
             var gos = (vm.GetArg(1).val.asObject as NativeListInstance).List;
             var pos2ds = (vm.GetArg(2).val.asObject as NativeListInstance).List;
@@ -153,11 +153,11 @@ namespace ULox
                 var pos = new Vector2((float)x, (float)y);
                 (gos[i].val.asObject as GameObject).transform.position = pos;
             }
-            
+
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult SetGameObjectScale(Vm vm, int argCount)
+        private NativeCallResult SetGameObjectScale(Vm vm)
         {
             var go = vm.GetArg(1).val.asObject as GameObject;
             float x = (float)vm.GetArg(2).val.asDouble;
@@ -167,13 +167,13 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult ReloadScene(Vm vm, int argCount)
+        private NativeCallResult ReloadScene(Vm vm)
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult CreateFromPrefab(Vm vm, int argCount)
+        private NativeCallResult CreateFromPrefab(Vm vm)
         {
             var targetName = vm.GetArg(1).val.asString.String;
             var loc = _availablePrefabs.Find(x => x.name == targetName);
@@ -185,7 +185,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult ProfileBegin(Vm vm, int argCount)
+        private NativeCallResult ProfileBegin(Vm vm)
         {
             var name = vm.GetArg(1).val.asString.String;
             if (!_profilerMarkers.TryGetValue(name, out var marker))
@@ -197,7 +197,7 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult ProfileEnd(Vm vm, int argCount)
+        private NativeCallResult ProfileEnd(Vm vm)
         {
             var name = vm.GetArg(1).val.asString.String;
             _profilerMarkers[name].End();

@@ -8,12 +8,12 @@
         public DynamicClass() : base(DynamicClassName, UserType.Native)
         {
             this.AddMethodsToClass(
-                (nameof(HasField), Value.New(HasField)),
-                (nameof(RemoveField), Value.New(RemoveField))
+                (nameof(HasField), Value.New(HasField, 1, 2)),
+                (nameof(RemoveField), Value.New(RemoveField, 1, 2))
                                   );
         }
 
-        private NativeCallResult HasField(Vm vm, int argCount)
+        private NativeCallResult HasField(Vm vm)
         {
             var obj = vm.GetArg(1);
             var fieldName = vm.GetArg(2);
@@ -27,7 +27,7 @@
             return NativeCallResult.SuccessfulExpression;
         }
 
-        private NativeCallResult RemoveField(Vm vm, int argCount)
+        private NativeCallResult RemoveField(Vm vm)
         {
             var obj = vm.GetArg(1);
             var fieldName = vm.GetArg(2);
@@ -36,7 +36,7 @@
 
             var inst = obj.val.asInstance;
 
-            if(inst.IsReadOnly)
+            if (inst.IsReadOnly)
                 vm.ThrowRuntimeException($"Cannot remove field from read only instance, '{inst}'");
 
             var fieldNameStr = fieldName.val.asString;

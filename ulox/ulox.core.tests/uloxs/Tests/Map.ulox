@@ -74,7 +74,7 @@ test MapTests
         m.Create(key, initial);
 
         m.Update(key, expected);
-        result = m.ReadOrDefault(key);
+        result = m.ReadOrDefault(key, null);
 
         Assert.AreEqual(expected, result);
     }

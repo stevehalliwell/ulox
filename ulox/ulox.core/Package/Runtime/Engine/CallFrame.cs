@@ -2,7 +2,7 @@
 {
     public struct CallFrame
     {
-        public delegate NativeCallResult NativeCallDelegate(Vm vm, int argc);
+        public delegate NativeCallResult NativeCallDelegate(Vm vm);
 
         public int InstructionPointer;
         public byte StackStart;

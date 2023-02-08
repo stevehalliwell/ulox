@@ -9,14 +9,14 @@ namespace ULox
         {
             var serialiseInst = new InstanceInternal();
             serialiseInst.AddFieldsToInstance(
-                (nameof(ToJson), Value.New(ToJson)),
-                (nameof(FromJson), Value.New(FromJson)));
+                (nameof(ToJson), Value.New(ToJson, 1, 1)),
+                (nameof(FromJson), Value.New(FromJson, 1, 1)));
             serialiseInst.Freeze();
             return serialiseInst;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult ToJson(Vm vm, int argCount)
+        private static NativeCallResult ToJson(Vm vm)
         {
             var obj = vm.GetArg(1);
             var jsonWriter = new JsonValueHeirarchyWriter();
@@ -28,7 +28,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult FromJson(Vm vm, int argCount)
+        private static NativeCallResult FromJson(Vm vm)
         {
             var jsonString = vm.GetArg(1);
             var reader = new StringReader(jsonString.val.asString.String);

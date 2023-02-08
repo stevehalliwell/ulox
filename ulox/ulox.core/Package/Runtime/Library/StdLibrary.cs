@@ -22,13 +22,13 @@ namespace ULox
                 ("Serialise", Value.New(SerialiseStdLibrary.MakeSerialiseInstance())),
                 ("DI", Value.New(DIStdLibrary.MakeDIInstance())),
                 ("Math", Value.New(MathStdLibrary.MakeMathInstance())),
-                (nameof(Duplicate), Value.New(Duplicate)),
-                (nameof(str), Value.New(str)),
-                (nameof(IsFrozen), Value.New(IsFrozen)),
-                (nameof(Unfreeze), Value.New(Unfreeze)),
-                (nameof(GenerateStackDump), Value.New(GenerateStackDump)),
-                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump)),
-                (nameof(GenerateReturnDump), Value.New(GenerateReturnDump))
+                (nameof(Duplicate), Value.New(Duplicate, 1, 1)),
+                (nameof(str), Value.New(str, 1, 1)),
+                (nameof(IsFrozen), Value.New(IsFrozen, 1, 1)),
+                (nameof(Unfreeze), Value.New(Unfreeze, 1, 1)),
+                (nameof(GenerateStackDump), Value.New(GenerateStackDump, 1, 0)),
+                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump, 1, 0)),
+                (nameof(GenerateReturnDump), Value.New(GenerateReturnDump, 1, 0))
                                             );
         }
 
@@ -36,24 +36,24 @@ namespace ULox
         {
             var assertInst = new InstanceInternal();
             assertInst.AddFieldsToInstance(
-                (nameof(AreEqual), Value.New(AreEqual)),
-                (nameof(AreNotEqual), Value.New(AreNotEqual)),
-                (nameof(AreApproxEqual), Value.New(AreApproxEqual)),
-                (nameof(IsTrue), Value.New(IsTrue)),
-                (nameof(IsFalse), Value.New(IsFalse)),
-                (nameof(IsNull), Value.New(IsNull)),
-                (nameof(IsNotNull), Value.New(IsNotNull)),
-                (nameof(DoesContain), Value.New(DoesContain)),
-                (nameof(DoesNotContain), Value.New(DoesNotContain)),
-                (nameof(Throws), Value.New(Throws)),
-                (nameof(Pass), Value.New(Pass)),
-                (nameof(Fail), Value.New(Fail)));
+                (nameof(AreEqual), Value.New(AreEqual,1,2)),
+                (nameof(AreNotEqual), Value.New(AreNotEqual, 1, 2)),
+                (nameof(AreApproxEqual), Value.New(AreApproxEqual, 1, 2)),
+                (nameof(IsTrue), Value.New(IsTrue, 1, 1)),
+                (nameof(IsFalse), Value.New(IsFalse, 1, 1)),
+                (nameof(IsNull), Value.New(IsNull, 1, 1)),
+                (nameof(IsNotNull), Value.New(IsNotNull, 1, 1)),
+                (nameof(DoesContain), Value.New(DoesContain, 1, 2)),
+                (nameof(DoesNotContain), Value.New(DoesNotContain, 1, 2)),
+                (nameof(Throws), Value.New(Throws, 1, 1)),
+                (nameof(Pass), Value.New(Pass, 1, 0)),
+                (nameof(Fail), Value.New(Fail, 1, 0)));
             assertInst.Freeze();
             return assertInst;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult AreApproxEqual(Vm vm, int argCount)
+        private static NativeCallResult AreApproxEqual(Vm vm)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -75,7 +75,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult AreEqual(Vm vm, int argCount)
+        private static NativeCallResult AreEqual(Vm vm)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -86,7 +86,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult AreNotEqual(Vm vm, int argCount)
+        private static NativeCallResult AreNotEqual(Vm vm)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -97,7 +97,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult IsTrue(Vm vm, int argCount)
+        private static NativeCallResult IsTrue(Vm vm)
         {
             var lhs = vm.GetArg(1);
             if (lhs.IsFalsey())
@@ -107,7 +107,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult IsFalse(Vm vm, int argCount)
+        private static NativeCallResult IsFalse(Vm vm)
         {
             var lhs = vm.GetArg(1);
             if (!lhs.IsFalsey())
@@ -117,7 +117,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult IsNull(Vm vm, int argCount)
+        private static NativeCallResult IsNull(Vm vm)
         {
             var lhs = vm.GetArg(1);
             if (!lhs.IsNull())
@@ -127,7 +127,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult IsNotNull(Vm vm, int argCount)
+        private static NativeCallResult IsNotNull(Vm vm)
         {
             var lhs = vm.GetArg(1);
             if (lhs.IsNull())
@@ -137,7 +137,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult DoesContain(Vm vm, int argCount)
+        private static NativeCallResult DoesContain(Vm vm)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -148,7 +148,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult DoesNotContain(Vm vm, int argCount)
+        private static NativeCallResult DoesNotContain(Vm vm)
         {
             var lhs = vm.GetArg(1);
             var rhs = vm.GetArg(2);
@@ -159,7 +159,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private NativeCallResult Throws(Vm vm, int argCount)
+        private NativeCallResult Throws(Vm vm)
         {
             var toRun = vm.GetArg(1).val.asClosure.chunk;
             if (toRun == null)
@@ -183,13 +183,13 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult Pass(Vm vm, int argCount)
+        private static NativeCallResult Pass(Vm vm)
         {
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static NativeCallResult Fail(Vm vm, int argCount)
+        private static NativeCallResult Fail(Vm vm)
         {
             var msg = vm.GetArg(1);
             vm.ThrowRuntimeException($"Fail. '{msg}'");
@@ -197,28 +197,28 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeCallResult GenerateStackDump(Vm vm, int argCount)
+        public static NativeCallResult GenerateStackDump(Vm vm)
         {
             vm.SetNativeReturn(0, Value.New(VmUtil.GenerateValueStackDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeCallResult GenerateGlobalsDump(Vm vm, int argCount)
+        public static NativeCallResult GenerateGlobalsDump(Vm vm)
         {
             vm.SetNativeReturn(0, Value.New(VmUtil.GenerateGlobalsDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeCallResult GenerateReturnDump(Vm vm, int argCount)
+        public static NativeCallResult GenerateReturnDump(Vm vm)
         {
             vm.SetNativeReturn(0, Value.New(VmUtil.GenerateReturnDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeCallResult IsFrozen(Vm vm, int argCount)
+        public static NativeCallResult IsFrozen(Vm vm)
         {
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)
@@ -230,7 +230,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeCallResult Unfreeze(Vm vm, int argCount)
+        public static NativeCallResult Unfreeze(Vm vm)
         {
             var target = vm.GetArg(1);
             if (target.type == ValueType.Instance)
@@ -242,7 +242,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeCallResult str(Vm vm, int argCount)
+        public static NativeCallResult str(Vm vm)
         {
             var v = vm.GetArg(1);
             vm.SetNativeReturn(0, Value.New(v.str()));
@@ -250,7 +250,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static NativeCallResult Duplicate(Vm vm, int argCount)
+        public static NativeCallResult Duplicate(Vm vm)
         {
             vm.SetNativeReturn(0, Value.Copy(vm.GetArg(1)));
             return NativeCallResult.SuccessfulExpression;

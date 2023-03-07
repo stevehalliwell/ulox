@@ -65,5 +65,24 @@ inject Seven = 8;");
             StringAssert.StartsWith("Invalid assignment target", testEngine.InterpreterResult);
         }
 
+        [Test]
+        public void Register_Method_ShouldPrint()
+        {
+            testEngine.Run(@"
+class T
+{
+    Foo(){print(7);}
+}
+var t = T();
+
+register Seven t.Foo;
+inject Seven();");
+
+            StringAssert.StartsWith("7", testEngine.InterpreterResult);
+        }
     }
 }
+
+//TODO add disalow redeclare of class or data
+//TODO expected ident after look statement with arg
+// want to be able to do loop(this.arr) presently this is not allowed

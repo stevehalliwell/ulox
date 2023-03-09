@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using ULox;
 
 namespace ulox.core.tests
 {
@@ -485,6 +486,33 @@ fb.Value = 7;
 ");
 
             Assert.AreEqual("Attempted to Set field 'Value', but instance is read only.", testEngine.InterpreterResult);
+        }
+
+        public enum Foo
+        {
+            Unknown,
+            Bar,
+            Baz,
+        }
+
+        [Test]
+        public void Enum_WhenFromNative_ShouldHaveMatchingValues()
+        {
+            var globals = testEngine.MyEngine.Context.Vm.Globals;
+            
+            globals[new HashedString(nameof(Foo))] = EnumFromNative.Create(typeof(Foo));
+
+            testEngine.Run(@"
+var all = Foo.All;
+
+loop (all)
+{
+    print(item.Key);
+    print(item.Value);
+}
+");
+
+            Assert.AreEqual("Unknown0Bar1Baz2", testEngine.InterpreterResult);
         }
     }
 }

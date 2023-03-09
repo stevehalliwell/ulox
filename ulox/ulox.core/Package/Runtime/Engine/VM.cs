@@ -651,7 +651,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoEnumValueOp(Chunk chunk)
         {
-            //pop3?
             var (enumObject, val, key) = Pop3();
             (enumObject.val.asClass as EnumClass).AddEnumValue(key, val);
         }

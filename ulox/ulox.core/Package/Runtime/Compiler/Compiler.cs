@@ -530,7 +530,7 @@ namespace ULox
                 var retvalId = DeclareAndDefineCustomVariable("retval");
                 IncreaseReturn(retvalId);
             }
-            
+
             // The body.
             TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             Block();
@@ -934,12 +934,16 @@ namespace ULox
             do
             {
                 if (lastElseLabel != -1)
+                {
                     compiler.EmitLabel((byte)lastElseLabel);
+                    compiler.EmitPop();
+                }
 
                 compiler.Expression();
                 compiler.EmitPacketByte(matchGetOp, matchArgID);
                 compiler.EmitPacket(OpCode.EQUAL);
                 lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
+                compiler.EmitPop();
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
                 compiler.Statement();
                 compiler.EmitGoto(matchEndLabelID);

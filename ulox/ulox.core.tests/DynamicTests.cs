@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class DynamicTests : EngineTestBase
     {
@@ -101,30 +101,5 @@ obj.RemoveField(obj, ""a"");");
 
             StringAssert.StartsWith("Cannot remove field from read only", testEngine.InterpreterResult);
         }
-
-        //        [Test]
-        //        public void DynamicAsClass_WhenSetupAndCalled_ShouldPrintExepctedResult()
-        //        {
-        //            testEngine.Run(@"
-        //class CoffeeMaker {
-        //    Set(_coffee) {
-        //        this.coffee = _coffee;
-        //        return this;
-        //    }
-
-        //    brew() {
-        //        print (""Enjoy your cup of "" + this.coffee);
-
-        //        // No reusing the grounds!
-        //        this.coffee = null;
-        //    }
-        //}
-
-        //var maker = CoffeeMaker();
-        //maker.Set(""coffee and chicory"");
-        //maker.brew();");
-
-        //            Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
-        //        }
     }
 }

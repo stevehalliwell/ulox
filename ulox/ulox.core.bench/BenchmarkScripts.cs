@@ -1,6 +1,4 @@
-﻿using ULox;
-
-namespace ulox.core.bench
+﻿namespace ULox.Core.Bench
 {
     public static class BenchmarkScripts
     {

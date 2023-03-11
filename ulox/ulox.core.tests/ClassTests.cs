@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class ClassTests : EngineTestBase
     {
@@ -644,27 +644,6 @@ print(res.a);");
             Assert.AreEqual("3", testEngine.InterpreterResult);
         }
 
-        //[Test]
-        //public void Field_WhenAddedToExistingInstance_ShouldSucceed()
-        //{
-        //    testEngine.Run(@"
-        //class Toast {}
-        //var toast = Toast();
-        //print (toast.jam = ""grape"");");
-
-        //    Assert.AreEqual("grape", testEngine.InterpreterResult);
-        //}
-
-        //[Test]
-        //public void Field_WhenAddedToNewInstance_ShouldSucceed()
-        //{
-        //    testEngine.Run(@"
-        //class Toast {}
-        //Toast().a = 3;");
-
-        //    Assert.AreEqual("", testEngine.InterpreterResult);
-        //}
-
         [Test]
         public void Init_WhenCreatingField_ShouldSucceed()
         {
@@ -704,25 +683,6 @@ t.Say();");
 
             Assert.AreEqual("name", testEngine.InterpreterResult);
         }
-
-        //        [Test]
-        //        public void Method_WhenAddingFieldToSelf_ShouldSucceed()
-        //        {
-        //            testEngine.Run(@"
-        //class T
-        //{
-        //    Set(v)
-        //    {
-        //    this.a = v;
-        //    }
-        //}
-
-        //var t = T();
-        //t.Set(7);
-        //print (t.a);");
-
-        //            Assert.AreEqual("7", testEngine.InterpreterResult);
-        //        }
 
         [Test]
         public void Method_WhenAssigningExistingFieldFromArg_ShouldSucceed()

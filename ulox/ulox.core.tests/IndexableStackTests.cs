@@ -1,8 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Linq;
-using ULox;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class IndexableStackTests

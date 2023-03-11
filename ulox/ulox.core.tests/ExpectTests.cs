@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class ExpectTests : EngineTestBase
     {
@@ -14,6 +14,7 @@ expect a;"
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+        
         [Test]
         public void Expect_TruthyLiteral_Continues()
         {
@@ -23,7 +24,7 @@ expect true;"
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
-        
+
         [Test]
         public void Expect_TruthyMultiPartExpression_Continues()
         {
@@ -117,4 +118,3 @@ expect true : ""a message"",
         }
     }
 }
-//multi expect

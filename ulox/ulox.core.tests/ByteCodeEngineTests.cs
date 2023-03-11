@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
-using ULox;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class ByteCodeEngineTests : EngineTestBase
@@ -817,9 +816,7 @@ fun T(e)
     var c = 1;
     var d = a;
     var f = e;
-}
-"
-            );
+}");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
@@ -830,9 +827,7 @@ fun T(e)
             testEngine.Run(@"
 var a = null;
 var b = 1;
-var c = b + a;
-"
-            );
+var c = b + a;");
 
             Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'7' in chunk:'unnamed_chunk(test:4)'.
 ===Stack===
@@ -915,16 +910,5 @@ a[1] = 2;");
 
             StringAssert.StartsWith("Cannot perform set index on type", testEngine.InterpreterResult);
         }
-
-        //        [Test]
-        //        public void Engine_Cycle_Minus_Equals_Expression()
-        //        {
-        //            testEngine.Run(@"
-        //var a = 1;
-        //a -= 2;
-        //print (a);");
-
-        //            Assert.AreEqual("-1", testEngine.InterpreterResult);
-        //        }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class LoopingTests : EngineTestBase
@@ -678,5 +678,22 @@ var posList = FromRowCol(outer);
 
             Assert.AreEqual("hihi", testEngine.InterpreterResult);
         }
+
+        //todo: we want this test to work but it requires a change in loopstatement to create 
+        //  a local temp var instead of taking an identifier
+        //        [Test]
+        //        public void Loop_WhenGivenInstanceFieldIdentifier_ShouldPrintItems()
+        //        {
+        //            testEngine.Run(@"
+        //var thing = {:};
+        //thing.arr = [""a"",""b"",""c"",];
+
+        //loop (thing.arr)
+        //{
+        //    print(item);
+        //}");
+
+        //            Assert.AreEqual("abc", testEngine.InterpreterResult);
+        //        }
     }
 }

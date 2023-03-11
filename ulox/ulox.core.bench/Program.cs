@@ -2,7 +2,7 @@
 using BenchmarkDotNet.Running;
 using ULox;
 
-namespace ulox.core.bench
+namespace ULox.Core.Bench
 {
     [MemoryDiagnoser]
     public class Program

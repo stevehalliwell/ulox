@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class ReadOnlyTests : EngineTestBase
     {
@@ -65,4 +65,3 @@ a = 2;
         }
     }
 }
-//multi expect

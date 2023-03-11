@@ -1,8 +1,7 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
-using ULox;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class HashStringComparerTests

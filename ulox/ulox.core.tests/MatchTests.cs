@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
-using ULox;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class MatchTests : EngineTestBase
     {
@@ -24,7 +23,6 @@ match a
         public void Match_WhenBoolFalseAndFull_ShouldPass()
         {
             testEngine.Run(@"
-
 var a = false;
 
 match a
@@ -41,7 +39,6 @@ match a
         public void Match_WhenBodyWithGlobals_ShouldPass()
         {
             testEngine.Run(@"
-
 var a = true;
 var b;
 match a
@@ -63,7 +60,6 @@ match a
         public void Match_WhenBodyWithLocal_ShouldPass()
         {
             testEngine.Run(@"
-
 var a = true;
 
 match a
@@ -84,7 +80,6 @@ match a
         public void Match_WhenBodyWithManyLocal_ShouldPass()
         {
             testEngine.Run(@"
-
 var a = 7;;
 
 match a
@@ -112,7 +107,6 @@ match a
         public void Match_WhenBoolFalseAndMissing_ShouldThrow()
         {
             void Act () => testEngine.Run(@"
-
 var a = false;
 
 match a

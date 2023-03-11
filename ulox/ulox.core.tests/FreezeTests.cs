@@ -1,31 +1,27 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class FreezeTests : EngineTestBase
     {
         [Test]
         public void InstanceFromClass_WhenFrozenAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
         {
-            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object.";
-            var script = @"
+            testEngine.Run(@"
 class Foo
 {
 }
 
 var inst = Foo();
-inst.a = 10;";
+inst.a = 10;");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]
         public void InstanceFromClass_WhenHasInitAndInitChainAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
         {
-            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object.";
-            var script = @"
+            testEngine.Run(@"
 class Foo
 {
     var b = 2;
@@ -33,11 +29,9 @@ class Foo
 }
 
 var inst = Foo();
-inst.a = 10;";
+inst.a = 10;");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -58,18 +52,15 @@ print(maker.a);");
         [Test]
         public void Class_WhenFrozenAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
         {
-            var expected = "Attempted to Create a new field 'a' via SetField on a frozen object.";
-            var script = @"
+            testEngine.Run(@"
 class Foo
 {
 }
 
 freeze Foo;
-Foo.a = 10;";
+Foo.a = 10;");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]

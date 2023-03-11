@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 using System.Linq;
-using ulox.core.tests;
+using ULox.Core.Tests;
 using ULox;
 
 public class UloxScriptTestBase

@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class DITests : EngineTestBase
@@ -82,7 +82,3 @@ inject Seven();");
         }
     }
 }
-
-//TODO add disalow redeclare of class or data
-//TODO expected ident after look statement with arg
-// want to be able to do loop(this.arr) presently this is not allowed

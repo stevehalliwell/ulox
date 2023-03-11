@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Text;
-using ULox;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class ByteCodeInterpreterTestEngine
     {

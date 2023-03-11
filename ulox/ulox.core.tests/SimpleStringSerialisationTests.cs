@@ -1,9 +1,8 @@
 ﻿using NUnit.Framework;
-using System.IO;
 using System.Text.RegularExpressions;
 using ULox;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class SimpleStringSerialisationTests : EngineTestBase

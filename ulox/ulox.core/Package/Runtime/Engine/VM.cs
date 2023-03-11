@@ -1105,12 +1105,7 @@ namespace ULox
             if (argCount != closureInternal.chunk.Arity)
                 ThrowRuntimeException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
                     $", got '{argCount}' but expected '{closureInternal.chunk.Arity}'");
-
-            if (closureInternal.chunk.FunctionType == FunctionType.PureFunction)
-            {
-                for (int i = 0; i < argCount; i++)
-                    ValidatePureArg(i, closureInternal);
-            }
+            
 
             var stackStart = (byte)System.Math.Max(0, _valueStack.Count - argCount - 1);
             PushNewCallframe(new CallFrame()
@@ -1120,14 +1115,6 @@ namespace ULox
                 ArgCount = argCount,
                 ReturnCount = closureInternal.chunk.ReturnCount
             });
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ValidatePureArg(int peekVal, ClosureInternal closureInternal)
-        {
-            var value = Peek(peekVal);
-            if (!value.IsPure)
-                ThrowRuntimeException($"Pure call '{closureInternal.chunk.Name}' with non-pure confirming argument '{value}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

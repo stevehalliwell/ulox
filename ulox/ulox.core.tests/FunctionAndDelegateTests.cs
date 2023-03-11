@@ -133,22 +133,6 @@ foo.bar(1);
         }
 
         [Test]
-        public void Fun_WhenPureViolatingAnonAndRhsOfAssign_ShouldFail()
-        {
-            testEngine.Run(@"
-var foo = {:};
-foo.bar = fun pure (a)
-{
-    print(a);
-};
-
-foo.bar(1);
-");
-
-            Assert.AreEqual("Identifiier 'print' could not be found locally in local function 'anonymous' in chunk 'anonymous(test)' at 5:10 'print'.", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Fun_WhenNamedReturns_ShouldPass()
         {
             testEngine.Run(@"

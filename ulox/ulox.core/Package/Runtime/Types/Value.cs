@@ -314,35 +314,5 @@ namespace ULox
             }
             return Value.Null();
         }
-        
-        public bool IsPure 
-        { 
-            get
-            {
-                switch (type)
-                {
-                case ValueType.Null:
-                case ValueType.Double:
-                case ValueType.Bool:
-                case ValueType.String:
-                case ValueType.UserType:
-                case ValueType.Instance:
-                    return true;
-                case ValueType.Chunk:
-                    return val.asChunk.FunctionType == FunctionType.PureFunction;
-                case ValueType.Closure:
-                    return val.asClosure.chunk.FunctionType == FunctionType.PureFunction;
-                case ValueType.BoundMethod:
-                    return val.asBoundMethod.Method.chunk.FunctionType == FunctionType.PureFunction;
-                case ValueType.NativeFunction:  //todo nativefuncs could declare themselves to be pure
-                    return false;
-                case ValueType.CombinedClosures:
-                case ValueType.Upvalue:
-                case ValueType.Object:
-                default:
-                    return false;
-                }
-            } 
-        }
     }
 }

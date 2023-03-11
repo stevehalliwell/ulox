@@ -125,12 +125,6 @@ namespace ULox
             if (ourArity != contractMethArity)
                 return (false, $"Expected arity '{contractMethArity}' but found '{ourArity}'.");
 
-            if (contractChunk.IsLocal && !lhsMatchingChunk.IsLocal)
-                return (false, $"Expected local but found '{lhsMatchingChunk.FunctionType}'.");
-
-            if (contractChunk.IsPure && !lhsMatchingChunk.IsPure)
-                return (false, $"Expected pure but found '{lhsMatchingChunk.FunctionType}'.");
-
             return (true, string.Empty);
         }
     }

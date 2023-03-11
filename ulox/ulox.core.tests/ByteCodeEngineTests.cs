@@ -910,5 +910,27 @@ a[1] = 2;");
 
             StringAssert.StartsWith("Cannot perform set index on type", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void NoLocal_WhenUpValue_ShouldModify()
+        {
+            testEngine.Run(@"
+fun Foo()
+{
+    var a = 10;
+
+    fun Bar()
+    {
+        a = 7;
+    }
+
+    Bar();
+    print(a);
+}
+
+Foo();");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
     }
 }

@@ -91,9 +91,6 @@
 
         TYPEOF,
 
-        LOCAL,
-        PURE,
-
         MEETS,
         SIGNS,
 

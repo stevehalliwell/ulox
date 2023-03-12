@@ -1,11 +1,11 @@
 name: Benchmark
 
-on: 
-  pull_request:
-    branches: [ main, develop ]
-    types: [ opened, synchronize ]
-  push:
-    branches: [ main, develop ]
+on: workflow_dispatch
+  # pull_request:
+  #   branches: [ main, develop ]
+  #   types: [ opened, synchronize ]
+  # push:
+  #   branches: [ main, develop ]
 
 permissions:
   contents: write

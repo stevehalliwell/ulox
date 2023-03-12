@@ -8,9 +8,12 @@ for (var i = 0; i < len; i+= 1)
 }
 
 // You can define the contents of a list inline
-var thatList = [ 0, 1, 2, 3, 4 ];
+var thatList = [ 0, 1, 2, 3, 4, 5, 6, ];
 
 list.Remove(3);
+
+// You can also remove by index
+thatList.RemoveAt(3);
 
 var length = list.Count();
 print("Length is " + length);

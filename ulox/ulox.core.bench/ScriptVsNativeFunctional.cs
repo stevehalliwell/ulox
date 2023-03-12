@@ -1,4 +1,4 @@
-﻿namespace ulox.core.bench
+﻿namespace ULox.Core.Bench
 {
     public class ScriptVsNativeFunctional
     {

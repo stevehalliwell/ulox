@@ -1,8 +1,7 @@
 ﻿using NUnit.Framework;
-using ulox.core.bench;
-using ULox;
+using ULox.Core.Bench;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class ProfileSourceTests : EngineTestBase

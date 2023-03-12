@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class FunctionAndDelegateTests : EngineTestBase
     {
@@ -130,22 +130,6 @@ foo.bar(1);
 ");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Fun_WhenPureViolatingAnonAndRhsOfAssign_ShouldFail()
-        {
-            testEngine.Run(@"
-var foo = {:};
-foo.bar = fun pure (a)
-{
-    print(a);
-};
-
-foo.bar(1);
-");
-
-            Assert.AreEqual("Identifiier 'print' could not be found locally in local function 'anonymous' in chunk 'anonymous(test)' at 5:10 'print'.", testEngine.InterpreterResult);
         }
 
         [Test]

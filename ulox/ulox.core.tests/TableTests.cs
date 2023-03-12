@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using ULox;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class TableTests

@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class DITests : EngineTestBase
@@ -65,5 +65,20 @@ inject Seven = 8;");
             StringAssert.StartsWith("Invalid assignment target", testEngine.InterpreterResult);
         }
 
+        [Test]
+        public void Register_Method_ShouldPrint()
+        {
+            testEngine.Run(@"
+class T
+{
+    Foo(){print(7);}
+}
+var t = T();
+
+register Seven t.Foo;
+inject Seven();");
+
+            StringAssert.StartsWith("7", testEngine.InterpreterResult);
+        }
     }
 }

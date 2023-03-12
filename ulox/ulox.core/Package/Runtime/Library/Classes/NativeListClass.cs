@@ -23,6 +23,7 @@ namespace ULox
                 (nameof(Resize), Value.New(Resize, 1, 2)),
                 (nameof(Add), Value.New(Add, 1, 1)),
                 (nameof(Remove), Value.New(Remove, 1, 1)),
+                (nameof(RemoveAt), Value.New(RemoveAt, 1, 1)),
                 (nameof(Reverse), Value.New(Reverse, 1, 0)),
                 (nameof(Map), Value.New(Map,1,1)),
                 (nameof(Reduce), Value.New(Reduce, 1, 1)),
@@ -88,6 +89,14 @@ namespace ULox
             ThrowIfReadOnly(vm);
             var top = vm.GetArg(1);
             GetArg0NativeListInstance(vm).Remove(top);
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult RemoveAt(Vm vm)
+        {
+            ThrowIfReadOnly(vm);
+            var index = vm.GetArg(1);
+            GetArg0NativeListInstance(vm).RemoveAt((int)index.val.asDouble);
             return NativeCallResult.SuccessfulExpression;
         }
 

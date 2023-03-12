@@ -1,13 +1,13 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class FunctionalCollectionTests : EngineTestBase
     {
         [Test]
         public void NativeListMap_WhenCompiled_ShouldNotError()
         {
-            var script = @"
+            testEngine.Run(@"
 fun MakeTestArray()
 {
     var arr = [];
@@ -52,9 +52,7 @@ arr = MakeTestArray();
 arr = arr.Filter(isEven);
 var foldRes = arr.Reduce(accum);
 Assert.AreEqual(4, foldRes);
-";
-
-            testEngine.Run(script);
+");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
@@ -62,7 +60,7 @@ Assert.AreEqual(4, foldRes);
         [Test]
         public void FunctionalCollectionUlox_WhenCompiled_ShouldNotError()
         {
-            var script = @"
+            testEngine.Run(@"
 fun reduce(arr, fn)
 {
     var res = arr[0];
@@ -175,13 +173,9 @@ test FunctionalCollectionTests
         var foldResult = fold(result, accum, 0);
         Assert.AreEqual(4, foldResult);
     }
-}
-";
-
-            testEngine.Run(script);
+}");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
-
     }
 }

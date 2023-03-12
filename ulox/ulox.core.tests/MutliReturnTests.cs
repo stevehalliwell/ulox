@@ -1,7 +1,6 @@
 ﻿using NUnit.Framework;
-using ULox;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class MutliReturnTests : EngineTestBase
@@ -37,31 +36,6 @@ print(b);");
 
             Assert.AreEqual("12", testEngine.InterpreterResult);
         }
-
-//        [Test]
-//        public void Run_WhenReturn4OfTheReturn2WithOperationsInMiddleStack_ShouldMatchExpected()
-//        {
-//            testEngine.Run(@"
-//fun Outter(){return (1,2);}
-
-//fun A2()
-//{
-//    var (c,d) = Outter();
-//    c += 1;
-//    d = c*c + d;
-//    var (a,b) = Outter(); 
-//    return (a,b,c,d);
-//}
-
-//var (a,b,c,d) = A2();
-
-//print(a);
-//print(b);
-//print(c);
-//print(d);");
-
-//            Assert.AreEqual("12310", testEngine.InterpreterResult);
-//        }
 
         [Test]
         public void Run_WhenReturn2AndTake2_ShouldMatchExpected()

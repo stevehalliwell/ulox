@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class EnumTests : EngineTestBase
     {
@@ -14,7 +14,7 @@ enum Foo
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
-        
+
         [Test]
         public void Delcared_When2Values_ShouldPass()
         {
@@ -144,7 +144,7 @@ Foo.Bar = 1;");
 
             Assert.AreEqual("Attempted to Set field 'Bar', but instance is read only.", testEngine.InterpreterResult);
         }
-        
+
         [Test]
         public void Var_WhenAssignedFromEnum_ShouldBe0()
         {
@@ -367,52 +367,6 @@ print(Foo.Bar.Enum == Foo);
             Assert.AreEqual("True", testEngine.InterpreterResult);
         }
 
-        //        [Test]
-        //        public void EnumMixin_WhenDifferentEnums_ShouldSeeAllOfAInB()
-        //        {
-        //            testEngine.Run(@"
-        //enum A
-        //{
-        //    Bar,
-        //    Baz,
-        //}
-
-        //enum B
-        //{
-        //    mixin A;
-        //    Bax,
-        //}
-
-        //print(B.Bar.Value);
-        //print(B.Baz.Value);
-        //print(B.Bax.Value);
-        //");
-
-        //            Assert.AreEqual("012", testEngine.InterpreterResult);
-        //        }
-
-        //        [Test]
-        //        public void DotEnum_WhenMixinDifferentEnums_ShouldSeeMostSpecific()
-        //        {
-        //            testEngine.Run(@"
-        //enum A
-        //{
-        //    Bar,
-        //    Baz,
-        //}
-
-        //enum B
-        //{
-        //    mixin A;
-        //    Bax,
-        //}
-
-        //print(B.Baz.Enum);
-        //");
-
-        //            Assert.AreEqual("<Enum B>", testEngine.InterpreterResult);
-        //        }
-
         [Test]
         public void FirstAll_WhenExists_ShouldReturnMatch()
         {
@@ -485,6 +439,33 @@ fb.Value = 7;
 ");
 
             Assert.AreEqual("Attempted to Set field 'Value', but instance is read only.", testEngine.InterpreterResult);
+        }
+
+        public enum Foo
+        {
+            Unknown,
+            Bar,
+            Baz,
+        }
+
+        [Test]
+        public void Enum_WhenFromNative_ShouldHaveMatchingValues()
+        {
+            var globals = testEngine.MyEngine.Context.Vm.Globals;
+
+            globals[new HashedString(nameof(Foo))] = EnumFromNative.Create(typeof(Foo));
+
+            testEngine.Run(@"
+var all = Foo.All;
+
+loop (all)
+{
+    print(item.Key);
+    print(item.Value);
+}
+");
+
+            Assert.AreEqual("Unknown0Bar1Baz2", testEngine.InterpreterResult);
         }
     }
 }

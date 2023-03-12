@@ -1,11 +1,10 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
     public class InnerVMTests : EngineTestBase
     {
-
         [Test]
         public void Engine_InternalSandbox_CanPassIn()
         {

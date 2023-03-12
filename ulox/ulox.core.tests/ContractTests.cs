@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class ContractTests : EngineTestBase
     {
@@ -128,114 +128,6 @@ class TSub
 {
     mixin T;
     signs IT;
-}");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Meets_WhenLocalITAndTMismatch_ShouldThrow()
-        {
-            testEngine.Run(@"
-class IT
-{
-    local Required(){}
-}
-
-class T 
-{
-    signs IT;
-    Required(){}
-}");
-
-            StringAssert.StartsWith("Sign failure with msg 'Expected local but found 'Method'.' at ip:", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Meets_WhenITAndTLocalMismatch_ShouldNotThrow()
-        {
-            testEngine.Run(@"
-class IT
-{
-    Required(){}
-}
-
-class T 
-{
-    signs IT;
-    local Required(){}
-}");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Meets_WhenLocalITAndTLocalMatch_ShouldNotThrow()
-        {
-            testEngine.Run(@"
-class IT
-{
-    local Required(){}
-}
-
-class T 
-{
-    signs IT;
-    local Required(){}
-}");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Meets_WhenPureITAndTMismatch_ShouldThrow()
-        {
-            testEngine.Run(@"
-class IT
-{
-    pure Required(){}
-}
-
-class T 
-{
-    signs IT;
-    Required(){}
-}");
-
-            StringAssert.StartsWith("Sign failure with msg 'Expected pure but found 'Method'.' at ip:", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Meets_WhenITAndTPureMismatch_ShouldNotThrow()
-        {
-            testEngine.Run(@"
-class IT
-{
-    Required(){}
-}
-
-class T 
-{
-    signs IT;
-    pure Required(){}
-}");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Meets_WhenPureITAndTPureMatch_ShouldNotThrow()
-        {
-            testEngine.Run(@"
-class IT
-{
-    pure Required(){}
-}
-
-class T 
-{
-    signs IT;
-    pure Required(){}
 }");
 
             Assert.AreEqual("", testEngine.InterpreterResult);

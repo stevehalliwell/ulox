@@ -1,14 +1,14 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     [TestFixture]
 
     public class ByteCodeIteratorTests : EngineTestBase
     {
-        private ULox.CompiledScript CompileByteCode(string str)
+        private CompiledScript CompileByteCode(string str)
         {
-            return testEngine.MyEngine.Context.CompileScript(new ULox.Script("test", str));
+            return testEngine.MyEngine.Context.CompileScript(new Script("test", str));
         }
 
         [Test]

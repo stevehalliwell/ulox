@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class TestSetTests : EngineTestBase
     {
@@ -522,10 +522,10 @@ test T
         public void TestCase_InvalidLocation_ShouldFail()
         {
             testEngine.Run(@"
-    testcase ([1,2,3]) One(val)
-    {
-        print(val);
-    }
+testcase ([1,2,3]) One(val)
+{
+    print(val);
+}
 "
             );
             

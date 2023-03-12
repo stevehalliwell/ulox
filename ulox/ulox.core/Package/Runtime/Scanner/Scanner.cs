@@ -78,9 +78,6 @@ namespace ULox
 
                 ("typeof", TokenType.TYPEOF),
 
-                ("local", TokenType.LOCAL),
-                ("pure", TokenType.PURE),
-
                 ("meets", TokenType.MEETS),
                 ("signs", TokenType.SIGNS),
 

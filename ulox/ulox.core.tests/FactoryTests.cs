@@ -1,6 +1,6 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class FactoryTests : EngineTestBase
     {
@@ -33,8 +33,7 @@ Assert.AreEqual(typeof(obj), Foo);
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
-
-
+        
         [Test]
         public void Factory_WhenMultiSimpleReg_ShouldReturnExpected()
         {
@@ -70,6 +69,7 @@ Assert.AreNotEqual(null, foo);
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+        
         [Test]
         public void Create_WhenSetSimpleDynWithFactorySyntaxAndInlineFunction_ShouldReturnNonNull()
         {

@@ -29,8 +29,6 @@ namespace ULox
         public string Name { get; set; }
         public string SourceName { get; }
         public FunctionType FunctionType { get; internal set; }
-        public bool IsLocal => FunctionType == FunctionType.LocalFunction || FunctionType == FunctionType.LocalMethod;
-        public bool IsPure => FunctionType == FunctionType.PureFunction;
         public byte Arity => (byte)ArgumentConstantIds.Count;
         public byte ReturnCount => (byte)ReturnConstantIds.Count;
         public int UpvalueCount { get; internal set; }

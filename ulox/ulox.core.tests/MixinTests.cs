@@ -1,14 +1,13 @@
 ﻿using NUnit.Framework;
 
-namespace ulox.core.tests
+namespace ULox.Core.Tests
 {
     public class MixinTests : EngineTestBase
     {
         [Test]
         public void Mixin_WhenDeclared_ShouldCompileCleanly()
         {
-            var expected = "1";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     var a = 1;
@@ -19,18 +18,15 @@ class Foo
     mixin MixMe;
 }
 
-print(1);";
+print(1);");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Mixin_WhenCombined_ShouldHaveMixinVar()
         {
-            var expected = "1";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     var a = 1,b,c;
@@ -42,19 +38,15 @@ class Foo
 }
 
 var foo = Foo();
-print(foo.a);
-";
+print(foo.a);");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Mixin_WhenCombined_ShouldHaveMixinVarAndSelf()
         {
-            var expected = "11";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     var a = 1,b,c;
@@ -69,19 +61,15 @@ class Foo
 
 var foo = Foo();
 print(foo.a);
-print(foo.e);
-";
+print(foo.e);");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("11", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Mixin_WhenCombinedAndNamesClash_ShouldHaveSelfVar()
         {
-            var expected = "2";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     var a = 1,b,c;
@@ -94,19 +82,15 @@ class Foo
 }
 
 var foo = Foo();
-print(foo.a);
-";
+print(foo.a);");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("2", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Mixin_WhenManyCombined_ShouldHaveAll()
         {
-            var expected = "1234";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     var a = 1;
@@ -135,18 +119,15 @@ var foo = Foo();
 print(foo.a);
 print(foo.b);
 print(foo.c);
-print(foo.d);
-";
+print(foo.d);");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("1234", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Mixin_WhenManyCombinedAndMixinsOfMixins_ShouldHaveAll()
         {
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     var a = 1;
@@ -195,10 +176,7 @@ print(foo.c);
 print(foo.d);
 print(foo.e);
 print(foo.f);
-print(foo.g);
-";
-
-            testEngine.Run(script);
+print(foo.g);");
 
             Assert.AreEqual("1234567", testEngine.InterpreterResult);
         }
@@ -206,8 +184,7 @@ print(foo.g);
         [Test]
         public void Mixin_WhenCombined_ShouldHaveOriginalVar()
         {
-            var expected = "2";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     var a = 1,b,c;
@@ -221,19 +198,15 @@ class Foo
 }
 
 var foo = Foo();
-print(foo.bar);
-";
+print(foo.bar);");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("2", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Mixin_WhenCombined_ShouldHaveFlavourMethod()
         {
-            var expected = "MixMe";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     Speak(){print(cname);}
@@ -246,19 +219,15 @@ class Foo
 }
 
 var foo = Foo();
-foo.Speak();
-";
+foo.Speak();");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("MixMe", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Mixin_WhenCombined_ShouldHaveBoth()
         {
-            var expected = "Foo";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     Speak(){print(cname);}
@@ -271,19 +240,15 @@ class Foo
 }
 
 var foo = Foo();
-foo.Speaketh();
-";
+foo.Speaketh();");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("Foo", testEngine.InterpreterResult);
         }
 
         [Test]
         public void Mixin_WhenMultipleCombined_ShouldHaveAll()
         {
-            var expected = "Foo";
-            var script = @"
+            testEngine.Run(@"
 class MixMe
 {
     Speak(){print(cname);}
@@ -304,19 +269,16 @@ class Foo
 }
 
 var foo = Foo();
-foo.Speaketh();
-";
+foo.Speaketh();");
 
-            testEngine.Run(script);
-
-            Assert.AreEqual(expected, testEngine.InterpreterResult);
+            Assert.AreEqual("Foo", testEngine.InterpreterResult);
         }
 
 
         [Test]
         public void Mixin_WhenCombinedAndNamesClash_ShouldHaveAllPrint()
         {
-            var script = @"
+            testEngine.Run(@"
 
 class MixMe
 {
@@ -342,10 +304,7 @@ class Foo
 }
 
 var foo = Foo();
-foo.Speak();
-";
-
-            testEngine.Run(script);
+foo.Speak();");
 
             Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
         }
@@ -353,8 +312,7 @@ foo.Speak();
         [Test]
         public void Mixin_WhenInstanceMethodsCombinedAndNamesClash_ShouldHaveAllPrint()
         {
-            var script = @"
-
+            testEngine.Run(@"
 class MixMe
 {
     var MixMeName = cname;
@@ -383,10 +341,7 @@ class Foo
 }
 
 var foo = Foo();
-foo.Speak();
-";
-
-            testEngine.Run(script);
+foo.Speak();");
 
             Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
         }
@@ -394,8 +349,7 @@ foo.Speak();
         [Test]
         public void Mixin_WhenDuplicateFlavours_ShouldHaveOnlyOnePresent()
         {
-            var script = @"
-
+            testEngine.Run(@"
 var globalCounter = 0;
 
 class MixMe
@@ -419,10 +373,7 @@ class Foo
 }
 
 var foo = Foo();
-print(foo.a);
-";
-
-            testEngine.Run(script);
+print(foo.a);");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
@@ -430,8 +381,7 @@ print(foo.a);
         [Test]
         public void Mixin_WhenDataAndDuplicateFlavours_ShouldHaveOnlyOnePresent()
         {
-            var script = @"
-
+            testEngine.Run(@"
 var globalCounter = 0;
 
 data MixMe
@@ -459,10 +409,7 @@ data Foo
 var foo = Foo();
 print(foo.a);
 print(foo.b);
-print(foo.c);
-";
-
-            testEngine.Run(script);
+print(foo.c);");
 
             Assert.AreEqual("112", testEngine.InterpreterResult);
         }
@@ -470,7 +417,7 @@ print(foo.c);
         [Test]
         public void MixinInits_WhenMultipleInit_ShouldDoAll()
         {
-            var script = @"
+            testEngine.Run(@"
 class Foo
 {
     var fizz = 1, negative = -1;
@@ -496,10 +443,7 @@ var result = -1;
 var fooBar = FooBar(expectedFizz, expectedBuzz, expectedBitcount);
 result = fooBar.fizz + fooBar.negative + fooBar.buzz + fooBar.bitcount;
 
-print(result);
-";
-
-            testEngine.Run(script);
+print(result);");
 
             Assert.AreEqual("59", testEngine.InterpreterResult);
         }

@@ -306,7 +306,6 @@ namespace ULox
             var functionType = CurrentCompilerState.functionType;
 
             if (functionType == FunctionType.Method
-                || functionType == FunctionType.LocalMethod
                 || functionType == FunctionType.Init)
             {
                 CurrentCompilerState.AddLocal(this, "this", 0);
@@ -323,8 +322,6 @@ namespace ULox
         {
             (var getOp, var setOp, var argId) = ResolveNameLookupOpCode(name);
 
-            ConfirmAccess(getOp, setOp, name);
-
             if (!canAssign)
             {
                 EmitPacketByte(getOp, argId);
@@ -334,7 +331,6 @@ namespace ULox
             if (TokenIterator.Match(TokenType.ASSIGN))
             {
                 Expression();
-                ConfirmWrite(name, argId);
 
                 EmitPacketByte(setOp, argId);
                 return;
@@ -342,31 +338,10 @@ namespace ULox
 
             if (HandleCompoundAssignToken(getOp, setOp, argId))
             {
-                ConfirmWrite(name, argId);
                 return;
             }
 
             EmitPacketByte(getOp, argId);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ConfirmWrite(string name, byte argId)
-        {
-            if (CurrentCompilerState.functionType == FunctionType.PureFunction)
-            {
-                if (argId <= CurrentCompilerState.chunk.Arity)
-                    ThrowCompilerException($"Attempted to write to function param '{name}', this is not allowed in a 'pure' function");
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ConfirmAccess(OpCode getOp, OpCode setOp, string name)
-        {
-            if (IsFunctionLocal())
-            {
-                if (getOp != OpCode.GET_LOCAL || setOp != OpCode.SET_LOCAL)
-                    ThrowCompilerException($"Identifiier '{name}' could not be found locally in local function '{CurrentCompilerState.chunk.Name}'");
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -442,15 +417,6 @@ namespace ULox
             }
 
             return (getOp, setOp, (byte)argId);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool IsFunctionLocal()
-        {
-            var ft = CurrentCompilerState.functionType;
-            return ft == FunctionType.LocalFunction
-                || ft == FunctionType.LocalMethod
-                || ft == FunctionType.PureFunction;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -530,7 +496,7 @@ namespace ULox
                 var retvalId = DeclareAndDefineCustomVariable("retval");
                 IncreaseReturn(retvalId);
             }
-            
+
             // The body.
             TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             Block();
@@ -934,12 +900,16 @@ namespace ULox
             do
             {
                 if (lastElseLabel != -1)
+                {
                     compiler.EmitLabel((byte)lastElseLabel);
+                    compiler.EmitPop();
+                }
 
                 compiler.Expression();
                 compiler.EmitPacketByte(matchGetOp, matchArgID);
                 compiler.EmitPacket(OpCode.EQUAL);
                 lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
+                compiler.EmitPop();
                 compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
                 compiler.Statement();
                 compiler.EmitGoto(matchEndLabelID);
@@ -1040,17 +1010,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)
         {
-            var functionType = FunctionType.Function;
-
-            if (compiler.TokenIterator.Match(TokenType.PURE))
-            {
-                functionType = FunctionType.PureFunction;
-            }
-            if (compiler.TokenIterator.Match(TokenType.LOCAL))
-            {
-                functionType = FunctionType.LocalFunction;
-            }
-
             var isNamed = compiler.TokenIterator.Check(TokenType.IDENTIFIER);
             var globalName = -1;
             if (isNamed)
@@ -1063,7 +1022,7 @@ namespace ULox
                 globalName != -1
                 ? compiler.TokenIterator.PreviousToken.Lexeme
                 : "anonymous",
-                functionType);
+                 FunctionType.Function);
 
             if (globalName != -1)
             {

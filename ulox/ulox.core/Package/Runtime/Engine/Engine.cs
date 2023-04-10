@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace ULox
 {
     public sealed class Engine
     {
         public Context Context { get; }
-        public readonly Queue<Script> _buildQueue = new Queue<Script>();
+        private readonly BuildQueue _buildQueue = new BuildQueue();
 
         public Engine(Context executionContext)
         {
@@ -25,7 +24,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void BuildAndRun()
         {
-            while (_buildQueue.Count > 0)
+            while (_buildQueue.HasItems)
             {
                 var script = _buildQueue.Dequeue();
                 var s = Context.CompileScript(script);

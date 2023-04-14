@@ -44,6 +44,19 @@ print(t);");
         }
 
         [Test]
+        public void Class_Instance_NoInit()
+        {
+            testEngine.Run(@"
+class T
+{
+}
+
+var t = T(7);");
+
+            StringAssert.StartsWith("Expected zero args for class '<Class T>', as it does not have an 'init' method but got 1 args", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_2Var()
         {
             testEngine.Run(@"

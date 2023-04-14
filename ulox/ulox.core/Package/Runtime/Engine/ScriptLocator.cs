@@ -7,7 +7,7 @@ namespace ULox
     public sealed class LocalFileScriptLocator : IScriptLocator
     {
         private readonly DirectoryInfo _directory;
-        
+
         public LocalFileScriptLocator()
         {
             _directory = new DirectoryInfo(Environment.CurrentDirectory);
@@ -19,8 +19,8 @@ namespace ULox
             var externalMatches = Directory.GetFiles(_directory.FullName, $"{name}*");
             if (externalMatches?.Length > 0)
                 return new Script(name, File.ReadAllText(externalMatches[0]));
-            
-            return new Script(name,String.Empty);
+
+            return new Script(name, string.Empty);
         }
     }
 }

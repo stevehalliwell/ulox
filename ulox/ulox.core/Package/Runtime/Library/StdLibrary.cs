@@ -21,6 +21,7 @@ namespace ULox
                 ("Assert", Value.New(MakeAssertInstance())),
                 ("Serialise", Value.New(SerialiseStdLibrary.MakeSerialiseInstance())),
                 ("Math", Value.New(MathStdLibrary.MakeMathInstance())),
+                ("Platform", Value.New(PlatformStdLibrary.MakeMathInstance())),
                 (nameof(Duplicate), Value.New(Duplicate, 1, 1)),
                 (nameof(str), Value.New(str, 1, 1)),
                 (nameof(IsFrozen), Value.New(IsFrozen, 1, 1)),

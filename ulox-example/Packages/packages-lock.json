@@ -4,7 +4,9 @@
       "version": "file:../../ulox/ulox.core/Package",
       "depth": 0,
       "source": "local",
-      "dependencies": {}
+      "dependencies": {
+        "com.unity.nuget.newtonsoft-json": "3.0.0"
+      }
     },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
@@ -29,7 +31,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.nuget.newtonsoft-json": {
-      "version": "3.0.2",
+      "version": "3.1.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {},

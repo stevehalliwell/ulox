@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ULox
 {
-    public class ScriptLocator : IScriptLocator
+    public class ScriptLocator : IScriptLocator, IPlatform
     {
         private readonly Dictionary<string, string> _builtinScripts = new Dictionary<string, string>();
 #if !UNITY_WEBGL
@@ -36,7 +38,7 @@ namespace ULox
         {
             if (_builtinScripts != null
                 && _builtinScripts.TryGetValue(name, out var val))
-                return new Script(name,val);
+                return new Script(name, val);
 
 #if !UNITY_WEBGL 
             var nameSearch = $"{name}*";
@@ -45,9 +47,29 @@ namespace ULox
                 || externalMatches.Length == 0)
                 throw new System.IO.FileNotFoundException(nameSearch);
 
-                return new Script(name,System.IO.File.ReadAllText(externalMatches[0]));
+            return new Script(name, System.IO.File.ReadAllText(externalMatches[0]));
 #endif
             return new Script(name, null);
+        }
+
+        public string[] FindFiles(string inDirectory, string withPattern, bool recurse)
+        {
+            var searchOption = recurse ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly;
+            var ret = new string[0];
+
+            try
+            {
+                var fullPath = System.IO.Path.Combine(_directory.FullName, inDirectory);
+                if (fullPath.StartsWith(_directory.FullName))
+                {
+                    var prefixLen = _directory.FullName.Length + 1;
+                    ret = System.IO.Directory.GetFiles(fullPath, withPattern, searchOption);
+                    ret = ret.Select(x => x.Substring(prefixLen)).ToArray();
+                }
+            }
+            catch (Exception) { }
+
+            return ret;
         }
     }
 }

@@ -314,5 +314,64 @@ namespace ULox
             }
             return Value.Null();
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal static Value UpdateFrom(Value lhs, Value rhs, Vm vm)
+        {
+            if (rhs.type != lhs.type)
+            {
+                return lhs;
+            }
+
+            switch (lhs.type)
+            {
+            case ValueType.BoundMethod:
+            case ValueType.UserType:
+            case ValueType.Upvalue:
+            case ValueType.CombinedClosures:
+            case ValueType.Closure:
+            case ValueType.NativeFunction:
+            case ValueType.Chunk:
+            case ValueType.Null:
+            case ValueType.Object:
+                lhs = rhs;
+                break;
+            case ValueType.Double:
+                lhs.val.asDouble = rhs.val.asDouble;
+                break;
+            case ValueType.Bool:
+                lhs.val.asBool = rhs.val.asBool;
+                break;
+            case ValueType.String:
+                lhs.val.asString = rhs.val.asString;
+                break;
+            case ValueType.Instance:
+                if(lhs.val.asInstance is INativeCollection lhsNativeCol
+                    && rhs.val.asInstance is INativeCollection rhsNativeCol
+                    && lhsNativeCol.GetType() == rhsNativeCol.GetType())
+                {
+                    //we could do internal changes but we end up just doing this more long form
+                    lhs = rhs;
+                }
+                else
+                {
+                    //deal with regular field updates
+                    var lhsInst = lhs.val.asInstance;
+                    foreach (var field in lhsInst.Fields)
+                    {
+                        if (rhs.val.asInstance.Fields.TryGetValue(field.Key, out var rhsField))
+                        {
+                            lhsInst.Fields[field.Key] = UpdateFrom(field.Value, rhsField, vm);
+                        }
+                    }
+                }
+                break;
+            default:
+                vm.ThrowRuntimeException($"Unhandled value type '{lhs.type}' in update, with lhs '{lhs}' and rhs '{rhs}'");
+                break;
+            }
+
+            return lhs;
+        }
     }
 }

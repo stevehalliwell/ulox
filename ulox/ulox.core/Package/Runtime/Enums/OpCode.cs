@@ -87,5 +87,7 @@
 
         ENUM_VALUE,
         READ_ONLY,
+
+        UPDATE,
     }
 }

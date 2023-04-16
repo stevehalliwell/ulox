@@ -91,7 +91,9 @@ namespace ULox
 
                 ("enum", TokenType.ENUM),
 
-                ("readonly", TokenType.READ_ONLY));
+                ("readonly", TokenType.READ_ONLY),
+
+                ("update", TokenType.UPDATE));
         }
 
         public void AddGenerator(IScannerTokenGenerator gen)

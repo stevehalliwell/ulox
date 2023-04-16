@@ -556,6 +556,10 @@ namespace ULox
                     DoReadOnlyOp(chunk);
                     break;
 
+                case OpCode.UPDATE:
+                    DoUpdateOp();
+                    break;
+
                 case OpCode.NONE:
                 default:
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
@@ -592,16 +596,28 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoMeetsOp()
         {
-            var (meets, _) = ProcessContract();
+            var (rhs, lhs) = Pop2();
+            var (meets, _) = ProcessContract(lhs, rhs);
             Push(Value.New(meets));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSignsOp()
         {
-            var (meets, msg) = ProcessContract();
+            var (rhs, lhs) = Pop2();
+            var (meets, msg) = ProcessContract(lhs, rhs);
             if (!meets)
                 ThrowRuntimeException($"Sign failure with msg '{msg}'");
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoUpdateOp()
+        {
+            var (rhs, lhs) = Pop2();
+            
+            var res = Value.UpdateFrom(lhs, rhs, this);
+            
+            Push(res);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -657,10 +673,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private (bool meets, string msg) ProcessContract()
+        private (bool meets, string msg) ProcessContract(Value lhs, Value rhs)
         {
-            var (rhs, lhs) = Pop2();
-
             switch (lhs.type)
             {
             case ValueType.UserType:

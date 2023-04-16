@@ -104,7 +104,8 @@ namespace ULox
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
                 (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
                 (TokenType.FUNCTION, new ActionParseRule(FunExp, null, Precedence.Call)),
-                (TokenType.COUNT_OF, new ActionParseRule(CountOf, null, Precedence.None))
+                (TokenType.COUNT_OF, new ActionParseRule(CountOf, null, Precedence.None)),
+                (TokenType.UPDATE, new ActionParseRule(null, Update, Precedence.Comparison))
                               );
         }
 
@@ -1122,6 +1123,13 @@ namespace ULox
         {
             compiler.Expression();
             compiler.EmitPacket(OpCode.COUNT_OF);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void Update(Compiler compiler, bool canAssign)
+        {
+            compiler.Expression();
+            compiler.EmitPacket(OpCode.UPDATE);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

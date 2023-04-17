@@ -110,6 +110,16 @@ data A{a; signs B;}");
         }
 
         [Test]
+        public void Delcared_WhenTrailingCommaInVarList_ShouldCompile()
+        {
+            testEngine.Run(@"
+data Foo {a,b,c,}
+print (Foo);");
+
+            Assert.AreEqual("<Data Foo>", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Delcared_WhenTrailingSemiColonInVarList_ShouldCompile()
         {
             testEngine.Run(@"

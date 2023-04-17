@@ -82,7 +82,10 @@
 
                 //patch jump from skip imperative
                 compiler.EmitLabel(initFragmentJump);
-            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+                //if trailing comma, eat it
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            } while (compiler.TokenIterator.Check(TokenType.IDENTIFIER));
 
             if(_requreEndStatement)
                 compiler.ConsumeEndStatement("property declaration");

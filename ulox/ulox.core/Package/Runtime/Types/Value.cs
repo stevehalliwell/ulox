@@ -373,5 +373,34 @@ namespace ULox
 
             return lhs;
         }
+
+        public bool IsCallableWithArity(int arity)
+        {
+            switch (this.type)
+            {
+            case ValueType.Null:
+            case ValueType.Double:
+            case ValueType.Bool:
+            case ValueType.Upvalue:
+            case ValueType.String:
+            case ValueType.UserType:
+            case ValueType.Instance:
+            case ValueType.Object:
+                return false;
+            case ValueType.Chunk:
+                return val.asChunk.Arity == arity;
+            case ValueType.NativeFunction:
+                return true;//hope so
+            case ValueType.Closure:
+                return val.asClosure.chunk.Arity == arity;
+            case ValueType.CombinedClosures:
+                return val.asCombined[0].chunk.Arity == arity;
+            case ValueType.BoundMethod:
+                return val.asBoundMethod.Method.chunk.Arity == arity;
+
+            default:
+                throw new UloxException($"Unhandled value type '{this.type}' in {nameof(IsCallableWithArity)}");
+            }
+        }
     }
 }

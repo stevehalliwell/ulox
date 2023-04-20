@@ -1,0 +1,125 @@
+/*
+Code we expect from Unity's side;
+SetUIText(string)
+CreateFromPrefab(string):GameObject (returns a GameObject reference that we'll pass back to unity)
+GetKey(string):bool
+SetGameObjectPosition(GameObject, x, y, z)
+ReloadScene - reload the current unity scene
+
+
+Unity will find and call: 
+- SetupGame in Start
+- Update in Update
+*/
+
+//functions and data
+var dt = 0;
+var points = [];
+var gos = [];
+
+//TODO remove the x, just be where you are
+data Circle
+{
+	x = 0,
+	y = 0, 
+	py = 0,
+	anchorY = 0,
+	pullY = 0,
+	go = CreateFromPrefab("Circle"),
+}
+
+fun SetupGame()
+{
+	print ("Setting Up Game");
+
+	var numToSpawn = 50;
+	var startX = -12.5;
+	var stepX = 0.5;
+
+	for(var i = 0; i < numToSpawn; i += 1)
+	{
+		var circ = Circle();
+		circ.x = startX + i * stepX;
+		points.Add(circ);
+		gos.Add(circ.go);
+	}
+}
+
+fun Update()
+{
+	if(GetKey("escape")){ReloadScene();}
+
+	var dampen = 0.975;
+	var invDampen = 1 - dampen;
+	var pullFactor = 0.9;
+
+	var circCountMiddle = points.Count();
+	for(var i = 0; i < circCountMiddle; i += 1)
+	{
+		var item = points[i];
+		var px = 0;
+		var py = 0;
+		var y = item.y;
+		if(i > 2)
+		{
+			var vPrior = points[i-2];
+			py += (vPrior.y - y) * 0.5;
+		}
+		if(i > 1)
+		{
+			var prior = points[i-1];
+			py += prior.y - y;
+		}
+		if(i < circCountMiddle - 1)
+		{
+			var next = points[i+1];
+			py += next.y - y;
+		}
+		if(i < circCountMiddle - 2)
+		{
+			var vNext = points[i+2];
+			py += (vNext.y - y) * 0.5;
+		}
+		item.pullY = py * pullFactor * dt;
+	}
+
+
+	if(GetKey("space")){RandomPullAll();}
+	if(GetKey("r")){RandomPull();}
+	if(GetKey("h")){HoldMiddle();}
+
+	loop(points)
+	{
+		var dy = item.y - item.py;
+		item.py = item.y;
+		item.y = item.y + dy + item.pullY;
+
+		item.y = item.y * dampen + item.anchorY * invDampen;
+
+		item.pullY = 0;
+	}
+
+	SetListOfGoToListOfPositions(gos, points, "x", "y");
+}
+
+fun RandomPullAll()
+{
+	loop(points)
+	{
+		item.pullY = RandRange(-1, 1);
+	}
+}
+
+fun RandomPull()
+{
+	var index = points.Count()/2;
+	var item = points[index];
+	item.pullY = RandRange(-1, 1);
+}
+
+fun HoldMiddle()
+{
+	var index = points.Count()/2;
+	var item = points[index];
+	item.y = 3;
+}

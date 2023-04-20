@@ -1,4 +1,4 @@
-test StringConversion
+testset StringConversion
 {
     testcase Native
     {

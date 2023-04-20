@@ -22,7 +22,7 @@ class StringContainer
     var text = "";
 }
 
-test MixinsMethods
+testset MixinsMethods
 {
     testcase ClassHasMixedInMethods
     {

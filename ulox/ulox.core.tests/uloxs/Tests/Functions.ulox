@@ -3,7 +3,7 @@ fun Add(lhs, rhs)
     retval = lhs+rhs;
 }
 
-test Functions
+testset Functions
 {
     testcase Return
     {

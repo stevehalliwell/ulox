@@ -84,7 +84,7 @@ class IndexableClass
     }
 }
 
-test OperatorOverloading
+testset OperatorOverloading
 {
     testcase Add
     {

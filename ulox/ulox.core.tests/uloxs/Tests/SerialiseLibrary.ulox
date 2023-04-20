@@ -1,4 +1,4 @@
-test SerialiseLibraryTests
+testset SerialiseLibraryTests
 {
     testcase ToEmpty
     {

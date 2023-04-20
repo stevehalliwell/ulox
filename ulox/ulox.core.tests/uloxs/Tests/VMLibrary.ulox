@@ -1,4 +1,4 @@
-test VMLibraryTests
+testset VMLibraryTests
 {
     testcase InnerVmInsertAndExtract
     {

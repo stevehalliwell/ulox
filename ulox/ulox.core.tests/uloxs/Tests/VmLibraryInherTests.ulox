@@ -5,7 +5,7 @@ fun InnerMain()
 
 var a = 0;
 
-test VmLibraryInherTests
+testset VmLibraryInherTests
 {
     testcase InherAndCopyBack
     {

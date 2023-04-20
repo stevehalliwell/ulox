@@ -1,4 +1,4 @@
-test Constants
+testset Constants
 {
     testcase Number
     {

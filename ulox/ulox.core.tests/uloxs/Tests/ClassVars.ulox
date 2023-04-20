@@ -29,7 +29,7 @@ class SideEffects
 }
 
 
-test WithVarsTests
+testset WithVarsTests
 {
     testcase Default
     {

@@ -153,7 +153,7 @@ print(1+2);");
 	}
 }
 
-test Vec2Tests
+testset Vec2Tests
 {
 	testcase Default
 	{

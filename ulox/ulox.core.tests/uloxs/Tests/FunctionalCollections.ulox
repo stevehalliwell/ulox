@@ -62,7 +62,7 @@ fun accum(cur, running)
     retval = running + cur;
 }
 
-test FunctionalCollectionTests
+testset FunctionalCollectionTests
 {
     testcase FoldSum
     {

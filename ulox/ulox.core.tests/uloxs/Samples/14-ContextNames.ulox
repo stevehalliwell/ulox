@@ -7,7 +7,7 @@ class AClass
     Method(){retval = fname;} // name of containing function
 }
 
-test ContextNames
+testset ContextNames
 {
     testcase TCName
     {

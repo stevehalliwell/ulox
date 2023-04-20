@@ -57,7 +57,7 @@ namespace ULox
                 ("yield", TokenType.YIELD),
                 ("fname", TokenType.CONTEXT_NAME_FUNC),
 
-                ("test", TokenType.TEST),
+                ("testset", TokenType.TEST_SET),
                 ("testcase", TokenType.TESTCASE),
 
                 ("build", TokenType.BUILD),

@@ -1,4 +1,4 @@
-test NativeClassesLibraryTests
+testset NativeClassesLibraryTests
 {
     testcase ListAsArray
     {
@@ -89,7 +89,7 @@ test NativeClassesLibraryTests
     }
 }
 
-test DynamicLibraryTests
+testset DynamicLibraryTests
 {
     testcase DynamicHasField
     {

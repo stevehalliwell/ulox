@@ -33,7 +33,7 @@ namespace ULox
 
         private void Setup()
         {
-            var _testdec = new TestDeclarationCompilette();
+            var _testdec = new TestSetDeclarationCompilette();
             var _classCompiler = TypeCompilette.CreateClassCompilette();
             var _testcaseCompilette = new TestcaseCompillette(_testdec);
 

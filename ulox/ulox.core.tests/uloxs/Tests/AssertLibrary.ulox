@@ -1,4 +1,4 @@
-test AssertUsageTests
+testset AssertUsageTests
 {
     testcase AreEqual
     {

@@ -1,4 +1,4 @@
-// You can create vms within the program. This is actually how test and testcases
+// You can create vms within the program. This is actually how tests
 //  are run internally.
 
 fun InnerMain()

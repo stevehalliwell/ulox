@@ -1,4 +1,4 @@
-test ContextNames
+testset ContextNames
 {
     testcase TCName
     {

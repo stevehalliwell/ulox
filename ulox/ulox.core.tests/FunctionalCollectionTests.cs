@@ -126,7 +126,7 @@ fun accum(cur, running)
 }
 
 
-test FunctionalCollectionTests
+testset FunctionalCollectionTests
 {
     testcase FoldSum
     {

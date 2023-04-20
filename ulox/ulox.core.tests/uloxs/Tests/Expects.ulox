@@ -1,4 +1,4 @@
-test ExpectUsageTests
+testset ExpectUsageTests
 {
     testcase AreEqual
     {

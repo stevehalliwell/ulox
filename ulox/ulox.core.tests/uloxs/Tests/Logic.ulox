@@ -1,4 +1,4 @@
-test Comparisons
+testset Comparisons
 {
     testcase EqualityBool
     {
@@ -73,7 +73,7 @@ test Comparisons
     increase our test coverage.
 */
 
-test Logic
+testset Logic
 {
     testcase And
     {

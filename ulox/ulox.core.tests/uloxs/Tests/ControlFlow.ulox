@@ -1,4 +1,4 @@
-test ControlFlow
+testset ControlFlow
 {
     testcase If
     {

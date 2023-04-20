@@ -84,7 +84,7 @@ fun MakeVec2(x,y)
     retval =res;
 }
 
-test OperatorOverloading
+testset OperatorOverloading
 {
     testcase Add
     {

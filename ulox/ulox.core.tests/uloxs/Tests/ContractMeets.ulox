@@ -13,7 +13,7 @@ class C
     AMethod(){}
 }
 
-test ContractMeetsTests
+testset ContractMeetsTests
 {
     testcase AMeetsB_False
     {

@@ -1,4 +1,4 @@
-test StdLibraryTests
+testset StdLibraryTests
 {
     testcase DuplicateMatches
     {

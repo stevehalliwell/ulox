@@ -1,4 +1,4 @@
-test MapTests
+testset MapTests
 {
     testcase ReadOrDefaultNonExistent
     {

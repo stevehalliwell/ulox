@@ -7,9 +7,9 @@ namespace ULox
         public TokenType MatchingToken => TokenType.TESTCASE;
         public string TestCaseName { get; private set; }
 
-        private readonly TestDeclarationCompilette _testDeclarationCompilette;
+        private readonly TestSetDeclarationCompilette _testDeclarationCompilette;
 
-        public TestcaseCompillette(TestDeclarationCompilette testDeclarationCompilette)
+        public TestcaseCompillette(TestSetDeclarationCompilette testDeclarationCompilette)
         {
             _testDeclarationCompilette = testDeclarationCompilette;
         }
@@ -62,7 +62,7 @@ namespace ULox
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if (string.IsNullOrEmpty(testDeclName))
-                compiler.ThrowCompilerException($"Unexpected testcase, testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
+                compiler.ThrowCompilerException($"Unexpected testcase, testcase can only appear within a testset, '{testcaseName}' is not contained in a testset declaration.");
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
@@ -87,7 +87,7 @@ namespace ULox
                 compiler.EmitLabel((byte)dataExpJumpBackToStart);
 
                 //need to deal with the args
-                //get test data row
+                //get testset data row
                 var (_, _, testDataIndexLocalIdRes) = compiler.ResolveNameLookupOpCode("testDataIndex");
                 testDataIndexLocalId = testDataIndexLocalIdRes;
 
@@ -110,9 +110,9 @@ namespace ULox
             }
 
             // The body.
-            TestDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseStart, nameConstantID, numArgs);
+            TestSetDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseStart, nameConstantID, numArgs);
             compiler.BlockStatement();
-            TestDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseEnd, nameConstantID, 0);
+            TestSetDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseEnd, nameConstantID, 0);
             compiler.EndScope();
 
             if (dataExpExecuteLocation != -1)

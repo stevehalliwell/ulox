@@ -1,8 +1,8 @@
 fun Add(a,b) {retval = a+b;}
 fun Sub(a,b) {retval = a-b;}
 
-// built in testing, test defines a set of tests
-test SimpleTest
+// built in testing, testset defines a set of tests
+testset SimpleTest
 {
 	// testcase defines a single testmethod in the set
 	testcase Expect

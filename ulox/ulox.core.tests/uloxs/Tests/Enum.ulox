@@ -5,7 +5,7 @@ enum Foo
     C
 }
 
-test EnumTests
+testset EnumTests
 {
     testcase EnumInstance
     {

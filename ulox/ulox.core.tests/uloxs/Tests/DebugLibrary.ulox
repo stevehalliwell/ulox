@@ -1,4 +1,4 @@
-test DebugLibraryTests
+testset DebugLibraryTests
 {
     testcase GenerateStackDump
     {

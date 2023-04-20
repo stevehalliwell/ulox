@@ -1,4 +1,4 @@
-test ConfirmVmExceptions
+testset ConfirmVmExceptions
 {
     testcase CanOnlySetOnClassAndInstance
     {

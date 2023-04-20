@@ -76,7 +76,7 @@
 
         MIXIN,
 
-        TEST,
+        TEST_SET,
         TESTCASE,
 
         CONTEXT_NAME_CLASS,

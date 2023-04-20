@@ -30,7 +30,7 @@ class Statics
     static var a, b = 2;
 }
 
-test Classes
+testset Classes
 {
     testcase SimpleClassObject
     {

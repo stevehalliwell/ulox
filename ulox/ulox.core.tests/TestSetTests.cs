@@ -8,7 +8,7 @@ namespace ULox.Core.Tests
         public void Engine_TestCase_Empty()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -23,7 +23,7 @@ test T
         public void Engine_TestCase_Simple1()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -38,7 +38,7 @@ test T
         public void Engine_TestCase_Simple2()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -53,7 +53,7 @@ test T
         public void Engine_TestCase_Simple3()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -70,7 +70,7 @@ test T
         public void Engine_TestCase_Simple4()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -90,7 +90,7 @@ test T
         public void Engine_TestCase_MultipleEmpty()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -107,7 +107,7 @@ test T
         public void Engine_TestCase_ReportAll()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -134,7 +134,7 @@ test T
         public void TestFxiture_WhenPrintInBodyAndTwoCases_ShouldPrintTwice()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     print(1);
     
@@ -154,7 +154,7 @@ test T
         public void TestFxiture_WhenPrintInBodyAndNoCases_ShouldNotPrint()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     print(1);
 }"
@@ -167,7 +167,7 @@ test T
         public void TestLocal_WhenPrinted_ShouldMatch()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     var foo = 1;
     
@@ -185,7 +185,7 @@ test T
         public void Testcase_WhenDuplicate_ShouldFail()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -203,7 +203,7 @@ test T
         public void Engine_TestCase_MultipleSimple()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -230,7 +230,7 @@ test T
             testEngine.MyEngine.Context.Vm.TestRunner.Enabled = false;
 
             testEngine.Run(@"
-test T
+testset T
 {
     testcase A
     {
@@ -250,7 +250,7 @@ test T
         public void Engine_Test_ContextNames()
         {
             testEngine.Run(@"
-test Foo
+testset Foo
 {
     testcase Bar
     {
@@ -266,7 +266,7 @@ test Foo
         public void TestCase_WithArgsNoData_ShouldFailCannotAddNulls()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase Add(lhs, rhs, expected)
     {
@@ -290,7 +290,7 @@ first.Add(2);
 first.Add(3);
 AddDataSource.Add(first);
 
-test T
+testset T
 {
     testcase (AddDataSource) Add(lhs, rhs, expected)
     {
@@ -314,7 +314,7 @@ first.Add(2);
 first.Add(3);
 AddDataSource.Add(first);
 
-test T
+testset T
 {
     testcase Add()
     {
@@ -337,7 +337,7 @@ test T
             testEngine.Run(@"
 var AddDataSource = [];
 
-test T
+testset T
 {
     testcase (AddDataSource) Add(lhs, rhs, expected)
     {
@@ -358,7 +358,7 @@ test T
 var source = [];
 source.Add(1);
 
-test T
+testset T
 {
     testcase (source) IsOne()
     {
@@ -376,7 +376,7 @@ test T
 var source = [];
 source.Add(1);
 
-test T
+testset T
 {
     testcase (source) IsOne(val)
     {
@@ -394,7 +394,7 @@ test T
 var source = [];
 source.Add(1);
 
-test T
+testset T
 {
     testcase IsOne
     {
@@ -412,7 +412,7 @@ test T
 var source = [];
 source.Add(1);
 
-test T
+testset T
 {
     testcase IsOne()
     {
@@ -442,7 +442,7 @@ second.Add(1);
 second.Add(2);
 AddDataSource.Add(second);
 
-test T
+testset T
 {
     testcase (AddDataSource) Add(lhs, rhs, expected)
     {
@@ -466,7 +466,7 @@ source.Add(1);
 source.Add(2);
 source.Add(3);
 
-test T
+testset T
 {
     testcase (source) One(val)
     {
@@ -483,7 +483,7 @@ test T
         public void TestCase_WithFixtureDataPrintSingleData_ShouldPass()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     var source = [];
     source.Add(1);
@@ -505,7 +505,7 @@ test T
         public void TestCase_WithFixtureDataPrintSingleInlineData_ShouldPass()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase ([1,2,3]) One(val)
     {
@@ -529,14 +529,14 @@ testcase ([1,2,3]) One(val)
 "
             );
             
-            StringAssert.StartsWith("Unexpected testcase, testcase can only appear within a test set,", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Unexpected testcase, testcase can only appear within a testset,", testEngine.InterpreterResult);
         }
 
         [Test]
         public void TestCase_WithArgsAndInlineMultiDataSet_ShouldPass()
         {
             testEngine.Run(@"
-test T
+testset T
 {
     testcase ([ [1,2,3,], [1,1,2] ]) Add(lhs, rhs, expected)
     {

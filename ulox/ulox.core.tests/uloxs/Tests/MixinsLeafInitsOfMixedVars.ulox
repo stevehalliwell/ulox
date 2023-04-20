@@ -15,7 +15,7 @@ class FooBar
     init(fizz, buzz, bitcount){}
 }
 
-test MixinsLeafInitsOfMixedVars
+testset MixinsLeafInitsOfMixedVars
 {
     testcase ClassWithMixinHasBoth
     {

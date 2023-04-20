@@ -4,7 +4,7 @@ class StaticClass
     static Meth {retval = 3;}
 }
 
-test StaticClasses
+testset StaticClasses
 {
     testcase Access
     {

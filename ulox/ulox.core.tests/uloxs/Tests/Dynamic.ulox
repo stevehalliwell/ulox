@@ -1,4 +1,4 @@
-test DynamicTests
+testset DynamicTests
 {
     testcase DynamicField
     {

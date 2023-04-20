@@ -7,7 +7,7 @@ enum Foo
 
 testset EnumTests
 {
-    testcase EnumInstance
+    test EnumInstance
     {
         var f = Foo.A;
 
@@ -16,7 +16,7 @@ testset EnumTests
         expect f.Value == 0;
     }
 
-    testcase EnumAll
+    test EnumAll
     {
         var all = Foo.All;
 
@@ -26,7 +26,7 @@ testset EnumTests
         expect all[2] == Foo.C;
     }
 
-    testcase EnumFind
+    test EnumFind
     {
         var found = Foo.All.First(fun (x) {retval = x.Value == 0;});
 

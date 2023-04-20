@@ -7,23 +7,23 @@ testset Fixture
 {
 	print("hello");
 
-	testcase One
+	test One
 	{
 
 	}
 
-	testcase Two
+	test Two
 	{
 		
 	}
 }
 
 // Tests can optionally take a data source and arguments.
-// The data source is an expression given in () after the testcase keyword
-//	and before the testcase name.
+// The data source is an expression given in () after the test keyword
+//	and before the test name.
 // The data soucre must be a native array.
 // The number of arguments to the testset must match the number of entries at each index 
-//	of the data source. They are applied in order, and the testcase is repeated for 
+//	of the data source. They are applied in order, and the test is repeated for 
 //	Count of the data source.
 testset DataTests
 {
@@ -31,9 +31,9 @@ testset DataTests
 
 	// Here we use a text fixture body variable as the data source. 
 	// The test will run data.Count times.
-	testcase (dat) IsNumber(val)
+	test (dat) IsNumber(val)
 	{
-		//if you really want to you can access the data source in the testcase body as
+		//if you really want to you can access the data source in the test body as
 		var dataSourceIs = testDataSource;
 		//if you really want to you can access the row of data currently being used for the test as
 		var dataRowIs = testDataRow;
@@ -43,7 +43,7 @@ testset DataTests
 
 	// Here we use an inline array as the data source.
 	// The test will run 2 times. as the data source as two elements.
-	testcase ([ [1,2,3], [1,1,2] ]) Addition(a,b, expected)
+	test ([ [1,2,3], [1,1,2] ]) Addition(a,b, expected)
     {
         var result = a+b;
 

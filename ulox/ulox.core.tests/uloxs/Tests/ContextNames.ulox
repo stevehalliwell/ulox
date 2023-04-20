@@ -1,6 +1,6 @@
 testset ContextNames
 {
-    testcase TCName
+    test TCName
     {
         Assert.AreEqual("ContextNames",tsname);
         Assert.AreEqual("TCName",tcname);

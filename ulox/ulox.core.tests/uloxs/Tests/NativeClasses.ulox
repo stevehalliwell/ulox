@@ -1,6 +1,6 @@
 testset NativeClassesLibraryTests
 {
-    testcase ListAsArray
+    test ListAsArray
     {
         var list = [];
         var len = 5;
@@ -17,7 +17,7 @@ testset NativeClassesLibraryTests
         }
     }
     
-    testcase ListAdd
+    test ListAdd
     {
         var list = [];
         var len = 5;
@@ -33,7 +33,7 @@ testset NativeClassesLibraryTests
         }
     }
     
-    testcase ListRemove
+    test ListRemove
     {
         var list = [];
         var len = 5;
@@ -51,7 +51,7 @@ testset NativeClassesLibraryTests
         Assert.AreEqual(expected, result);
     }
     
-    testcase ListEmpty
+    test ListEmpty
     {
         var list = [];
         var len = 5;
@@ -71,7 +71,7 @@ testset NativeClassesLibraryTests
         Assert.AreEqual(expected, result);
     }
     
-    testcase DynamicUsage
+    test DynamicUsage
     {
         var expected = 6;
         var result = 0;
@@ -91,7 +91,7 @@ testset NativeClassesLibraryTests
 
 testset DynamicLibraryTests
 {
-    testcase DynamicHasField
+    test DynamicHasField
     {
         var expectedA = true;
         var expectedB = false;
@@ -107,7 +107,7 @@ testset DynamicLibraryTests
         Assert.AreEqual(expectedB, resultB);
     }
 
-    testcase DynamicRemoveField
+    test DynamicRemoveField
     {
         var expected = false;
         var result = 0;

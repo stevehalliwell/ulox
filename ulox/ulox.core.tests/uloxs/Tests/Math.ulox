@@ -1,6 +1,6 @@
 testset Math
 {
-    testcase ([ [1,2,3], [1,1,2], [3,4,7] ]) Addition(a,b, expected)
+    test ([ [1,2,3], [1,1,2], [3,4,7] ]) Addition(a,b, expected)
     {
         var result = 0;
 
@@ -9,7 +9,7 @@ testset Math
         Assert.AreEqual(expected,result);
     }
 
-    testcase Subtraction
+    test Subtraction
     {
         var expected = -1;
         var result = 0;
@@ -21,7 +21,7 @@ testset Math
         Assert.AreEqual(expected,result);
     }
 
-    testcase Multiplication
+    test Multiplication
     {
         var expected = 2;
         var result = 0;
@@ -33,7 +33,7 @@ testset Math
         Assert.AreEqual(expected,result);
     }
 
-    testcase Division
+    test Division
     {
         var expected = 0.5;
         var result = 0;
@@ -45,7 +45,7 @@ testset Math
         Assert.AreEqual(expected,result);
     }
 
-    testcase ModulusInt
+    test ModulusInt
     {
         var expected = 1;
         var result = 0;
@@ -57,7 +57,7 @@ testset Math
         Assert.AreEqual(expected,result);
     }
 
-    testcase ModulusNumber
+    test ModulusNumber
     {
         var expected = 1.5;
         var result = 0;
@@ -69,7 +69,7 @@ testset Math
         Assert.AreEqual(expected,result);
     }
 
-    testcase OrderOfOps
+    test OrderOfOps
     {
         var expected = -2.5;
         var result = 0;
@@ -84,7 +84,7 @@ testset Math
         Assert.AreEqual(expected,result);
     }
 
-    testcase Precedence
+    test Precedence
     {
         var expected = 3.5;
         var result = 0;
@@ -99,7 +99,7 @@ testset Math
         Assert.AreEqual(expected,result);
     }
 
-    testcase CompoundAdd
+    test CompoundAdd
     {
         var expected = 3;
         var a = 1;
@@ -110,7 +110,7 @@ testset Math
         Assert.AreEqual(expected,a);
     }
 
-    testcase CompoundMul
+    test CompoundMul
     {
         var expected = 2;
         var a = 1;
@@ -121,7 +121,7 @@ testset Math
         Assert.AreEqual(expected,a);
     }
 
-    testcase CompoundSub
+    test CompoundSub
     {
         var expected = -1;
         var a = 1;
@@ -132,7 +132,7 @@ testset Math
         Assert.AreEqual(expected,a);
     }
 
-    testcase CompoundDiv
+    test CompoundDiv
     {
         var expected = 0.5;
         var a = 1;
@@ -143,7 +143,7 @@ testset Math
         Assert.AreEqual(expected,a);
     }
 
-    testcase CompoundModulus
+    test CompoundModulus
     {
         var expected = 1;
         var a = 3;
@@ -154,7 +154,7 @@ testset Math
         Assert.AreEqual(expected,a);
     }
 
-    testcase InvalidMathOpNonMatchingTypes
+    test InvalidMathOpNonMatchingTypes
     {
         fun WillThrow()
         {
@@ -165,7 +165,7 @@ testset Math
         Assert.Throws(WillThrow);
     }
 
-    testcase InvalidMathOpUnsupportedTypes
+    test InvalidMathOpUnsupportedTypes
     {
         fun WillThrow()
         {

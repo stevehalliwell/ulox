@@ -5,12 +5,12 @@ namespace ULox.Core.Tests
     public class TestSetTests : EngineTestBase
     {
         [Test]
-        public void Engine_TestCase_Empty()
+        public void Engine_Test_Empty()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
     }
 }"
@@ -20,12 +20,12 @@ testset T
         }
 
         [Test]
-        public void Engine_TestCase_Simple1()
+        public void Engine_Test_Simple1()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
         print(2);
     }
@@ -35,12 +35,12 @@ testset T
         }
 
         [Test]
-        public void Engine_TestCase_Simple2()
+        public void Engine_Test_Simple2()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
         Assert.AreEqual(2,2);
     }
@@ -50,12 +50,12 @@ testset T
         }
 
         [Test]
-        public void Engine_TestCase_Simple3()
+        public void Engine_Test_Simple3()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
         var a = 2;
         var b = 3;
@@ -67,12 +67,12 @@ testset T
         }
 
         [Test]
-        public void Engine_TestCase_Simple4()
+        public void Engine_Test_Simple4()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
         var a = 2;
         var b = 3;
@@ -87,15 +87,15 @@ testset T
         }
 
         [Test]
-        public void Engine_TestCase_MultipleEmpty()
+        public void Engine_Test_MultipleEmpty()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
     }
-    testcase B
+    test B
     {
     }
 }");
@@ -104,19 +104,19 @@ testset T
         }
 
         [Test]
-        public void Engine_TestCase_ReportAll()
+        public void Engine_Test_ReportAll()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
         throw;
     }
-    testcase B
+    test B
     {
     }
-    testcase C
+    test C
     {
         throw;
     }
@@ -138,10 +138,10 @@ testset T
 {
     print(1);
     
-    testcase A
+    test A
     {
     }
-    testcase B
+    test B
     {
     }
 }"
@@ -171,7 +171,7 @@ testset T
 {
     var foo = 1;
     
-    testcase A
+    test A
     {
         print(foo);
     }
@@ -182,15 +182,15 @@ testset T
         }
 
         [Test]
-        public void Testcase_WhenDuplicate_ShouldFail()
+        public void Test_WhenDuplicate_ShouldFail()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
     }
-    testcase A
+    test A
     {
     }
 }"
@@ -200,19 +200,19 @@ testset T
         }
 
         [Test]
-        public void Engine_TestCase_MultipleSimple()
+        public void Engine_Test_MultipleSimple()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
         var a = 1;
         var b = 2;
         var c = a + b;
         Assert.AreEqual(c,3);
     }
-    testcase B
+    test B
     {
         var a = 4;
         var b = 5;
@@ -225,14 +225,14 @@ testset T
         }
 
         [Test]
-        public void Engine_TestCase_Simple4_Skipped()
+        public void Engine_Test_Simple4_Skipped()
         {
             testEngine.MyEngine.Context.Vm.TestRunner.Enabled = false;
 
             testEngine.Run(@"
 testset T
 {
-    testcase A
+    test A
     {
         var a = 2;
         var b = 3;
@@ -252,7 +252,7 @@ testset T
             testEngine.Run(@"
 testset Foo
 {
-    testcase Bar
+    test Bar
     {
         print(tsname);
         print(tcname);
@@ -263,12 +263,12 @@ testset Foo
         }
 
         [Test]
-        public void TestCase_WithArgsNoData_ShouldFailCannotAddNulls()
+        public void Test_WithArgsNoData_ShouldFailCannotAddNulls()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase Add(lhs, rhs, expected)
+    test Add(lhs, rhs, expected)
     {
         var result = lhs + rhs;
         Assert.AreEqual(expected, result);
@@ -276,11 +276,11 @@ testset T
 }"
             );
 
-            Assert.AreEqual("Testcase 'Add' has arguments but no data expression in chunk 'unnamed_chunk(test)' at 4:37.", testEngine.InterpreterResult);
+            Assert.AreEqual("Test 'Add' has arguments but no data expression in chunk 'unnamed_chunk(test)' at 4:33.", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void TestCase_WithArgsSingleDataSet_ShouldPass()
+        public void Test_WithArgsSingleDataSet_ShouldPass()
         {
             testEngine.Run(@"
 var AddDataSource = [];
@@ -292,7 +292,7 @@ AddDataSource.Add(first);
 
 testset T
 {
-    testcase (AddDataSource) Add(lhs, rhs, expected)
+    test (AddDataSource) Add(lhs, rhs, expected)
     {
         var result = lhs + rhs;
         Assert.AreEqual(expected, result);
@@ -304,7 +304,7 @@ testset T
         }
 
         [Test]
-        public void TestCase_WithDataSetAndManuallyGrabbed_ShouldPass()
+        public void Test_WithDataSetAndManuallyGrabbed_ShouldPass()
         {
             testEngine.Run(@"
 var AddDataSource = [];
@@ -316,7 +316,7 @@ AddDataSource.Add(first);
 
 testset T
 {
-    testcase Add()
+    test Add()
     {
         var testDataRow = AddDataSource[0];
         var lhs = testDataRow[0];
@@ -332,14 +332,14 @@ testset T
         }
 
         [Test]
-        public void TestCase_WithArgsEmptyDataSet_ShouldPass()
+        public void Test_WithArgsEmptyDataSet_ShouldPass()
         {
             testEngine.Run(@"
 var AddDataSource = [];
 
 testset T
 {
-    testcase (AddDataSource) Add(lhs, rhs, expected)
+    test (AddDataSource) Add(lhs, rhs, expected)
     {
         var result = lhs + rhs;
         Assert.AreEqual(expected, result);
@@ -352,7 +352,7 @@ testset T
         }
 
         [Test]
-        public void TestCase_WithSourceButNoArg_ShouldPassNoEffect()
+        public void Test_WithSourceButNoArg_ShouldPassNoEffect()
         {
             testEngine.Run(@"
 var source = [];
@@ -360,17 +360,17 @@ source.Add(1);
 
 testset T
 {
-    testcase (source) IsOne()
+    test (source) IsOne()
     {
     }
 }"
             );
 
-            Assert.AreEqual("Testcase 'IsOne' has data expression but no arguments in chunk 'unnamed_chunk(test)' at 7:30.", testEngine.InterpreterResult);
+            Assert.AreEqual("Test 'IsOne' has data expression but no arguments in chunk 'unnamed_chunk(test)' at 7:26.", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void TestCase_WithSourceAndSingleArg_ShouldPass()
+        public void Test_WithSourceAndSingleArg_ShouldPass()
         {
             testEngine.Run(@"
 var source = [];
@@ -378,25 +378,7 @@ source.Add(1);
 
 testset T
 {
-    testcase (source) IsOne(val)
-    {
-    }
-}"
-            );
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void TestCase_WithNoSourceAndNoArg_ShouldPass()
-        {
-            testEngine.Run(@"
-var source = [];
-source.Add(1);
-
-testset T
-{
-    testcase IsOne
+    test (source) IsOne(val)
     {
     }
 }"
@@ -406,7 +388,7 @@ testset T
         }
 
         [Test]
-        public void TestCase_WithManualDataSourceSingle_ShouldPass()
+        public void Test_WithNoSourceAndNoArg_ShouldPass()
         {
             testEngine.Run(@"
 var source = [];
@@ -414,7 +396,25 @@ source.Add(1);
 
 testset T
 {
-    testcase IsOne()
+    test IsOne
+    {
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Test_WithManualDataSourceSingle_ShouldPass()
+        {
+            testEngine.Run(@"
+var source = [];
+source.Add(1);
+
+testset T
+{
+    test IsOne()
     {
         var testDataRow = null;
         var testDataSource = source;
@@ -427,7 +427,7 @@ testset T
         }
 
         [Test]
-        public void TestCase_WithArgsMultiDataSet_ShouldPass()
+        public void Test_WithArgsMultiDataSet_ShouldPass()
         {
             testEngine.Run(@"
 var AddDataSource = [];
@@ -444,7 +444,7 @@ AddDataSource.Add(second);
 
 testset T
 {
-    testcase (AddDataSource) Add(lhs, rhs, expected)
+    test (AddDataSource) Add(lhs, rhs, expected)
     {
         print(expected);
         var result = lhs + rhs;
@@ -458,7 +458,7 @@ testset T
         }
 
         [Test]
-        public void TestCase_WithPrintSingleData_ShouldPass()
+        public void Test_WithPrintSingleData_ShouldPass()
         {
             testEngine.Run(@"
 var source = [];
@@ -468,7 +468,7 @@ source.Add(3);
 
 testset T
 {
-    testcase (source) One(val)
+    test (source) One(val)
     {
         print(val);
     }
@@ -480,7 +480,7 @@ testset T
         }
 
         [Test]
-        public void TestCase_WithFixtureDataPrintSingleData_ShouldPass()
+        public void Test_WithFixtureDataPrintSingleData_ShouldPass()
         {
             testEngine.Run(@"
 testset T
@@ -490,7 +490,7 @@ testset T
     source.Add(2);
     source.Add(3);
 
-    testcase (source) One(val)
+    test (source) One(val)
     {
         print(val);
     }
@@ -502,12 +502,12 @@ testset T
         }
 
         [Test]
-        public void TestCase_WithFixtureDataPrintSingleInlineData_ShouldPass()
+        public void Test_WithFixtureDataPrintSingleInlineData_ShouldPass()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase ([1,2,3]) One(val)
+    test ([1,2,3]) One(val)
     {
         print(val);
     }
@@ -519,26 +519,26 @@ testset T
         }
 
         [Test]
-        public void TestCase_InvalidLocation_ShouldFail()
+        public void Test_InvalidLocation_ShouldFail()
         {
             testEngine.Run(@"
-testcase ([1,2,3]) One(val)
+test ([1,2,3]) One(val)
 {
     print(val);
 }
 "
             );
             
-            StringAssert.StartsWith("Unexpected testcase, testcase can only appear within a testset,", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Unexpected test, it can only appear within a testset,", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void TestCase_WithArgsAndInlineMultiDataSet_ShouldPass()
+        public void Test_WithArgsAndInlineMultiDataSet_ShouldPass()
         {
             testEngine.Run(@"
 testset T
 {
-    testcase ([ [1,2,3,], [1,1,2] ]) Add(lhs, rhs, expected)
+    test ([ [1,2,3,], [1,1,2] ]) Add(lhs, rhs, expected)
     {
         print(expected);
         var result = lhs + rhs;

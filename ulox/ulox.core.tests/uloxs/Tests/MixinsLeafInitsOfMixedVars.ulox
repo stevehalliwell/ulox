@@ -17,7 +17,7 @@ class FooBar
 
 testset MixinsLeafInitsOfMixedVars
 {
-    testcase ClassWithMixinHasBoth
+    test ClassWithMixinHasBoth
     {
         var expectedFizz = 10;
         var expectedBuzz = 20;

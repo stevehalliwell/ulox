@@ -98,7 +98,7 @@ namespace ULox
                 (TokenType.DOT, new ActionParseRule(null, Dot, Precedence.Call)),
                 (TokenType.THIS, new ActionParseRule(_classCompiler.This, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(_testcaseCompilette.TCName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TEST, new ActionParseRule(_testcaseCompilette.TCName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TSName, null, Precedence.None)),
                 (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),

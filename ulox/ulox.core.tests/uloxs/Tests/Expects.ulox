@@ -1,32 +1,32 @@
 testset ExpectUsageTests
 {
-    testcase AreEqual
+    test AreEqual
     {
         expect 1 == 1;
     }
     
-    testcase AreNotEqual
+    test AreNotEqual
     {
         expect 1 != 2;
     }
     
-    testcase IsTrue
+    test IsTrue
     {
         expect tcname == "IsTrue";
     }
     
-    testcase IsFalse
+    test IsFalse
     {
         expect tcname != "IsTrue";
     }
     
-    testcase IsNull
+    test IsNull
     {
         var a;
         expect a == null;
     }
     
-    testcase IsNotNull
+    test IsNotNull
     {
         var a = 1;
         expect a != null;

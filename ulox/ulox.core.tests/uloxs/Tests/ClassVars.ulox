@@ -31,7 +31,7 @@ class SideEffects
 
 testset WithVarsTests
 {
-    testcase Default
+    test Default
     {
         var inst = SimpleVars();
 
@@ -40,7 +40,7 @@ testset WithVarsTests
         Assert.AreEqual(ExpectedCValue, inst.c);
     }
     
-    testcase Inited
+    test Inited
     {
         var ExpectedAValue = 1;
         var ExpectedBValue = 2;
@@ -51,7 +51,7 @@ testset WithVarsTests
         Assert.AreEqual(ExpectedCValue, inst.c);
     }
 
-    testcase MethodSideEffects
+    test MethodSideEffects
     {
         var expected = 3;
         var result = 0;

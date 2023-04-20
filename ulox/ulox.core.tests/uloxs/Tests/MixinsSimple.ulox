@@ -76,7 +76,7 @@ class AllTheMixMes
 
 testset MixinsSimple
 {
-    testcase ClassWithMixinHasBoth
+    test ClassWithMixinHasBoth
     {
         var expectedContainer = "Bowl";
         var expectedFlavour = "Flavour";
@@ -91,7 +91,7 @@ testset MixinsSimple
         Assert.AreEqual(expectedFlavour, resultFlavour);
     }
 
-    testcase ClassMadePurelyOfMixins
+    test ClassMadePurelyOfMixins
     {
         var b = BirthdayBowl();
 
@@ -100,7 +100,7 @@ testset MixinsSimple
         Assert.AreEqual("Syrup", b.topping);
     }
 
-    testcase ManyCombinedMixins
+    test ManyCombinedMixins
     {
         var foo = AllTheMixMes();
         var expected = 28;

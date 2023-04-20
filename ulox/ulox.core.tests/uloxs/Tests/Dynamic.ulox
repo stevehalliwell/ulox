@@ -1,6 +1,6 @@
 testset DynamicTests
 {
-    testcase DynamicField
+    test DynamicField
     {
         var expected = 3;
         var result = 0;
@@ -12,7 +12,7 @@ testset DynamicTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase DynamicMethod
+    test DynamicMethod
     {
         var expected = 3;
         var result = 0;
@@ -25,7 +25,7 @@ testset DynamicTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase DynamicInstanceAccess
+    test DynamicInstanceAccess
     {
         var expected = 3;
         var result = 0;
@@ -36,7 +36,7 @@ testset DynamicTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase DynamicInstanceAccessViaInline
+    test DynamicInstanceAccessViaInline
     {
         var expected = 3;
         var result = 0;
@@ -47,7 +47,7 @@ testset DynamicTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase HasFieldOnString_Throws
+    test HasFieldOnString_Throws
     {
         fun Act()
         {
@@ -59,7 +59,7 @@ testset DynamicTests
         Assert.Throws(Act);
     }
 
-    testcase RemoveFieldOnString_Throws
+    test RemoveFieldOnString_Throws
     {
         fun Act()
         {

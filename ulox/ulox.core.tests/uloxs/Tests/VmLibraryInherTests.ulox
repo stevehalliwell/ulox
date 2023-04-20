@@ -7,7 +7,7 @@ var a = 0;
 
 testset VmLibraryInherTests
 {
-    testcase InherAndCopyBack
+    test InherAndCopyBack
     {
         var expected = 20;
         var startingValue = 10;

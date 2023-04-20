@@ -1,12 +1,12 @@
 testset Constants
 {
-    testcase Number
+    test Number
     {
         var expected = 2;
         Assert.AreEqual(expected,2);
     }
 
-    testcase String
+    test String
     {
         var expected = "Hello";
         Assert.AreEqual(expected,"Hello");

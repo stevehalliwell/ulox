@@ -32,19 +32,19 @@ class Statics
 
 testset Classes
 {
-    testcase SimpleClassObject
+    test SimpleClassObject
     {
         Assert.IsNotNull(Simple);
     }
 
-    testcase SimpleInstance
+    test SimpleInstance
     {
         var s = Simple();
 
         Assert.IsNotNull(s);
     }
 
-    testcase Method
+    test Method
     {
         var expected = 1;
         var result = 0;
@@ -55,7 +55,7 @@ testset Classes
         Assert.AreEqual(expected, result);
     }
 
-    testcase NoInstanceNeededWhenNoThisUsed
+    test NoInstanceNeededWhenNoThisUsed
     {
         var expected = 1;
         var result = 0;
@@ -65,7 +65,7 @@ testset Classes
         Assert.AreEqual(expected, result);
     }
 
-    testcase MethodBracelcess
+    test MethodBracelcess
     {
         var expected = 1;
         var result = 0;
@@ -76,7 +76,7 @@ testset Classes
         Assert.AreEqual(expected, result);
     }
 
-    testcase Initialiser
+    test Initialiser
     {
         var expected = 3;
         var result = 0;
@@ -87,7 +87,7 @@ testset Classes
         Assert.AreEqual(expected, result);
     }
 
-    testcase AutoInitialiser
+    test AutoInitialiser
     {
         var expected = 20;
         var result = 0;
@@ -98,7 +98,7 @@ testset Classes
         Assert.AreEqual(expected, result);
     }
 
-    testcase BoundMethod
+    test BoundMethod
     {
         var expected = 20;
         var result = 0;
@@ -111,13 +111,13 @@ testset Classes
     }
 
 //If this is after StaticsVarValueUsage we see statics leaking betweensub vms
-    testcase StaticsInitlaValuesUsage
+    test StaticsInitlaValuesUsage
     {
         Assert.IsNotNull(Statics);
         Assert.IsNull(Statics.a);
     }
 
-    testcase StaticsVarValueUsage
+    test StaticsVarValueUsage
     {
         var expected = 4;
         var result = 0;

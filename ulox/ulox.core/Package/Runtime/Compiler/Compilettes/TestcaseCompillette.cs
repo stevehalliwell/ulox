@@ -62,7 +62,7 @@ namespace ULox
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if (string.IsNullOrEmpty(testDeclName))
-                compiler.ThrowCompilerException($"Unexpected testcase, testcase can only appear within a testset, '{testcaseName}' is not contained in a testset declaration.");
+                compiler.ThrowCompilerException($"Unexpected test, it can only appear within a testset, '{testcaseName}' is not contained in a testset declaration.");
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
@@ -74,11 +74,11 @@ namespace ULox
             compiler.BeginScope();
             var numArgs = compiler.VariableNameListDeclareOptional(null);
             if (numArgs != 0 && dataExpExecuteLocation == -1)
-                compiler.ThrowCompilerException($"Testcase '{testcaseName}' has arguments but no data expression");
+                compiler.ThrowCompilerException($"Test '{testcaseName}' has arguments but no data expression");
             if (numArgs == 0 && dataExpExecuteLocation != -1)
-                compiler.ThrowCompilerException($"Testcase '{testcaseName}' has data expression but no arguments");
+                compiler.ThrowCompilerException($"Test '{testcaseName}' has data expression but no arguments");
 
-            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before testcase body.");
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before test body.");
 
             //jump back
             if (dataExpExecuteLocation != -1)

@@ -1,6 +1,6 @@
 testset LoopArrayTests
 {
-    testcase ListOfSizeUsingAutoI
+    test ListOfSizeUsingAutoI
     {
         var list = [];
         var len = 5;
@@ -17,7 +17,7 @@ testset LoopArrayTests
         }
     }
 
-    testcase ListOfSizeAccumViaLoop
+    test ListOfSizeAccumViaLoop
     {
         var accum = 0;
         var list = [];
@@ -35,7 +35,7 @@ testset LoopArrayTests
         Assert.AreEqual(10, accum);
     }
 
-    testcase ListOfSizeAccumViaLoopCustomName
+    test ListOfSizeAccumViaLoopCustomName
     {
         var accum = 0;
         var list = [];

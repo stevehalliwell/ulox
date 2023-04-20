@@ -1,6 +1,6 @@
 testset ConfirmVmExceptions
 {
-    testcase CanOnlySetOnClassAndInstance
+    test CanOnlySetOnClassAndInstance
     {
         fun InvalidSet()
         {
@@ -11,7 +11,7 @@ testset ConfirmVmExceptions
         Assert.Throws(InvalidSet);
     }
 
-    testcase CanOnlyGetOnClassAndInstance
+    test CanOnlyGetOnClassAndInstance
     {
         fun InvalidGet()
         {
@@ -22,7 +22,7 @@ testset ConfirmVmExceptions
         Assert.Throws(InvalidGet);
     }
 
-    testcase CanOnlyInvokeExtentItems
+    test CanOnlyInvokeExtentItems
     {
         fun InvalidInvoke()
         {
@@ -33,7 +33,7 @@ testset ConfirmVmExceptions
         Assert.Throws(InvalidInvoke);
     }
 
-    testcase CanOnlyBindOnInstanceOrClass
+    test CanOnlyBindOnInstanceOrClass
     {
         fun InvalidInvoke()
         {
@@ -44,7 +44,7 @@ testset ConfirmVmExceptions
         Assert.Throws(InvalidInvoke);
     }
 
-    testcase InvalidInitArgCount
+    test InvalidInitArgCount
     {
         fun InvalidInit()
         {
@@ -54,7 +54,7 @@ testset ConfirmVmExceptions
         Assert.Throws(InvalidInit);
     }
 
-    testcase InvalidMathOverload
+    test InvalidMathOverload
     {
         fun InvalidMathOp()
         {
@@ -66,7 +66,7 @@ testset ConfirmVmExceptions
         Assert.Throws(InvalidMathOp);
     }
 
-    testcase InvalidCompareOverload
+    test InvalidCompareOverload
     {
         fun InvalidCompare()
         {

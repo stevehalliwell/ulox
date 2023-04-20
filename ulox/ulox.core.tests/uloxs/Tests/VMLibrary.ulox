@@ -1,6 +1,6 @@
 testset VMLibraryTests
 {
-    testcase InnerVmInsertAndExtract
+    test InnerVmInsertAndExtract
     {
         var expected = 20;
         var startingValue = 10;
@@ -19,7 +19,7 @@ testset VMLibraryTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase InnerVmAsGenerator
+    test InnerVmAsGenerator
     {
         var expected = 20;
         var result = 0;

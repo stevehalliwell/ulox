@@ -86,7 +86,7 @@ class IndexableClass
 
 testset OperatorOverloading
 {
-    testcase Add
+    test Add
     {
         var expected = Vec2(4,6);
         var a = Vec2(1,2);
@@ -99,7 +99,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected.y, result.y);
     }
 
-    testcase Sub
+    test Sub
     {
         var expected = Vec2(-2,-2);
         var a = Vec2(1,2);
@@ -112,7 +112,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected.y, result.y);
     }
 
-    testcase Mul
+    test Mul
     {
         var expected = Vec2(3,8);
         var a = Vec2(1,2);
@@ -125,7 +125,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected.y, result.y);
     }
 
-    testcase Div
+    test Div
     {
         var expected = Vec2(1/3,2/4);
         var a = Vec2(1,2);
@@ -138,7 +138,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected.y, result.y);
     }
 
-    testcase Mod
+    test Mod
     {
         var expected = Vec2(1,2);
         var a = Vec2(1,2);
@@ -151,7 +151,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected.y, result.y);
     }
 
-    testcase Eq
+    test Eq
     {
         var expected = true;
         var a = Vec2(1,2);
@@ -163,7 +163,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected, result);
     }
 
-    testcase NotEq
+    test NotEq
     {
         var expected = false;
         var a = Vec2(1,2);
@@ -175,7 +175,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected, result);
     }
 
-    testcase Less
+    test Less
     {
         var expected = true;
         var a = Vec2(1,2);
@@ -187,7 +187,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected, result);
     }
 
-    testcase Greater
+    test Greater
     {
         var expected = false;
         var a = Vec2(1,2);
@@ -199,7 +199,7 @@ testset OperatorOverloading
         Assert.AreEqual(expected, result);
     }
 
-    testcase GetIndex
+    test GetIndex
     {
         var expectedX = 1;
         var expectedY = 2;
@@ -214,7 +214,7 @@ testset OperatorOverloading
         Assert.AreEqual(expectedY, resultY);
     }
 
-    testcase SetIndex
+    test SetIndex
     {
         var initalX = -1;
         var initalY = -2;
@@ -233,7 +233,7 @@ testset OperatorOverloading
         Assert.AreEqual(expectedY, resultY);
     }
 
-    testcase CountOf
+    test CountOf
     {
         var initalX = -1;
         var initalY = -2;

@@ -6,7 +6,7 @@ class StaticClass
 
 testset StaticClasses
 {
-    testcase Access
+    test Access
     {
         var expected = 10;
         var result = 0;
@@ -16,7 +16,7 @@ testset StaticClasses
         Assert.AreEqual(expected, result);
     }
 
-    testcase Manipulate
+    test Manipulate
     {
         var expected = 10;
         var result = 0;

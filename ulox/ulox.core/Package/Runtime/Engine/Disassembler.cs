@@ -137,8 +137,6 @@ namespace ULox
             case OpCode.SET_PROPERTY:
             case OpCode.METHOD:
             case OpCode.FIELD:
-            case OpCode.REGISTER:
-            case OpCode.INJECT:
                 DoConstant(packet);
                 break;
             case OpCode.MULTI_VAR:

@@ -85,9 +85,6 @@
         CONTEXT_NAME_TESTSET,
 
         BUILD,
-        
-        REGISTER,
-        INJECT,
 
         TYPEOF,
 

@@ -73,9 +73,6 @@ namespace ULox
                 ("cname", TokenType.CONTEXT_NAME_CLASS),
                 ("freeze", TokenType.FREEZE),
 
-                ("inject", TokenType.INJECT),
-                ("register", TokenType.REGISTER),
-
                 ("typeof", TokenType.TYPEOF),
 
                 ("meets", TokenType.MEETS),

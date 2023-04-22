@@ -7,14 +7,17 @@ namespace ULox.Core.Tests
         [Test]
         public void PlatformFindFiles_Root_NotEmpty()
         {
+            var expectedStart = "<inst NativeList>";
             testEngine.Run(@"
 var res = Platform.FindFiles(""./"",""*.ulox"",true);
 print(res);
 print(res.Count());
 "
             );
-
-            StringAssert.StartsWith("<inst NativeList>1", testEngine.InterpreterResult);
+            
+            StringAssert.StartsWith(expectedStart, testEngine.InterpreterResult);
+            var countPrinted = int.Parse(testEngine.InterpreterResult.Substring(expectedStart.Length));
+            Assert.AreNotEqual(0, countPrinted);
         }
     }
 }

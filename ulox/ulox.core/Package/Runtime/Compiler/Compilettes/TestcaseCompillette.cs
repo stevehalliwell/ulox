@@ -7,6 +7,7 @@ namespace ULox
         public TokenType MatchingToken => TokenType.TESTCASE;
         public string TestCaseName { get; private set; }
 
+        private const string AnonTestPrefix = "Anon_Test_";
         private readonly TestSetDeclarationCompilette _testDeclarationCompilette;
 
         public TestcaseCompillette(TestSetDeclarationCompilette testDeclarationCompilette)
@@ -56,9 +57,7 @@ namespace ULox
                 compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "");
             }
 
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
-
-            var testcaseName = (string)compiler.TokenIterator.PreviousToken.Literal;
+            var testcaseName = compiler.IdentifierOrChunkUnique(AnonTestPrefix);
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if (string.IsNullOrEmpty(testDeclName))

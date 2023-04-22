@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -1206,6 +1207,16 @@ namespace ULox
         internal void EmitPop(byte popCount = 1)
         {
             EmitPacketByte(OpCode.POP, popCount);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal string IdentifierOrChunkUnique(string prefix)
+        {
+            if (TokenIterator.Match(TokenType.IDENTIFIER))
+                return TokenIterator.PreviousToken.Lexeme;
+
+            var existingPrefixes = CurrentChunk.Constants.Count(x => x.type == ValueType.String && x.val.asString.String.Contains(prefix));
+            return $"{prefix}{CurrentChunk.SourceName}{existingPrefixes}";
         }
     }
 }

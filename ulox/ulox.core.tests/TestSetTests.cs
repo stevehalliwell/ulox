@@ -18,6 +18,36 @@ testset T
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+        
+        [Test]
+        public void Engine_AnonTestSet_Empty()
+        {
+            testEngine.Run(@"
+testset
+{
+    test A
+    {
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_AnonTestSetAndAnonTest_Empty()
+        {
+            testEngine.Run(@"
+testset
+{
+    test
+    {
+    }
+}"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
 
         [Test]
         public void Engine_Test_Simple1()

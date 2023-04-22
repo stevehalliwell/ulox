@@ -5,6 +5,7 @@ namespace ULox
 {
     public class TestSetDeclarationCompilette : ICompilette
     {
+        private const string AnonTestSetPrefix = "Anon_TestSet_";
         private readonly List<byte> _currentTestcaseLabels = new List<byte>();
 
         public TokenType MatchingToken
@@ -22,10 +23,9 @@ namespace ULox
         private void TestDeclaration(Compiler compiler)
         {
             //grab name
-            var testClassName = (string)compiler.TokenIterator.CurrentToken.Literal;
+            var testClassName = compiler.IdentifierOrChunkUnique(AnonTestSetPrefix);
             CurrentTestSetName = testClassName;
             var testSetNameID = compiler.CurrentChunk.AddConstant(Value.New(testClassName));
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect testset set name.");
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before testset set body.");
 

@@ -21,7 +21,7 @@ namespace ULox.Demo
         public void Reset()
         {
             var scriptLocator = new ScriptLocator(null, Application.streamingAssetsPath);
-            Engine = new Engine(new Context(scriptLocator, new Program(), new Vm()));
+            Engine = new Engine(new Context(scriptLocator, new Program(), new Vm(), scriptLocator));
 
             Engine.Context.AddLibrary(new PrintLibrary(x => Debug.Log(x)));
 

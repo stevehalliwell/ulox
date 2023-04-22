@@ -11,16 +11,20 @@ namespace ULox
         public Context(
             IScriptLocator scriptLocator,
             Program program,
-            Vm vm)
+            Vm vm,
+            IPlatform platform)
         {
             ScriptLocator = scriptLocator;
             Program = program;
             Vm = vm;
+            Platform = platform;
         }
 
         public IScriptLocator ScriptLocator { get; }
         public Program Program { get; }
         public Vm Vm { get; }
+        public IPlatform Platform { get; }
+
         public event Action<string> OnLog;
 
         public void AddLibrary(IULoxLibrary lib)

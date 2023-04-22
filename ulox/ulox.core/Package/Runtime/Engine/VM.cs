@@ -1381,7 +1381,7 @@ namespace ULox
             }
             else if (argCount != 0)
             {
-                ThrowRuntimeException($"Args given for a class that does not have an 'init' method");
+                ThrowRuntimeException($"Expected zero args for class '{klass}', as it does not have an 'init' method but got {argCount} args");
             }
 
             foreach (var (closure, instruction) in klass.InitChains)

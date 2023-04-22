@@ -20,7 +20,6 @@ namespace ULox
                 ("VM", Value.New(new VMClass(CreateVM))),
                 ("Assert", Value.New(MakeAssertInstance())),
                 ("Serialise", Value.New(SerialiseStdLibrary.MakeSerialiseInstance())),
-                ("DI", Value.New(DIStdLibrary.MakeDIInstance())),
                 ("Math", Value.New(MathStdLibrary.MakeMathInstance())),
                 (nameof(Duplicate), Value.New(Duplicate, 1, 1)),
                 (nameof(str), Value.New(str, 1, 1)),

@@ -22,7 +22,6 @@ namespace ULox
         private readonly Table _globals = new Table();
         public Table Globals => _globals;
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
-        public DiContainer DiContainer { get; private set; } = new DiContainer();
 
         public Vm()
         {
@@ -103,7 +102,6 @@ namespace ULox
             }
 
             TestRunner = otherVM.TestRunner;
-            DiContainer = otherVM.DiContainer.ShallowCopy();
         }
 
         public void CopyStackFrom(Vm vm)
@@ -494,14 +492,6 @@ namespace ULox
 
                 case OpCode.TEST:
                     TestRunner.DoTestOpCode(this, chunk, packet.testOpDetails);
-                    break;
-
-                case OpCode.REGISTER:
-                    DoRegisterOp(chunk, packet.b1);
-                    break;
-
-                case OpCode.INJECT:
-                    DoInjectOp(chunk, packet.b1);
                     break;
 
                 case OpCode.FREEZE:
@@ -1184,25 +1174,7 @@ namespace ULox
                 break;
             }
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInjectOp(Chunk chunk, byte constantIndex)
-        {
-            var name = chunk.ReadConstant(constantIndex).val.asString;
-            if (DiContainer.TryGetValue(name, out var found))
-                Push(found);
-            else
-                ThrowRuntimeException($"Inject failure. Nothing has been registered (yet) with name '{name}'");
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoRegisterOp(Chunk chunk, byte constantIndex)
-        {
-            var name = chunk.ReadConstant(constantIndex).val.asString;
-            var implementation = Pop();
-            DiContainer.Set(name, implementation);
-        }
-
+        
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetPropertyOp(Chunk chunk, byte constantIndex)
         {

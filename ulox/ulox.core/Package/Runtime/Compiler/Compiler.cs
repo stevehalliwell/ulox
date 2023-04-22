@@ -63,7 +63,6 @@ namespace ULox
                 (TokenType.OPEN_BRACE, BlockStatement),
                 (TokenType.THROW, ThrowStatement),
                 (TokenType.END_STATEMENT, NoOpStatement),
-                (TokenType.REGISTER, RegisterStatement),
                 (TokenType.FREEZE, FreezeStatement),
                 (TokenType.EXPECT, ExpectStatement),
                 (TokenType.MATCH, MatchStatement),
@@ -101,7 +100,6 @@ namespace ULox
                 (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(_testcaseCompilette.TCName, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TSName, null, Precedence.None)),
-                (TokenType.INJECT, new ActionParseRule(Inject, null, Precedence.Term)),
                 (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
                 (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
@@ -987,24 +985,6 @@ namespace ULox
         public static void FunctionDeclaration(Compiler compiler)
         {
             InnerFunctionDeclaration(compiler, true);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void Inject(Compiler compiler, bool canAssign)
-        {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after 'inject'.");
-            byte name = compiler.AddStringConstant();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.INJECT, name, 0, 0));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void RegisterStatement(Compiler compiler)
-        {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Must provide name after a 'register' statement.");
-            var stringConst = compiler.AddStringConstant();
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.REGISTER, stringConst, 0, 0));
-            compiler.ConsumeEndStatement();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

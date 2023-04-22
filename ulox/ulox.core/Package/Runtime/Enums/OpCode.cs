@@ -66,9 +66,6 @@
         TEST,
 
         BUILD,
-        
-        REGISTER,
-        INJECT,
 
         NATIVE_TYPE,
         GET_INDEX,

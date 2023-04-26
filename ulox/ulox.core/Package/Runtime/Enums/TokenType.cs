@@ -103,5 +103,7 @@
         ENUM,
 
         READ_ONLY,
+
+        UPDATE,
     }
 }

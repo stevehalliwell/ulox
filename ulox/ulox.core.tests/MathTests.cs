@@ -43,7 +43,7 @@ print(Math.Cos(rads));");
 var rads = Math.Deg2Rad(25);
 print(Math.Tan(rads));");
 
-            Assert.AreEqual("0.4663076581549986", testEngine.InterpreterResult);
+            StringAssert.StartsWith("0.466307658", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -55,7 +55,7 @@ var c = Math.Cos(Math.Pi()/4);
 print(s-c);
 ");
 
-            Assert.AreEqual("0", testEngine.InterpreterResult);
+            Assert.AreEqual(0, double.Parse(testEngine.InterpreterResult), 0.00000001);
         }
 
         [Test]

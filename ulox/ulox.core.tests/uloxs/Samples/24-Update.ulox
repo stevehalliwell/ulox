@@ -1,0 +1,112 @@
+// the update keyword, is akin to the 'with' keyword in c#
+// it will update the value in the left with the value from the right
+// for all matches within the heirarchy of the object.
+
+var res;
+
+var lhs = 
+{
+    a: 1,
+    b: 2,
+    c: 3
+};
+
+var rhs = 
+{
+    a: 4,
+    b: 5,
+    c: 6,
+};
+
+res = lhs update rhs;
+//res now contains a refernce to lhs, but with a is 4, b is 5, and c is 6
+
+// The root objects do not have to be the same type, nor the same shape, were a match
+//  is found in the right that value is applyed to the left
+
+var bigRhs =
+{
+    a: 7,
+    b: 8,
+    c: 9,
+    d: 10,
+};
+
+// res now contains the same as lhs, and lhs still does not have a 'd' field
+res = lhs update bigRhs;
+
+// This also works with smaller objects
+
+var smallRhs =
+{
+    a: 11,
+};
+
+// res now contains the same as lhs, and a is 11, b is still 8, c is still 9
+res = lhs update smallRhs;
+
+// When names match but type of value does not, the value is not updated
+
+var typeMismatch =
+{
+    a: "string",
+    b: 2,
+    c: 3,
+};
+
+res = lhs update typeMismatch;
+// res is still the same as lhs, a is still 11, as the value in typeMismatch is a string, not a number
+
+// The update keyword can be used to update nested objects as well
+
+var nestedLhs =
+{
+    a: 1,
+    b: 2,
+    c: 3,
+    d: 
+    {
+        e: 4,
+        f: 5,
+        g: 6,
+    },
+};
+
+var nestedRhs =
+{
+    a: 7,
+    b: 8,
+    c: 9,
+    d: 
+    {
+        e: 10,
+        f: 11,
+        g: 12,
+    },
+};
+
+res = nestedLhs update nestedRhs;
+
+// update also understands native collection types, list and map
+
+var colLhs =
+{
+    a: 1,
+    b: ["key":"val"],
+    c: 3,
+    d: [4, 5, 6],
+};
+
+var colrhs = 
+{
+    a: 7,
+    b: 
+    [
+        "otherkey":" val2",
+        "otherOtherKey": "val3",
+    ],
+    d: [10, 11, 12, 13, 14, 15],
+};
+
+res = colLhs update colrhs;
+// res now contains the same as colLhs, but a is 7, b is a map with 2 keys, and d is a list with 6 elements

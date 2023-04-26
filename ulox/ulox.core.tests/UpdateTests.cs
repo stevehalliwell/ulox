@@ -103,7 +103,7 @@ print(foo meets foo2);
         }
         
         [Test]
-        public void Update_WhenPartiaHierarchylMatch_ShouldUpdateValue()
+        public void Update_WhenPartialHierarchyMatch_ShouldUpdateValue()
         {
             testEngine.Run(@"
 var foo = 

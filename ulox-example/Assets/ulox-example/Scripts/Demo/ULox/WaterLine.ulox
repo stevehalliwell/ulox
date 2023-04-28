@@ -1,23 +1,7 @@
-/*
-Code we expect from Unity's side;
-SetUIText(string)
-CreateFromPrefab(string):GameObject (returns a GameObject reference that we'll pass back to unity)
-GetKey(string):bool
-SetGameObjectPosition(GameObject, x, y, z)
-ReloadScene - reload the current unity scene
-
-
-Unity will find and call: 
-- SetupGame in Start
-- Update in Update
-*/
-
-//functions and data
 var dt = 0;
 var points = [];
 var gos = [];
 
-//TODO remove the x, just be where you are
 data Circle
 {
 	x = 0,
@@ -49,10 +33,13 @@ fun Update()
 {
 	if(GetKey("escape")){ReloadScene();}
 
-	var drag = Math.Exp(-3 * dt);
-	var dampen = drag;
-	var invDampen = 1 - dampen;
-	var pullFactor = 1;
+	var pullFactor = 2;
+	var firstNeighScale = 0.75;
+	var secondNeighScale = 0.65;
+	var thirdNeighScale = 0.35;
+	var pDevScale = 0.5;
+	var dragSharpness = 3;
+	var dragFac = Math.Exp(-dragSharpness * dt) * dt;
 
 	var circCount = points.Count();
 	for(var i = 0; i < circCount; i += 1)
@@ -62,20 +49,21 @@ fun Update()
 		var py = 0;
 		var y = item.y;
 		var neigh;
-			neigh = points[(i-3 + circCount) % circCount];
-			py += (neigh.y - y) * 0.25;
-			neigh = points[(i-2 + circCount) % circCount];
-			py += (neigh.y - y) * 0.5;
-			neigh = points[(i-1 + circCount) % circCount];
-			py += (neigh.y - y);
-			neigh = points[(i+1) % circCount];
-			py += (neigh.y - y);
-			neigh = points[(i+2)% circCount];
-			py += (neigh.y - y) * 0.5;
-			neigh = points[(i+3)% circCount];
-			py += (neigh.y - y) * 0.25;
 
-		item.pullY = py * pullFactor * dt;
+		neigh = points[(i-3 + circCount) % circCount];
+		py += (neigh.y - y) * thirdNeighScale;
+		neigh = points[(i-2 + circCount) % circCount];
+		py += (neigh.y - y) * secondNeighScale;
+		neigh = points[(i-1 + circCount) % circCount];
+		py += (neigh.y - y) * firstNeighScale;
+		neigh = points[(i+1) % circCount];
+		py += (neigh.y - y) * firstNeighScale;
+		neigh = points[(i+2)% circCount];
+		py += (neigh.y - y) * secondNeighScale;
+		neigh = points[(i+3)% circCount];
+		py += (neigh.y - y) * thirdNeighScale;
+
+		item.pullY = py;
 	}
 
 
@@ -87,11 +75,18 @@ fun Update()
 	{
 		var dy = item.y - item.py;
 		item.py = item.y;
-		item.y = item.y + dy + item.pullY;
-
-		item.y = item.y * dampen + item.anchorY * invDampen;
-
+		var pull = item.pullY;
 		item.pullY = 0;
+		var y = item.y;
+		var pDev = y - item.anchorY;
+		
+		pull += -pDev * pDevScale;
+		pull *= pullFactor;
+		pull *= dt;
+		y += dy + pull;
+		var vel = (y - item.py) / dt;
+		y = item.py + vel * dragFac;
+		item.y = y;
 	}
 
 	SetListOfGoToListOfPositions(gos, points, "x", "y");

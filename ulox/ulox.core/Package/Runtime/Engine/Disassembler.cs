@@ -152,11 +152,6 @@ namespace ULox
             case OpCode.CALL:
                 stringBuilder.Append($"({packet.b1})");
                 break;
-            case OpCode.JUMP_IF_FALSE:
-            case OpCode.JUMP:
-            case OpCode.LOOP:
-                stringBuilder.Append($"({packet.u1})");
-                break;
             case OpCode.CLOSURE:
             {
                 stringBuilder.Append($"({packet.closureDetails.ClosureType}) ");
@@ -246,10 +241,28 @@ namespace ULox
             case OpCode.LABEL:
                 PrintLabel(packet.b1);
                 break;
+            case OpCode.ADD:
+            case OpCode.SUBTRACT:
+            case OpCode.MULTIPLY:
+            case OpCode.DIVIDE:
+            case OpCode.MODULUS:
+            case OpCode.EQUAL:
+            case OpCode.LESS:
+            case OpCode.GREATER:
+                PrintOptionalRegisters(packet.b1, packet.b2, packet.b3);
+                break;
             }
-            
+
             stringBuilder.AppendLine();
             _currentInstructionCount++;
+        }
+
+        private void PrintOptionalRegisters(byte b1, byte b2, byte b3)
+        {
+            if (b1 == 0 && b2 == 0)
+                return;
+            
+            stringBuilder.Append($" ({((b1 == 0) ? "_" : b1.ToString())}, {((b2 == 0) ? "_" : b2.ToString())})");
         }
 
         private void DoConstant(ByteCodePacket packet)

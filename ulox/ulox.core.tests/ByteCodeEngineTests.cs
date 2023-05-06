@@ -851,7 +851,7 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'3' in chunk:'f(test:5)'.
+            Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'1' in chunk:'f(test:5)'.
 ===Stack===
 null
 1

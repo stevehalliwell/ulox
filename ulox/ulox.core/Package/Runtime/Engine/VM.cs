@@ -220,7 +220,7 @@ namespace ULox
 
                 case OpCode.ADD:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -241,7 +241,7 @@ namespace ULox
                 break;
                 case OpCode.SUBTRACT:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -255,7 +255,7 @@ namespace ULox
                 break;
                 case OpCode.MULTIPLY:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -269,7 +269,7 @@ namespace ULox
                 break;
                 case OpCode.DIVIDE:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -283,7 +283,7 @@ namespace ULox
                 break;
                 case OpCode.MODULUS:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -298,7 +298,7 @@ namespace ULox
 
                 case OpCode.EQUAL:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -313,7 +313,7 @@ namespace ULox
 
                 case OpCode.LESS:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -329,7 +329,7 @@ namespace ULox
                 break;
                 case OpCode.GREATER:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -370,19 +370,6 @@ namespace ULox
 
                 case OpCode.DUPLICATE:
                     DoDuplicateOp();
-                    break;
-
-                case OpCode.JUMP_IF_FALSE:
-                    if (Peek().IsFalsey())
-                        _currentCallFrame.InstructionPointer += packet.u1;
-                    break;
-
-                case OpCode.JUMP:
-                    _currentCallFrame.InstructionPointer += packet.u1;
-                    break;
-
-                case OpCode.LOOP:
-                    _currentCallFrame.InstructionPointer -= packet.u1;
                     break;
 
                 case OpCode.GET_LOCAL:
@@ -569,6 +556,14 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private (Value rhs, Value lhs) Pop2OrLocals(byte b1, byte b2)
+        {
+            var rhs = b2 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
+            var lhs = b1 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            return (rhs, lhs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoInstanceOverload(OpCode opCode, Value rhs, Value lhs)
         {
             if (lhs.type != rhs.type)
@@ -614,9 +609,9 @@ namespace ULox
         private void DoUpdateOp()
         {
             var (rhs, lhs) = Pop2();
-            
+
             var res = Value.UpdateFrom(lhs, rhs, this);
-            
+
             Push(res);
         }
 
@@ -1061,9 +1056,9 @@ namespace ULox
             switch (callee.type)
             {
             case ValueType.NativeFunction:
-                if(argCount != callee.val.asByte1)
+                if (argCount != callee.val.asByte1)
                     ThrowRuntimeException($"Native function '{callee.val.asNativeFunc.Method.Name}' expected '{callee.val.asByte1}' arguments but got '{argCount}'");
-                
+
                 PushFrameCallNative(callee.val.asNativeFunc, argCount, callee.val.asByte0);
                 break;
 
@@ -1109,7 +1104,7 @@ namespace ULox
             if (argCount != closureInternal.chunk.Arity)
                 ThrowRuntimeException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
                     $", got '{argCount}' but expected '{closureInternal.chunk.Arity}'");
-            
+
 
             var stackStart = (byte)System.Math.Max(0, _valueStack.Count - argCount - 1);
             PushNewCallframe(new CallFrame()
@@ -1188,7 +1183,7 @@ namespace ULox
                 break;
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetPropertyOp(Chunk chunk, byte constantIndex)
         {

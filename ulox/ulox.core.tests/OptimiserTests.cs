@@ -1,5 +1,4 @@
 ﻿using NUnit.Framework;
-using System.Linq;
 
 namespace ULox.Core.Tests
 {
@@ -10,7 +9,10 @@ namespace ULox.Core.Tests
         public override void Setup()
         {
             base.Setup();
-            testEngine.MyEngine.Context.Program.Optimiser.Enabled = true;
+            var opt = testEngine.MyEngine.Context.Program.Optimiser;
+            opt.Enabled = true;
+            opt.EnableRemoveUnreachableLabels = true;
+            opt.EnableRegisterisation = true;
         }
         
         [Test]
@@ -85,334 +87,138 @@ print(1+2);");
         }
         
         [Test]
-        [Ignore("Not yet expected to work")]
-        public void Optimiser_Pong_Smaller()
+        public void Optimiser_RegisterableMath_CollapsesToRegisterBasedOp()
         {
-            var unoptCounts = new (string name, int count)[]
-            {
-                ("Create", 25),
-("Scale", 24),
-("_add", 28),
-("_sub", 28),
-("_mul", 28),
-("_eq", 28),
-("unnamed_chunk", 1248),
-("FromPrefab", 14),
-("Sync", 49),
-("Sync", 53),
-("init", 46),
-("init", 18),
-("init", 18),
-("Update", 91),
-("unnamed_chunk", 344),
-("SetupGame", 8),
-("CreateLevel", 37),
-("CreateWalls", 117),
-("CreateBall", 14),
-("CreatePaddles", 48),
-("Update", 10),
-("UpdateGame", 36),
-("unnamed_chunk", 51),
-            };
-
-            const string Vec2_ulox = @"class Vec2
+            testEngine.Run(@"
 {
-	static Create(x,y)
-	{
-		var ret = Vec2();
-		ret.x = x;
-		ret.y = y;
-		return ret;
-	}
-    
-    static Scale(v2, scalar)
-    {
-        return Vec2.Create(v2.x* scalar, v2.y*scalar);
-    }
+var a = 1;
+var b = 2;
+var c = 0;
+c = a + b;
+print (c);
+}");
 
-	var x = 0, y = 0;
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+            Assert.AreEqual(12, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
 
-	_add(lhs, rhs)
-	{
-		return Vec2.Create(lhs.x + rhs.x, lhs.y + rhs.y);
-	}
+        [Test]
+        public void Optimiser_RegisterableCompare_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+{
+var a = 1;
+var b = 2;
+var c = true;
+c = a == b;
+print (c);
+}");
 
-	_sub(lhs, rhs)
-	{
-		return Vec2.Create(lhs.x - rhs.x, lhs.y - rhs.y);
-	}
+            Assert.AreEqual("False", testEngine.InterpreterResult);
+            Assert.AreEqual(12, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
 
-	_mul(lhs, rhs)
-	{
-		return Vec2.Create(lhs.x * rhs.x, lhs.y * rhs.y);
-	}
+        [Test]
+        public void Optimiser_ChainCalls_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+{
+var a = 1;
+var b = 2;
+var c = 3;
+var d = 0;
+d = a+b-c;
+print (d);
+}");
 
-	_eq(lhs, rhs)
-	{
-		return lhs.x == rhs.x and lhs.y == rhs.y;
-	}
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+            Assert.Greater(17, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+
+        [Test]
+        public void Optimiser_WaterLineSimplified_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+var dt = 0;
+var points = [];
+
+data Circle
+{
+	x = 0,
+	y = 0, 
+	py = 0,
+	anchorY = 0,
+	pullY = 0,
 }
 
-testset Vec2Tests
+print (""Setting Up Game"");
+
+var numToSpawn = 50;
+var startX = -12.5;
+var stepX = 0.5;
+
+for(var i = 0; i < numToSpawn; i += 1)
 {
-	test Default
-	{
-		var expected = 0;
-		var result = Vec2();
-
-		var x = result.x;
-		var y = result.y;
-
-		Assert.AreEqual(expected, x);
-		Assert.AreEqual(expected, y);
-	}
-
-	test ([
-		[1,1,1,1,2,2],
-		[1,0,1,2,2,2],
-		[1,-1,1,-1,2,-2],
-		[1,2,3,4,4,6],
-	]) Add(ax, ay, bx, by, ex, ey)
-	{
-		var expected = Vec2.Create(ex,ey);
-		var result;
-		var a = Vec2.Create(ax,ay);
-		var b = Vec2.Create(bx,by);
-
-		result = a+b;
-
-		Assert.IsTrue(expected == result);
-	}
-
-	test ([
-		[1,1,1,1,0,0],
-		[1,0,1,2,0,-2],
-		[1,-1,1,-1,0,0],
-		[1,2,3,4,-2,-2],
-	]) Sub(ax, ay, bx, by, ex, ey)
-	{
-		var expected = Vec2.Create(ex,ey);
-		var result;
-		var a = Vec2.Create(ax,ay);
-		var b = Vec2.Create(bx,by);
-
-		result = a-b;
-
-		Assert.IsTrue(expected == result);
-	}
-
-	test Mul
-	{
-		var expected = Vec2.Create(3,8);
-		var result;
-		var a = Vec2.Create(1,2);
-		var b = Vec2.Create(3,4);
-
-		result = a*b;
-
-		Assert.IsTrue(expected == result);
-	}
-
-	test ([
-		[1,1,1,1,true],
-		[1,0,1,2,false],
-		[1,-1,1,-1,true],
-		[1,2,3,4,false],
-	]) Equal(ax, ay, bx, by, expected)
-	{
-		var result;
-		var a = Vec2.Create(ax,ay);
-		var b = Vec2.Create(bx,by);
-
-		result = a == b;
-
-		Assert.AreEqual(expected, result);
-	}
-
-	test Scale
-	{
-		var expected = Vec2.Create(2,4);
-		var result;
-		var a = Vec2.Create(1,2);
-		var b = 2;
-
-		result = Vec2.Scale(a,b);
-
-		Assert.IsTrue(expected == result);
-	}
-}";
-            const string Pong_mixins_ulox = @"class Position
-{
-    var pos = Vec2();
-}
-
-class Scale
-{
-    var scale = Vec2.Create(1,1);
-}
-
-class GameObject
-{
-    mixin Position,
-        Scale;
-
-    var go;
-
-    FromPrefab(name)
-    {
-        this.go = CreateFromPrefab(name);
-    }
-
-    Sync()
-    {
-        SetGameObjectPosition(this.go, this.pos.x, this.pos.y, 0);
-        SetGameObjectScale(this.go, this.scale.x, this.scale.y,1);
-    }
-}
-
-class Dynamic
-{
-    mixin Position;
-    
-    var rb;
-    var vel = Vec2();
-
-    Sync()
-    {
-        //TODO would prefer to be able to do this during init chain 
-        if(this.rb == null)
-            this.rb = GetRigidBody2DFromGameObject(this.go);    
-        
-        SetRigidBody2DVelocity(this.rb, this.vel.x, this.vel.y);
-    }
-}
-
-class PongBall
-{
-    mixin GameObject,
-        Dynamic;
-
-    init(pos, vel)
-    {
-        this.FromPrefab(""Ball"");
-        this.Sync();
-        SetSpriteColour(this.go, 1,0,0,1);
-        SetGameObjectTag(this.go, ""Ball"");
-    }
-}
-
-class PongWall
-{
-    mixin GameObject;
-    
-    init(pos, scale)
-    {
-        this.FromPrefab(""Wall"");
-        this.Sync();
-    }
-}
-
-class PongPaddle
-{
-    mixin GameObject,
-        Dynamic;
-    
-    var speed;
-    var upKey, downKey;
-    
-    init(pos, speed, upKey, downKey)
-    {
-        this.FromPrefab(""VerticalPaddle"");
-        this.Sync();
-    }
-
-    Update()
-    {
-        var curSpeed = 0;
-        
-        if(GetKey(this.upKey))
-            curSpeed = this.speed;
-        if(GetKey(this.downKey))
-            curSpeed = -this.speed;
-
-        this.vel = Vec2.Create(0,curSpeed);
-
-        SetRigidBody2DVelocity(this.rb, this.vel.x, this.vel.y);
-    }
-}";
-            const string Pong_ulox = @"var dt;
-var walls = [];
-var ball;
-var leftPaddle;
-var rightPaddle;
-var paddleMoveSpeed = 50;
-
-fun SetupGame()
-{
-    CreateLevel();
-}
-
-fun CreateLevel()
-{
-    CreateWalls();
-    
-    CreateBall(Vec2.Create(0,-20), Vec2.Create(15,18));
-
-    CreatePaddles();
-}
-
-fun CreateWalls()
-{
-    walls.Add(PongWall(Vec2.Create(-40,0), Vec2.Create(10,80)));
-    walls.Add(PongWall(Vec2.Create(40,0), Vec2.Create(10,80)));
-    walls.Add(PongWall(Vec2.Create(0,-40), Vec2.Create(80,10)));
-    walls.Add(PongWall(Vec2.Create(0,40), Vec2.Create(80,10)));
-}
-
-fun CreateBall(at, vel)
-{
-    ball = PongBall(at, vel);
-}
-
-fun CreatePaddles()
-{
-    leftPaddle = PongPaddle(
-        Vec2.Create(-25,0),
-        paddleMoveSpeed,
-        ""w"",
-        ""s""
-    );
-    rightPaddle = PongPaddle(
-        Vec2.Create(25,0),
-        paddleMoveSpeed,
-        ""up"",
-        ""down""
-    );
+	var circ = Circle();
+	circ.x = startX + i * stepX;
+	points.Add(circ);
 }
 
 fun Update()
 {
-    UpdateGame(dt);
-}
+	var pullFactor = 2;
+	var firstNeighScale = 0.75;
+	var secondNeighScale = 0.65;
+	var thirdNeighScale = 0.35;
+	var pDevScale = 0.5;
+	var dragSharpness = 3;
+	var dragFac = Math.Exp(-dragSharpness * dt) * dt;
 
-fun UpdateGame(dt)
-{
-	if(GetKey(""escape"")){ReloadScene();}
-    leftPaddle.Update();
-    rightPaddle.Update();
-}
-";
-            testEngine.Run(Vec2_ulox);
-            testEngine.Run(Pong_mixins_ulox);
-            testEngine.Run(Pong_ulox);
+	var circCount = points.Count();
+	for(var i = 0; i < circCount; i += 1)
+	{
+		var item = points[i];
+		var px = 0;
+		var py = 0;
+		var y = item.y;
+		var neigh;
 
-            Assert.AreEqual("", testEngine.InterpreterResult);
-            var byteCounts = testEngine.MyEngine.Context.Program.CompiledScripts.SelectMany(x => x.AllChunks.Select(y => (y.Name, y.Instructions.Count))).ToArray();
-            for (int i = 0; i < byteCounts.Length; i++)
-            {
-                Assert.AreEqual(unoptCounts[i].name, byteCounts[i].Name);
-                Assert.GreaterOrEqual(unoptCounts[i].count, byteCounts[i].Count);
-            }
+		neigh = points[(i-3 + circCount) % circCount];
+		py += (neigh.y - y) * thirdNeighScale;
+		neigh = points[(i-2 + circCount) % circCount];
+		py += (neigh.y - y) * secondNeighScale;
+		neigh = points[(i-1 + circCount) % circCount];
+		py += (neigh.y - y) * firstNeighScale;
+		neigh = points[(i+1) % circCount];
+		py += (neigh.y - y) * firstNeighScale;
+		neigh = points[(i+2)% circCount];
+		py += (neigh.y - y) * secondNeighScale;
+		neigh = points[(i+3)% circCount];
+		py += (neigh.y - y) * thirdNeighScale;
+
+		item.pullY = py;
+	}
+
+	loop(points)
+	{
+		var dy = item.y - item.py;
+		item.py = item.y;
+		var pull = item.pullY;
+		item.pullY = 0;
+		var y = item.y;
+		var pDev = y - item.anchorY;
+		
+		pull += -pDev * pDevScale;
+		pull *= pullFactor;
+		pull *= dt;
+		y += dy + pull;
+		var vel = (y - item.py) / dt;
+		y = item.py + vel * dragFac;
+		item.y = y;
+	}
+}");
+            
+            Assert.Less(17, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
     }
 }

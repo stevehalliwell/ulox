@@ -5,8 +5,11 @@ namespace ULox
 {
     public sealed class ByteCodeOptimiser : CompiledScriptIterator
     {
-        public bool Enabled { get; set; } = false;
+        public bool Enabled { get; set; } = true;
+        public bool EnableRegisterisation { get; set; } = true;
+        public bool EnableRemoveUnreachableLabels { get; set; } = false;
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
+        private List<(Chunk chunk, int inst)> _potentialRegisterise = new List<(Chunk, int)>();
         private readonly List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
         private OpCode _prevOoCode;
         private int _deadCodeStart = -1;
@@ -17,13 +20,16 @@ namespace ULox
                 return;
 
             Iterate(compiledScript);
-
-            MarkNoJumpGotoLabelAsDead(compiledScript);
-            MarkUnsedLabelsAsDead(compiledScript);
+            if (EnableRegisterisation) AttemptRegisterise();
+            if (EnableRemoveUnreachableLabels)
+            {
+                MarkNoJumpGotoLabelAsDead();
+                MarkUnsedLabelsAsDead(compiledScript);
+            }
             RemoveMarkedInstructions();
         }
 
-        private void MarkNoJumpGotoLabelAsDead(CompiledScript compiledScript)
+        private void MarkNoJumpGotoLabelAsDead()
         {
             foreach (var (chunk, from, label) in _labelUsage)
             {
@@ -129,6 +135,63 @@ namespace ULox
             case OpCode.GOTO_IF_FALSE:
                 ProcessGoto(packet);
                 break;
+            case OpCode.ADD:
+            case OpCode.SUBTRACT:
+            case OpCode.MULTIPLY:
+            case OpCode.DIVIDE:
+            case OpCode.MODULUS:
+            case OpCode.EQUAL:
+            case OpCode.LESS:
+            case OpCode.GREATER:
+                AddRegisterOptimisableInstruction(CurrentChunk, CurrentInstructionIndex);
+                break;
+            }
+        }
+
+        private void AddRegisterOptimisableInstruction(Chunk currentChunk, int currentInstructionIndex)
+        {
+            _potentialRegisterise.Add((currentChunk, currentInstructionIndex));
+        }
+
+        private void AttemptRegisterise()
+        {
+            foreach (var (chunk, inst) in _potentialRegisterise)
+            {
+                var original = chunk.Instructions[inst];
+                var nb1 = original.b1;
+                var nb2 = original.b2;
+                var nb3 = original.b3;
+
+                //TODO: would like to but it conflicts with add overload internals at the moment
+                //if the following is a set local we can just do that
+                //if (chunk.Instructions.Count > inst)
+                //{
+                //    var next = chunk.Instructions[inst + 1];
+                //    if (next.OpCode == OpCode.SET_LOCAL)
+                //    {
+                //        _toRemove.Add((chunk, inst + 1));
+                //        nb3 = next.b1;
+                //    }
+                //}
+
+                var prev = chunk.Instructions[inst - 1];
+
+                //if the prevous is a getlocal take it's byte and put it as the second byte in the add
+                //  and mark it as for removal
+                if (prev.OpCode == OpCode.GET_LOCAL)
+                {
+                    _toRemove.Add((chunk, inst - 1));
+                    nb2 = prev.b1;
+                    // if the previous previous is getlocal take its byte and make first byte, mark for removal
+                    var prevprev = chunk.Instructions[inst - 2];
+                    if (prevprev.OpCode == OpCode.GET_LOCAL)
+                    {
+                        _toRemove.Add((chunk, inst - 2));
+                        nb1 = prevprev.b1;
+                    }
+                }
+
+                chunk.Instructions[inst] = new ByteCodePacket(original.OpCode, nb1, nb2, nb3);
             }
         }
 

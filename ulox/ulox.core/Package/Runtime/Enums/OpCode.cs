@@ -22,10 +22,6 @@
         SET_UPVALUE,
         CLOSE_UPVALUE,
 
-        JUMP_IF_FALSE,
-        JUMP,
-        LOOP,   //this is just jump but negative
-
         NOT,
         EQUAL,
         LESS,

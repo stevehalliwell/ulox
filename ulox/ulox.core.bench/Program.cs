@@ -1,6 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using ULox;
 
 namespace ULox.Core.Bench
 {
@@ -136,6 +135,19 @@ namespace ULox.Core.Bench
         {
             var engine = Engine.CreateDefault();
             engine.RunScript(BouncingBallProfileScript.Script);
+
+            engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("SetupGame")), 0);
+            for (int i = 0; i < 100; i++)
+            {
+                engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("Update")), 0);
+            }
+        }
+
+        [Benchmark]
+        public void WaterLine()
+        {
+            var engine = Engine.CreateDefault();
+            engine.RunScript(WaterLineProfileScript.Script);
 
             engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("SetupGame")), 0);
             for (int i = 0; i < 100; i++)

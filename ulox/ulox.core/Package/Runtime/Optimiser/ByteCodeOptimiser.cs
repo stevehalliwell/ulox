@@ -18,7 +18,7 @@ namespace ULox
         {
             if (!Enabled)
                 return;
-
+            
             Iterate(compiledScript);
             if (EnableRegisterisation) AttemptRegisterise();
             if (EnableRemoveUnreachableLabels)
@@ -86,6 +86,8 @@ namespace ULox
         public void Reset()
         {
             _toRemove.Clear();
+            _potentialRegisterise.Clear();
+            _labelUsage.Clear();
             _deadCodeStart = -1;
         }
 
@@ -143,11 +145,13 @@ namespace ULox
             case OpCode.EQUAL:
             case OpCode.LESS:
             case OpCode.GREATER:
+            case OpCode.GET_INDEX:
                 AddRegisterOptimisableInstruction(CurrentChunk, CurrentInstructionIndex);
                 break;
             }
         }
 
+        //todo to allow for DoSetIndexOp to be registerised we need to know how many prior locals it should hover up and how
         private void AddRegisterOptimisableInstruction(Chunk currentChunk, int currentInstructionIndex)
         {
             _potentialRegisterise.Add((currentChunk, currentInstructionIndex));

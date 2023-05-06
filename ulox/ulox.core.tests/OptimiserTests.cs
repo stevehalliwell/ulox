@@ -132,7 +132,22 @@ print (d);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            Assert.Greater(17, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(17, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+
+        [Test]
+        public void Optimiser_GetIndex_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+var l = [1,2,3,4];
+{
+var a = 3;
+var res = l[a];
+print (res);
+}");
+
+            Assert.AreEqual("4", testEngine.InterpreterResult);
+            Assert.AreEqual(27, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -218,7 +233,7 @@ fun Update()
 	}
 }");
             
-            Assert.Less(17, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.Greater(112, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
     }
 }

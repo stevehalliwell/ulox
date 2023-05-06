@@ -249,6 +249,7 @@ namespace ULox
             case OpCode.EQUAL:
             case OpCode.LESS:
             case OpCode.GREATER:
+            case OpCode.GET_INDEX:
                 PrintOptionalRegisters(packet.b1, packet.b2, packet.b3);
                 break;
             }

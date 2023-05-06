@@ -365,7 +365,13 @@ namespace ULox
                     break;
 
                 case OpCode.SWAP:
-                    DoSwapOp();
+                {
+                    //swap last stack values
+                    var count = _valueStack.Count;
+                    var temp = _valueStack[count - 1];
+                    _valueStack[count - 1] = _valueStack[count - 2];
+                    _valueStack[count - 2] = temp;
+                }
                     break;
 
                 case OpCode.DUPLICATE:
@@ -490,7 +496,10 @@ namespace ULox
                     break;
 
                 case OpCode.GET_INDEX:
-                    DoGetIndexOp(opCode);
+                {
+                    var (index, listValue) = Pop2OrLocals(packet.b1, packet.b2);
+                    DoGetIndexOp(opCode, index, listValue);
+                }  
                     break;
 
                 case OpCode.SET_INDEX:
@@ -705,7 +714,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSetIndexOp(OpCode opCode)
         {
-            //pop3?
             var (newValue, index, listValue) = Pop3();
             if (listValue.val.asInstance is INativeCollection nativeCol)
             {
@@ -742,10 +750,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetIndexOp(OpCode opCode)
+        private void DoGetIndexOp(OpCode opCode, Value index, Value listValue)
         {
-            var (index, listValue) = Pop2();
-
             if (listValue.val.asInstance is INativeCollection nativeCol)
             {
                 Push(nativeCol.Get(index));
@@ -835,16 +841,6 @@ namespace ULox
             var givenVar = Pop();
             var str = givenVar.str();
             Engine.LocateAndQueue(str);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSwapOp()
-        {
-            //pop2
-            var (n0, n1) = Pop2();
-
-            Push(n0);
-            Push(n1);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

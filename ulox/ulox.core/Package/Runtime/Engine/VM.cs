@@ -3,8 +3,6 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    //todo better string parsing token support
-    //todo track and output class information from compile
     public sealed class Vm
     {
         private readonly ClosureInternal NativeCallClosure;
@@ -453,12 +451,18 @@ namespace ULox
                     break;
 
                 case OpCode.GET_PROPERTY:
-                    DoGetPropertyOp(chunk, packet.b1);
-                    break;
+                {
+                    var targetVal = PopOrLocal(packet.b3);
+                    DoGetPropertyOp(chunk, packet.b1, targetVal);
+                }
+                break;
 
                 case OpCode.SET_PROPERTY:
-                    DoSetPropertyOp(chunk, packet.b1);
-                    break;
+                {
+                    var (newVal, targetVal) = Pop2OrLocals(packet.b2, packet.b3);
+                    DoSetPropertyOp(chunk, packet.b1, targetVal, newVal);
+                }
+                break;
 
                 case OpCode.TYPE:
                     DoUserTypeOp(chunk, packet.typeDetails);
@@ -573,23 +577,23 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Value PopOrLocal(byte b1)
         {
-            return b1 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            return b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (Value rhs, Value lhs) Pop2OrLocals(byte b1, byte b2)
         {
-            var rhs = b2 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
-            var lhs = b1 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            var rhs = b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
+            var lhs = b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
             return (rhs, lhs);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (Value newValue, Value index, Value listValue) Pop3OrLocals(byte b1, byte b2, byte b3)
         {
-            var newValue = b3 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b3];
-            var index = b2 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
-            var listValue = b1 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            var newValue = b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b3];
+            var index = b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
+            var listValue = b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
             return (newValue, index, listValue);
         }
 
@@ -1184,7 +1188,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetPropertyOp(Chunk chunk, byte constantIndex)
+        private void DoGetPropertyOp(Chunk chunk, byte constantIndex, Value targetVal)
         {
             //use class to build a cached route to the field, introduce an cannot cache instruction
             //  once there are class vars this can be done through that as those are known and safe, not
@@ -1194,7 +1198,6 @@ namespace ULox
             //  different type is given or generate variants for each type
             //the problem here is we don't know that the targetVal is of the same type that we are caching so
             //  turn it off for now.
-            var targetVal = Peek();
 
             InstanceInternal instance = null;
 
@@ -1216,19 +1219,30 @@ namespace ULox
 
             if (instance.TryGetField(name, out var val))
             {
-                DiscardPop();
                 Push(val);
                 return;
             }
 
-            BindMethod(instance.FromUserType, name);
+            //attempt to bind the method
+            var fromClass = instance.FromUserType;
+            var methodName = name;
+            
+            if (fromClass == null)
+                ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
+
+            if (!fromClass.TryGetMethod(methodName, out var method))
+                ThrowRuntimeException($"Undefined property '{methodName}'");
+
+            var receiver = targetVal;
+            var meth = method.val.asClosure;
+            var bound = Value.New(new BoundMethod(receiver, meth));
+            
+            Push(bound);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetPropertyOp(Chunk chunk, byte constantIndex)
+        private void DoSetPropertyOp(Chunk chunk, byte constantIndex, Value targetVal, Value newVal)
         {
-            var targetVal = Peek(1);
-
             InstanceInternal instance = null;
 
             switch (targetVal.type)
@@ -1247,11 +1261,9 @@ namespace ULox
 
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
-            instance.SetField(name, Peek());
-
-            var value = Pop();
-            DiscardPop();
-            Push(value);
+            instance.SetField(name, newVal);
+            
+            Push(newVal);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1329,23 +1341,6 @@ namespace ULox
             //pop2
             var (klass, mixin) = Pop2();
             klass.val.asClass.MixinClass(mixin, this);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void BindMethod(UserTypeInternal fromClass, HashedString methodName)
-        {
-            if (fromClass == null)
-                ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
-
-            if (!fromClass.TryGetMethod(methodName, out var method))
-                ThrowRuntimeException($"Undefined property '{methodName}'");
-
-            var receiver = Peek();
-            var meth = method.val.asClosure;
-            var bound = Value.New(new BoundMethod(receiver, meth));
-
-            DiscardPop();
-            Push(bound);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

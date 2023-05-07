@@ -5,16 +5,19 @@ namespace ULox
 {
     public sealed class ByteCodeOptimiser : CompiledScriptIterator
     {
+        public const byte NOT_LOCAL_BYTE = byte.MaxValue;
         private enum RegisteriseType
         {
             Unknown,
             Uniary,
             Binary,
             SetIndex,
+            GetProp,
+            SetProp,
         }
 
         public bool Enabled { get; set; } = true;
-        public bool EnableRegisterisation { get; set; } = true;
+        public bool EnableLocalizing { get; set; } = true;
         public bool EnableRemoveUnreachableLabels { get; set; } = false;
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
         private List<(Chunk chunk, int inst, RegisteriseType regType)> _potentialRegisterise = new List<(Chunk, int, RegisteriseType)>();
@@ -28,7 +31,7 @@ namespace ULox
                 return;
 
             Iterate(compiledScript);
-            if (EnableRegisterisation) AttemptRegisterise();
+            if (EnableLocalizing) AttemptRegisterise();
             if (EnableRemoveUnreachableLabels)
             {
                 MarkNoJumpGotoLabelAsDead();
@@ -154,33 +157,24 @@ namespace ULox
             case OpCode.LESS:
             case OpCode.GREATER:
             case OpCode.GET_INDEX:
-                AddRegisterOptimisableInstructionLhsRhs(CurrentChunk, CurrentInstructionIndex);
+                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.Binary));
                 break;
             case OpCode.SET_INDEX:
-                AddRegisterOptimisableInstructionSetIndex(CurrentChunk, CurrentInstructionIndex);
+                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.SetIndex));
                 break;
             case OpCode.NEGATE:
             case OpCode.NOT:
             case OpCode.COUNT_OF:
             case OpCode.DUPLICATE:
-                AddRegisterOptimisableInstructionSingle(CurrentChunk, CurrentInstructionIndex);
+                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.Uniary));
+                break;
+            case OpCode.GET_PROPERTY:
+                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.GetProp));
+                break;
+            case OpCode.SET_PROPERTY:
+                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.SetProp));
                 break;
             }
-        }
-
-        private void AddRegisterOptimisableInstructionLhsRhs(Chunk currentChunk, int currentInstructionIndex)
-        {
-            _potentialRegisterise.Add((currentChunk, currentInstructionIndex, RegisteriseType.Binary));
-        }
-
-        private void AddRegisterOptimisableInstructionSetIndex(Chunk currentChunk, int currentInstructionIndex)
-        {
-            _potentialRegisterise.Add((currentChunk, currentInstructionIndex, RegisteriseType.SetIndex));
-        }
-
-        private void AddRegisterOptimisableInstructionSingle(Chunk currentChunk, int currentInstructionIndex)
-        {
-            _potentialRegisterise.Add((currentChunk, currentInstructionIndex, RegisteriseType.Uniary));
         }
 
         private void AttemptRegisterise()
@@ -256,6 +250,27 @@ namespace ULox
                     }
                 }
                 break;
+                case RegisteriseType.GetProp:
+                    if (prev.OpCode == OpCode.GET_LOCAL)
+                    {
+                        _toRemove.Add((chunk, inst - 1));
+                        nb3 = prev.b1;
+                    }
+                    break;
+                case RegisteriseType.SetProp:
+                    if (prev.OpCode == OpCode.GET_LOCAL)
+                    {
+                        _toRemove.Add((chunk, inst - 1));
+                        nb3 = prev.b1;  //target
+
+                        var prevprev = chunk.Instructions[inst - 2];
+                        if (prevprev.OpCode == OpCode.GET_LOCAL)
+                        {
+                            _toRemove.Add((chunk, inst - 2));
+                            nb2 = prevprev.b1; // newval
+                        }
+                    }
+                    break;
                 case RegisteriseType.Unknown:
                 default:
                     throw new UloxException($"Unknown registerise type {regType}");

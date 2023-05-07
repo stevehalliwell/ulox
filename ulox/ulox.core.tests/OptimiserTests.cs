@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 
 namespace ULox.Core.Tests
 {
@@ -12,8 +13,9 @@ namespace ULox.Core.Tests
             var opt = testEngine.MyEngine.Context.Program.Optimiser;
             opt.Enabled = true;
             opt.EnableRemoveUnreachableLabels = true;
-            opt.EnableRegisterisation = true;
+            opt.EnableLocalizing = true;
             //TODO need to have a optimisation report so we can validate against that
+            //todo if we reverse our usage of b1, b2, b3 in all places, we can standardise the optimiser
         }
         
         [Test]
@@ -208,6 +210,56 @@ print(a);
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
             Assert.AreEqual(11, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+
+        [Test]
+        public void Optimiser_SetProp_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+{
+var obj = {a=1};
+var newVal = 2;
+obj.a = newVal;
+print(obj.a);
+}");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+            Assert.AreEqual(14, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+
+        [Test]
+        public void Optimiser_GetProp_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+{
+var obj = {a=1};
+var val = 2;
+val = obj.a;
+print(val);
+}");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+            Assert.AreEqual(15, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+
+        [Test]
+        public void Optimiser_GetSetPropInClass_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var a = 1;
+    Meth() {this.a = this.a + this.a;}
+}
+
+var f = Foo();
+f.Meth();
+
+print(f.a);
+");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].AllChunks.First(x => x.Name == "Meth").Instructions.Count);
         }
     }
 }

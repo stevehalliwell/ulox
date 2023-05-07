@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -41,13 +42,6 @@ namespace ULox
         {
             _valueStack.DiscardPop(2);
             return (_valueStack.Peek(-2), _valueStack.Peek(-1));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public (Value, Value, Value) Pop3()
-        {
-            _valueStack.DiscardPop(3);
-            return (_valueStack.Peek(-3), _valueStack.Peek(-2), _valueStack.Peek(-1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -503,7 +497,10 @@ namespace ULox
                     break;
 
                 case OpCode.SET_INDEX:
-                    DoSetIndexOp(opCode);
+                {
+                    var (newValue, index, listValue) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);
+                    DoSetIndexOp(opCode, newValue, index, listValue);
+                }
                     break;
 
                 case OpCode.EXPAND_COPY_TO_STACK:
@@ -545,7 +542,10 @@ namespace ULox
                     break;
 
                 case OpCode.ENUM_VALUE:
-                    DoEnumValueOp(chunk);
+                {
+                    var (enumObject, val, key) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);
+                    (enumObject.val.asClass as EnumClass).AddEnumValue(key, val);
+                }
                     break;
 
                 case OpCode.READ_ONLY:
@@ -570,6 +570,15 @@ namespace ULox
             var rhs = b2 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
             var lhs = b1 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
             return (rhs, lhs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private (Value newValue, Value index, Value listValue) Pop3OrLocals(byte b1, byte b2, byte b3)
+        {
+            var newValue = b3 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b3];
+            var index = b2 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
+            var listValue = b1 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            return (newValue, index, listValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -659,13 +668,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoEnumValueOp(Chunk chunk)
-        {
-            var (enumObject, val, key) = Pop3();
-            (enumObject.val.asClass as EnumClass).AddEnumValue(key, val);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoReadOnlyOp(Chunk chunk)
         {
             var target = Pop();
@@ -712,9 +714,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetIndexOp(OpCode opCode)
+        private void DoSetIndexOp(OpCode opCode, Value newValue, Value index, Value listValue)
         {
-            var (newValue, index, listValue) = Pop3();
             if (listValue.val.asInstance is INativeCollection nativeCol)
             {
                 nativeCol.Set(index, newValue);

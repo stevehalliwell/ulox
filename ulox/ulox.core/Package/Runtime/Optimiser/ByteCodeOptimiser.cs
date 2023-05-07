@@ -5,11 +5,18 @@ namespace ULox
 {
     public sealed class ByteCodeOptimiser : CompiledScriptIterator
     {
+        private enum RegisteriseType
+        {
+            Unknown,
+            Binary,
+            SetIndex,
+        }
+
         public bool Enabled { get; set; } = true;
         public bool EnableRegisterisation { get; set; } = true;
         public bool EnableRemoveUnreachableLabels { get; set; } = false;
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
-        private List<(Chunk chunk, int inst)> _potentialRegisterise = new List<(Chunk, int)>();
+        private List<(Chunk chunk, int inst, RegisteriseType regType)> _potentialRegisterise = new List<(Chunk, int, RegisteriseType)>();
         private readonly List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
         private OpCode _prevOoCode;
         private int _deadCodeStart = -1;
@@ -18,7 +25,7 @@ namespace ULox
         {
             if (!Enabled)
                 return;
-            
+
             Iterate(compiledScript);
             if (EnableRegisterisation) AttemptRegisterise();
             if (EnableRemoveUnreachableLabels)
@@ -146,53 +153,91 @@ namespace ULox
             case OpCode.LESS:
             case OpCode.GREATER:
             case OpCode.GET_INDEX:
-                AddRegisterOptimisableInstruction(CurrentChunk, CurrentInstructionIndex);
+                AddRegisterOptimisableInstructionLhsRhs(CurrentChunk, CurrentInstructionIndex);
+                break;
+            case OpCode.SET_INDEX:
+                AddRegisterOptimisableInstructionSetIndex(CurrentChunk, CurrentInstructionIndex);
                 break;
             }
         }
 
-        //todo to allow for DoSetIndexOp to be registerised we need to know how many prior locals it should hover up and how
-        private void AddRegisterOptimisableInstruction(Chunk currentChunk, int currentInstructionIndex)
+        private void AddRegisterOptimisableInstructionLhsRhs(Chunk currentChunk, int currentInstructionIndex)
         {
-            _potentialRegisterise.Add((currentChunk, currentInstructionIndex));
+            _potentialRegisterise.Add((currentChunk, currentInstructionIndex, RegisteriseType.Binary));
+        }
+
+        private void AddRegisterOptimisableInstructionSetIndex(Chunk currentChunk, int currentInstructionIndex)
+        {
+            _potentialRegisterise.Add((currentChunk, currentInstructionIndex, RegisteriseType.SetIndex));
         }
 
         private void AttemptRegisterise()
         {
-            foreach (var (chunk, inst) in _potentialRegisterise)
+            foreach (var (chunk, inst, regType) in _potentialRegisterise)
             {
                 var original = chunk.Instructions[inst];
                 var nb1 = original.b1;
                 var nb2 = original.b2;
                 var nb3 = original.b3;
 
-                //TODO: would like to but it conflicts with add overload internals at the moment
-                //if the following is a set local we can just do that
-                //if (chunk.Instructions.Count > inst)
-                //{
-                //    var next = chunk.Instructions[inst + 1];
-                //    if (next.OpCode == OpCode.SET_LOCAL)
-                //    {
-                //        _toRemove.Add((chunk, inst + 1));
-                //        nb3 = next.b1;
-                //    }
-                //}
-
                 var prev = chunk.Instructions[inst - 1];
-
-                //if the prevous is a getlocal take it's byte and put it as the second byte in the add
-                //  and mark it as for removal
-                if (prev.OpCode == OpCode.GET_LOCAL)
+                
+                switch (regType)
                 {
-                    _toRemove.Add((chunk, inst - 1));
-                    nb2 = prev.b1;
-                    // if the previous previous is getlocal take its byte and make first byte, mark for removal
-                    var prevprev = chunk.Instructions[inst - 2];
-                    if (prevprev.OpCode == OpCode.GET_LOCAL)
+                case RegisteriseType.Binary:
+                    //TODO: would like to but it conflicts with add overload internals at the moment
+                    //if the following is a set local we can just do that
+                    //if (chunk.Instructions.Count > inst)
+                    //{
+                    //    var next = chunk.Instructions[inst + 1];
+                    //    if (next.OpCode == OpCode.SET_LOCAL)
+                    //    {
+                    //        _toRemove.Add((chunk, inst + 1));
+                    //        nb3 = next.b1;
+                    //    }
+                    //}
+                    
+                    //if the prevous is a getlocal take it's byte and put it as the second byte in the add
+                    //  and mark it as for removal
+                    if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _toRemove.Add((chunk, inst - 2));
-                        nb1 = prevprev.b1;
+                        _toRemove.Add((chunk, inst - 1));
+                        nb2 = prev.b1;
+                        var prevprev = chunk.Instructions[inst - 2];
+                        // if the previous previous is getlocal take its byte and make first byte, mark for removal
+                        if (prevprev.OpCode == OpCode.GET_LOCAL)
+                        {
+                            _toRemove.Add((chunk, inst - 2));
+                            nb1 = prevprev.b1;
+                        }
                     }
+                    break;
+                case RegisteriseType.SetIndex:
+                {
+                    if(prev.OpCode == OpCode.GET_LOCAL)
+                    {
+                        _toRemove.Add((chunk, inst - 1));
+                        nb3 = prev.b1;  //newval
+
+                        var prevprev = chunk.Instructions[inst - 2];
+                        if (prevprev.OpCode == OpCode.GET_LOCAL)
+                        {
+                            _toRemove.Add((chunk, inst - 2));
+                            nb2 = prevprev.b1; // index
+
+                            var prevprevprev = chunk.Instructions[inst - 3];
+                            if (prevprevprev.OpCode == OpCode.GET_LOCAL)
+                            {
+                                _toRemove.Add((chunk, inst - 3));
+                                nb1 = prevprevprev.b1;  // target
+                            }
+                        }
+                    }
+                }
+                    break;
+                case RegisteriseType.Unknown:
+                default:
+                    throw new UloxException($"Unknown registerise type {regType}");
                 }
 
                 chunk.Instructions[inst] = new ByteCodePacket(original.OpCode, nb1, nb2, nb3);

@@ -250,7 +250,10 @@ namespace ULox
             case OpCode.LESS:
             case OpCode.GREATER:
             case OpCode.GET_INDEX:
-                PrintOptionalRegisters(packet.b1, packet.b2, packet.b3);
+                PrintOptionalRegistersLhsRhs(packet.b1, packet.b2);
+                break;
+            case OpCode.SET_INDEX:
+                PrintOptionalRegistersSetIndex(packet.b1, packet.b2, packet.b3);
                 break;
             }
 
@@ -258,12 +261,20 @@ namespace ULox
             _currentInstructionCount++;
         }
 
-        private void PrintOptionalRegisters(byte b1, byte b2, byte b3)
+        private void PrintOptionalRegistersLhsRhs(byte b1, byte b2)
         {
             if (b1 == 0 && b2 == 0)
                 return;
             
             stringBuilder.Append($" ({((b1 == 0) ? "_" : b1.ToString())}, {((b2 == 0) ? "_" : b2.ToString())})");
+        }
+
+        private void PrintOptionalRegistersSetIndex(byte b1, byte b2, byte b3)
+        {
+            if (b1 == 0 && b2 == 0 && b3 == 0)
+                return;
+
+            stringBuilder.Append($" ({((b1 == 0) ? "_" : b1.ToString())}, {((b2 == 0) ? "_" : b2.ToString())}, {((b3 == 0) ? "_" : b3.ToString())})");
         }
 
         private void DoConstant(ByteCodePacket packet)

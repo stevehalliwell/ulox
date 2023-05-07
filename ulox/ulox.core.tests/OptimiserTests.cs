@@ -13,6 +13,7 @@ namespace ULox.Core.Tests
             opt.Enabled = true;
             opt.EnableRemoveUnreachableLabels = true;
             opt.EnableRegisterisation = true;
+            //TODO need to have a optimisation report so we can validate against that
         }
         
         [Test]
@@ -165,5 +166,48 @@ print (l[index]);
             Assert.AreEqual("0", testEngine.InterpreterResult);
             Assert.AreEqual(30, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
-   }
+
+        [Test]
+        public void Optimiser_Negate_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+{
+var a = 1;
+a = -a;
+print(a);
+}");
+
+            Assert.AreEqual("-1", testEngine.InterpreterResult);
+            Assert.AreEqual(10, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+
+        [Test]
+        public void Optimiser_Not_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+{
+var a = 1;
+a = ! a;
+print(a);
+}");
+
+            Assert.AreEqual("False", testEngine.InterpreterResult);
+            Assert.AreEqual(10, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+
+        [Test]
+        public void Optimiser_CountOf_CollapsesToRegisterBasedOp()
+        {
+            testEngine.Run(@"
+{
+var l = [];
+var a = 1;
+a = countof l;
+print(a);
+}");
+
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+            Assert.AreEqual(11, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+        }
+    }
 }

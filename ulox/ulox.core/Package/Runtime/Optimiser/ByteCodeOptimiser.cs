@@ -8,6 +8,7 @@ namespace ULox
         private enum RegisteriseType
         {
             Unknown,
+            Uniary,
             Binary,
             SetIndex,
         }
@@ -158,6 +159,12 @@ namespace ULox
             case OpCode.SET_INDEX:
                 AddRegisterOptimisableInstructionSetIndex(CurrentChunk, CurrentInstructionIndex);
                 break;
+            case OpCode.NEGATE:
+            case OpCode.NOT:
+            case OpCode.COUNT_OF:
+            case OpCode.DUPLICATE:
+                AddRegisterOptimisableInstructionSingle(CurrentChunk, CurrentInstructionIndex);
+                break;
             }
         }
 
@@ -171,6 +178,11 @@ namespace ULox
             _potentialRegisterise.Add((currentChunk, currentInstructionIndex, RegisteriseType.SetIndex));
         }
 
+        private void AddRegisterOptimisableInstructionSingle(Chunk currentChunk, int currentInstructionIndex)
+        {
+            _potentialRegisterise.Add((currentChunk, currentInstructionIndex, RegisteriseType.Uniary));
+        }
+
         private void AttemptRegisterise()
         {
             foreach (var (chunk, inst, regType) in _potentialRegisterise)
@@ -181,7 +193,7 @@ namespace ULox
                 var nb3 = original.b3;
 
                 var prev = chunk.Instructions[inst - 1];
-                
+
                 switch (regType)
                 {
                 case RegisteriseType.Binary:
@@ -196,7 +208,7 @@ namespace ULox
                     //        nb3 = next.b1;
                     //    }
                     //}
-                    
+
                     //if the prevous is a getlocal take it's byte and put it as the second byte in the add
                     //  and mark it as for removal
                     if (prev.OpCode == OpCode.GET_LOCAL)
@@ -214,7 +226,7 @@ namespace ULox
                     break;
                 case RegisteriseType.SetIndex:
                 {
-                    if(prev.OpCode == OpCode.GET_LOCAL)
+                    if (prev.OpCode == OpCode.GET_LOCAL)
                     {
                         _toRemove.Add((chunk, inst - 1));
                         nb3 = prev.b1;  //newval
@@ -234,7 +246,16 @@ namespace ULox
                         }
                     }
                 }
-                    break;
+                break;
+                case RegisteriseType.Uniary:
+                {
+                    if (prev.OpCode == OpCode.GET_LOCAL)
+                    {
+                        _toRemove.Add((chunk, inst - 1));
+                        nb1 = prev.b1;
+                    }
+                }
+                break;
                 case RegisteriseType.Unknown:
                 default:
                     throw new UloxException($"Unknown registerise type {regType}");

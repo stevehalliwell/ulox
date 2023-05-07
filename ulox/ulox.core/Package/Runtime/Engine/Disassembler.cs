@@ -255,6 +255,13 @@ namespace ULox
             case OpCode.SET_INDEX:
                 PrintOptionalRegistersSetIndex(packet.b1, packet.b2, packet.b3);
                 break;
+            case OpCode.NEGATE:
+            case OpCode.NOT:
+            case OpCode.COUNT_OF:
+            case OpCode.DUPLICATE:
+                if(packet.b1 != 0)
+                    stringBuilder.Append($" ({packet.b1})");
+                break;
             }
 
             stringBuilder.AppendLine();

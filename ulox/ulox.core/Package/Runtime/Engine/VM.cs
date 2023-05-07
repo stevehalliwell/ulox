@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -209,7 +208,7 @@ namespace ULox
                     return InterpreterResult.YIELD;
 
                 case OpCode.NEGATE:
-                    Push(Value.New(-Pop().val.asDouble));
+                    Push(Value.New(-PopOrLocal(packet.b1).val.asDouble));
                     break;
 
                 case OpCode.ADD:
@@ -339,7 +338,7 @@ namespace ULox
                 break;
 
                 case OpCode.NOT:
-                    Push(Value.New(Pop().IsFalsey()));
+                    Push(Value.New(PopOrLocal(packet.b1).IsFalsey()));
                     break;
 
                 case OpCode.PUSH_BOOL:
@@ -369,7 +368,11 @@ namespace ULox
                     break;
 
                 case OpCode.DUPLICATE:
-                    DoDuplicateOp();
+                {
+                    var v = PopOrLocal(packet.b1);
+                    Push(v);
+                    Push(v);
+                }
                     break;
 
                 case OpCode.GET_LOCAL:
@@ -522,7 +525,10 @@ namespace ULox
                     break;
 
                 case OpCode.COUNT_OF:
-                    DoCountOfOp();
+                {
+                    var target = PopOrLocal(packet.b1);
+                    DoCountOfOp(target);
+                }
                     break;
 
                 case OpCode.EXPECT:
@@ -562,6 +568,12 @@ namespace ULox
                     break;
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Value PopOrLocal(byte b1)
+        {
+            return b1 == 0 ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -634,9 +646,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoCountOfOp()
+        private void DoCountOfOp(Value target)
         {
-            var target = Pop();
             if (target.type == ValueType.Instance)
             {
                 if (target.val.asInstance is INativeCollection col)
@@ -842,15 +853,6 @@ namespace ULox
             var givenVar = Pop();
             var str = givenVar.str();
             Engine.LocateAndQueue(str);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoDuplicateOp()
-        {
-            var v = Pop();
-
-            Push(v);
-            Push(v);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

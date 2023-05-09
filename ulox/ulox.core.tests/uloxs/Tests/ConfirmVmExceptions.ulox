@@ -26,7 +26,7 @@ testset ConfirmVmExceptions
     {
         fun InvalidInvoke()
         {
-            var a = {:};
+            var a = {=};
             a.Invoke();
         }
 
@@ -58,8 +58,8 @@ testset ConfirmVmExceptions
     {
         fun InvalidMathOp()
         {
-            var a = {:};
-            var b = {:};
+            var a = {=};
+            var b = {=};
             a += b;
         }
 
@@ -70,8 +70,8 @@ testset ConfirmVmExceptions
     {
         fun InvalidCompare()
         {
-            var a = {:};
-            var b = {:};
+            var a = {=};
+            var b = {=};
             var res = a < b;
         }
 

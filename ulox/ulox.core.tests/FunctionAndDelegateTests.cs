@@ -103,7 +103,7 @@ print(res);
         public void Fun_WhenNamedAndRhsOfAssign_ShouldAssignAndBeGlobal()
         {
             testEngine.Run(@"
-var foo = {:};
+var foo = {=};
 foo.bar = fun Bar(a)
 {
     print(a);
@@ -120,7 +120,7 @@ Bar(2);
         public void Fun_WhenAnonAndRhsOfAssign_ShouldAssignAndNotBeGlobal()
         {
             testEngine.Run(@"
-var foo = {:};
+var foo = {=};
 foo.bar = fun (a)
 {
     print(a);

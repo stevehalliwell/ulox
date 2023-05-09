@@ -79,7 +79,7 @@ print(map[""a""]);
         public void Map_WhenInlineCreate_ShouldMatchesValue()
         {
             testEngine.Run(@"
-var map = [""a"":2, ""b"":5, ""c"":{a:1},];
+var map = [""a"":2, ""b"":5, ""c"":{a=1},];
 print(map[""a""]);
 print(map[""b""]);
 print(map[""c""].a);

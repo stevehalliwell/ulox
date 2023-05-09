@@ -106,7 +106,7 @@ obj.a.a = l;";
         [Test]
         public void Serialise_WhenGivenEmptyObject_ShouldReturnExpectedOutput()
         {
-            var scriptString = @"var obj = {:};";
+            var scriptString = @"var obj = {=};";
             var expected = string.Empty;
             var result = "error";
             testEngine.Run(scriptString);

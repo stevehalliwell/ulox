@@ -6,16 +6,16 @@ var res;
 
 var lhs = 
 {
-    a: 1,
-    b: 2,
-    c: 3
+    a= 1,
+    b= 2,
+    c= 3
 };
 
 var rhs = 
 {
-    a: 4,
-    b: 5,
-    c: 6,
+    a= 4,
+    b= 5,
+    c= 6,
 };
 
 res = lhs update rhs;
@@ -26,10 +26,10 @@ res = lhs update rhs;
 
 var bigRhs =
 {
-    a: 7,
-    b: 8,
-    c: 9,
-    d: 10,
+    a= 7,
+    b= 8,
+    c= 9,
+    d= 10,
 };
 
 // res now contains the same as lhs, and lhs still does not have a 'd' field
@@ -39,7 +39,7 @@ res = lhs update bigRhs;
 
 var smallRhs =
 {
-    a: 11,
+    a= 11,
 };
 
 // res now contains the same as lhs, and a is 11, b is still 8, c is still 9
@@ -49,9 +49,9 @@ res = lhs update smallRhs;
 
 var typeMismatch =
 {
-    a: "string",
-    b: 2,
-    c: 3,
+    a= "string",
+    b= 2,
+    c= 3,
 };
 
 res = lhs update typeMismatch;
@@ -61,27 +61,27 @@ res = lhs update typeMismatch;
 
 var nestedLhs =
 {
-    a: 1,
-    b: 2,
-    c: 3,
-    d: 
+    a= 1,
+    b= 2,
+    c= 3,
+    d= 
     {
-        e: 4,
-        f: 5,
-        g: 6,
+        e= 4,
+        f= 5,
+        g= 6,
     },
 };
 
 var nestedRhs =
 {
-    a: 7,
-    b: 8,
-    c: 9,
-    d: 
+    a= 7,
+    b= 8,
+    c= 9,
+    d= 
     {
-        e: 10,
-        f: 11,
-        g: 12,
+        e= 10,
+        f= 11,
+        g= 12,
     },
 };
 
@@ -91,21 +91,21 @@ res = nestedLhs update nestedRhs;
 
 var colLhs =
 {
-    a: 1,
-    b: ["key":"val"],
-    c: 3,
-    d: [4, 5, 6],
+    a= 1,
+    b= ["key":"val"],
+    c= 3,
+    d= [4, 5, 6],
 };
 
 var colrhs = 
 {
-    a: 7,
-    b: 
+    a= 7,
+    b= 
     [
         "otherkey":" val2",
-        "otherOtherKey": "val3",
+        "otherOtherKey":"val3",
     ],
-    d: [10, 11, 12, 13, 14, 15],
+    d= [10, 11, 12, 13, 14, 15],
 };
 
 res = colLhs update colrhs;

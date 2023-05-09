@@ -694,7 +694,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void BraceCreateDynamic(Compiler compiler, bool arg2)
         {
-            if (compiler.TokenIterator.Match(TokenType.COLON)
+            var midTok = TokenType.ASSIGN;
+            if (compiler.TokenIterator.Match(midTok)
                   && compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
             {
                 compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
@@ -711,7 +712,7 @@ namespace ULox
                     //add the constant
                     var identConstantID = compiler.AddStringConstant();
                     //read the colon
-                    compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after identifiier.");
+                    compiler.TokenIterator.Consume(midTok, "Expect '=' after identifiier.");
                     //do expression
                     compiler.Expression();
                     //we need a set property
@@ -724,7 +725,7 @@ namespace ULox
             }
             else
             {
-                compiler.ThrowCompilerException("Expect identifier or ':' after '{'");
+                compiler.ThrowCompilerException("Expect identifier or '=' after '{'");
             }
         }
 

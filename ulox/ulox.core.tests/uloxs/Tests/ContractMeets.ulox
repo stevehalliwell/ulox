@@ -80,9 +80,9 @@ testset ContractMeetsTests
     test DynMeetsDyn_SameFieldButDifferentType_False
     {
         var res = null;
-        var a = {:};
+        var a = {=};
         a.a = 3;
-        var b = {:};
+        var b = {=};
         b.a = "3";
 
         res = a meets b;

@@ -2,7 +2,7 @@ testset SerialiseLibraryTests
 {
     test ToEmpty
     {
-        var obj = {:};
+        var obj = {=};
         var expected = "";
         var res = "ERROR";
         
@@ -13,7 +13,7 @@ testset SerialiseLibraryTests
 
     test SimpleTo
     {
-        var obj = {:};
+        var obj = {=};
         obj.a = 1;
         obj.b = 2;
         obj.c = 3;
@@ -32,7 +32,7 @@ testset SerialiseLibraryTests
     test SimpleFrom
     {
         var jsonString = "{ \"a\": 1.0,  \"b\": 2.0,  \"c\": 3.0 }";
-        var res = {:};
+        var res = {=};
         
         res = Serialise.FromJson(jsonString);
 
@@ -43,8 +43,8 @@ testset SerialiseLibraryTests
 
     test ComplexTo
     {
-        var obj = {:};
-        obj.a = {:};
+        var obj = {=};
+        obj.a = {=};
         obj.a.b = 1;
         obj.a.c = 2;
         obj.a.d = 3;
@@ -91,7 +91,7 @@ testset SerialiseLibraryTests
     \"c\"
   ]
 }";
-        var res = {:};
+        var res = {=};
         
         res = Serialise.FromJson(jsonString);
 

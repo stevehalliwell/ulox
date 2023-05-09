@@ -646,7 +646,7 @@ loop (arr)
 var arr = [""a"",""b"",""c"",];
 
 var b = 7;
-var someObj = {a:1,c:10,d:{a:1,},};
+var someObj = {a=1,c=10,d={a=1,},};
 
 loop (arr)
 {
@@ -685,7 +685,7 @@ var posList = FromRowCol(outer);
         //        public void Loop_WhenGivenInstanceFieldIdentifier_ShouldPrintItems()
         //        {
         //            testEngine.Run(@"
-        //var thing = {:};
+        //var thing = {=};
         //thing.arr = [""a"",""b"",""c"",];
 
         //loop (thing.arr)

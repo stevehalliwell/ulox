@@ -1,7 +1,7 @@
 // while all objects can do this, using Dynamic makes your intent clear
 //  and protects you from any future changes around
 
-var obj = {:};
+var obj = {=};
 
 obj.a = 1;
 obj.b = 2;
@@ -20,5 +20,5 @@ obj.Meth = Method;
 print(obj.Meth(obj));
 
 // dynamic objects can also be made inline
-var obj2 = {a:1, b:2, c:3, d:-1, val:"expected", Meth:Method};
+var obj2 = {a=1, b=2, c=3, d=-1, val="expected", Meth=Method};
 obj2.d = obj2.a + obj2.b + obj2.c;

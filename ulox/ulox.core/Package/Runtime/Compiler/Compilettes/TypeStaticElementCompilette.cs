@@ -20,7 +20,7 @@
         {
             do
             {
-                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name.");
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                 byte nameConstant = compiler.AddStringConstant();
 
                 compiler.EmitPacketByte(OpCode.GET_LOCAL, 1);//get class or inst this on the stack

@@ -2,15 +2,35 @@
 {
     public class TypeStaticElementCompilette : ITypeBodyCompilette
     {
+        private TokenType _matchToken;
+        private bool _supportVars;
+        
+        public static TypeStaticElementCompilette CreateForClass()
+        {
+            var newCompilette = new TypeStaticElementCompilette();
+            newCompilette._matchToken = TokenType.STATIC;
+            newCompilette._supportVars = true;
+            return newCompilette;
+        }
+
+        public static TypeStaticElementCompilette CreateForSystem()
+        {
+            var newCompilette = new TypeStaticElementCompilette();
+            newCompilette._matchToken = TokenType.NONE;
+            newCompilette._supportVars = false;
+            return newCompilette;
+        }
+
         public TokenType MatchingToken 
-            => TokenType.STATIC;
+            => _matchToken;
         
         public TypeCompiletteStage Stage 
             => TypeCompiletteStage.Static;
 
         public void Process(Compiler compiler)
         {
-            if (compiler.TokenIterator.Match(TokenType.VAR))
+            if (_supportVars 
+                && compiler.TokenIterator.Match(TokenType.VAR))
                 StaticProperty(compiler);
             else
                 StaticMethod(compiler);
@@ -46,7 +66,7 @@
 
         protected static void StaticMethod(Compiler compiler)
         {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
             byte constant = compiler.AddStringConstant();
 
             var name = compiler.CurrentChunk.ReadConstant(constant).val.asString;

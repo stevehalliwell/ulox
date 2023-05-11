@@ -45,7 +45,9 @@ namespace ULox
                 _testcaseCompilette,
                 new BuildCompilette(),
                 TypeCompilette.CreateEnumCompilette(),
-                TypeCompilette.CreateDateCompilette());
+                TypeCompilette.CreateDataCompilette(),
+                TypeCompilette.CreateSystemCompilette()
+                );
 
             this.AddDeclarationCompilette(
                 (TokenType.FUNCTION, FunctionDeclaration));

@@ -1,0 +1,190 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "ulox",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#statements"
+		},
+		{
+			"include": "#callables"
+		},
+		{
+			"include": "#ident"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#digits"
+		},
+		{
+			"include": "#operators"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.ulox",
+					"match": "\\b(if|else|while|for|return|match|break|continue|throw|yield|goto|label)\\b"
+				},
+				{
+					"name": "keyword.operator.logical.ulox",
+					"match": "\\b(and|or)\\b"
+				},
+				{
+					"name": "keyword.operator.binary.ulox",
+					"match": "\\b(update|expect)\\b"
+				},
+				{
+					"name": "constant.language.null.ulox",
+					"match": "\\b(null)\\b"
+				},
+				{
+					"name": "keyword.language.null.ulox",
+					"match": "\\b(null)\\b"
+				},
+				{
+					"name": "constant.language.boolean.ulox",
+					"match": "\\b(true|false)\\b"
+				},
+				{
+					"name": "variable.language.this.ulox",
+					"match": "\\b(this)\\b"
+				}
+			]
+		},
+		"statements": {
+			"patterns": [
+				{
+					"match": "\\b(var)\\s+([A-Za-z_][A-Za-z0-9_]*)\\b",
+					"captures": {
+						"1": {
+							"name": "storage.type.ulox"
+						},
+						"2": {
+							"name": "support.variable.ulox"
+						}
+					}
+				},
+				{
+					"match": "\\b(fun)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*\\(([A-Za-z0-9,\\s]*)\\)",
+					"captures": {
+						"1": {
+							"name": "storage.type.function.ulox"
+						},
+						"2": {
+							"name": "entity.name.function.ulox"
+						},
+						"3": {
+							"patterns": [
+								{
+									"match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b",
+									"name": "variable.parameter.ulox"
+								}
+							]
+						}
+					}
+				},
+				{
+					"match": "\\b(class|data|system|enum)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(<)\\s*([A-Za-z_][A-Za-z0-9_]*))?\\b",
+					"captures": {
+						"1": {
+							"name": "storage.type.class.ulox"
+						},
+						"2": {
+							"name": "entity.name.type.class.ulox"
+						},
+						"3": {
+							"name": "storage.modifier.ulox"
+						},
+						"4": {
+							"name": "entity.name.type.class.ulox"
+						}
+					}
+				},
+				{
+					"name": "keyword.test.ulox",
+					"match": "\\b(test|testset)\\b"
+				},
+				{
+					"name": "keyword.contract.ulox",
+					"match": "\\b(meets|signs)\\b"
+				},
+				{
+					"name": "keyword.value.ulox",
+					"match": "\\b(freeze|readonly)\\b"
+				},
+				{
+					"name": "keyword.contextname.ulox",
+					"match": "\\b(fname|cname|tcname|tsname)\\b"
+				},
+				{
+					"name": "keyword.bultin.ulox",
+					"match": "\\b(typeof|countof|mixin|static|build|init)\\b"
+				}
+			]
+		},
+		"callables": {
+			"patterns": [
+				{
+					"match": "([A-Za-z_][A-Za-z0-9_]*)\\(",
+					"name": "support.function.ulox"
+				}
+			]
+		},
+		"strings": {
+			"name": "string.quoted.double.ulox",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": []
+		},
+		"digits": {
+			"patterns": [
+				{
+					"name": "constant.numeric.ulox",
+					"match": "\\b[0-9]+(?:.[0-9]+)?\\b"
+				}
+			]
+		},
+		"ident": {
+			"patterns": [
+				{
+					"name": "variable.other.readwrite.ulox",
+					"match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.double-slash.ulox",
+					"match": "\\/\\/.*"
+				}
+			]
+		},
+		"operators": {
+			"patterns": [
+				{
+					"match": "(==|!=|<=?|>=?)",
+					"name": "keyword.operator.comparison.ulox"
+				},
+				{
+					"match": "=",
+					"name": "keyword.operator.assignment.ulox"
+				},
+				{
+					"match": "(\\+|\\-|\\*|\\/|\\%)",
+					"name": "keyword.operator.arithmetic.ulox"
+				}
+			]
+		}
+	},
+	"scopeName": "source.ulox"
+}

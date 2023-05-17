@@ -108,5 +108,39 @@ data A{a; signs B;}");
 
             StringAssert.StartsWith("Stage out of order. Type 'A' is at stage 'Var' has encountered a late 'Signs' stage element in chunk", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Delcared_WhenTrailingCommaInVarList_ShouldCompile()
+        {
+            testEngine.Run(@"
+data Foo {a,b,c,}
+print (Foo);");
+
+            Assert.AreEqual("<Data Foo>", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Delcared_WhenTrailingSemiColonInVarList_ShouldCompile()
+        {
+            testEngine.Run(@"
+data Foo {a = 1;b = 2;c = 3;}
+print (Foo);
+var f = Foo();
+print(f.a+f.b+f.c);");
+
+            Assert.AreEqual("<Data Foo>6", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Delcared_WhenVarAndSemiColonInVarList_ShouldCompile()
+        {
+            testEngine.Run(@"
+data Foo {a = 1;var b = 2;var c = 3;}
+print (Foo);
+var f = Foo();
+print(f.a+f.b+f.c);");
+
+            Assert.AreEqual("<Data Foo>6", testEngine.InterpreterResult);
+        }
     }
 }

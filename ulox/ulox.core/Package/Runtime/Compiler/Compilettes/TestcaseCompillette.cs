@@ -131,7 +131,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void TCName(Compiler compiler, bool obj)
+        public void TestName(Compiler compiler, bool obj)
         {
             var tcname = TestCaseName;
             compiler.AddConstantAndWriteOp(Value.New(tcname));

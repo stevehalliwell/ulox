@@ -285,7 +285,7 @@ testset Foo
     test Bar
     {
         print(tsname);
-        print(tcname);
+        print(tname);
     }
 }");
 

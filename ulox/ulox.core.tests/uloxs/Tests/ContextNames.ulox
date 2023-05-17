@@ -1,8 +1,8 @@
 testset ContextNames
 {
-    test TCName
+    test TName
     {
         Assert.AreEqual("ContextNames",tsname);
-        Assert.AreEqual("TCName",tcname);
+        Assert.AreEqual("TName",tname);
     }
 }

@@ -68,7 +68,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void TSName(Compiler compiler, bool obj)
+        public void TestSetName(Compiler compiler, bool obj)
         {
             var tsname = CurrentTestSetName;
             compiler.AddConstantAndWriteOp(Value.New(tsname));

@@ -9,10 +9,10 @@ class AClass
 
 testset ContextNames
 {
-    test TCName
+    test TName
     {
         Assert.AreEqual("ContextNames",tsname); // name of containing test set
-        Assert.AreEqual("TCName",tcname);   // name of containing test case
+        Assert.AreEqual("TName",tname);   // name of containing test case
     }
 }
 

@@ -62,7 +62,7 @@ namespace ULox
 
                 ("build", TokenType.BUILD),
 
-                ("tcname", TokenType.CONTEXT_NAME_TEST),
+                ("tname", TokenType.CONTEXT_NAME_TEST),
                 ("tsname", TokenType.CONTEXT_NAME_TESTSET),
 
                 ("class", TokenType.CLASS),

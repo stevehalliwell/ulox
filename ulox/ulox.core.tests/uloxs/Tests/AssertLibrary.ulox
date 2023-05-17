@@ -17,12 +17,12 @@ testset AssertUsageTests
     
     test IsTrue
     {
-        Assert.IsTrue(tcname == "IsTrue");
+        Assert.IsTrue(tname == "IsTrue");
     }
     
     test IsFalse
     {
-        Assert.IsFalse(tcname == "IsTrue");
+        Assert.IsFalse(tname == "IsTrue");
     }
     
     test IsNull

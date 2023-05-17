@@ -12,12 +12,12 @@ testset ExpectUsageTests
     
     test IsTrue
     {
-        expect tcname == "IsTrue";
+        expect tname == "IsTrue";
     }
     
     test IsFalse
     {
-        expect tcname != "IsTrue";
+        expect tname != "IsTrue";
     }
     
     test IsNull

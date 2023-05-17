@@ -27,7 +27,7 @@ foo = foo update foo2;
 data Foo {}
 
 var foo = Foo();
-var foo2 = {:};
+var foo2 = {=};
 
 foo = foo update foo2;
 "
@@ -89,8 +89,8 @@ print(foo);
         public void Update_WhenPartialMatch_ShouldUpdateValue()
         {
             testEngine.Run(@"
-var foo = {a:1, b:2,};
-var foo2 = {a:2, c:3,};
+var foo = {a=1, b=2,};
+var foo2 = {a=2, c=3,};
 
 foo = foo update foo2;
 print(foo.a);
@@ -108,29 +108,29 @@ print(foo meets foo2);
             testEngine.Run(@"
 var foo = 
 {
-    a:
+    a=
     {
-        val:1
+        val=1
     }, 
-    b:2,
-    d: 
+    b=2,
+    d= 
     {
-        a:1, 
-        b:2,
+        a=1, 
+        b=2,
     }
 };
 
 var foo2 = 
 {
-    a:
+    a=
     {
-        val:2,
-        otherVal:2,
+        val=2,
+        otherVal=2,
     }, 
-    c:3,
-    d: 
+    c=3,
+    d= 
     {
-        a:2, 
+        a=2, 
     }
 };
 
@@ -149,8 +149,8 @@ print(foo meets foo2);
         public void Update_WhenPartialWithNativeCollections_ShouldUpdateValue()
         {
             testEngine.Run(@"
-var foo = {a:[], b:2, d:[1:1, 2:2,]};
-var foo2 = {a:[1,2], c:3, d:[""a"":1, ""b"":2, ""c"":3,]};
+var foo = {a=[], b=2, d=[1:1, 2:2,]};
+var foo2 = {a=[1,2], c=3, d=[""a"":1, ""b"":2, ""c"":3,]};
 
 foo = foo update foo2;
 print(foo.a.Count());

@@ -76,7 +76,7 @@ testset NativeClassesLibraryTests
         var expected = 6;
         var result = 0;
 
-        var obj = {:};
+        var obj = {=};
         obj.a = 1;
         obj.b = 2;
         obj.c = 3;
@@ -97,7 +97,7 @@ testset DynamicLibraryTests
         var expectedB = false;
         var resultA = false;
         var resultB = true;
-        var obj = {:};
+        var obj = {=};
         obj.a = 7;
 
         resultA = obj.HasField(obj, "a");
@@ -111,7 +111,7 @@ testset DynamicLibraryTests
     {
         var expected = false;
         var result = 0;
-        var obj = {:};
+        var obj = {=};
         obj.a = 7;
 
         obj.RemoveField(obj, "a");

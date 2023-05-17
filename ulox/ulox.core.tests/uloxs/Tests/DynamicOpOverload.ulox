@@ -1,6 +1,6 @@
 fun MakeVec2(x,y)
 {
-    var res = {:};
+    var res = {=};
 
     fun _add(lhs,rhs)
     {

@@ -251,11 +251,11 @@ print(res);
         public void Meets_WhenADynamicAndBDynamicMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 fun instMeth(a){}
 inst.Meth = instMeth;
 
-var binst = {:};
+var binst = {=};
 fun binstMeth(){}
 binst.Meth = binstMeth;
 
@@ -271,11 +271,11 @@ print(res);
         public void Meets_WhenADynamicAndBDynamicMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 fun instMeth(a){}
 inst.Meth = instMeth;
 
-var binst = {:};
+var binst = {=};
 binst.Meth = instMeth;
 
 
@@ -290,10 +290,10 @@ print(res);
         public void Meets_WhenADynamicAndBDynamicFieldMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 inst.a = 3;
 
-var binst = {:};
+var binst = {=};
 binst.a = 7;
 
 var res = inst meets binst;
@@ -307,10 +307,10 @@ print(res);
         public void Meets_WhenADynamicAndBEmptyMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 inst.a = 3;
 
-var binst = {:};
+var binst = {=};
 
 var res = inst meets binst;
 print(res);
@@ -323,9 +323,9 @@ print(res);
         public void Meets_WhenAEmptyAndBMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 
-var binst = {:};
+var binst = {=};
 binst.a = 3;
 
 var res = inst meets binst;
@@ -342,7 +342,7 @@ print(res);
 var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);
 
-var binst = {:};
+var binst = {=};
 binst.a = 0;
 binst.b = 0;
 binst.c = 0;
@@ -358,13 +358,13 @@ print(res);
         public void Meets_WhenADeepAndBDeepButMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 inst.a = 1;
-inst.b = {:};
+inst.b = {=};
 
-var binst = {:};
+var binst = {=};
 binst.a = 3;
-binst.b = {:};
+binst.b = {=};
 binst.b.c = 3;
 
 var res = inst meets binst;
@@ -378,14 +378,14 @@ print(res);
         public void Meets_WhenADeepAndBDeepMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 inst.a = 1;
-inst.b = {:};
+inst.b = {=};
 inst.b.c = 3;
 
-var binst = {:};
+var binst = {=};
 binst.a = 3;
-binst.b = {:};
+binst.b = {=};
 binst.b.c = 0;
 
 var res = inst meets binst;
@@ -399,9 +399,9 @@ print(res);
         public void Meets_WhenADeepAndBClassMismatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 inst.a = 1;
-inst.b = {:};
+inst.b = {=};
 inst.b.c = 3;
 
 class B { }
@@ -417,9 +417,9 @@ print(res);
         public void Meets_WhenADeepAndBClassMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var inst = {:};
+var inst = {=};
 inst.a = 1;
-inst.b = {:};
+inst.b = {=};
 inst.b.c = 3;
 
 class B 

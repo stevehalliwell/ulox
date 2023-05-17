@@ -43,7 +43,7 @@ f.a = 2;
         public void Dynamic_ReadOnlyHierarchyThenModifyInner_ShouldError()
         {
             testEngine.Run(@"
-var obj = {a:1, b:{innerA:2,}, c:3,};
+var obj = {a=1, b={innerA=2,}, c=3,};
 
 readonly obj;
 obj.b.innerA = 4;

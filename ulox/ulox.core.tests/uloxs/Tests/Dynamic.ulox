@@ -4,7 +4,7 @@ testset DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = {:};
+        var o = {=};
         o.val = expected;
 
         result = o.val;
@@ -16,7 +16,7 @@ testset DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = {:};
+        var o = {=};
         fun Method(){retval =expected;}
         o.Meth = Method;
 
@@ -29,7 +29,7 @@ testset DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = {val:expected, Meth: fun (self) {retval =self.val;},};
+        var o = {val=expected, Meth= fun (self) {retval =self.val;},};
        
         result = o.Meth(o);
 
@@ -40,7 +40,7 @@ testset DynamicTests
     {
         var expected = 3;
         var result = 0;
-        var o = {val:expected, Meth: fun (self) {retval =self.val;},};
+        var o = {val=expected, Meth= fun (self) {retval =self.val;},};
        
         result = o.Meth(o);
 
@@ -52,7 +52,7 @@ testset DynamicTests
         fun Act()
         {
             var s = "hello";
-            var dyn = {:};
+            var dyn = {=};
             dyn.HasField(s, "afield");
         }
 
@@ -64,7 +64,7 @@ testset DynamicTests
         fun Act()
         {
             var s = "hello";
-            var dyn = {:};
+            var dyn = {=};
             dyn.RemoveField(s, "afield");
         }
 

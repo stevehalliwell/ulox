@@ -7,7 +7,7 @@ class Foo
 
 var inst = Foo();
 
-var dynInst = {:};
+var dynInst = {=};
 
 print(IsFrozen(Foo));
 print(IsFrozen(inst));

@@ -74,7 +74,7 @@ print(t);
         public void TypeOf_WhenCalledOnDynamic_ShouldReturnDynamic()
         {
             testEngine.Run(@"
-var t = typeof({:});
+var t = typeof({=});
 print(t);
 ");
 

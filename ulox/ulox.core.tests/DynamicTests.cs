@@ -8,7 +8,7 @@ namespace ULox.Core.Tests
         public void Fields_WhenAddedToDynamic_ShouldSucceed()
         {
             testEngine.Run(@"
-var obj = {:};
+var obj = {=};
 
 obj.a = 1;
 obj.b = 2;
@@ -28,7 +28,7 @@ print(obj.d);
         public void Field_WhenSingleDynamicInline_ShouldSucceed()
         {
             testEngine.Run(@"
-var obj = {a:1,};
+var obj = {a=1,};
 print(obj.a);
 ");
 
@@ -39,7 +39,7 @@ print(obj.a);
         public void Fields_WhenAddedToDynamicInline_ShouldSucceed()
         {
             testEngine.Run(@"
-var obj = {a:1, b:2, c:3, d:-1,};
+var obj = {a=1, b=2, c=3, d=-1,};
 
 var d = obj.a + obj.b + obj.c;
 obj.d = d;
@@ -54,7 +54,7 @@ print(obj.d);
         public void Dynamic_WhenCreated_ShouldPrintInstType()
         {
             testEngine.Run(@"
-var obj = {:};
+var obj = {=};
 
 print(obj);
 ");
@@ -66,7 +66,7 @@ print(obj);
         public void Dynamic_WhenInlineNested_ShouldPrint()
         {
             testEngine.Run(@"
-var obj = {a:1, b:{innerA:2,}, c:3,};
+var obj = {a=1, b={innerA=2,}, c=3,};
 
 print(obj.a);
 print(obj.b);
@@ -84,7 +84,7 @@ print(obj.c);
 var obj = {7};
 ");
 
-            StringAssert.StartsWith("Expect identifier or ':' after '{'", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Expect identifier or '=' after '{'", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -93,7 +93,7 @@ var obj = {7};
             testEngine.Run(@"
 var expected = false;
 var result = 0;
-var obj = {:};
+var obj = {=};
 obj.a = 7;
 readonly obj;
 

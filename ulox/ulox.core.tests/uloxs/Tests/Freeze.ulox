@@ -3,9 +3,9 @@ class Foo
 
 }
 
-test FreezeTests
+testset FreezeTests
 {
-    testcase CannotAddFieldsToFrozenClass
+    test CannotAddFieldsToFrozenClass
     {
         fun AttemptToAddToClass()
         {
@@ -15,7 +15,7 @@ test FreezeTests
         Assert.Throws(AttemptToAddToClass);
     }
 
-    testcase CannotAddFieldsToFrozenInstance
+    test CannotAddFieldsToFrozenInstance
     {
         fun AttemptToAddToInst()
         {
@@ -26,7 +26,7 @@ test FreezeTests
         Assert.Throws(AttemptToAddToInst);
     }
 
-    testcase UnfreezeAndModify
+    test UnfreezeAndModify
     {
         var expected = 1;
         var result = 0;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -33,7 +34,7 @@ namespace ULox
 
         private void Setup()
         {
-            var _testdec = new TestDeclarationCompilette();
+            var _testdec = new TestSetDeclarationCompilette();
             var _classCompiler = TypeCompilette.CreateClassCompilette();
             var _testcaseCompilette = new TestcaseCompillette(_testdec);
 
@@ -98,8 +99,8 @@ namespace ULox
                 (TokenType.DOT, new ActionParseRule(null, Dot, Precedence.Call)),
                 (TokenType.THIS, new ActionParseRule(_classCompiler.This, null, Precedence.None)),
                 (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTCASE, new ActionParseRule(_testcaseCompilette.TCName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TSName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TEST, new ActionParseRule(_testcaseCompilette.TestName, null, Precedence.None)),
+                (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TestSetName, null, Precedence.None)),
                 (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
                 (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
                 (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
@@ -1206,6 +1207,16 @@ namespace ULox
         internal void EmitPop(byte popCount = 1)
         {
             EmitPacketByte(OpCode.POP, popCount);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal string IdentifierOrChunkUnique(string prefix)
+        {
+            if (TokenIterator.Match(TokenType.IDENTIFIER))
+                return TokenIterator.PreviousToken.Lexeme;
+
+            var existingPrefixes = CurrentChunk.Constants.Count(x => x.type == ValueType.String && x.val.asString.String.Contains(prefix));
+            return $"{prefix}{CurrentChunk.SourceName}{existingPrefixes}";
         }
     }
 }

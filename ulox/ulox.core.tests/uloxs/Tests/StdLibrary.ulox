@@ -1,6 +1,6 @@
-test StdLibraryTests
+testset StdLibraryTests
 {
-    testcase DuplicateMatches
+    test DuplicateMatches
     {
         var a = 1;
         var b = Duplicate(a);
@@ -8,7 +8,7 @@ test StdLibraryTests
         Assert.AreEqual(a,b);
     }
 
-    testcase DuplicatAfterChangeDoesNoteMatch
+    test DuplicatAfterChangeDoesNoteMatch
     {
         var a = 1;
         var b = Duplicate(a);

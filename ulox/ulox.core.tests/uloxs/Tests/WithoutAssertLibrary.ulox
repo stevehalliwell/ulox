@@ -4,9 +4,9 @@ fun WillThrow()
 }
 
 
-test BuildTests
+testset BuildTests
 {
-    testcase Fail
+    test Fail
     {
         Assert.Throws(WillThrow);
     }

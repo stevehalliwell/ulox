@@ -3,12 +3,13 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public class TestDeclarationCompilette : ICompilette
+    public class TestSetDeclarationCompilette : ICompilette
     {
+        private const string AnonTestSetPrefix = "Anon_TestSet_";
         private readonly List<byte> _currentTestcaseLabels = new List<byte>();
 
         public TokenType MatchingToken
-            => TokenType.TEST;
+            => TokenType.TEST_SET;
 
         public string CurrentTestSetName { get; internal set; }
 
@@ -22,12 +23,11 @@ namespace ULox
         private void TestDeclaration(Compiler compiler)
         {
             //grab name
-            var testClassName = (string)compiler.TokenIterator.CurrentToken.Literal;
+            var testClassName = compiler.IdentifierOrChunkUnique(AnonTestSetPrefix);
             CurrentTestSetName = testClassName;
             var testSetNameID = compiler.CurrentChunk.AddConstant(Value.New(testClassName));
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect test set name.");
 
-            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before test set body.");
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before testset set body.");
 
             //testbody
             compiler.BeginScope();
@@ -41,7 +41,7 @@ namespace ULox
 
             var testcaseCount = _currentTestcaseLabels.Count;
             if (testcaseCount > byte.MaxValue)
-                compiler.ThrowCompilerException($"{testcaseCount} has more than {byte.MaxValue} testcases, this is not allowed.");
+                compiler.ThrowCompilerException($"{testcaseCount} has more than {byte.MaxValue} tests, this is not allowed.");
 
             EmitTestPacket(compiler, TestOpType.TestFixtureBodyInstruction, testFixtureBodyLabel, 0);
 
@@ -68,7 +68,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void TSName(Compiler compiler, bool obj)
+        public void TestSetName(Compiler compiler, bool obj)
         {
             var tsname = CurrentTestSetName;
             compiler.AddConstantAndWriteOp(Value.New(tsname));

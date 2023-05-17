@@ -1,6 +1,6 @@
-test Comparisons
+testset Comparisons
 {
-    testcase EqualityBool
+    test EqualityBool
     {
         var result = 0;
         var a = true;
@@ -11,7 +11,7 @@ test Comparisons
         Assert.IsFalse(result);
     }
 
-    testcase InEqualityBool
+    test InEqualityBool
     {
         var result = 0;
         var a = true;
@@ -22,7 +22,7 @@ test Comparisons
         Assert.IsTrue(result);
     }
 
-    testcase EqualityNumber
+    test EqualityNumber
     {
         var result = 0;
         var a = 1;
@@ -33,7 +33,7 @@ test Comparisons
         Assert.IsFalse(result);
     }
 
-    testcase InEqualityNumber
+    test InEqualityNumber
     {
         var result = 0;
         var a = 1;
@@ -44,7 +44,7 @@ test Comparisons
         Assert.IsTrue(result);
     }
 
-    testcase EqualityString
+    test EqualityString
     {
         var result = 0;
         var a = "Hello";
@@ -55,7 +55,7 @@ test Comparisons
         Assert.IsFalse(result);
     }
 
-    testcase InEqualityString
+    test InEqualityString
     {
         var result = 0;
         var a = "Hello";
@@ -73,9 +73,9 @@ test Comparisons
     increase our test coverage.
 */
 
-test Logic
+testset Logic
 {
-    testcase And
+    test And
     {
         var result = 0;
         var a = true;
@@ -86,7 +86,7 @@ test Logic
         Assert.IsFalse(result);
     }
 
-    testcase Or
+    test Or
     {
         var result = 0;
         var a = true;
@@ -97,7 +97,7 @@ test Logic
         Assert.IsTrue(result);
     }
 
-    testcase Not
+    test Not
     {
         var result = 0;
         var a = true;
@@ -107,7 +107,7 @@ test Logic
         Assert.IsFalse(result);
     }
 
-    testcase Truthy
+    test Truthy
     {
         var result = 0;
         var a = "true";
@@ -117,7 +117,7 @@ test Logic
         Assert.IsFalse(result);
     }
 
-    testcase ChainShort
+    test ChainShort
     {
         var result = 0;
         var a = true;
@@ -129,7 +129,7 @@ test Logic
         Assert.IsTrue(result);
     }
 
-    testcase ChainLong
+    test ChainLong
     {
         var result = 0;
         var a = true;

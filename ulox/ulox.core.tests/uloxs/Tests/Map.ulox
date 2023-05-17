@@ -1,6 +1,6 @@
-test MapTests
+testset MapTests
 {
-    testcase ReadOrDefaultNonExistent
+    test ReadOrDefaultNonExistent
     {
         var key = "key";
         var result = 0;
@@ -11,7 +11,7 @@ test MapTests
         Assert.IsNull(result);
     }
 
-    testcase UpdateNonExistent
+    test UpdateNonExistent
     {
         var key = "key";
         var initial = "value";
@@ -23,7 +23,7 @@ test MapTests
         Assert.IsFalse(result);
     }
 
-    testcase ReadCreatedString
+    test ReadCreatedString
     {
         var key = "key";
         var expected = "value";
@@ -36,7 +36,7 @@ test MapTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase CreatedDuplicateString
+    test CreatedDuplicateString
     {
         var key = "key";
         var initial = "value";
@@ -49,7 +49,7 @@ test MapTests
         Assert.IsFalse(result);
     }
 
-    testcase ReadUpdatedString
+    test ReadUpdatedString
     {
         var key = "key";
         var initial = "value";
@@ -64,7 +64,7 @@ test MapTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase ReadOrDefaultUpdatedString
+    test ReadOrDefaultUpdatedString
     {
         var key = "key";
         var initial = "value";
@@ -79,7 +79,7 @@ test MapTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase ReadOrDefaultDeletedString
+    test ReadOrDefaultDeletedString
     {
         var key = "key";
         var initial = "value";
@@ -93,7 +93,7 @@ test MapTests
         Assert.IsNull(result);
     }
 
-    testcase CountAfterCreation
+    test CountAfterCreation
     {
         var key = "key";
         var initial = "value";
@@ -107,7 +107,7 @@ test MapTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase CorrectlyRetrieveString
+    test CorrectlyRetrieveString
     {
         var key = "key";
         var initial = "value";
@@ -124,7 +124,7 @@ test MapTests
         Assert.AreEqual(expected, result);
     }
 
-    testcase ManyAddedRetrieveMissingString
+    test ManyAddedRetrieveMissingString
     {
         var key = "key";
         var initial = "value";
@@ -140,7 +140,7 @@ test MapTests
         Assert.IsNull(result);
     }
 
-    testcase InlineCreation
+    test InlineCreation
     {
         var dogNoise = "woof";
         var catNoise = "meow";

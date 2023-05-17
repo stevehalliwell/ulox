@@ -126,9 +126,9 @@ fun accum(cur, running)
 }
 
 
-test FunctionalCollectionTests
+testset FunctionalCollectionTests
 {
-    testcase FoldSum
+    test FoldSum
     {
         var arr = MakeTestArray();
 
@@ -137,7 +137,7 @@ test FunctionalCollectionTests
         Assert.AreEqual(10, result);
     }
 
-    testcase ReduceSum
+    test ReduceSum
     {
         var arr = MakeTestArray();
 
@@ -146,7 +146,7 @@ test FunctionalCollectionTests
         Assert.AreEqual(10, result);
     }
 
-    testcase MapAddOne
+    test MapAddOne
     {
         var arr = MakeTestArray();
         fun addone(val)
@@ -160,7 +160,7 @@ test FunctionalCollectionTests
         Assert.AreEqual(15, reducedResult);
     }
 
-    testcase FilterIsEven
+    test FilterIsEven
     {
         var arr = MakeTestArray();
         fun isEven(val)

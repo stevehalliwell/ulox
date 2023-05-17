@@ -13,9 +13,9 @@ class C
     AMethod(){}
 }
 
-test ContractMeetsTests
+testset ContractMeetsTests
 {
-    testcase AMeetsB_False
+    test AMeetsB_False
     {
         var res = null;
         var a = A();
@@ -26,7 +26,7 @@ test ContractMeetsTests
         Assert.IsFalse(res);
     }
 
-    testcase BMeetsA_True
+    test BMeetsA_True
     {
         var res = null;
         var a = A();
@@ -37,7 +37,7 @@ test ContractMeetsTests
         Assert.IsTrue(res);
     }
 
-    testcase ASignsB_Throws
+    test ASignsB_Throws
     {
 
         fun Act()
@@ -48,7 +48,7 @@ test ContractMeetsTests
         Assert.Throws(Act);
     }
 
-    testcase BSignsA_NoThrow
+    test BSignsA_NoThrow
     {
 
         B signs A;
@@ -56,7 +56,7 @@ test ContractMeetsTests
         Assert.Pass();
     }
 
-    testcase aMeetsC_False
+    test aMeetsC_False
     {
         var res = null;
         var a = A();
@@ -66,7 +66,7 @@ test ContractMeetsTests
         Assert.IsFalse(res);
     }
 
-    testcase aMeetsNativeList_False
+    test aMeetsNativeList_False
     {
         var res = null;
         var a = A();
@@ -77,7 +77,7 @@ test ContractMeetsTests
         Assert.IsFalse(res);
     }
 
-    testcase DynMeetsDyn_SameFieldButDifferentType_False
+    test DynMeetsDyn_SameFieldButDifferentType_False
     {
         var res = null;
         var a = {:};

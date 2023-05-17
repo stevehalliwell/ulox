@@ -7,9 +7,10 @@ namespace ULox
         public TokenType MatchingToken => TokenType.TESTCASE;
         public string TestCaseName { get; private set; }
 
-        private readonly TestDeclarationCompilette _testDeclarationCompilette;
+        private const string AnonTestPrefix = "Anon_Test_";
+        private readonly TestSetDeclarationCompilette _testDeclarationCompilette;
 
-        public TestcaseCompillette(TestDeclarationCompilette testDeclarationCompilette)
+        public TestcaseCompillette(TestSetDeclarationCompilette testDeclarationCompilette)
         {
             _testDeclarationCompilette = testDeclarationCompilette;
         }
@@ -56,13 +57,11 @@ namespace ULox
                 compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "");
             }
 
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect testcase name.");
-
-            var testcaseName = (string)compiler.TokenIterator.PreviousToken.Literal;
+            var testcaseName = compiler.IdentifierOrChunkUnique(AnonTestPrefix);
             TestCaseName = testcaseName;
             var testDeclName = _testDeclarationCompilette.CurrentTestSetName;
             if (string.IsNullOrEmpty(testDeclName))
-                compiler.ThrowCompilerException($"Unexpected testcase, testcase can only appear within a test set, '{testcaseName}' is not contained in a test declaration.");
+                compiler.ThrowCompilerException($"Unexpected test, it can only appear within a testset, '{testcaseName}' is not contained in a testset declaration.");
 
             var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
 
@@ -74,11 +73,11 @@ namespace ULox
             compiler.BeginScope();
             var numArgs = compiler.VariableNameListDeclareOptional(null);
             if (numArgs != 0 && dataExpExecuteLocation == -1)
-                compiler.ThrowCompilerException($"Testcase '{testcaseName}' has arguments but no data expression");
+                compiler.ThrowCompilerException($"Test '{testcaseName}' has arguments but no data expression");
             if (numArgs == 0 && dataExpExecuteLocation != -1)
-                compiler.ThrowCompilerException($"Testcase '{testcaseName}' has data expression but no arguments");
+                compiler.ThrowCompilerException($"Test '{testcaseName}' has data expression but no arguments");
 
-            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before testcase body.");
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before test body.");
 
             //jump back
             if (dataExpExecuteLocation != -1)
@@ -87,7 +86,7 @@ namespace ULox
                 compiler.EmitLabel((byte)dataExpJumpBackToStart);
 
                 //need to deal with the args
-                //get test data row
+                //get testset data row
                 var (_, _, testDataIndexLocalIdRes) = compiler.ResolveNameLookupOpCode("testDataIndex");
                 testDataIndexLocalId = testDataIndexLocalIdRes;
 
@@ -110,9 +109,9 @@ namespace ULox
             }
 
             // The body.
-            TestDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseStart, nameConstantID, numArgs);
+            TestSetDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseStart, nameConstantID, numArgs);
             compiler.BlockStatement();
-            TestDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseEnd, nameConstantID, 0);
+            TestSetDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseEnd, nameConstantID, 0);
             compiler.EndScope();
 
             if (dataExpExecuteLocation != -1)
@@ -132,7 +131,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void TCName(Compiler compiler, bool obj)
+        public void TestName(Compiler compiler, bool obj)
         {
             var tcname = TestCaseName;
             compiler.AddConstantAndWriteOp(Value.New(tcname));

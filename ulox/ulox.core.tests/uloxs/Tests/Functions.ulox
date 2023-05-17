@@ -3,9 +3,9 @@ fun Add(lhs, rhs)
     retval = lhs+rhs;
 }
 
-test Functions
+testset Functions
 {
-    testcase Return
+    test Return
     {
         var expected = 1;
         var result = 0;
@@ -16,7 +16,7 @@ test Functions
         Assert.AreEqual(expected, result);
     }
 
-    testcase Closure
+    test Closure
     {
         var expected = 1;
         var result = 0;
@@ -27,7 +27,7 @@ test Functions
         Assert.AreEqual(expected, result);
     }
 
-    testcase Params
+    test Params
     {
         var expected = 6;
         var result = 0;
@@ -44,7 +44,7 @@ test Functions
         Assert.AreEqual(expected, result);
     }
 
-    testcase RecurFib
+    test RecurFib
     {
         var expected = 34;
         var result = 0;
@@ -62,7 +62,7 @@ test Functions
         Assert.AreEqual(expected, result);
     }
 
-    testcase GlobalFunction
+    test GlobalFunction
     {
         var expected = 3;
         var result = 0;
@@ -74,7 +74,7 @@ test Functions
         Assert.AreEqual(expected, result);
     }
 
-    testcase Counter
+    test Counter
     {
         var expected = 2;
         var result = 0;
@@ -100,7 +100,7 @@ test Functions
         Assert.AreEqual(expected, result);
     }
 
-    testcase Braceless
+    test Braceless
     {
         var expected = 1;
         var result = 0;

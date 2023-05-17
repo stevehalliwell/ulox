@@ -4,9 +4,9 @@ class StaticClass
     static Meth {retval = 3;}
 }
 
-test StaticClasses
+testset StaticClasses
 {
-    testcase Access
+    test Access
     {
         var expected = 10;
         var result = 0;
@@ -16,7 +16,7 @@ test StaticClasses
         Assert.AreEqual(expected, result);
     }
 
-    testcase Manipulate
+    test Manipulate
     {
         var expected = 10;
         var result = 0;

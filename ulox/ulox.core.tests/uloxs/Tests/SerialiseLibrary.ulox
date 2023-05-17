@@ -1,6 +1,6 @@
-test SerialiseLibraryTests
+testset SerialiseLibraryTests
 {
-    testcase ToEmpty
+    test ToEmpty
     {
         var obj = {:};
         var expected = "";
@@ -11,7 +11,7 @@ test SerialiseLibraryTests
         Assert.AreEqual(expected,res);
     }
 
-    testcase SimpleTo
+    test SimpleTo
     {
         var obj = {:};
         obj.a = 1;
@@ -29,7 +29,7 @@ test SerialiseLibraryTests
         Assert.AreEqual(expected,res);
     }
 
-    testcase SimpleFrom
+    test SimpleFrom
     {
         var jsonString = "{ \"a\": 1.0,  \"b\": 2.0,  \"c\": 3.0 }";
         var res = {:};
@@ -41,7 +41,7 @@ test SerialiseLibraryTests
         Assert.AreEqual(3,res.c);
     }
 
-    testcase ComplexTo
+    test ComplexTo
     {
         var obj = {:};
         obj.a = {:};
@@ -75,7 +75,7 @@ test SerialiseLibraryTests
         Assert.AreEqual(expected,res);
     }
 
-    testcase ComplexFrom
+    test ComplexFrom
     {
         var jsonString = "{
   \"a\": {

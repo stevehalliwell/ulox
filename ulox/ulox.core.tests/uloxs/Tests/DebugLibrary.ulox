@@ -1,6 +1,6 @@
-test DebugLibraryTests
+testset DebugLibraryTests
 {
-    testcase GenerateStackDump
+    test GenerateStackDump
     {
         var loc = 2;
         var result = 0;
@@ -13,7 +13,7 @@ test DebugLibraryTests
         Assert.DoesContain(contains2,result);
     }
 
-    testcase GenerateGlobalsDump
+    test GenerateGlobalsDump
     {
         var expected = "Assert";
         var result;

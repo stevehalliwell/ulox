@@ -1,6 +1,6 @@
-test ControlFlow
+testset ControlFlow
 {
-    testcase If
+    test If
     {
         var expected = 1;
         var result = 0;
@@ -13,7 +13,7 @@ test ControlFlow
         Assert.AreEqual(expected, result);
     }
 
-    testcase IfCompoundLogic
+    test IfCompoundLogic
     {
         var expected = 1;
         var result = 0;
@@ -27,7 +27,7 @@ test ControlFlow
         Assert.AreEqual(expected, result);
     }
 
-    testcase Else
+    test Else
     {
         var expected = 1;
         var result = 0;
@@ -42,7 +42,7 @@ test ControlFlow
         Assert.AreEqual(expected, result);
     }
 
-    testcase ElseIf
+    test ElseIf
     {
         var expected = 1;
         var result = 0;
@@ -60,7 +60,7 @@ test ControlFlow
         Assert.AreEqual(expected, result);
     }
 
-    testcase Nested
+    test Nested
     {
         var expected = 1;
         var result = 0;
@@ -83,7 +83,7 @@ test ControlFlow
         Assert.AreEqual(expected, result);
     }
 
-    testcase While
+    test While
     {
         var expected = 1024;
         var limit = 1000;
@@ -94,7 +94,7 @@ test ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    testcase For
+    test For
     {
         var expected = 4951;
         var limit = 100;
@@ -106,7 +106,7 @@ test ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    testcase ForNoDeclare
+    test ForNoDeclare
     {
         var expected = 4951;
         var limit = 100;
@@ -119,7 +119,7 @@ test ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    testcase Break
+    test Break
     {
         var expected = 1024;
         var limit = 1000;
@@ -135,7 +135,7 @@ test ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    testcase Loop
+    test Loop
     {
         var expected = 128;
         var limit = 100;
@@ -151,7 +151,7 @@ test ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    testcase ContinueWhile
+    test ContinueWhile
     {
         var expected = 51;
         var limit = 100;
@@ -172,7 +172,7 @@ test ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    testcase ContinueFor
+    test ContinueFor
     {
         var expected = 51;
         var limit = 100;
@@ -191,7 +191,7 @@ test ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    testcase ContinueLoop
+    test ContinueLoop
     {
         var expected = 51;
         var limit = 100;
@@ -212,7 +212,7 @@ test ControlFlow
         Assert.AreEqual(expected, accum);
     }
     
-    testcase InvalidCompareOnNonDoubleTypes
+    test InvalidCompareOnNonDoubleTypes
     {
         fun WillThrow()
         {
@@ -222,7 +222,7 @@ test ControlFlow
         Assert.Throws(WillThrow);
     }
 
-    testcase MatchSimple
+    test MatchSimple
     {
         var expected = 1;
         var result = 0;
@@ -238,7 +238,7 @@ test ControlFlow
         Assert.AreEqual(expected, result);
     }
 
-    testcase MatchExpressionCompares
+    test MatchExpressionCompares
     {
         var expected = 1;
         var result = 0;
@@ -256,7 +256,7 @@ test ControlFlow
         Assert.AreEqual(expected, result);
     }
 
-    testcase MatchBlockBody
+    test MatchBlockBody
     {
         var expected = 1;
         var result1 = 0;

@@ -153,9 +153,9 @@ print(1+2);");
 	}
 }
 
-test Vec2Tests
+testset Vec2Tests
 {
-	testcase Default
+	test Default
 	{
 		var expected = 0;
 		var result = Vec2();
@@ -167,7 +167,7 @@ test Vec2Tests
 		Assert.AreEqual(expected, y);
 	}
 
-	testcase ([
+	test ([
 		[1,1,1,1,2,2],
 		[1,0,1,2,2,2],
 		[1,-1,1,-1,2,-2],
@@ -184,7 +184,7 @@ test Vec2Tests
 		Assert.IsTrue(expected == result);
 	}
 
-	testcase ([
+	test ([
 		[1,1,1,1,0,0],
 		[1,0,1,2,0,-2],
 		[1,-1,1,-1,0,0],
@@ -201,7 +201,7 @@ test Vec2Tests
 		Assert.IsTrue(expected == result);
 	}
 
-	testcase Mul
+	test Mul
 	{
 		var expected = Vec2.Create(3,8);
 		var result;
@@ -213,7 +213,7 @@ test Vec2Tests
 		Assert.IsTrue(expected == result);
 	}
 
-	testcase ([
+	test ([
 		[1,1,1,1,true],
 		[1,0,1,2,false],
 		[1,-1,1,-1,true],
@@ -229,7 +229,7 @@ test Vec2Tests
 		Assert.AreEqual(expected, result);
 	}
 
-	testcase Scale
+	test Scale
 	{
 		var expected = Vec2.Create(2,4);
 		var result;

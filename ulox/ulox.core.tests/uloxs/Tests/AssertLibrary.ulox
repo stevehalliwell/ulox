@@ -1,127 +1,127 @@
-test AssertUsageTests
+testset AssertUsageTests
 {
-    testcase AreEqual
+    test AreEqual
     {
         Assert.AreEqual(1,1);
     }
     
-    testcase AreNotEqual
+    test AreNotEqual
     {
         Assert.AreNotEqual(1,2);
     }
     
-    testcase AreApproxEqual
+    test AreApproxEqual
     {
         Assert.AreApproxEqual(1,1.001);
     }
     
-    testcase IsTrue
+    test IsTrue
     {
-        Assert.IsTrue(tcname == "IsTrue");
+        Assert.IsTrue(tname == "IsTrue");
     }
     
-    testcase IsFalse
+    test IsFalse
     {
-        Assert.IsFalse(tcname == "IsTrue");
+        Assert.IsFalse(tname == "IsTrue");
     }
     
-    testcase IsNull
+    test IsNull
     {
         var a;
         Assert.IsNull(a);
     }
     
-    testcase IsNotNull
+    test IsNotNull
     {
         var a = 1;
         Assert.IsNotNull(a);
     }
     
-    testcase DoesContain
+    test DoesContain
     {
         Assert.DoesContain("wo", "hello world");
     }
     
-    testcase DoesNotContain
+    test DoesNotContain
     {
         Assert.DoesNotContain("i", "team");
     }
     
-    testcase Throws
+    test Throws
     {
         fun WillThrow(){throw;}
         Assert.Throws(WillThrow);
     }
     
-    testcase Pass
+    test Pass
     {
         Assert.Pass();
     }
     
-    testcase Fail
+    test Fail
     {
         fun InnerWillFail(){Assert.Fail();}
         // tests are run to pass so we assert that the Fail results in a throw.
         Assert.Throws(InnerWillFail);
     }
     
-    testcase AreNotEqual_Throws
+    test AreNotEqual_Throws
     {
         fun InnerWillFail(){Assert.AreNotEqual(1,1);}
 
         Assert.Throws(InnerWillFail);
     }
     
-    testcase IsTrue_Throws
+    test IsTrue_Throws
     {
         fun InnerWillFail(){Assert.IsTrue(false);}
 
         Assert.Throws(InnerWillFail);
     }
     
-    testcase IsFalse_Throws
+    test IsFalse_Throws
     {
         fun InnerWillFail(){Assert.IsFalse(true);}
 
         Assert.Throws(InnerWillFail);
     }
     
-    testcase IsNull_Throws
+    test IsNull_Throws
     {
         fun InnerWillFail(){Assert.IsNull(true);}
 
         Assert.Throws(InnerWillFail);
     }
     
-    testcase IsNotNull_Throws
+    test IsNotNull_Throws
     {
         fun InnerWillFail(){Assert.IsNotNull(null);}
 
         Assert.Throws(InnerWillFail);
     }
     
-    testcase DoesContain_Throws
+    test DoesContain_Throws
     {
         fun InnerWillFail(){Assert.DoesContain("team", "i");}
 
         Assert.Throws(InnerWillFail);
     }
     
-    testcase DoesNotContain_Throws
+    test DoesNotContain_Throws
     {
         fun InnerWillFail(){Assert.DoesNotContain("hel", "hello");}
 
         Assert.Throws(InnerWillFail);
     }
     
-    testcase Throws_NoParam_Throws
+    test Throws_NoParam_Throws
     {
         fun InnerWillFail(){Assert.Throws();}
 
         Assert.Throws(InnerWillFail);
     }
     
-    testcase Throws_InnerDoesNotThrow_Throws
+    test Throws_InnerDoesNotThrow_Throws
     {
         fun InnerInnerFail(){}
 

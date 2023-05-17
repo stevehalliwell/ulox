@@ -1,6 +1,6 @@
-test StringConversion
+testset StringConversion
 {
-    testcase Native
+    test Native
     {
         var expected = "3Foo";
         var result = 0;
@@ -12,7 +12,7 @@ test StringConversion
         Assert.AreEqual(expected, result);
     }
 
-    testcase Convert
+    test Convert
     {
         var expected = "3";
         var result = 0;

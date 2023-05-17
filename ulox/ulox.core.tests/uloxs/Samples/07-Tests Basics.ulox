@@ -1,11 +1,11 @@
 fun Add(a,b) {retval = a+b;}
 fun Sub(a,b) {retval = a-b;}
 
-// built in testing, test defines a set of tests
-test SimpleTest
+// built in testing, testset defines a set of tests
+testset SimpleTest
 {
-	// testcase defines a single testmethod in the set
-	testcase Expect
+	// test defines a single testmethod in the set
+	test Expect
 	{
 		var lhs = 1;
 		var rhs = 2;
@@ -15,7 +15,7 @@ test SimpleTest
 		expect -1 == res : "1 minus 2 should be -1";
 	}
 	
-	testcase ManuallyThrow
+	test ManuallyThrow
 	{
 		var lhs = 1;
 		var rhs = 2;
@@ -26,7 +26,7 @@ test SimpleTest
 			throw "1 + 2 Should be 3.";
 	}
 	
-	testcase AssertLibrary
+	test AssertLibrary
 	{
 		var lhs = 1;
 		var rhs = 2;

@@ -15,9 +15,9 @@ class FooBar
     init(fizz, buzz, bitcount){}
 }
 
-test MixinsLeafInitsOfMixedVars
+testset MixinsLeafInitsOfMixedVars
 {
-    testcase ClassWithMixinHasBoth
+    test ClassWithMixinHasBoth
     {
         var expectedFizz = 10;
         var expectedBuzz = 20;

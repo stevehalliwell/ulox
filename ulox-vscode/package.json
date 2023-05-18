@@ -1,0 +1,42 @@
+{
+    "name": "ulox-language",
+    "displayName": "ulox Language",
+    "description": "Syntax highlighting for ulox.",
+    "version": "0.0.1",
+    "publisher": "stevehalliwell",
+    "author": "stevehalliwell",
+    "engines": {
+        "vscode": "^1.24.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "ulox",
+                "aliases": [
+                    "ulox"
+                ],
+                "extensions": [
+                    ".ulox"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "ulox",
+                "scopeName": "source.ulox",
+                "path": "./syntaxes/ulox.tmLanguage.json"
+            }
+        ]
+    },
+    "keywords": [
+        "ulox",
+        "ulox-language",
+        "vscode",
+        "vscode-extension",
+        "vscode-language"
+    ]
+}

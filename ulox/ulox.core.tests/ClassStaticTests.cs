@@ -16,6 +16,21 @@ print(T.a);");
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
         }
+        
+        [Test]
+        public void Engine_Class_StaticFields_Modify()
+        {
+            testEngine.Run(@"
+class T
+{
+    static var a = 2;
+}
+T.a = 1;
+
+print(T.a);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
 
         [Test]
         public void Engine_Class_StaticFields_WhenClassModified_ShouldThrow()

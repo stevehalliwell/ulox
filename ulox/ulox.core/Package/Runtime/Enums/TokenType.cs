@@ -64,9 +64,9 @@
         NULL,
 
         THROW,
-        
-        DATA,
 
+        DATA,
+        SYSTEM,
         CLASS,
         THIS,
         STATIC,

@@ -1353,6 +1353,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateInstance(UserTypeInternal asClass, byte argCount)
         {
+            if (asClass.UserType == UserType.System)
+                ThrowRuntimeException($"Attempted to create an instance of the system '{asClass.Name}', this is not allowed");
+
             var instInternal = asClass.MakeInstance();
             var inst = Value.New(instInternal);
             _valueStack[_valueStack.Count - 1 - argCount] = inst;

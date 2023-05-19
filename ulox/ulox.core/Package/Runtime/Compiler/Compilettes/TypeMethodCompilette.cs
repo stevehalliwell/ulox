@@ -11,7 +11,7 @@
 
         public void Process(Compiler compiler)
         {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name.");
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
             byte constant = compiler.AddStringConstant();
 
             var name = compiler.TokenIterator.PreviousToken.Lexeme;

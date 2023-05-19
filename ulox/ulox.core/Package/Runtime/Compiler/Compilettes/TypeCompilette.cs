@@ -8,6 +8,7 @@ namespace ULox
     {
         Native,
         Data,
+        System,
         Class,
         Enum,
     }
@@ -19,7 +20,7 @@ namespace ULox
         public static TypeCompilette CreateClassCompilette()
         {
             var compilette = new TypeCompilette();
-            compilette.AddInnerDeclarationCompilette(new TypeStaticElementCompilette());
+            compilette.AddInnerDeclarationCompilette(TypeStaticElementCompilette.CreateForClass());
             compilette.AddInnerDeclarationCompilette(new TypeInitCompilette());
             compilette.AddInnerDeclarationCompilette(new TypeMethodCompilette());
             compilette.AddInnerDeclarationCompilette(new TypeSignsCompilette());
@@ -31,7 +32,7 @@ namespace ULox
             return compilette;
         }
 
-        public static TypeCompilette CreateDateCompilette()
+        public static TypeCompilette CreateDataCompilette()
         {
             var compilette = new TypeCompilette();
             compilette.AddInnerDeclarationCompilette(new TypeSignsCompilette());
@@ -40,6 +41,18 @@ namespace ULox
             compilette.GenerateCompiletteByStageArray();
             compilette.UserType = UserType.Data;
             compilette.MatchingToken = TokenType.DATA;
+            return compilette;
+        }
+
+        public static TypeCompilette CreateSystemCompilette()
+        {
+            var compilette = new TypeCompilette();
+            compilette.AddInnerDeclarationCompilette(new TypeSignsCompilette());
+            compilette.AddInnerDeclarationCompilette(new TypeMixinCompilette());
+            compilette.AddInnerDeclarationCompilette(TypeStaticElementCompilette.CreateForSystem());
+            compilette.GenerateCompiletteByStageArray();
+            compilette.UserType = UserType.System;
+            compilette.MatchingToken = TokenType.SYSTEM;
             return compilette;
         }
 

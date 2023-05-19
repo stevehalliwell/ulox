@@ -61,5 +61,27 @@ var f = Foo();");
 
             StringAssert.StartsWith("Attempted to create an instance of the system 'Foo'", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Mixin_WhenMethodCalled_ShouldRun()
+        {
+            testEngine.Run(@"
+system Foo
+{
+    Bar()
+    {
+        retval = 7;
+    }
+}
+
+system Fum
+{
+    mixin Foo;
+}
+
+print (Fum.Bar());");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
     }
 }

@@ -3,7 +3,6 @@ using System;
 using System.IO;
 using System.Linq;
 using ULox.Core.Tests;
-using ULox;
 
 public class UloxScriptTestBase
 {

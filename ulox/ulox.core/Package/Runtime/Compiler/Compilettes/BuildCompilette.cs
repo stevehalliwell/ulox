@@ -12,7 +12,7 @@ namespace ULox
             do
             {
                 compiler.Expression();
-                compiler.EmitPacket(OpCode.BUILD);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.BUILD));
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
             compiler.ConsumeEndStatement("build command identifier(s)");

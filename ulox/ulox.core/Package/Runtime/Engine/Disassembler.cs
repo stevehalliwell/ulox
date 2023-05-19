@@ -133,11 +133,17 @@ namespace ULox
             case OpCode.DEFINE_GLOBAL:
             case OpCode.FETCH_GLOBAL:
             case OpCode.ASSIGN_GLOBAL:
-            case OpCode.GET_PROPERTY:
-            case OpCode.SET_PROPERTY:
             case OpCode.METHOD:
             case OpCode.FIELD:
                 DoConstant(packet);
+                break;
+            case OpCode.SET_PROPERTY:
+                DoConstant(packet);
+                AppendOptionalTwoLocals(packet.b2, packet.b3);
+                break;
+            case OpCode.GET_PROPERTY:
+                DoConstant(packet);
+                AppendSingleLocalByte(packet.b3);
                 break;
             case OpCode.MULTI_VAR:
             case OpCode.PUSH_BOOL:
@@ -151,11 +157,6 @@ namespace ULox
             case OpCode.SET_UPVALUE:
             case OpCode.CALL:
                 stringBuilder.Append($"({packet.b1})");
-                break;
-            case OpCode.JUMP_IF_FALSE:
-            case OpCode.JUMP:
-            case OpCode.LOOP:
-                stringBuilder.Append($"({packet.u1})");
                 break;
             case OpCode.CLOSURE:
             {
@@ -246,16 +247,58 @@ namespace ULox
             case OpCode.LABEL:
                 PrintLabel(packet.b1);
                 break;
+            case OpCode.ADD:
+            case OpCode.SUBTRACT:
+            case OpCode.MULTIPLY:
+            case OpCode.DIVIDE:
+            case OpCode.MODULUS:
+            case OpCode.EQUAL:
+            case OpCode.LESS:
+            case OpCode.GREATER:
+            case OpCode.GET_INDEX:
+                AppendOptionalTwoLocals(packet.b1, packet.b2);
+                break;
+            case OpCode.SET_INDEX:
+                AppendOptionalRegistersSetIndex(packet.b1, packet.b2, packet.b3);
+                break;
+            case OpCode.NEGATE:
+            case OpCode.NOT:
+            case OpCode.COUNT_OF:
+            case OpCode.DUPLICATE:
+                AppendSingleLocalByte(packet.b1);
+                break;
             }
-            
+
             stringBuilder.AppendLine();
             _currentInstructionCount++;
+        }
+
+        private void AppendSingleLocalByte(byte b)
+        {
+            if (b != ByteCodeOptimiser.NOT_LOCAL_BYTE)
+                stringBuilder.Append($" ({b})");
+        }
+
+        private void AppendOptionalTwoLocals(byte b1, byte b2)
+        {
+            if (b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE)
+                return;
+            
+            stringBuilder.Append($" ({((b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})");
+        }
+
+        private void AppendOptionalRegistersSetIndex(byte b1, byte b2, byte b3)
+        {
+            if (b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE)
+                return;
+
+            stringBuilder.Append($" ({((b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())}, {((b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b3.ToString())})");
         }
 
         private void DoConstant(ByteCodePacket packet)
         {
             var sc = packet.b1;
-            stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
+            stringBuilder.Append($"'{CurrentChunk.Constants[sc]}'");
         }
     }
 }

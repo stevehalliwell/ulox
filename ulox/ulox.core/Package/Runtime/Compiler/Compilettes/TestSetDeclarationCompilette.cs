@@ -35,7 +35,7 @@ namespace ULox
             var testFixtureBodyLabel = compiler.LabelUniqueChunkLabel("TestFixtureBody");
 
             compiler.Block();
-            compiler.EmitPacket(OpCode.YIELD);
+            compiler.EmitPacket(new ByteCodePacket(OpCode.YIELD));
             compiler.EndScope();
             compiler.EmitLabel(labelID);
 

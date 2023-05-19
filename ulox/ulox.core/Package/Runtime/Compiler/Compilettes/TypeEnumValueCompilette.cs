@@ -55,8 +55,8 @@ namespace ULox
                 }
 
 
-                compiler.EmitPacketByte(OpCode.GET_LOCAL, 1);//get class or inst this on the stack
-                compiler.EmitPacket(OpCode.ENUM_VALUE);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, 1));//get class or inst this on the stack
+                compiler.EmitPacket(new ByteCodePacket(OpCode.ENUM_VALUE));
                 
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (compiler.TokenIterator.Match(TokenType.IDENTIFIER));

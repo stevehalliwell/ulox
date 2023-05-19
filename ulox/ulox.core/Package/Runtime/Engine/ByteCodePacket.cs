@@ -90,14 +90,37 @@ namespace ULox
 
         [FieldOffset(1)]
         public readonly ClosureDetails closureDetails;
-
-        public ByteCodePacket(OpCode opCode) : this()
+        
+        public ByteCodePacket(OpCode opCode)
+            : this(
+                  opCode,
+                  ByteCodeOptimiser.NOT_LOCAL_BYTE,
+                  ByteCodeOptimiser.NOT_LOCAL_BYTE,
+                  ByteCodeOptimiser.NOT_LOCAL_BYTE)
         {
-            _opCode = (byte)opCode;
         }
 
-        public ByteCodePacket(OpCode opCode, byte b1, byte b2, byte b3) : this(opCode)
+        public ByteCodePacket(OpCode opCode, byte b1)
+            : this(
+                  opCode,
+                  b1,
+                  ByteCodeOptimiser.NOT_LOCAL_BYTE,
+                  ByteCodeOptimiser.NOT_LOCAL_BYTE)
         {
+        }
+        
+        public ByteCodePacket(OpCode opCode, byte b1, byte b2)
+            : this(
+                  opCode,
+                  b1,
+                  b2,
+                  ByteCodeOptimiser.NOT_LOCAL_BYTE)
+        {
+        }
+
+        public ByteCodePacket(OpCode opCode, byte b1, byte b2, byte b3) : this()
+        {
+            _opCode = (byte)opCode;
             this.b1 = b1;
             this.b2 = b2;
             this.b3 = b3;

@@ -3,8 +3,6 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    //todo better string parsing token support
-    //todo track and output class information from compile
     public sealed class Vm
     {
         private readonly ClosureInternal NativeCallClosure;
@@ -41,13 +39,6 @@ namespace ULox
         {
             _valueStack.DiscardPop(2);
             return (_valueStack.Peek(-2), _valueStack.Peek(-1));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public (Value, Value, Value) Pop3()
-        {
-            _valueStack.DiscardPop(3);
-            return (_valueStack.Peek(-3), _valueStack.Peek(-2), _valueStack.Peek(-1));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -215,12 +206,12 @@ namespace ULox
                     return InterpreterResult.YIELD;
 
                 case OpCode.NEGATE:
-                    Push(Value.New(-Pop().val.asDouble));
+                    Push(Value.New(-PopOrLocal(packet.b1).val.asDouble));
                     break;
 
                 case OpCode.ADD:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -241,7 +232,7 @@ namespace ULox
                 break;
                 case OpCode.SUBTRACT:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -255,7 +246,7 @@ namespace ULox
                 break;
                 case OpCode.MULTIPLY:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -269,7 +260,7 @@ namespace ULox
                 break;
                 case OpCode.DIVIDE:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -283,7 +274,7 @@ namespace ULox
                 break;
                 case OpCode.MODULUS:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
@@ -298,7 +289,7 @@ namespace ULox
 
                 case OpCode.EQUAL:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -313,7 +304,7 @@ namespace ULox
 
                 case OpCode.LESS:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -329,7 +320,7 @@ namespace ULox
                 break;
                 case OpCode.GREATER:
                 {
-                    var (rhs, lhs) = Pop2();
+                    var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
 
                     if (lhs.type != ValueType.Instance)
                     {
@@ -345,7 +336,7 @@ namespace ULox
                 break;
 
                 case OpCode.NOT:
-                    Push(Value.New(Pop().IsFalsey()));
+                    Push(Value.New(PopOrLocal(packet.b1).IsFalsey()));
                     break;
 
                 case OpCode.PUSH_BOOL:
@@ -365,24 +356,21 @@ namespace ULox
                     break;
 
                 case OpCode.SWAP:
-                    DoSwapOp();
+                {
+                    //swap last stack values
+                    var count = _valueStack.Count;
+                    var temp = _valueStack[count - 1];
+                    _valueStack[count - 1] = _valueStack[count - 2];
+                    _valueStack[count - 2] = temp;
+                }
                     break;
 
                 case OpCode.DUPLICATE:
-                    DoDuplicateOp();
-                    break;
-
-                case OpCode.JUMP_IF_FALSE:
-                    if (Peek().IsFalsey())
-                        _currentCallFrame.InstructionPointer += packet.u1;
-                    break;
-
-                case OpCode.JUMP:
-                    _currentCallFrame.InstructionPointer += packet.u1;
-                    break;
-
-                case OpCode.LOOP:
-                    _currentCallFrame.InstructionPointer -= packet.u1;
+                {
+                    var v = PopOrLocal(packet.b1);
+                    Push(v);
+                    Push(v);
+                }
                     break;
 
                 case OpCode.GET_LOCAL:
@@ -463,12 +451,18 @@ namespace ULox
                     break;
 
                 case OpCode.GET_PROPERTY:
-                    DoGetPropertyOp(chunk, packet.b1);
-                    break;
+                {
+                    var targetVal = PopOrLocal(packet.b3);
+                    DoGetPropertyOp(chunk, packet.b1, targetVal);
+                }
+                break;
 
                 case OpCode.SET_PROPERTY:
-                    DoSetPropertyOp(chunk, packet.b1);
-                    break;
+                {
+                    var (newVal, targetVal) = Pop2OrLocals(packet.b2, packet.b3);
+                    DoSetPropertyOp(chunk, packet.b1, targetVal, newVal);
+                }
+                break;
 
                 case OpCode.TYPE:
                     DoUserTypeOp(chunk, packet.typeDetails);
@@ -503,11 +497,17 @@ namespace ULox
                     break;
 
                 case OpCode.GET_INDEX:
-                    DoGetIndexOp(opCode);
+                {
+                    var (index, listValue) = Pop2OrLocals(packet.b1, packet.b2);
+                    DoGetIndexOp(opCode, index, listValue);
+                }  
                     break;
 
                 case OpCode.SET_INDEX:
-                    DoSetIndexOp(opCode);
+                {
+                    var (newValue, index, listValue) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);
+                    DoSetIndexOp(opCode, newValue, index, listValue);
+                }
                     break;
 
                 case OpCode.EXPAND_COPY_TO_STACK:
@@ -529,7 +529,10 @@ namespace ULox
                     break;
 
                 case OpCode.COUNT_OF:
-                    DoCountOfOp();
+                {
+                    var target = PopOrLocal(packet.b1);
+                    DoCountOfOp(target);
+                }
                     break;
 
                 case OpCode.EXPECT:
@@ -549,7 +552,10 @@ namespace ULox
                     break;
 
                 case OpCode.ENUM_VALUE:
-                    DoEnumValueOp(chunk);
+                {
+                    var (enumObject, val, key) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);
+                    (enumObject.val.asClass as EnumClass).AddEnumValue(key, val);
+                }
                     break;
 
                 case OpCode.READ_ONLY:
@@ -566,6 +572,29 @@ namespace ULox
                     break;
                 }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Value PopOrLocal(byte b1)
+        {
+            return b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private (Value rhs, Value lhs) Pop2OrLocals(byte b1, byte b2)
+        {
+            var rhs = b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
+            var lhs = b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            return (rhs, lhs);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private (Value newValue, Value index, Value listValue) Pop3OrLocals(byte b1, byte b2, byte b3)
+        {
+            var newValue = b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b3];
+            var index = b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
+            var listValue = b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            return (newValue, index, listValue);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -614,16 +643,15 @@ namespace ULox
         private void DoUpdateOp()
         {
             var (rhs, lhs) = Pop2();
-            
+
             var res = Value.UpdateFrom(lhs, rhs, this);
-            
+
             Push(res);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoCountOfOp()
+        private void DoCountOfOp(Value target)
         {
-            var target = Pop();
             if (target.type == ValueType.Instance)
             {
                 if (target.val.asInstance is INativeCollection col)
@@ -652,13 +680,6 @@ namespace ULox
             {
                 ThrowRuntimeException($"Expect failed, got {(msg.IsNull() ? "falsey" : msg.ToString())}");
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoEnumValueOp(Chunk chunk)
-        {
-            var (enumObject, val, key) = Pop3();
-            (enumObject.val.asClass as EnumClass).AddEnumValue(key, val);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -708,10 +729,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetIndexOp(OpCode opCode)
+        private void DoSetIndexOp(OpCode opCode, Value newValue, Value index, Value listValue)
         {
-            //pop3?
-            var (newValue, index, listValue) = Pop3();
             if (listValue.val.asInstance is INativeCollection nativeCol)
             {
                 nativeCol.Set(index, newValue);
@@ -747,10 +766,8 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetIndexOp(OpCode opCode)
+        private void DoGetIndexOp(OpCode opCode, Value index, Value listValue)
         {
-            var (index, listValue) = Pop2();
-
             if (listValue.val.asInstance is INativeCollection nativeCol)
             {
                 Push(nativeCol.Get(index));
@@ -840,25 +857,6 @@ namespace ULox
             var givenVar = Pop();
             var str = givenVar.str();
             Engine.LocateAndQueue(str);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSwapOp()
-        {
-            //pop2
-            var (n0, n1) = Pop2();
-
-            Push(n0);
-            Push(n1);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoDuplicateOp()
-        {
-            var v = Pop();
-
-            Push(v);
-            Push(v);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1061,9 +1059,9 @@ namespace ULox
             switch (callee.type)
             {
             case ValueType.NativeFunction:
-                if(argCount != callee.val.asByte1)
+                if (argCount != callee.val.asByte1)
                     ThrowRuntimeException($"Native function '{callee.val.asNativeFunc.Method.Name}' expected '{callee.val.asByte1}' arguments but got '{argCount}'");
-                
+
                 PushFrameCallNative(callee.val.asNativeFunc, argCount, callee.val.asByte0);
                 break;
 
@@ -1109,7 +1107,7 @@ namespace ULox
             if (argCount != closureInternal.chunk.Arity)
                 ThrowRuntimeException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
                     $", got '{argCount}' but expected '{closureInternal.chunk.Arity}'");
-            
+
 
             var stackStart = (byte)System.Math.Max(0, _valueStack.Count - argCount - 1);
             PushNewCallframe(new CallFrame()
@@ -1188,9 +1186,9 @@ namespace ULox
                 break;
             }
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetPropertyOp(Chunk chunk, byte constantIndex)
+        private void DoGetPropertyOp(Chunk chunk, byte constantIndex, Value targetVal)
         {
             //use class to build a cached route to the field, introduce an cannot cache instruction
             //  once there are class vars this can be done through that as those are known and safe, not
@@ -1200,7 +1198,6 @@ namespace ULox
             //  different type is given or generate variants for each type
             //the problem here is we don't know that the targetVal is of the same type that we are caching so
             //  turn it off for now.
-            var targetVal = Peek();
 
             InstanceInternal instance = null;
 
@@ -1222,19 +1219,30 @@ namespace ULox
 
             if (instance.TryGetField(name, out var val))
             {
-                DiscardPop();
                 Push(val);
                 return;
             }
 
-            BindMethod(instance.FromUserType, name);
+            //attempt to bind the method
+            var fromClass = instance.FromUserType;
+            var methodName = name;
+            
+            if (fromClass == null)
+                ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
+
+            if (!fromClass.TryGetMethod(methodName, out var method))
+                ThrowRuntimeException($"Undefined property '{methodName}'");
+
+            var receiver = targetVal;
+            var meth = method.val.asClosure;
+            var bound = Value.New(new BoundMethod(receiver, meth));
+            
+            Push(bound);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetPropertyOp(Chunk chunk, byte constantIndex)
+        private void DoSetPropertyOp(Chunk chunk, byte constantIndex, Value targetVal, Value newVal)
         {
-            var targetVal = Peek(1);
-
             InstanceInternal instance = null;
 
             switch (targetVal.type)
@@ -1253,11 +1261,9 @@ namespace ULox
 
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
-            instance.SetField(name, Peek());
-
-            var value = Pop();
-            DiscardPop();
-            Push(value);
+            instance.SetField(name, newVal);
+            
+            Push(newVal);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1335,23 +1341,6 @@ namespace ULox
             //pop2
             var (klass, mixin) = Pop2();
             klass.val.asClass.MixinClass(mixin, this);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void BindMethod(UserTypeInternal fromClass, HashedString methodName)
-        {
-            if (fromClass == null)
-                ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
-
-            if (!fromClass.TryGetMethod(methodName, out var method))
-                ThrowRuntimeException($"Undefined property '{methodName}'");
-
-            var receiver = Peek();
-            var meth = method.val.asClosure;
-            var bound = Value.New(new BoundMethod(receiver, meth));
-
-            DiscardPop();
-            Push(bound);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

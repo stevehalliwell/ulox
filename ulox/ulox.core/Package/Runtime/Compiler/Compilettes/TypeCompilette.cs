@@ -172,14 +172,14 @@ namespace ULox
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
             if (IsFrozenAtEnd)
-                compiler.EmitPacket(OpCode.FREEZE);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.FREEZE));
             else
                 compiler.EmitPop();
             
             if(IsReadOnlyAtEnd)
             {
                 compiler.NamedVariable(CurrentTypeName, false);
-                compiler.EmitPacket(OpCode.READ_ONLY);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.READ_ONLY));
             }
         }
 

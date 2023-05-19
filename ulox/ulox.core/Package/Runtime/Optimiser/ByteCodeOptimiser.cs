@@ -19,6 +19,8 @@ namespace ULox
         public bool Enabled { get; set; } = true;
         public bool EnableLocalizing { get; set; } = true;
         public bool EnableRemoveUnreachableLabels { get; set; } = false;
+
+        public OptimisationReporter OptimisationReporter { get; set; }
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
         private List<(Chunk chunk, int inst, RegisteriseType regType)> _potentialRegisterise = new List<(Chunk, int, RegisteriseType)>();
         private readonly List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
@@ -30,6 +32,7 @@ namespace ULox
             if (!Enabled)
                 return;
 
+            OptimisationReporter?.PreOptimise(compiledScript);
             Iterate(compiledScript);
             if (EnableLocalizing) AttemptRegisterise();
             if (EnableRemoveUnreachableLabels)
@@ -38,6 +41,7 @@ namespace ULox
                 MarkUnsedLabelsAsDead(compiledScript);
             }
             RemoveMarkedInstructions();
+            OptimisationReporter?.PostOptimise(compiledScript);
         }
 
         private void MarkNoJumpGotoLabelAsDead()

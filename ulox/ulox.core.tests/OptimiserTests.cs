@@ -6,16 +6,17 @@ namespace ULox.Core.Tests
     [TestFixture]
     public class OptimiserTests : EngineTestBase
     {
+        private ByteCodeOptimiser _opt;
+
         [SetUp]
         public override void Setup()
         {
             base.Setup();
-            var opt = testEngine.MyEngine.Context.Program.Optimiser;
-            opt.Enabled = true;
-            opt.EnableRemoveUnreachableLabels = true;
-            opt.EnableLocalizing = true;
-            //TODO need to have a optimisation report so we can validate against that
-            //todo if we reverse our usage of b1, b2, b3 in all places, we can standardise the optimiser
+            _opt = testEngine.MyEngine.Context.Program.Optimiser;
+            _opt.Enabled = true;
+            _opt.EnableRemoveUnreachableLabels = true;
+            _opt.EnableLocalizing = true;
+            _opt.OptimisationReporter = new OptimisationReporter();
         }
         
         [Test]
@@ -35,7 +36,7 @@ label unused;
 print (1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 8 -> 7", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -47,7 +48,7 @@ label unused;
 print (1+2);");
 
             Assert.AreEqual("33", testEngine.InterpreterResult);
-            Assert.AreEqual(13, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 14 -> 13", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -61,7 +62,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 14 -> 7", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -74,7 +75,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 13 -> 7", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -86,7 +87,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 9 -> 7", _opt.OptimisationReporter.GetReport());
         }
         
         [Test]
@@ -102,7 +103,7 @@ print (c);
 }");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(12, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 14 -> 12", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -118,7 +119,7 @@ print (c);
 }");
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
-            Assert.AreEqual(12, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 14 -> 12", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -135,7 +136,7 @@ print (d);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            Assert.AreEqual(14, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 17 -> 14", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -150,7 +151,7 @@ print (res);
 }");
 
             Assert.AreEqual("4", testEngine.InterpreterResult);
-            Assert.AreEqual(27, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 28 -> 27", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -166,7 +167,7 @@ print (l[index]);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            Assert.AreEqual(30, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 33 -> 30", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -180,7 +181,7 @@ print(a);
 }");
 
             Assert.AreEqual("-1", testEngine.InterpreterResult);
-            Assert.AreEqual(10, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 11 -> 10", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -194,7 +195,7 @@ print(a);
 }");
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
-            Assert.AreEqual(10, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 11 -> 10", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -209,7 +210,7 @@ print(a);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            Assert.AreEqual(11, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 12 -> 11", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -224,7 +225,7 @@ print(obj.a);
 }");
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
-            Assert.AreEqual(14, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 17 -> 14", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -239,7 +240,7 @@ print(val);
 }");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-            Assert.AreEqual(15, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            StringAssert.Contains("Instructions: 16 -> 15", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -259,7 +260,7 @@ print(f.a);
 ");
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
-            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].AllChunks.First(x => x.Name == "Meth").Instructions.Count);
+            StringAssert.Contains("Instructions: 9 -> 7", _opt.OptimisationReporter.GetReport());
         }
     }
 }

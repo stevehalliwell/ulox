@@ -35,7 +35,7 @@ namespace ULox
             {OpCode.COUNT_OF,   10 },
         };
 
-        private readonly Table methods = new Table();
+        public Table Methods { get; private set; } = new Table();
         private readonly Table flavours = new Table();
         private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
         
@@ -44,7 +44,6 @@ namespace ULox
         public UserType UserType { get; }
         public Value Initialiser { get; protected set; } = Value.Null();
         public List<(ClosureInternal closure, ushort instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, ushort)>();
-        public IReadOnlyDictionary<HashedString, Value> Methods => methods.AsReadOnly;
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private readonly List<HashedString> _fieldsNames = new List<HashedString>();
 
@@ -61,16 +60,10 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetMethod(HashedString name) => methods[name];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetMethod(HashedString name, out Value method) => methods.TryGetValue(name, out method);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddMethod(HashedString key, Value method, Vm vm)
         {
             // This is used internally by the vm only does not need to check for frozen
-            if (methods.TryGetValue(key, out var existing))
+            if (Methods.Get(key.Hash, out var existing))
             {
                 //combine
                 if (existing.type == ValueType.Closure)
@@ -99,7 +92,7 @@ namespace ULox
                 method = existing;
             }
 
-            methods[key] = method;
+            Methods.AddOrSet(key, method);
 
             if (key == TypeCompilette.InitMethodName)
             {
@@ -124,11 +117,11 @@ namespace ULox
             var flavour = flavourValue.val.asClass;
             ValidateMixin(flavour, vm);
 
-            flavours[flavour.Name] = flavourValue;
+            flavours.AddOrSet(flavour.Name, flavourValue);
 
-            foreach (var flavourMeth in flavour.methods)
+            foreach (var flavourMeth in flavour.Methods)
             {
-                AddMethod(flavourMeth.Key, flavourMeth.Value, vm);
+                AddMethod(flavour.Methods.GetStringFromKey(flavourMeth.Key), flavourMeth.Value, vm);
             }
 
             foreach (var flavourInitChain in flavour.InitChains)

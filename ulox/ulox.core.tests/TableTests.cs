@@ -11,7 +11,7 @@ namespace ULox.Core.Tests
             var table = new Table();
             var hs = new HashedString("test");
 
-            table.Add(hs, Value.Null());
+            table.AddOrSet(hs, Value.Null());
 
             Assert.AreEqual(1, table.Count);
         }
@@ -23,8 +23,8 @@ namespace ULox.Core.Tests
             var hsIn = new HashedString("test");
             var hsTest = new HashedString("test");
 
-            table[hsIn] = Value.Null();
-            table[hsTest] = Value.Null();
+            table.AddOrSet(hsIn, Value.Null());
+            table.Set(hsTest.Hash, Value.Null());
 
             Assert.AreEqual(1, table.Count);
         }

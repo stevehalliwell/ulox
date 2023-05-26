@@ -15,7 +15,7 @@ class Foo
 var inst = Foo();
 inst.a = 10;");
 
-            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -31,7 +31,7 @@ class Foo
 var inst = Foo();
 inst.a = 10;");
 
-            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -60,7 +60,7 @@ class Foo
 freeze Foo;
 Foo.a = 10;");
 
-            Assert.AreEqual("Attempted to Create a new field 'a' via SetField on a frozen object.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
         }
 
         [Test]

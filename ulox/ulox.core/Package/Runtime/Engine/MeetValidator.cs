@@ -10,8 +10,8 @@ namespace ULox
         {
             foreach (var contractMeth in contract.Methods)
             {
-                if (!lhs.Methods.TryGetValue(contractMeth.Key, out var ourContractMatchingMeth))
-                    return (false, $"'{lhs.Name.String}' does not contain matching method '{contractMeth.Key.String}'.");
+                if (!lhs.Methods.Get(contractMeth.Key, out var ourContractMatchingMeth))
+                    return (false, $"'{lhs.Name.String}' does not contain matching method '{contract.Methods.GetStringFromKey(contractMeth.Key).String}'.");
 
                 var contractChunk = contractMeth.Value.val.asClosure.chunk;
                 var ourContractMatchingChunk = ourContractMatchingMeth.val.asClosure.chunk;
@@ -37,8 +37,8 @@ namespace ULox
             foreach (var contractMeth in contract.Methods)
             {
                 Value ourContractMatchingMeth = Value.Null();
-                if (lhs.Fields.TryGetValue(contractMeth.Key, out ourContractMatchingMeth)
-                    || lhs.FromUserType.Methods.TryGetValue(contractMeth.Key, out ourContractMatchingMeth))
+                if (lhs.Fields.Get(contractMeth.Key, out ourContractMatchingMeth)
+                    || lhs.FromUserType.Methods.Get(contractMeth.Key, out ourContractMatchingMeth))
                 {
                     if (contractMeth.Value.type == ValueType.Closure
                         && ourContractMatchingMeth.type == ValueType.Closure)
@@ -50,13 +50,13 @@ namespace ULox
                 }
                 else
                 {
-                    return (false, $"instance does not contain matching method '{contractMeth.Key.String}'.");
+                    return (false, $"instance does not contain matching method '{contract.Methods.GetStringFromKey(contractMeth.Key).String}'.");
                 }
             }
 
             foreach (var contractVar in contract.FieldNames)
             {
-                if (!lhs.Fields.TryGetValue(contractVar, out var _))
+                if (!lhs.Fields.Get(contractVar.Hash, out var _))
                 {
                     return (false, $"instance does not contain matching field '{contractVar.String}'.");
                 }
@@ -83,14 +83,14 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static (bool meets, string msg) InstanceContentMatcher(InstanceInternal lhs, InstanceInternal contract)
         {
-            foreach (var field in contract.Fields.AsReadOnly)
+            foreach (var field in contract.Fields)
             {
                 Value ourMatch = Value.Null();
-                if (lhs.Fields.TryGetValue(field.Key, out ourMatch)
-                    || lhs.FromUserType.Methods.TryGetValue(field.Key, out ourMatch))
+                if (lhs.Fields.Get(field.Key, out ourMatch)
+                    || lhs.FromUserType.Methods.Get(field.Key, out ourMatch))
                 {
                     if (field.Value.type != ourMatch.type)
-                        return (false, $"instance has matching field name '{field.Key.String}' but type does not match, expected '{ourMatch.type}' but found '{field.Value.type}'.");
+                        return (false, $"instance has matching field name '{contract.Fields.GetStringFromKey(field.Key).String}' but type does not match, expected '{ourMatch.type}' but found '{field.Value.type}'.");
 
                     switch (field.Value.type)
                     {
@@ -111,7 +111,7 @@ namespace ULox
                 }
                 else
                 {
-                    return (false, $"instance does not contain matching field '{field.Key.String}'.");
+                    return (false, $"instance does not contain matching field '{contract.Fields.GetStringFromKey(field.Key).String}'.");
                 }
             }
             return (true, string.Empty);

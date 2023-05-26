@@ -12,7 +12,7 @@ namespace ULox
             var resTable = new Table();
             foreach (var (name, val) in bind)
             {
-                resTable.Add(new HashedString(name), val);
+                resTable.AddOrSet(new HashedString(name), val);
             }
             return resTable;
         }

@@ -43,7 +43,8 @@ class T
 
 T.b = 5;");
 
-            Assert.AreEqual("Attempted to Create a new field 'b' via SetField on a frozen object.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.Contains("on a frozen object.", testEngine.InterpreterResult);
         }
 
         [Test]

@@ -76,7 +76,7 @@ obj.a.a = l;";
             var expected = UloxJsonExpectedResult;
             var result = "error";
             testEngine.Run(scriptString);
-            var obj = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("obj"));
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj").Hash, out var obj);
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
 
@@ -93,7 +93,7 @@ obj.a.a = l;";
             var expected = string.Empty;
             var result = "error";
             testEngine.Run(scriptString);
-            var obj = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("obj"));
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj").Hash, out var obj);
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
 
@@ -110,7 +110,7 @@ obj.a.a = l;";
             var expected = string.Empty;
             var result = "error";
             testEngine.Run(scriptString);
-            var obj = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("obj"));
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj").Hash, out var obj);
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
 
@@ -127,7 +127,7 @@ obj.a.a = l;";
             var expected = BiggerSBExpectedResult;
             var result = "error";
             testEngine.Run(scriptString);
-            var obj = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("obj"));
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj").Hash, out var obj);
             var jsonWriter = new JsonValueHeirarchyWriter();
             var walker = new ValueHeirarchyWalker(jsonWriter);
 
@@ -154,9 +154,9 @@ obj.a.a = l;";
             var resultString = testWriter.GetString();
             var expectedWalkResult = SimpleStringSerialisationTests.UloxSBExpectedResult;
             StringAssert.Contains(Regex.Replace(expectedWalkResult, @"\s+", " "), Regex.Replace(resultString, @"\s+", " "));
-            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("a")));
-            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("b")));
-            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("c")));
+            Assert.IsTrue(obj.val.asInstance.Fields.Contains(new HashedString("a")));
+            Assert.IsTrue(obj.val.asInstance.Fields.Contains(new HashedString("b")));
+            Assert.IsTrue(obj.val.asInstance.Fields.Contains(new HashedString("c")));
         }
 
         [Test]
@@ -174,9 +174,9 @@ obj.a.a = l;";
             var result = jsonWriter.GetString();
 
             StringAssert.Contains(Regex.Replace(json, @"\s+", " "), Regex.Replace(result, @"\s+", " "));
-            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("a")));
-            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("b")));
-            Assert.IsTrue(obj.val.asInstance.HasField(new HashedString("c")));
+            Assert.IsTrue(obj.val.asInstance.Fields.Contains(new HashedString("a")));
+            Assert.IsTrue(obj.val.asInstance.Fields.Contains(new HashedString("b")));
+            Assert.IsTrue(obj.val.asInstance.Fields.Contains(new HashedString("c")));
         }
 
         [Test]

@@ -136,10 +136,12 @@ namespace ULox.Core.Bench
             var engine = Engine.CreateDefault();
             engine.RunScript(BouncingBallProfileScript.Script);
 
-            engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("SetupGame")), 0);
+            engine.Context.Vm.Globals.Get(new HashedString("SetupGame").Hash, out var found);
+            engine.Context.Vm.PushCallFrameAndRun(found, 0);
             for (int i = 0; i < 100; i++)
             {
-                engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("Update")), 0);
+                engine.Context.Vm.Globals.Get(new HashedString("Update").Hash, out var foundUpdate);
+                engine.Context.Vm.PushCallFrameAndRun(foundUpdate, 0);
             }
         }
 
@@ -149,10 +151,12 @@ namespace ULox.Core.Bench
             var engine = Engine.CreateDefault();
             engine.RunScript(WaterLineProfileScript.Script);
 
-            engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("SetupGame")), 0);
+            engine.Context.Vm.Globals.Get(new HashedString("SetupGame").Hash, out var found);
+            engine.Context.Vm.PushCallFrameAndRun(found, 0);
             for (int i = 0; i < 100; i++)
             {
-                engine.Context.Vm.PushCallFrameAndRun(engine.Context.Vm.GetGlobal(new HashedString("Update")), 0);
+                engine.Context.Vm.Globals.Get(new HashedString("Update").Hash, out var foundUpdate);
+                engine.Context.Vm.PushCallFrameAndRun(foundUpdate, 0);
             }
         }
     }

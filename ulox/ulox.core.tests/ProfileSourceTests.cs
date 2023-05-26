@@ -11,8 +11,10 @@ namespace ULox.Core.Tests
         {
             testEngine.Run(BouncingBallProfileScript.Script);
 
-            testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("SetupGame")), 0);
-            testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("Update")), 0);
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("SetupGame").Hash, out var setup);
+            testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(setup, 0);
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("Update").Hash, out var update);
+            testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(update, 0);
 
             Assert.AreEqual("Setting Up GameUpdating", testEngine.InterpreterResult);
         }

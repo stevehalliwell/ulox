@@ -35,7 +35,7 @@ namespace ULox
             Vm ourVM = GetArg0Vm(vm);
             var name = vm.GetArg(1).val.asString;
             var val = vm.GetArg(2);
-            ourVM.SetGlobal(name, val);
+            ourVM.Globals.AddOrSet(name, val);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -43,7 +43,8 @@ namespace ULox
         {
             Vm ourVM = GetArg0Vm(vm);
             var name = vm.GetArg(1).val.asString;
-            vm.SetNativeReturn(0, ourVM.GetGlobal(name));
+            ourVM.Globals.Get(name.Hash, out var found);
+            vm.SetNativeReturn(0, found);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -83,7 +84,8 @@ namespace ULox
             var instVal = vm.GetArg(0);
             var inst = instVal.val.asInstance;
 
-            return inst.Fields[VMFieldName].val.asObject as Vm;
+            inst.Fields.Get(VMFieldName.Hash, out var found);
+            return found.val.asObject as Vm;
         }
     }
 }

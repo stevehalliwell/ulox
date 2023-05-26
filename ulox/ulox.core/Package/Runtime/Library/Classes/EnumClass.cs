@@ -9,16 +9,17 @@ namespace ULox
         public EnumClass(HashedString name) 
             : base(name, UserType.Enum)
         {
-            Fields[AllEnumHash] = Value.New(NativeListClass.CreateInstance());
+            Fields.AddOrSet(AllEnumHash, Value.New(NativeListClass.CreateInstance()));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddEnumValue(Value key, Value val)
         {
             var enumValue = Value.New(new EnumValue(key, val, this));
-            Fields[key.val.asString] = enumValue;
+            Fields.AddOrSet(key.val.asString, enumValue);
 
-            (Fields[AllEnumHash].val.asObject as NativeListInstance).List.Add(enumValue);
+            Fields.Get(AllEnumHash.Hash, out var found);
+            (found.val.asObject as NativeListInstance).List.Add(enumValue);
         }
     }
 }

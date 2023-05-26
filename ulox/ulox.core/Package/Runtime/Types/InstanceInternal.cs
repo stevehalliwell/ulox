@@ -20,28 +20,16 @@ namespace ULox
         public bool IsReadOnly { get; protected set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool HasField(HashedString key) => Fields.ContainsKey(key);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetField(HashedString key, Value val)
         {
             if (IsReadOnly)
                 throw new UloxException($"Attempted to Set field '{key}', but instance is read only.");
 
-            if (!IsFrozen
-                || Fields.ContainsKey(key))
-                Fields[key] = val;
+            if (IsFrozen)
+                Fields.Set(key.Hash, val);
             else
-                throw new UloxException($"Attempted to Create a new field '{key}' via SetField on a frozen object.");
+                Fields.AddOrSet(key,val);
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetField(HashedString key, out Value val)
-            => Fields.TryGetValue(key, out val);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool RemoveField(HashedString fieldNameStr)
-            => Fields.Remove(fieldNameStr);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Freeze()
@@ -55,10 +43,7 @@ namespace ULox
         public void CopyFrom(InstanceInternal inst)
         {
             FromUserType = inst.FromUserType;
-            foreach (var keyPair in inst.Fields)
-            {
-                Fields[keyPair.Key] = keyPair.Value;
-            }
+            Fields.CopyFrom(inst.Fields);
             IsFrozen = inst.IsFrozen;
         }
 

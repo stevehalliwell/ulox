@@ -13,7 +13,7 @@ namespace ULox.Core.Tests
         [Test]
         public void Engine_Compile_NativeFunc_Call()
         {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("CallEmptyNative"), Value.New((vm) =>
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("CallEmptyNative"), Value.New((vm) =>
             {
                 vm.SetNativeReturn(0, Value.New("Native"));
                 return NativeCallResult.SuccessfulExpression;
@@ -33,7 +33,7 @@ namespace ULox.Core.Tests
                 return NativeCallResult.SuccessfulExpression;
             }
 
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func,1,0));
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("Meth"), Value.New(Func,1,0));
 
             testEngine.Run(@"print (Meth());");
 
@@ -49,7 +49,7 @@ namespace ULox.Core.Tests
                 return NativeCallResult.SuccessfulExpression;
             }
 
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("Meth"), Value.New(Func,1,1));
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("Meth"), Value.New(Func,1,1));
 
             testEngine.Run(@"print (Meth(""Dad""));");
 
@@ -59,7 +59,7 @@ namespace ULox.Core.Tests
         [Test]
         public void Run_WhenReturnFromExternalFunction_ShouldMatchExpected()
         {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A1"), Value.New((vm) =>
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("A1"), Value.New((vm) =>
             {
                 vm.SetNativeReturn(0, Value.New(1));
                 return NativeCallResult.SuccessfulExpression;
@@ -76,7 +76,7 @@ print(a);");
         [Test]
         public void Run_WhenReturn2FromExternalFunction_ShouldMatchExpected()
         {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A2"), Value.New((vm) =>
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("A2"), Value.New((vm) =>
             {
                 vm.SetNativeReturn(0, Value.New(1));
                 vm.SetNativeReturn(1, Value.New(2));
@@ -95,7 +95,7 @@ print(b);");
         [Test]
         public void Run_WhenReturn5FromExternalFunction_ShouldMatchExpected()
         {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A5"), Value.New((vm) =>
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("A5"), Value.New((vm) =>
             {
                 vm.SetNativeReturn(0, Value.New(1));
                 vm.SetNativeReturn(1, Value.New(2));
@@ -120,7 +120,7 @@ print(e);");
         [Test]
         public void Run_WhenReturnNothing_ShouldNotHaveError()
         {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothingExpression, 1, 0));
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("A"), Value.New(ReturnNothingExpression, 1, 0));
 
             testEngine.Run(@"A();");
 
@@ -130,7 +130,7 @@ print(e);");
         [Test]
         public void Run_WhenReturnNothingFromExternalFunctionInMiddleOfMathOps_ShouldNotImpactMathOps()
         {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothingExpression, 1, 0));
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("A"), Value.New(ReturnNothingExpression, 1, 0));
 
             testEngine.Run(@"
 var a = 1;
@@ -147,7 +147,7 @@ print(a);");
         [Test]
         public void Run_WhenReturnNothingFromExternalFunctionInMiddleOfMathOpsAndAllLocals_ShouldNotImpactMathOps()
         {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("A"), Value.New(ReturnNothingExpression, 1, 0));
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("A"), Value.New(ReturnNothingExpression, 1, 0));
 
             testEngine.Run(@"
 fun Locals()

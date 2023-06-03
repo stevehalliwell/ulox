@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -357,11 +358,12 @@ namespace ULox
                 {
                     //deal with regular field updates
                     var lhsInst = lhs.val.asInstance;
-                    foreach (var field in lhsInst.Fields)
+                    //todo this is now slow and bad
+                    foreach (var key in lhsInst.Fields.Keys.ToArray())
                     {
-                        if (rhs.val.asInstance.Fields.TryGetValue(field.Key, out var rhsField))
+                        if (rhs.val.asInstance.Fields.TryGetValue(key, out var rhsField))
                         {
-                            lhsInst.Fields[field.Key] = UpdateFrom(field.Value, rhsField, vm);
+                            lhsInst.Fields[key] = UpdateFrom(lhsInst.Fields[key], rhsField, vm);
                         }
                     }
                 }

@@ -162,5 +162,27 @@ expect dif < 0.0001,
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Floor_When5point5_ShouldBe5()
+        {
+            testEngine.Run(@"
+var res = Math.Floor(5.5);
+expect res == 5;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Ceil_When5point5_ShouldBe6()
+        {
+            testEngine.Run(@"
+var res = Math.Ceil(5.5);
+expect res == 6;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
     }
 }

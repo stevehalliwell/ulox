@@ -46,9 +46,9 @@ namespace ULox
                         _writer.StartNamedElement(name.String);
 
                     var fields = v.val.asInstance.Fields;
-                    foreach (var field in fields.OrderBy(x => fields.GetStringFromKey(x.Key).String))
+                    foreach (var field in fields.OrderBy(x => x.Key.String))
                     {
-                        WalkField(fields.GetStringFromKey(field.Key), field.Value);
+                        WalkField(field.Key, field.Value);
                     }
                     _writer.EndElement();
                 }

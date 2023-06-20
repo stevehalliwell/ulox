@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -32,13 +31,15 @@ namespace ULox
                 (nameof(Sin), Value.New(Sin, 1, 1)),
                 (nameof(Sign), Value.New(Sign, 1, 1)),
                 (nameof(Sqrt), Value.New(Sqrt, 1, 1)),
-                (nameof(Tan), Value.New(Tan, 1, 1)));
+                (nameof(Tan), Value.New(Tan, 1, 1)),
+                (nameof(Max), Value.New(Max, 1, 2)),
+                (nameof(Min), Value.New(Min, 1, 2))
+                );
 
             diLibInst.Freeze();
             return diLibInst;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Rand(Vm vm)
         {
             var result = _random.NextDouble();
@@ -46,7 +47,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Round(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -54,7 +54,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Floor(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -62,7 +61,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Ceil(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -70,7 +68,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Sin(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -79,7 +76,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Cos(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -88,7 +84,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Tan(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -97,7 +92,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Asin(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -106,7 +100,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Acos(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -115,7 +108,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Atan(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -124,7 +116,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Atan2(Vm vm)
         {
             var y = vm.GetArg(1);
@@ -134,7 +125,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Rad2Deg(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -143,7 +133,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Deg2Rad(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -152,7 +141,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Pi(Vm vm)
         {
             var result = Math.PI;
@@ -160,7 +148,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult E(Vm vm)
         {
             var result = Math.E;
@@ -168,7 +155,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Sqrt(Vm vm)
         {
             var arg = vm.GetArg(1);
@@ -177,7 +163,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Pow(Vm vm)
         {
             var arg1 = vm.GetArg(1);
@@ -187,7 +172,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Exp(Vm vm)
         {
             var arg1 = vm.GetArg(1);
@@ -196,7 +180,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Ln(Vm vm)
         {
             var arg1 = vm.GetArg(1);
@@ -205,7 +188,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Log(Vm vm)
         {
             var arg1 = vm.GetArg(1);
@@ -215,7 +197,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Abs(Vm vm)
         {
             var arg1 = vm.GetArg(1);
@@ -224,11 +205,28 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Sign(Vm vm)
         {
             var arg1 = vm.GetArg(1);
             var result = Math.Sign(arg1.val.asDouble);
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult Max(Vm vm)
+        {
+            var arg1 = vm.GetArg(1);
+            var arg2 = vm.GetArg(2);
+            var result = Math.Max(arg1.val.asDouble, arg2.val.asDouble);
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult Min(Vm vm)
+        {
+            var arg1 = vm.GetArg(1);
+            var arg2 = vm.GetArg(2);
+            var result = Math.Min(arg1.val.asDouble, arg2.val.asDouble);
             vm.SetNativeReturn(0, Value.New(result));
             return NativeCallResult.SuccessfulExpression;
         }

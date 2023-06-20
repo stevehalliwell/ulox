@@ -623,7 +623,7 @@ print(res);
         {
             testEngine.Run(@"fun Meth(){print (1);}");
 
-            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("Meth").Hash, out var meth);
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("Meth"), out var meth);
             testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(meth, 0);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);

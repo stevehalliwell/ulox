@@ -23,9 +23,9 @@ fun Update(dt)
 ");
 
             var vm = testEngine.MyEngine.Context.Vm;
-            vm.Globals.Get(new HashedString("Setup").Hash, out var setupMeth);
+            vm.Globals.Get(new HashedString("Setup"), out var setupMeth);
             vm.PushCallFrameAndRun(setupMeth,0);
-            vm.Globals.Get(new HashedString("Update").Hash, out var updateMeth);
+            vm.Globals.Get(new HashedString("Update"), out var updateMeth);
             vm.Push(Value.New(0.5));
             vm.PushCallFrameAndRun(updateMeth,1);
             vm.Push(Value.New(0.5));
@@ -34,7 +34,7 @@ fun Update(dt)
             Assert.IsFalse(setupMeth.IsFalsey());
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-            vm.Globals.Get(new HashedString("runningTime").Hash, out var running); 
+            vm.Globals.Get(new HashedString("runningTime"), out var running); 
             Assert.AreEqual(1, running.val.asDouble);
         }
         
@@ -57,8 +57,8 @@ fun Update(dt)
 ");
 
             var vm = testEngine.MyEngine.Context.Vm;
-            vm.Globals.Get(new HashedString("Setup").Hash, out var setupMeth);
-            vm.Globals.Get(new HashedString("Update").Hash, out var updateMeth);
+            vm.Globals.Get(new HashedString("Setup"), out var setupMeth);
+            vm.Globals.Get(new HashedString("Update"), out var updateMeth);
             var newEngine = Engine.CreateDefault();
             var newVm = newEngine.Context.Vm;
             newVm.CopyFrom(vm);
@@ -69,7 +69,7 @@ fun Update(dt)
             newVm.PushCallFrameAndRun(updateMeth, 1);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-            newVm.Globals.Get(new HashedString("runningTime").Hash, out var running);
+            newVm.Globals.Get(new HashedString("runningTime"), out var running);
             Assert.AreEqual(1, running.val.asDouble);
         }
     }

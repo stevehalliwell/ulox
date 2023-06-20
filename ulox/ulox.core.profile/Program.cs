@@ -106,8 +106,8 @@ while (true)
     {
         var engine = Engine.CreateDefault();
         engine.RunScript(targetScript);
-        engine.Context.Vm.Globals.Get(new HashedString(funcSetupName).Hash, out var funcStartValue);
-        engine.Context.Vm.Globals.Get(new HashedString(funcUpdateName).Hash, out var funcUpdateValue);
+        engine.Context.Vm.Globals.Get(new HashedString(funcSetupName), out var funcStartValue);
+        engine.Context.Vm.Globals.Get(new HashedString(funcUpdateName), out var funcUpdateValue);
         engine.Context.Vm.PushCallFrameAndRun(funcStartValue, 0);
         for (int i = 0; i < callFuncRepeat; i++)
         {

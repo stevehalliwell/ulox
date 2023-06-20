@@ -359,12 +359,12 @@ namespace ULox
                     //deal with regular field updates
                     var lhsInst = lhs.val.asInstance;
                     //todo this is now slow and bad
-                    foreach (var key in lhsInst.Fields.Keys())
+                    foreach (var item in lhsInst.Fields.ToArray())
                     {
-                        if (rhs.val.asInstance.Fields.Get(key, out var rhsField))
+                        if (rhs.val.asInstance.Fields.Get(item.Key, out var rhsField))
                         {
-                            lhsInst.Fields.Get(key, out var lhsVal);
-                            lhsInst.Fields.Set(key, UpdateFrom(lhsVal, rhsField, vm));
+                            lhsInst.Fields.Get(item.Key, out var lhsVal);
+                            lhsInst.Fields.Set(item.Key, UpdateFrom(lhsVal, rhsField, vm));
                         }
                     }
                 }

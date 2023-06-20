@@ -43,10 +43,6 @@
 					"match": "\\b(update|expect)\\b"
 				},
 				{
-					"name": "constant.language.null.ulox",
-					"match": "\\b(null)\\b"
-				},
-				{
 					"name": "keyword.language.null.ulox",
 					"match": "\\b(null)\\b"
 				},

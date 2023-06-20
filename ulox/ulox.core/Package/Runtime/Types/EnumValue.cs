@@ -17,8 +17,8 @@
 
         public override string ToString()
         {
-            Fields.Get(KeyHash.Hash, out var keyVal);
-            Fields.Get(ValueHash.Hash, out var valVal);
+            Fields.Get(KeyHash, out var keyVal);
+            Fields.Get(ValueHash, out var valVal);
             return $"<{nameof(EnumValue)} {FromUserType.Name}.{keyVal} ({valVal})>";
         }
     }

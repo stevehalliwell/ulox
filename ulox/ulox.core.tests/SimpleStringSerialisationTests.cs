@@ -42,7 +42,7 @@ c:True
             var expected = UloxSBExpectedResult;
             var result = "error";
             testEngine.Run(scriptString);
-            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj").Hash, out var obj);
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj"), out var obj);
             var testWriter = new StringBuilderValueHeirarchyWriter();
             var testObjWalker = new ValueHeirarchyWalker(testWriter);
 

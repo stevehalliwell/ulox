@@ -63,7 +63,7 @@ namespace ULox
         public void AddMethod(HashedString key, Value method, Vm vm)
         {
             // This is used internally by the vm only does not need to check for frozen
-            if (Methods.Get(key.Hash, out var existing))
+            if (Methods.Get(key, out var existing))
             {
                 //combine
                 if (existing.type == ValueType.Closure)
@@ -121,7 +121,7 @@ namespace ULox
 
             foreach (var flavourMeth in flavour.Methods)
             {
-                AddMethod(flavour.Methods.GetStringFromKey(flavourMeth.Key), flavourMeth.Value, vm);
+                AddMethod(flavourMeth.Key, flavourMeth.Value, vm);
             }
 
             foreach (var flavourInitChain in flavour.InitChains)

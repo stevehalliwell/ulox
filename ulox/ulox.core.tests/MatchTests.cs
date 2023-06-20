@@ -80,7 +80,7 @@ match a
         public void Match_WhenBodyWithManyLocal_ShouldPass()
         {
             testEngine.Run(@"
-var a = 7;;
+var a = 7;
 
 match a
 {

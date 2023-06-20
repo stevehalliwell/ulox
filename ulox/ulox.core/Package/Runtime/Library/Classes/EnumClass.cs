@@ -18,7 +18,7 @@ namespace ULox
             var enumValue = Value.New(new EnumValue(key, val, this));
             Fields.AddOrSet(key.val.asString, enumValue);
 
-            Fields.Get(AllEnumHash.Hash, out var found);
+            Fields.Get(AllEnumHash, out var found);
             (found.val.asObject as NativeListInstance).List.Add(enumValue);
         }
     }

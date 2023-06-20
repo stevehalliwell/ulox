@@ -11,7 +11,7 @@ namespace ULox
             foreach (var contractMeth in contract.Methods)
             {
                 if (!lhs.Methods.Get(contractMeth.Key, out var ourContractMatchingMeth))
-                    return (false, $"'{lhs.Name.String}' does not contain matching method '{contract.Methods.GetStringFromKey(contractMeth.Key).String}'.");
+                    return (false, $"'{lhs.Name.String}' does not contain matching method '{contractMeth.Key.String}'.");
 
                 var contractChunk = contractMeth.Value.val.asClosure.chunk;
                 var ourContractMatchingChunk = ourContractMatchingMeth.val.asClosure.chunk;
@@ -50,13 +50,13 @@ namespace ULox
                 }
                 else
                 {
-                    return (false, $"instance does not contain matching method '{contract.Methods.GetStringFromKey(contractMeth.Key).String}'.");
+                    return (false, $"instance does not contain matching method '{contractMeth.Key.String}'.");
                 }
             }
 
             foreach (var contractVar in contract.FieldNames)
             {
-                if (!lhs.Fields.Get(contractVar.Hash, out var _))
+                if (!lhs.Fields.Get(contractVar, out var _))
                 {
                     return (false, $"instance does not contain matching field '{contractVar.String}'.");
                 }
@@ -90,7 +90,7 @@ namespace ULox
                     || lhs.FromUserType.Methods.Get(field.Key, out ourMatch))
                 {
                     if (field.Value.type != ourMatch.type)
-                        return (false, $"instance has matching field name '{contract.Fields.GetStringFromKey(field.Key).String}' but type does not match, expected '{ourMatch.type}' but found '{field.Value.type}'.");
+                        return (false, $"instance has matching field name '{field.Key.String}' but type does not match, expected '{ourMatch.type}' but found '{field.Value.type}'.");
 
                     switch (field.Value.type)
                     {
@@ -111,7 +111,7 @@ namespace ULox
                 }
                 else
                 {
-                    return (false, $"instance does not contain matching field '{contract.Fields.GetStringFromKey(field.Key).String}'.");
+                    return (false, $"instance does not contain matching field '{field.Key.String}'.");
                 }
             }
             return (true, string.Empty);

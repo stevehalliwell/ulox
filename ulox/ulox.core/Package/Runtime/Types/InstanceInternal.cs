@@ -26,7 +26,7 @@ namespace ULox
                 throw new UloxException($"Attempted to Set field '{key}', but instance is read only.");
 
             if (IsFrozen)
-                Fields.Set(key.Hash, val);
+                Fields.Set(key, val);
             else
                 Fields.AddOrSet(key,val);
         }

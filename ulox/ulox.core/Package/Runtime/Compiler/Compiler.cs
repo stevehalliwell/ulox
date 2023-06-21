@@ -140,10 +140,10 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitPacket(ByteCodePacket packet)
             => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitNULL()
-            => EmitPacket(new ByteCodePacket(OpCode.NULL));
+            => EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(PushValueOpType.Null)));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public byte AddStringConstant()
@@ -604,7 +604,7 @@ namespace ULox
             CurrentCompilerState.DeclareVariableByName(this, itemName);
             CurrentCompilerState.MarkInitialised();
             var itemArgId = (byte)CurrentCompilerState.ResolveLocal(this, itemName);
-            EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 0, 0, 0));
+            EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(0)));
             EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, itemArgId));
             return itemArgId;
         }
@@ -1039,8 +1039,8 @@ namespace ULox
         {
             switch (compiler.PreviousTokenType)
             {
-            case TokenType.TRUE: compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, true)); break;
-            case TokenType.FALSE: compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BOOL, false)); break;
+            case TokenType.TRUE: compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(true))); break;
+            case TokenType.FALSE: compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(false))); break;
             case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
             {
@@ -1062,12 +1062,29 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoNumberConstant(double number)
         {
-            var isInt = number == System.Math.Truncate(number);
+            var isInt = number == Math.Truncate(number);
 
-            if (isInt && number < 255 && number >= 0)
-                EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, (byte)number, 0, 0));
-            else
-                AddConstantAndWriteOp(Value.New(number));
+            if (isInt && number < int.MaxValue && number >= int.MinValue)
+            {
+                EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails((int)number)));
+                return;
+            }
+
+            var asFloat = (float)number;
+            var asDoubleAgain = (double)asFloat;
+            var convertedDif = Math.Abs(number - asDoubleAgain);
+            var relativeDif = convertedDif / number;
+            var isFloat = !float.IsNaN(asFloat)
+                && !double.IsNaN(convertedDif)
+                && relativeDif < 0.00001;
+
+            if (isFloat)
+            {
+                EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(asFloat)));
+                return;
+            }
+
+            AddConstantAndWriteOp(Value.New(number));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

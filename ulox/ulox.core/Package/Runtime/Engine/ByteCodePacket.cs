@@ -6,6 +6,44 @@ namespace ULox
     public readonly struct ByteCodePacket
     {
         [StructLayout(LayoutKind.Explicit)]
+        public readonly struct PushValueDetails
+        {
+            public PushValueOpType ValueType => (PushValueOpType)_valueType;
+
+            [FieldOffset(0)]
+            public readonly byte _valueType;
+            [FieldOffset(1)]
+            public readonly bool _b;
+            [FieldOffset(1)]
+            public readonly int _i;
+            [FieldOffset(1)]
+            public readonly float _f;
+
+            public PushValueDetails(PushValueOpType nullType) : this()
+            {
+                _valueType = (byte)PushValueOpType.Null;
+            }
+
+            public PushValueDetails(bool b) : this()
+            {
+                _valueType = (byte)PushValueOpType.Bool;
+                _b = b;
+            }
+
+            public PushValueDetails(int i) : this()
+            {
+                _valueType = (byte)PushValueOpType.Int;
+                _i = i;
+            }
+
+            public PushValueDetails(float f) : this()
+            {
+                _valueType = (byte)PushValueOpType.Float;
+                _f = f;
+            }
+        }
+
+        [StructLayout(LayoutKind.Explicit)]
         public readonly struct TestOpDetails
         {
             public TestOpType TestOpType => (TestOpType)_testOp;
@@ -86,6 +124,9 @@ namespace ULox
         public readonly TypeDetails typeDetails;
 
         [FieldOffset(1)]
+        public readonly PushValueDetails pushValueDetails;
+
+        [FieldOffset(1)]
         public readonly TestOpDetails testOpDetails;
 
         [FieldOffset(1)]
@@ -144,6 +185,11 @@ namespace ULox
         public ByteCodePacket(OpCode opCode, TypeDetails typeDetails) : this(opCode)
         {
             this.typeDetails = typeDetails;
+        }
+
+        public ByteCodePacket(PushValueDetails details) : this(OpCode.PUSH_VALUE)
+        {
+            this.pushValueDetails = details;
         }
 
         public ByteCodePacket(OpCode opCode, TestOpDetails testOpDetails) : this(opCode)

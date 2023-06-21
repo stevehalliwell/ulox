@@ -59,7 +59,7 @@ namespace ULox
         public byte AddConstantAndWriteInstruction(Value val, int line)
         {
             var at = AddConstant(val);
-            WritePacket(new ByteCodePacket(OpCode.CONSTANT, at, 0, 0), line);
+            WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
             return at;
         }
         

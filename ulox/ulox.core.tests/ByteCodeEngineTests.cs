@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 
 namespace ULox.Core.Tests
 {
@@ -151,6 +152,15 @@ print (myOtherVar);";
             testEngine.Run(@"{print (1+2);}");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Compile_Float_Constant_Value()
+        {
+            testEngine.Run(@"{print (1.2);}");
+
+            Assert.AreEqual("1.2", testEngine.InterpreterResult);
+            Assert.AreEqual(0,testEngine.MyEngine.Context.Program.CompiledScripts.First().TopLevelChunk.Instructions.Count(x => x.OpCode == OpCode.PUSH_CONSTANT));
         }
 
         [Test]

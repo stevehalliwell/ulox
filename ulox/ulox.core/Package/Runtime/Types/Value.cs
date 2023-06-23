@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -357,11 +358,12 @@ namespace ULox
                 {
                     //deal with regular field updates
                     var lhsInst = lhs.val.asInstance;
-                    foreach (var field in lhsInst.Fields)
+                    //todo this is now slow and bad
+                    foreach (var key in lhsInst.Fields.Keys.ToArray())
                     {
-                        if (rhs.val.asInstance.Fields.TryGetValue(field.Key, out var rhsField))
+                        if (rhs.val.asInstance.Fields.TryGetValue(key, out var rhsField))
                         {
-                            lhsInst.Fields[field.Key] = UpdateFrom(field.Value, rhsField, vm);
+                            lhsInst.Fields[key] = UpdateFrom(lhsInst.Fields[key], rhsField, vm);
                         }
                     }
                 }
@@ -372,6 +374,35 @@ namespace ULox
             }
 
             return lhs;
+        }
+
+        public bool IsCallableWithArity(int arity)
+        {
+            switch (this.type)
+            {
+            case ValueType.Null:
+            case ValueType.Double:
+            case ValueType.Bool:
+            case ValueType.Upvalue:
+            case ValueType.String:
+            case ValueType.UserType:
+            case ValueType.Instance:
+            case ValueType.Object:
+                return false;
+            case ValueType.Chunk:
+                return val.asChunk.Arity == arity;
+            case ValueType.NativeFunction:
+                return true;//hope so
+            case ValueType.Closure:
+                return val.asClosure.chunk.Arity == arity;
+            case ValueType.CombinedClosures:
+                return val.asCombined[0].chunk.Arity == arity;
+            case ValueType.BoundMethod:
+                return val.asBoundMethod.Method.chunk.Arity == arity;
+
+            default:
+                throw new UloxException($"Unhandled value type '{this.type}' in {nameof(IsCallableWithArity)}");
+            }
         }
     }
 }

@@ -96,7 +96,9 @@ namespace ULox
         {
             ThrowIfReadOnly(vm);
             var index = vm.GetArg(1);
+            var atVal = GetArg0NativeListInstance(vm)[(int)index.val.asDouble];
             GetArg0NativeListInstance(vm).RemoveAt((int)index.val.asDouble);
+            vm.SetNativeReturn(0, atVal);
             return NativeCallResult.SuccessfulExpression;
         }
 

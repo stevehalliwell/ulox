@@ -44,7 +44,7 @@ match bkey
 //get all the enums in a set
 var all = Foo.All;
 
-loop (all)
+loop all
 {
     print(item);
 }

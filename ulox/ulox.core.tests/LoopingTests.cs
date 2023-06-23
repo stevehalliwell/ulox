@@ -197,7 +197,7 @@ for(;i < 3; i += 1)
             testEngine.Run(@"
 var arr = [];
 
-loop (arr)
+loop arr
 {
     print(""FAIL"");
     break;
@@ -216,7 +216,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop (arr)
+loop arr
 {
     print(i);
 }
@@ -234,7 +234,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop (arr)
+loop arr
 {
     print(item);
 }
@@ -252,7 +252,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop (arr, jtem, j)
+loop arr, jtem, j
 {
     print(j);
 }
@@ -270,7 +270,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop (arr,jtem)
+loop arr,jtem
 {
     print(jtem);
 }
@@ -288,10 +288,10 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop (arr,jtem, j, jount)
+loop arr,jtem, j, jount
 {
     print(jtem);
-    loop(arr)
+    loop arr
     {
         print(item);
     }
@@ -307,7 +307,7 @@ loop (arr,jtem, j, jount)
             testEngine.Run(@"
 var arr = null;
 
-loop (arr)
+loop arr
 {
     print(""inner"");
 }
@@ -322,7 +322,7 @@ loop (arr)
             testEngine.Run(@"
 var arr = 7;
 
-loop (arr)
+loop arr
 {
 }
 ");
@@ -336,7 +336,7 @@ loop (arr)
             testEngine.Run(@"
 var arr = ""str"";
 
-loop (arr)
+loop arr
 {
 }
 ");
@@ -350,7 +350,7 @@ loop (arr)
             testEngine.Run(@"
 var map = [:];
 
-loop (map)
+loop map
 {
     print(i);
 }
@@ -368,7 +368,7 @@ print(""Pass"");
 var map = [:];
 map[""nothing""] = ""something"";
 
-loop (map)
+loop map
 {
     print(item);
 }
@@ -386,7 +386,7 @@ print(""Pass"");
 var map = [:];
 map[0] = ""something"";
 
-loop (map)
+loop map
 {
     print(item);
 }
@@ -402,7 +402,7 @@ loop (map)
 class Stub {}
 var arr = Stub();
 
-loop (arr)
+loop arr
 {
 }
 ");
@@ -432,7 +432,7 @@ var arr = FakeList();
 
 print(countof arr);
 
-loop (arr)
+loop arr
 {
 }
 ");
@@ -451,7 +451,7 @@ class FakeList
 }
 var arr = FakeList();
 
-loop (arr)
+loop arr
 {
     print(item);
 }
@@ -471,7 +471,7 @@ arr.Add(3);
 
 print(arr.Count());
 
-loop (arr)
+loop arr
 {
     if(item % 2 == 0)
     {
@@ -500,12 +500,12 @@ var arr = [];
 arr.Add(1);
 var i = 7;
 
-loop (arr)
+loop arr
 {
 }
 }");
 
-            StringAssert.StartsWith("Loop index name 'i' already exists at this scope in chunk 'unnamed_chunk(test)' at 7:10", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Loop index name 'i' already exists at this scope in chunk 'unnamed_chunk(test)' at", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -517,7 +517,7 @@ var arr = [];
 arr.Add(1);
 var item = 7;
 
-loop (arr)
+loop arr
 {
 }
 }");
@@ -534,7 +534,7 @@ var arr = [];
 arr.Add(1);
 var j = 7;
 
-loop (arr, jtem, j)
+loop arr, jtem, j
 {
 }
 }");
@@ -551,7 +551,7 @@ var arr = [];
 arr.Add(1);
 var jtem = 7;
 
-loop (arr, jtem)
+loop arr, jtem
 {
 }
 }");
@@ -574,9 +574,9 @@ var arr = [];
 arr.Add(1);
 var jtem = 7;
 
-loop (arrays,ytem,y)
+loop arrays,ytem,y
 {
-    loop(ytem, xtem, x, xount)
+    loop ytem, xtem, x, xount
     {
         print(xtem);
     }
@@ -593,7 +593,7 @@ loop (arrays,ytem,y)
             testEngine.Run(@"
 var arr = [""a"",""b"",""c"",];
 
-loop (arr)
+loop arr
 {
     print(item);
     print(count);
@@ -612,7 +612,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop (arr,jtem,j,jount)
+loop arr,jtem,j,jount
 {
     print(jtem);
     print(jount);
@@ -628,7 +628,7 @@ loop (arr,jtem,j,jount)
             testEngine.Run(@"
 var arr = [""a"",""b"",""c"",];
 
-loop (arr)
+loop arr
 {
     print(item);
     count -= 1;
@@ -648,9 +648,9 @@ var arr = [""a"",""b"",""c"",];
 var b = 7;
 var someObj = {a=1,c=10,d={a=1,},};
 
-loop (arr)
+loop arr
 {
-    loop(arr, ji, j, jount)
+    loop arr, ji, j, jount
     {
         print(i+ji);
     }
@@ -665,7 +665,7 @@ loop (arr)
             testEngine.Run(@"
 fun FromRowCol(outer)
 {
-    loop(outer, it, index, c)
+    loop outer, it, index, c
     {
         var inner = ""hi"";
         print(inner);

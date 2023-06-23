@@ -78,7 +78,7 @@ fun SetupGame()
 
 fun Update()
 {
-	loop(balls)
+	loop balls
 	{
 		item.Tick();
 	}

@@ -26,7 +26,7 @@ for(var i = 0; i < 100; i+=1)
 var arr = [];
 arr.Resize(100,0);
 
-loop (arr)
+loop arr
 {
     item = i;
 }");
@@ -105,7 +105,7 @@ fun Update()
 	print (""Updating"");
 	var lim = limit;
 
-	loop(balls)
+	loop balls
 	{
   		item.posx = item.posx + item.velx * dt;
   		item.posy = item.posy + item.vely * dt;
@@ -199,7 +199,7 @@ fun Update()
 		item.pullY = py;
 	}
 
-	loop(points)
+	loop points
 	{
 		var dy = item.y - item.py;
 		item.py = item.y;

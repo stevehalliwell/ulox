@@ -4,10 +4,8 @@
     {
         NONE,
 
-        CONSTANT,
-        NULL,
-        PUSH_BOOL,
-        PUSH_BYTE,
+        PUSH_CONSTANT,
+        PUSH_VALUE,
 
         POP,
         SWAP,

@@ -113,7 +113,7 @@ namespace ULox
         public static void IncrementLocalByOne(Compiler compiler, byte indexArgID)
         {
             compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, indexArgID));
-            compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_BYTE, 1));
+            compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(1)));
             compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
             compiler.EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, indexArgID));
             compiler.EmitPop();

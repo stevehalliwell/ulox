@@ -129,7 +129,7 @@ namespace ULox
 
             switch (packet.OpCode)
             {
-            case OpCode.CONSTANT:
+            case OpCode.PUSH_CONSTANT:
             case OpCode.DEFINE_GLOBAL:
             case OpCode.FETCH_GLOBAL:
             case OpCode.ASSIGN_GLOBAL:
@@ -146,10 +146,6 @@ namespace ULox
                 AppendSingleLocalByte(packet.b3);
                 break;
             case OpCode.MULTI_VAR:
-            case OpCode.PUSH_BOOL:
-                stringBuilder.Append($"({packet.BoolValue})");
-                break;
-            case OpCode.PUSH_BYTE:
             case OpCode.POP:
             case OpCode.GET_LOCAL:
             case OpCode.SET_LOCAL:
@@ -267,6 +263,25 @@ namespace ULox
             case OpCode.DUPLICATE:
                 AppendSingleLocalByte(packet.b1);
                 break;
+            case OpCode.PUSH_VALUE:
+            {
+                stringBuilder.Append($"({packet.pushValueDetails.ValueType})");
+                switch (packet.pushValueDetails.ValueType)
+                {
+                case PushValueOpType.Null:
+                    break;
+                case PushValueOpType.Bool:
+                    stringBuilder.Append($"({packet.pushValueDetails._b})");
+                    break;
+                case PushValueOpType.Int:
+                    stringBuilder.Append($"({packet.pushValueDetails._i})");
+                    break;
+                case PushValueOpType.Float:
+                    stringBuilder.Append($"({packet.pushValueDetails._f})");
+                    break;
+                }
+            }
+            break;
             }
 
             stringBuilder.AppendLine();

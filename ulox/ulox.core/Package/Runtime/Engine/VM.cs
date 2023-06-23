@@ -182,7 +182,7 @@ namespace ULox
 
                 switch (opCode)
                 {
-                case OpCode.CONSTANT:
+                case OpCode.PUSH_CONSTANT:
                     Push(chunk.ReadConstant(packet.b1));
                     break;
 
@@ -331,17 +331,28 @@ namespace ULox
                     Push(Value.New(PopOrLocal(packet.b1).IsFalsey()));
                     break;
 
-                case OpCode.PUSH_BOOL:
-                    Push(Value.New(packet.BoolValue));
-                    break;
-
-                case OpCode.NULL:
-                    Push(Value.Null());
-                    break;
-
-                case OpCode.PUSH_BYTE:
-                    Push(Value.New(packet.b1));
-                    break;
+                case OpCode.PUSH_VALUE:
+                {
+                    switch (packet.pushValueDetails.ValueType)
+                    {
+                    case PushValueOpType.Null:
+                        Push(Value.Null());
+                        break;
+                    case PushValueOpType.Bool:
+                        Push(Value.New(packet.pushValueDetails._b));
+                        break;
+                    case PushValueOpType.Int:
+                        Push(Value.New(packet.pushValueDetails._i));
+                        break;
+                    case PushValueOpType.Float:
+                        //trick to prevent 1.2 turning into 1.2000000000046
+                        Push(Value.New((double)(decimal)packet.pushValueDetails._f));
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                break;
 
                 case OpCode.POP:
                     DiscardPop(packet.b1);

@@ -25,7 +25,7 @@ var pi = 22/7; //ish
 
 //multi declare
 var e = 2.71828,
-    pi = 1.618;
+    phi = 1.618;
 // ulox is not whitespace sensitive so this could be all one line or different intends.
 
 
@@ -106,7 +106,7 @@ var anotherDynObject = //an inline dynamic object
 };
 
 //object type variables are referenced
-var refernceToAnother = anotherDynObject;
+var referenceToAnother = anotherDynObject;
 //duplicate creates a deep copy
 var dupOfOther = Duplicate(anotherDynObject);
 //update keyword updates all matching elements in left hand side with the matching values from right side
@@ -171,7 +171,7 @@ loop
 
 //loop with following info is for iterating over collections
 var myArr = [1,2,3,4,5,];
-loop (myArr)    // auto defines, item, i, count. In that order, you can provide custom names if desired or if nested
+loop myArr    // auto defines, item, i, count. In that order, you can provide custom names if desired or if nested
 {
     print("Val '" + item + "' @ '" + i "' of " + count);
 }

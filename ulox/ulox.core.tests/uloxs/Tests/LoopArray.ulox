@@ -6,7 +6,7 @@ testset LoopArrayTests
         var len = 5;
         list.Resize(len, null);
 
-        loop (list)
+        loop list
         {
             list[i] = i;
         }
@@ -27,7 +27,7 @@ testset LoopArrayTests
             list.Add(i);
         }
 
-        loop (list)
+        loop list
         {
             accum += item;
         }
@@ -45,7 +45,7 @@ testset LoopArrayTests
             list.Add(i);
         }
 
-        loop (list, jtem)
+        loop list, jtem
         {
             accum += jtem;
         }

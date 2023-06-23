@@ -394,7 +394,7 @@ enum Foo
 
 var all = Foo.All;
 
-loop (all)
+loop all
 {
     print(item);
 }
@@ -415,7 +415,7 @@ enum Foo
 
 var all = Foo.All;
 
-loop (all)
+loop all
 {
     print(item.Value);
 }
@@ -458,7 +458,7 @@ fb.Value = 7;
             testEngine.Run(@"
 var all = Foo.All;
 
-loop (all)
+loop all
 {
     print(item.Key);
     print(item.Value);

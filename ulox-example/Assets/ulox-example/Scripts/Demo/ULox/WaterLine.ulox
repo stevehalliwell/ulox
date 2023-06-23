@@ -71,7 +71,7 @@ fun Update()
 	if(GetKey("r")){RandomPull();}
 	if(GetKey("h")){HoldMiddle();}
 
-	loop(points)
+	loop points
 	{
 		var dy = item.y - item.py;
 		item.py = item.y;
@@ -94,7 +94,7 @@ fun Update()
 
 fun RandomPullAll()
 {
-	loop(points)
+	loop points
 	{
 		item.pullY = RandRange(-1, 1);
 	}

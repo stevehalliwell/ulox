@@ -12,9 +12,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected override void BeginLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
-            //if we have a ( then it could be a native array loop, so expand for that
-            //if not it's a manual exit loop
-            if (!compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
+            //if we have a { then its a inf loop
+            if (compiler.TokenIterator.Check(TokenType.OPEN_BRACE))
                 return;
 
             //temp
@@ -89,7 +88,6 @@ namespace ULox
                 loopState.StartLabelID = newStartLabel;
                 compiler.EmitLabel(bodyJump);
             }
-            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
 
             //prep item infront of body
             {

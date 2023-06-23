@@ -59,7 +59,7 @@ fun Update()
 	if(GetKey("escape")){ReloadScene();}
 	var lim = limit;
 
-	loop(balls)
+	loop balls
 	{
   		item.posx = item.posx + item.velx * dt;
   		item.posy = item.posy + item.vely * dt;

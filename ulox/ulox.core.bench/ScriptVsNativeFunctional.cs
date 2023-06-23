@@ -82,7 +82,7 @@ fun reduce(arr, fn)
 fun fold(arr, fn, initVal)
 {
     var res = initVal;
-    loop(arr)
+    loop arr
     {
         res = fn(arr[i], res);
     }
@@ -94,7 +94,7 @@ fun map(arr, fn)
     var res = [];
     var len = countof arr;
     res.Resize(len, null);
-    loop(arr)
+    loop arr
     {
         res[i] = fn(arr[i]);
     }
@@ -104,7 +104,7 @@ fun map(arr, fn)
 fun filter(arr, fn)
 {
     var res = [];
-    loop(arr)
+    loop arr
     {
         var val = arr[i];
         if(fn(val))
@@ -116,7 +116,7 @@ fun filter(arr, fn)
 fun filter(arr, fn)
 {
     var res = [];
-    loop(arr)
+    loop arr
     {
         var val = arr[i];
         if(fn(val))
@@ -127,7 +127,7 @@ fun filter(arr, fn)
 
 fun first(arr, fn)
 {
-    loop(arr)
+    loop arr
     {
         if(fn(item))
         {            
@@ -141,7 +141,7 @@ fun first(arr, fn)
 fun fork(arr, runOn)
 {
     var res = [];
-    loop(arr)
+    loop arr
     {
         var fn = arr[i];
         res.Add(fn(runOn));

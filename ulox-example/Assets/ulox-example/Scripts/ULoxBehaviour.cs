@@ -42,7 +42,7 @@ namespace ULox.Demo
         {
             if (!_gameUpdateFunction.IsNull())
             {
-                _ourVM.SetGlobal(dtName, Value.New(Time.deltaTime));
+                _ourVM.Globals.Set(dtName, Value.New(Time.deltaTime));
                 _ourVM.PushCallFrameAndRun(_gameUpdateFunction, 0);
             }
         }
@@ -61,7 +61,7 @@ namespace ULox.Demo
                 _ourVM.CopyFrom(_engine.Engine.Context.Vm);
             }
 
-            _ourVM.SetGlobal(thisGameObjectName, Value.Object(gameObject));
+            _ourVM.Globals.Set(thisGameObjectName, Value.Object(gameObject));
 
             _anonymousOnCollision = _engine.FindFunctionWithArity(OnCollisionName, 0);
             _gameUpdateFunction = _engine.FindFunctionWithArity(UpdateName, 0);

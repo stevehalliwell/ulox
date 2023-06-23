@@ -5,7 +5,7 @@ class LevelCreator
         var brickFac = inject BrickFactory;
         var breakout = inject BreakoutInst;
 
-        loop (posList)
+        loop posList
         {
             var newBrick = brickFac(item.position, item.level);
             breakout.AddBrick(newBrick);

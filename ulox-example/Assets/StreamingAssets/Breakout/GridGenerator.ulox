@@ -8,7 +8,7 @@ class GridGenerator
     FromRowCol(rows, cols)
     {
         var outer = [].Grow(rows, null);
-        loop(outer)
+        loop outer
         {
             var inner = [].Grow(cols, 1);
             outer[i] = inner;
@@ -26,9 +26,9 @@ class GridGenerator
         var halfCols = (cols-1) * 0.5 * step.x;
         var corner = this.startingPoint - Vec2.Create(halfCols, 0);
         
-        loop (arrays, ytem, y, yount)
+        loop arrays, ytem, y, yount
         {
-            loop(ytem, xtem, x, xount)
+            loop ytem, xtem, x, xount
             {
                 if(xtem != 0)
                 {

@@ -61,7 +61,7 @@ namespace ULox.Demo
                 _ourVM.CopyFrom(_engine.Engine.Context.Vm);
             }
 
-            _ourVM.Globals.Set(thisGameObjectName, Value.Object(gameObject));
+            _ourVM.Globals.AddOrSet(thisGameObjectName, Value.Object(gameObject));
 
             _anonymousOnCollision = _engine.FindFunctionWithArity(OnCollisionName, 0);
             _gameUpdateFunction = _engine.FindFunctionWithArity(UpdateName, 0);

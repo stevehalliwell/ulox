@@ -3,7 +3,7 @@ fun CreateLevel()
     var generator = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3.5));
     var posList = generator.FromRowCol(2,10);
 
-    loop(posList)
+    loop posList
     {
         if(i % 2 == 0)
         {

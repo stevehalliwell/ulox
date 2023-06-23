@@ -45,7 +45,7 @@ namespace ULox.Demo
 
             try
             {
-                var globalVal = vm.GetGlobal(name);
+                vm.Globals.Get(name, out var globalVal);
 
                 if (globalVal.type == ValueType.Closure &&
                     globalVal.val.asClosure.chunk.Arity == arity)

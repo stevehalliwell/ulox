@@ -17,8 +17,7 @@ namespace ULox
         private Chunk _currentChunk;
         public Engine Engine { get; private set; }
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
-        private readonly Table _globals = new Table();
-        public Table Globals => _globals;
+        public Table Globals { get; private set; } = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
 
         public Vm()
@@ -46,10 +45,6 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Peek(int ind = 0) => _valueStack.Peek(ind);
-
-        public Value GetGlobal(HashedString name) => _globals[name];
-
-        public void SetGlobal(HashedString name, Value val) => _globals[name] = val;
 
         public Value GetArg(int index)
             => _valueStack[_currentCallFrame.StackStart + index];
@@ -82,10 +77,7 @@ namespace ULox
         {
             Engine = otherVM.Engine;
 
-            foreach (var val in otherVM._globals)
-            {
-                SetGlobal(val.Key, val.Value);
-            }
+            Globals.CopyFrom(otherVM.Globals);
 
             foreach (var val in otherVM._valueStack)
             {
@@ -392,7 +384,8 @@ namespace ULox
                 case OpCode.DEFINE_GLOBAL:
                 {
                     var globalName = chunk.ReadConstant(packet.b1);
-                    _globals[globalName.val.asString] = Pop();
+                    var popped = Pop();
+                    Globals.AddOrSet(globalName.val.asString, popped);
                 }
                 break;
 
@@ -401,7 +394,7 @@ namespace ULox
                     var globalName = chunk.ReadConstant(packet.b1);
                     var actualName = globalName.val.asString;
 
-                    if (_globals.TryGetValue(actualName, out var found))
+                    if (Globals.Get(actualName, out var found))
                         Push(found);
                     else
                         ThrowRuntimeException($"No global of name {actualName} could be found");
@@ -864,11 +857,11 @@ namespace ULox
         {
             var globalName = chunk.ReadConstant(globalId);
             var actualName = globalName.val.asString;
-            if (!_globals.ContainsKey(actualName))
+            if (!Globals.Contains(actualName))
             {
                 ThrowRuntimeException($"Global var of name '{actualName}' was not found");
             }
-            _globals[actualName] = Peek();
+            Globals.Set(actualName, Peek());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1217,7 +1210,7 @@ namespace ULox
 
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
-            if (instance.TryGetField(name, out var val))
+            if (instance.Fields.Get(name, out var val))
             {
                 Push(val);
                 return;
@@ -1230,7 +1223,7 @@ namespace ULox
             if (fromClass == null)
                 ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
 
-            if (!fromClass.TryGetMethod(methodName, out var method))
+            if (!fromClass.Methods.Get(methodName, out var method))
                 ThrowRuntimeException($"Undefined property '{methodName}'");
 
             var receiver = targetVal;
@@ -1282,7 +1275,7 @@ namespace ULox
                 var inst = receiver.val.asInstance;
 
                 //it could be a field
-                if (inst.TryGetField(methodName, out var fieldFunc))
+                if (inst.Fields.Get(methodName, out var fieldFunc))
                 {
                     _valueStack[_valueStack.Count - 1 - argCount] = fieldFunc;
                     PushCallFrameFromValue(fieldFunc, argCount);
@@ -1295,7 +1288,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot invoke '{methodName}' on '{receiver}' with no class");
                     }
 
-                    if (!fromClass.TryGetMethod(methodName, out var method))
+                    if (!fromClass.Methods.Get(methodName, out var method))
                     {
                         ThrowRuntimeException($"No method of name '{methodName}' found on '{fromClass}'");
                     }
@@ -1308,7 +1301,8 @@ namespace ULox
             case ValueType.UserType:
             {
                 var klass = receiver.val.asClass;
-                PushCallFrameFromValue(klass.GetMethod(methodName), argCount);
+                klass.Methods.Get(methodName, out var methObj);
+                PushCallFrameFromValue(methObj, argCount);
             }
             break;
 
@@ -1422,7 +1416,7 @@ namespace ULox
                 if (arg.type == ValueType.String)
                 {
                     var paramName = arg.val.asString;
-                    if (inst.HasField(paramName))
+                    if (inst.Fields.Contains(paramName))
                     {
                         var value = vm.GetArg(i + argOffset);
                         inst.SetField(paramName, value);
@@ -1458,7 +1452,7 @@ namespace ULox
             if (lhsInst.FromUserType.Name == DynamicClass.DynamicClassName)
             {
                 var targetName = UserTypeInternal.OverloadableMethodNames[UserTypeInternal.OpCodeToOverloadIndex[opCode]];
-                if (self.val.asInstance.TryGetField(targetName, out var matchingValue))
+                if (self.val.asInstance.Fields.Get(targetName, out var matchingValue))
                 {
                     if (matchingValue.type == ValueType.Closure)
                     {

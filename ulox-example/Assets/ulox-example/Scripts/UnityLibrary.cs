@@ -148,9 +148,10 @@ namespace ULox
             for (var i = 0; i < len; i++)
             {
                 var posObj = pos2ds[i].val.asInstance;
-                var x = posObj.Fields[xField].val.asDouble;
-                var y = posObj.Fields[yField].val.asDouble;
-                var pos = new Vector2((float)x, (float)y);
+                posObj.Fields.Get(xField, out var xVal);
+                posObj.Fields.Get(yField, out var yVal);
+
+                var pos = new Vector2((float)xVal.val.asDouble, (float)yVal.val.asDouble);
                 (gos[i].val.asObject as GameObject).transform.position = pos;
             }
 

@@ -453,7 +453,7 @@ fb.Value = 7;
         {
             var globals = testEngine.MyEngine.Context.Vm.Globals;
 
-            globals[new HashedString(nameof(Foo))] = EnumFromNative.Create(typeof(Foo));
+            globals.AddOrSet(new HashedString(nameof(Foo)), EnumFromNative.Create(typeof(Foo)));
 
             testEngine.Run(@"
 var all = Foo.All;

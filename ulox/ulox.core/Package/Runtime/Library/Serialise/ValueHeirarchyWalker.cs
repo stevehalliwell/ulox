@@ -45,7 +45,8 @@ namespace ULox
                     else
                         _writer.StartNamedElement(name.String);
 
-                    foreach (var field in v.val.asInstance.Fields.OrderBy(x => x.Key.String))
+                    var fields = v.val.asInstance.Fields;
+                    foreach (var field in fields.OrderBy(x => x.Key.String))
                     {
                         WalkField(field.Key, field.Value);
                     }

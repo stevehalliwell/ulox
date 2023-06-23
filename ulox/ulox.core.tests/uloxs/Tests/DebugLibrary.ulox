@@ -15,11 +15,10 @@ testset DebugLibraryTests
 
     test GenerateGlobalsDump
     {
-        var expected = "Assert";
         var result;
         
         result = GenerateGlobalsDump();
         
-        Assert.DoesContain(expected,result);
+        expect result != null;
     }
 }

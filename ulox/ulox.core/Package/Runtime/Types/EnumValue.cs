@@ -9,15 +9,17 @@
         public EnumValue(Value key, Value val, UserTypeInternal from)
             : base(from)
         {
-            Fields[KeyHash] = key;
-            Fields[ValueHash] = val;
-            Fields[FromEnumHash] = Value.New(from);
+            Fields.AddOrSet(KeyHash, key);
+            Fields.AddOrSet(ValueHash, val);
+            Fields.AddOrSet(FromEnumHash, Value.New(from));
             ReadOnly();
         }
 
         public override string ToString()
         {
-            return $"<{nameof(EnumValue)} {FromUserType.Name}.{Fields[KeyHash]} ({Fields[ValueHash]})>";
+            Fields.Get(KeyHash, out var keyVal);
+            Fields.Get(ValueHash, out var valVal);
+            return $"<{nameof(EnumValue)} {FromUserType.Name}.{keyVal} ({valVal})>";
         }
     }
 }

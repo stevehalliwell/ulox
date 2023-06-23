@@ -126,6 +126,7 @@ print (myOtherVar);");
             Assert.AreEqual("10null20", testEngine.InterpreterResult);
         }
 
+        //fair, redeclaring global should be an error
         [Test]
         public void Engine_Cycle_Global_Var_DoubleRun()
         {
@@ -610,7 +611,7 @@ print(res);
         [Test]
         public void Engine_Read_External_Global()
         {
-            testEngine.MyEngine.Context.Vm.SetGlobal(new HashedString("a"), Value.New(1));
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("a"), Value.New(1));
 
             testEngine.Run(@"print (a);");
 
@@ -622,7 +623,7 @@ print(res);
         {
             testEngine.Run(@"fun Meth(){print (1);}");
 
-            var meth = testEngine.MyEngine.Context.Vm.GetGlobal(new HashedString("Meth"));
+            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("Meth"), out var meth);
             testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(meth, 0);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);

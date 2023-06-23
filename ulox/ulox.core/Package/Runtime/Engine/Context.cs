@@ -31,10 +31,7 @@ namespace ULox
         {
             var toAdd = lib.GetBindings();
 
-            foreach (var item in toAdd)
-            {
-                Vm.SetGlobal(item.Key, item.Value);
-            }
+            Vm.Globals.CopyFrom(toAdd);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

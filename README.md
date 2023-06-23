@@ -50,6 +50,20 @@ fun VecAdd(x1,y1,x2,y2) (x,y)
     y = y1+y2;
 }
 
+fun VecAddIfNotZero(x1,y1,x2,y2) (x,y)
+{
+    if(x1 == 0)
+    {
+        x = x1;
+        y = y1;
+        //return statement exits immediately, since return values are named, what ever values
+        //  those named variables are that the time are the return values 
+        return;
+    }
+    x = x1+x2;
+    y = y1+y2;
+}
+
 // multi var assignment wraps the declaring variables in '()'
 var (x,y) = VecAdd(1,2,3,4);
 
@@ -84,12 +98,20 @@ var anotherMap = [  // inline map declare
 var dynObject = {=};    //an empty object
 dynObject.a = 7;    // these objects are not 'frozen' so fields can be added and adjusted 
 
-var anotherDyncObject = //an inline dynamic object 
+var anotherDynObject = //an inline dynamic object 
 {
     a = Foo,
     b = 7,
     c = "hi",
 };
+
+//object type variables are referenced
+var refernceToAnother = anotherDynObject;
+//duplicate creates a deep copy
+var dupOfOther = Duplicate(anotherDynObject);
+//update keyword updates all matching elements in left hand side with the matching values from right side
+//  here it changes the dupOfOther.a to the 7 in dynObject
+dupOfOther update dynObject;
 
 //comparisons classics
 3 == 2; // false
@@ -154,8 +176,32 @@ loop (myArr)    // auto defines, item, i, count. In that order, you can provide 
     print("Val '" + item + "' @ '" + i "' of " + count);
 }
 
-//user created data types are class, data, and system
-//classes are the most flexible, data and system are more narrowly focused versions for 
+//user created data types are enum, class, data, and system
+
+//enums are named values, similar in intent and usage to c style languages
+enum Foo
+{
+    //each enum is a key and value, that value can be anything. 
+    //  If no values are assigned they will auto increment from 0 up
+    Bar = 7,
+    Baz = 8,
+}
+
+//data is the most straight forward, it is simply a named prototype for a collection of vars
+data Addresss
+{
+    number = 0, //as with other vars they can be given a starting value
+    street,
+    state,
+    postcode,
+    country // data syntax is very tolerant, you can leave dangling commas or end with a ;
+}
+
+var anAddress = Address();
+anAddress.number = 7;
+
+//classes are the most feature rich.
+//  The order of elements declared within the class is enforced
 class MyFoo
 {
     // one more vars, must be declared first, any assigned values are calculated before init or returning the instance to the user
@@ -179,4 +225,77 @@ class MyFoo
 //to get an instance of the class, we invoke it's name and match it's init args
 var myFoo = MyFoo(1);
 
+//System is a special type that contains only non-instance functions, akin to a dynamic with function args that is frozen.
+system FooSystem
+{
+    Bar(someState, dt)
+    {
+        //does stuff with args passed to it, has no this
+    }
+}
+
+//calling the system func is as expected, type and method name. Same as a static method in a class.
+FooSystem.Bar(a, 0.1);
+
+//ulox does not have inheritance, it does have mixins. These combine the elements of the type into the containing one.
+
+class ThenSome
+{
+    var d;
+
+    MoreBar(arg)
+    {
+        //...
+    }
+}
+
+class MyFooAndThenSome
+{
+    //this class will have all the vars (including default values), and methods of both named mixins.
+    mixin 
+        MyFoo,
+        ThenSome;
+
+    var alsoMyOwnList = [];
+
+    // mixins are pretty smart, this will auto assign to the a we got from MyFoo, the d from ThenSome, and our declared alsoMyOwnList. 
+    init(a, d, alsoMyOwnList){}
+
+    //...
+}
+
+//Since we don't have inheritance, we have operators to check that objects have partial matching shapes.
+//  meets returns true or false if the lhs has all the parts of the rhs
+var matchingShape1 = anAddress meets Address(); //will be true
+var matchingShape2 = anAddress meets myFoo(); //will be false
+
+//testing is built into the language, they are setup like test fixtures with test cases.
+//  They are auto run by the vm, in an isolated inner vm. 
+//testset can have name, here FooTests, but the name is optional
+testset FooTests
+{
+    test ForceFail
+    {
+        //throw keyword can be used anywhere, it will stop the vm, it can have an arg or message
+        //  as tests are run in an isolated inner vm, the vm running the tests continues, but knows 
+        //  the test failed.
+        throw;
+    }
+
+    test AreEqual
+    {
+        //there are many Assert methods, this means you don't need to if something throw
+        Assert.AreEqual(1,1);
+    }
+    
+    // test cases can also have data provided, here we have 2 sets of data, this
+    //  test will run twice once with each set of values expanded out to the args of the test method
+    test ([ [1,2,3], [1,1,2] ]) Addition(a,b, expected)
+    {
+        var result = a+b;
+
+        // expect keyword is akin to an Assert.IsTrue
+        expect result == expected : "This custom message shown on failure, is optional";
+    }
+}
 ```

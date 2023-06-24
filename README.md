@@ -173,7 +173,7 @@ loop
 var myArr = [1,2,3,4,5,];
 loop myArr    // auto defines, item, i, count. In that order, you can provide custom names if desired or if nested
 {
-    print("Val '" + item + "' @ '" + i "' of " + count);
+    print("Val " + item + " @ " + i " of " + count);
 }
 
 //user created data types are enum, class, data, and system

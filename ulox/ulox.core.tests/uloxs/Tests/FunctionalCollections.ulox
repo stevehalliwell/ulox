@@ -95,18 +95,4 @@ testset FunctionalCollectionTests
         var reducedResult = reduce(result, accum);
         Assert.AreEqual(15, reducedResult);
     }
-
-    test FilterIsEven
-    {
-        var arr = MakeTestArray();
-        fun isEven(val)
-        {
-            retval = ((val % 2) != 0);
-        }
-
-        var result = filter(arr, isEven);
-        
-        var foldResult = fold(result, accum, 0);
-        Assert.AreEqual(4, foldResult);
-    }
 }

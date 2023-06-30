@@ -2,8 +2,8 @@ class LevelCreator
 {
     CreateBricksFromPositions(posList)
     {
-        var brickFac = inject BrickFactory;
-        var breakout = inject BreakoutInst;
+        var brickFac = BrickFactory;
+        var breakout = BreakoutInst;
 
         loop posList
         {

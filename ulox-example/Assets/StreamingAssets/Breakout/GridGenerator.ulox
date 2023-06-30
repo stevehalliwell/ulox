@@ -46,9 +46,9 @@ class BrickInstruction
     init(position,level){}
 }
 
-test GridGeneratorTests
+testset GridGeneratorTests
 {
-    testcase TenByTenFromRowCol
+    test TenByTenFromRowCol
     {
         var grid = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
         
@@ -57,7 +57,7 @@ test GridGeneratorTests
         Assert.AreEqual(100, posList.Count());
     }
 
-    testcase TwoByFiveFromArraysAllActive
+    test TwoByFiveFromArraysAllActive
     {
         var grid = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
         var arrayGrid = [
@@ -70,7 +70,7 @@ test GridGeneratorTests
         Assert.AreEqual(10, posList.Count());
     }
 
-    testcase TwoByFiveFromArraysNoneActive
+    test TwoByFiveFromArraysNoneActive
     {
         var grid = GridGenerator(Vec2.Create(0,30), Vec2.Create(6,3));
         var arrayGrid = [

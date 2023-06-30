@@ -11,14 +11,14 @@ class Breakout
     CreateBreakoutCore()
     {
         this.CreateWalls();
-        this.gutter = inject GutterFactory (Vec2.Create(0,-35), Vec2.Create(80,10));
+        this.gutter = GutterFactory (Vec2.Create(0,-35), Vec2.Create(80,10));
         this.CreateBall(Vec2.Create(0,-20));
-        this.paddle = inject PaddleFactory (Vec2.Create(0,-30), 32);
+        this.paddle = PaddleFactory (Vec2.Create(0,-30), 32);
     }
 
     CreateWalls()
     {
-        var wallLine = inject WallFactory;
+        var wallLine = WallFactory;
         this.walls.Add(wallLine(Vec2.Create(-40,0), Vec2.Create(10,80)));
         this.walls.Add(wallLine(Vec2.Create(40,0), Vec2.Create(10,80)));
         this.walls.Add(wallLine(Vec2.Create(0,-40), Vec2.Create(80,10)));
@@ -27,7 +27,7 @@ class Breakout
 
     CreateBall(at)
     {
-        this.ball = inject BallFactory (at);
+        this.ball = BallFactory (at);
         SetRigidBody2DVelocity(this.ball.rb, 15,18);
     }
 

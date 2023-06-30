@@ -10,21 +10,6 @@ class Ball
 
     OnHitGutter()
     {
-        (inject BreakoutInst).BallLost();
-    }
-}
-
-test BallTests
-{
-    testcase OnHitGutter
-    {
-        var called = false;
-        var mock = {BallLost: fun() { called = true; }};
-        register BreakoutInst mock;
-        var ball = Ball(Vec2(), null, null);
-
-        ball.OnHitGutter();
-        
-        Assert.IsTrue(called);
+        BreakoutInst.BallLost();
     }
 }

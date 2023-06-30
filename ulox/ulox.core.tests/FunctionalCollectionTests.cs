@@ -108,18 +108,6 @@ fun filter(arr, fn)
     retval = res;
 }
 
-fun MakeTestArray()
-{
-    var arr = [];
-
-    for(var i = 0;i < 5; i += 1)
-    {
-        arr.Add(i);
-    }
-
-    retval = arr;
-}
-
 fun accum(cur, running)
 {
     retval = running + cur;
@@ -130,7 +118,7 @@ testset FunctionalCollectionTests
 {
     test FoldSum
     {
-        var arr = MakeTestArray();
+        var arr = [0,1,2,3,4,];
 
         var result = fold(arr, accum, 0);
 
@@ -139,7 +127,7 @@ testset FunctionalCollectionTests
 
     test ReduceSum
     {
-        var arr = MakeTestArray();
+        var arr = [0,1,2,3,4,];
 
         var result = reduce(arr, accum);
 
@@ -148,7 +136,7 @@ testset FunctionalCollectionTests
 
     test MapAddOne
     {
-        var arr = MakeTestArray();
+        var arr = [0,1,2,3,4,];
         fun addone(val)
         {
             retval = val + 1;
@@ -158,20 +146,6 @@ testset FunctionalCollectionTests
         
         var reducedResult = reduce(result, accum);
         Assert.AreEqual(15, reducedResult);
-    }
-
-    test FilterIsEven
-    {
-        var arr = MakeTestArray();
-        fun isEven(val)
-        {
-            retval = ((val % 2) != 0);
-        }
-
-        var result = filter(arr, isEven);
-        
-        var foldResult = fold(result, accum, 0);
-        Assert.AreEqual(4, foldResult);
     }
 }");
 

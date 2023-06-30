@@ -103,6 +103,11 @@ namespace ULox
                 stringBuilder.AppendLine("####");
                 stringBuilder.AppendLine();
             }
+            else
+            {
+                stringBuilder.AppendLine();
+                stringBuilder.AppendLine();
+            }
         }
 
         protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)

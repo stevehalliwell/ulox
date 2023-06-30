@@ -1,4 +1,4 @@
-register WallFactory fun (pos, scale)
+fun WallFactory(pos, scale)
 {
     var newWall = CreateFromPrefab("Wall");
     SetGameObjectPosition(newWall, pos.x, pos.y,0);
@@ -6,15 +6,15 @@ register WallFactory fun (pos, scale)
     retval = GameObjectHolder(newWall);
 };
 
-register GutterFactory fun (pos, scale)
+fun GutterFactory(pos, scale)
 {
-    var gutter = inject WallFactory (pos, scale);
+    var gutter = WallFactory(pos, scale);
     SetSpriteColour(gutter.go, 0,0,0,0);
     SetGameObjectTag(gutter.go, "Gutter");
     retval = gutter;
 };
 
-register BrickFactory fun (pos, hitCount)
+fun BrickFactory(pos, hitCount)
 {
     var go = CreateFromPrefab("Brick");
     SetGameObjectPosition(go, pos.x, pos.y, 0);
@@ -25,7 +25,7 @@ register BrickFactory fun (pos, hitCount)
     retval = brick;
 };
 
-register BallFactory fun (pos)
+fun BallFactory(pos)
 {
     var go = CreateFromPrefab("Ball");
     SetGameObjectPosition(go, pos.x, pos.y, 0);
@@ -39,7 +39,7 @@ register BallFactory fun (pos)
     retval = ball;
 };
 
-register PaddleFactory fun(pos, wallDist)
+fun PaddleFactory(pos, wallDist)
 {
     var go = CreateFromPrefab("Brick");
     SetGameObjectPosition(go, pos.x, pos.y, 0);

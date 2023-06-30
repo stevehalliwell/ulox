@@ -65,7 +65,6 @@ var dt = 0;
 var limit = 5;
 var numBallsToSpawn = 200;
 
-var ballName = ""BouncyBall"";
 var balls = [];
 
 fun RandVec2() (x,y)
@@ -85,8 +84,6 @@ class Ball
 		var (vx,vy) = RandVec2();
 		this.velx = vx;
 		this.vely = vy;
-		
-		//this.go = CreateFromPrefab(ballName);
 	}
 }
 
@@ -98,15 +95,18 @@ fun SetupGame()
 	{
 		balls.Add(Ball());
 	}
+	print(balls.Count());
 }
 
 fun Update()
 {
-	print (""Updating"");
 	var lim = limit;
+
+	var iter = 0;
 
 	loop balls
 	{
+		//print(GenerateStackDump());
   		item.posx = item.posx + item.velx * dt;
   		item.posy = item.posy + item.vely * dt;
 
@@ -129,6 +129,7 @@ fun Update()
 			item.vely = vy;
 		}
 	}
+	print (""Updated"");
 }
 ");
     }
@@ -216,6 +217,7 @@ fun Update()
 		y = item.py + vel * dragFac;
 		item.y = y;
 	}
+	print (""Updated"");
 }");
     }
 }

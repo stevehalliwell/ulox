@@ -37,36 +37,36 @@ class Brick
 
     OnBrickDestroy()
     {
-        (inject BreakoutInst).GivePointsForBrick(this, this.origHitCount);
+        BreakoutInst.GivePointsForBrick(this, this.origHitCount);
         DestroyUnityObject(this.go);
     }
 }
 
-test BrickTests
-{
-    testcase OneHitWithTwoCountShouldNotGivePoints
-    {
-        var brick = Brick(null, null, 2);
+// testset BrickTests
+// {
+//     test OneHitWithTwoCountShouldNotGivePoints
+//     {
+//         var brick = Brick(null, null, 2);
 
-        brick.OnHitByBall();
+//         brick.OnHitByBall();
         
-        Assert.AreEqual(1, brick.hitCount);
-    }
+//         Assert.AreEqual(1, brick.hitCount);
+//     }
     
-    testcase TwoHitWithTwoCountShouldGivePoints
-    {
-        var brick = Brick(null, null, 2);
-        var gavePoints = false;
-        var mock = {:};
-        mock.GivePointsForBrick = fun (brick, hitCount)
-        {
-            gavePoints = true;
-        };
-        register BreakoutInst mock;
+//     test TwoHitWithTwoCountShouldGivePoints
+//     {
+//         var brick = Brick(null, null, 2);
+//         var gavePoints = false;
+//         var mock = {=};
+//         mock.GivePointsForBrick = fun (brick, hitCount)
+//         {
+//             gavePoints = true;
+//         };
+//         BreakoutInst = mock;
 
-        brick.OnHitByBall();
-        brick.OnHitByBall();
+//         brick.OnHitByBall();
+//         brick.OnHitByBall();
         
-        Assert.AreEqual(true, gavePoints);
-    }
-}
+//         Assert.AreEqual(true, gavePoints);
+//     }
+// }

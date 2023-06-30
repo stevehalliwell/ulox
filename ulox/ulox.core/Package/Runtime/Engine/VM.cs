@@ -36,8 +36,12 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public (Value, Value) Pop2()
         {
+#if FASTSTACK_FORCE_CLEAR
             _valueStack.DiscardPop(2);
             return (_valueStack.Peek(-2), _valueStack.Peek(-1));
+#else
+            return (_valueStack.Pop(), _valueStack.Pop());
+#endif
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -366,7 +370,7 @@ namespace ULox
                     _valueStack[count - 1] = _valueStack[count - 2];
                     _valueStack[count - 2] = temp;
                 }
-                    break;
+                break;
 
                 case OpCode.DUPLICATE:
                 {
@@ -374,7 +378,7 @@ namespace ULox
                     Push(v);
                     Push(v);
                 }
-                    break;
+                break;
 
                 case OpCode.GET_LOCAL:
                     Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
@@ -504,15 +508,15 @@ namespace ULox
                 {
                     var (index, listValue) = Pop2OrLocals(packet.b1, packet.b2);
                     DoGetIndexOp(opCode, index, listValue);
-                }  
-                    break;
+                }
+                break;
 
                 case OpCode.SET_INDEX:
                 {
                     var (newValue, index, listValue) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);
                     DoSetIndexOp(opCode, newValue, index, listValue);
                 }
-                    break;
+                break;
 
                 case OpCode.EXPAND_COPY_TO_STACK:
                     DoExpandCopyToStackOp(opCode);
@@ -537,7 +541,7 @@ namespace ULox
                     var target = PopOrLocal(packet.b1);
                     DoCountOfOp(target);
                 }
-                    break;
+                break;
 
                 case OpCode.EXPECT:
                     DoExpectOp();
@@ -560,7 +564,7 @@ namespace ULox
                     var (enumObject, val, key) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);
                     (enumObject.val.asClass as EnumClass).AddEnumValue(key, val);
                 }
-                    break;
+                break;
 
                 case OpCode.READ_ONLY:
                     DoReadOnlyOp(chunk);
@@ -1230,7 +1234,7 @@ namespace ULox
             //attempt to bind the method
             var fromClass = instance.FromUserType;
             var methodName = name;
-            
+
             if (fromClass == null)
                 ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
 
@@ -1240,7 +1244,7 @@ namespace ULox
             var receiver = targetVal;
             var meth = method.val.asClosure;
             var bound = Value.New(new BoundMethod(receiver, meth));
-            
+
             Push(bound);
         }
 
@@ -1266,7 +1270,7 @@ namespace ULox
             var name = chunk.ReadConstant(constantIndex).val.asString;
 
             instance.SetField(name, newVal);
-            
+
             Push(newVal);
         }
 

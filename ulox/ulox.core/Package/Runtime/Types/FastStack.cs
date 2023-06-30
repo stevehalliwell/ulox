@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿//#define FASTSTACK_FORCE_CLEAR
+
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
@@ -39,7 +41,14 @@ namespace ULox
         public T Pop() => _array[_back--];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void DiscardPop(int amount = 1) => _back -= amount;
+        public void DiscardPop(int amount = 1)
+        {
+#if FASTSTACK_FORCE_CLEAR
+            for (int i = 0; i < amount; i++)
+                _array[_back - i] = default;
+#endif//FASTSTACK_FORCE_CLEAR
+            _back -= amount;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Reset() => _back = StartingBack;

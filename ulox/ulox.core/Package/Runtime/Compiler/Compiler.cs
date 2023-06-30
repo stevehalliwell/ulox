@@ -862,19 +862,32 @@ namespace ULox
             compiler.Expression();
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
 
-            var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if");
+            //todo can we make goto_if consume the value in the vm so we don't need to play pop wackamole
+            var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if_false");
             compiler.EmitPop();
 
             compiler.Statement();
 
-            var elseJump = compiler.GotoUniqueChunkLabel("else");
+            var afterIfLabel = compiler.GotoUniqueChunkLabel("if_end");
 
-            compiler.EmitLabel(thenjumpLabel);
-            compiler.EmitPop();
+            if (compiler.TokenIterator.Match(TokenType.ELSE))
+            {
+                var elseJump = compiler.GotoUniqueChunkLabel("else");
 
-            if (compiler.TokenIterator.Match(TokenType.ELSE)) compiler.Statement();
+                compiler.EmitLabel(thenjumpLabel);
+                compiler.EmitPop();
 
-            compiler.EmitLabel(elseJump);
+                compiler.Statement();
+
+                compiler.EmitLabel(elseJump);
+            }
+            else
+            {
+                compiler.EmitLabel(thenjumpLabel);
+                compiler.EmitPop();
+            }
+
+            compiler.EmitLabel(afterIfLabel);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1197,7 +1210,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal byte UniqueChunkLabelStringConstant(string v)
         {
-            return AddCustomStringConstant($"{v}_{CurrentChunk.Labels.Count}");
+            var id = AddCustomStringConstant($"{v}_{CurrentChunk.Labels.Count}");
+            CurrentCompilerState.chunk.AddLabel(id, -1);
+            return id;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

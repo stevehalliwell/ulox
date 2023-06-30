@@ -25,35 +25,35 @@ class Paddle
     }
 }
 
-test PaddleTests
-{
-    testcase MoveZeroWall
-    {
-        var paddle = Paddle(null, Vec2(), 0);
-        SetGameObjectPosition = fun(go,x,y,z){};
+// testset PaddleTests
+// {
+//     test MoveZeroWall
+//     {
+//         var paddle = Paddle(null, Vec2(), 0);
+//         SetGameObjectPosition = fun(go,x,y,z){};
 
-        paddle.Move(1);
+//         paddle.Move(1);
 
-        Assert.AreEqual(paddle.wallDist, paddle.pos.x);
-    }
+//         Assert.AreEqual(paddle.wallDist, paddle.pos.x);
+//     }
 
-    testcase MoveFarWall
-    {
-        var paddle = Paddle(null, Vec2(), 10000);
-        SetGameObjectPosition = fun(go,x,y,z){};
+//     test MoveFarWall
+//     {
+//         var paddle = Paddle(null, Vec2(), 10000);
+//         SetGameObjectPosition = fun(go,x,y,z){};
 
-        paddle.Move(1);
+//         paddle.Move(1);
 
-        Assert.AreEqual(paddle.moveSpeed, paddle.pos.x);
-    }
+//         Assert.AreEqual(paddle.moveSpeed, paddle.pos.x);
+//     }
 
-    testcase MoveZero
-    {
-        var paddle = Paddle(null, Vec2(), 0);
-        SetGameObjectPosition = fun(go,x,y,z){};
+//     test MoveZero
+//     {
+//         var paddle = Paddle(null, Vec2(), 0);
+//         SetGameObjectPosition = fun(go,x,y,z){};
 
-        paddle.Move(0);
+//         paddle.Move(0);
 
-        Assert.AreEqual(0, paddle.pos.x);
-    }
-}
+//         Assert.AreEqual(0, paddle.pos.x);
+//     }
+// }

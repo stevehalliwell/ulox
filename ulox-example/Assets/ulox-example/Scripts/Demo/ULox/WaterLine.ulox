@@ -71,8 +71,10 @@ fun Update()
 	if(GetKey("r")){RandomPull();}
 	if(GetKey("h")){HoldMiddle();}
 
-	loop points
+	var pointsCount = points.Count();
+	for(var i = 0; i < pointsCount; i+=1)
 	{
+		var item = points[i];
 		var dy = item.y - item.py;
 		item.py = item.y;
 		var pull = item.pullY;

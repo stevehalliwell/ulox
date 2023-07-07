@@ -9,7 +9,7 @@ namespace ULox
         private StringIterator _stringIterator = new StringIterator("");
         public char CurrentChar => _stringIterator.CurrentChar;
 
-        public static readonly Token NoTokenFound = new Token(TokenType.NONE, string.Empty, null, 0, 0);
+        public static readonly Token NoTokenFound = new Token(TokenType.NONE, string.Empty, null, 0, 0, -1);
         public static Token SharedNoToken => NoTokenFound;
 
         private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
@@ -100,6 +100,11 @@ namespace ULox
         public void AddGenerator(IScannerTokenGenerator gen)
             => _scannerGenerators.Add(gen);
 
+        public string GetSourceSection(int start, int len)
+        {
+            return _script.Source.Substring(start, len);
+        }
+
         public void Reset()
         {
             _stringIterator = null;
@@ -179,7 +184,7 @@ namespace ULox
         
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token EmitToken(TokenType simpleToken, string str, object literal)
-            => new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber);
+            => new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber, _stringIterator.CurrentIndex);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)

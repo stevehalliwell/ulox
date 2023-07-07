@@ -62,7 +62,7 @@ expect true and 1 == 2/2 : ""a message"";"
 expect false;"
             );
 
-            StringAssert.Contains("Expect failed, got falsey at ip:'3'", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, 'false' at ip:'3'", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -72,7 +72,7 @@ expect false;"
 expect false : ""a message"";"
             );
 
-            StringAssert.Contains("Expect failed, got a message at ip:'3'", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, 'a message' at ip:'3'", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -82,7 +82,7 @@ expect false : ""a message"";"
 expect true and 1 == 2;"
             );
 
-            StringAssert.Contains("Expect failed, got falsey at ip:", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, 'true and 1 == 2' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -92,7 +92,7 @@ expect true and 1 == 2;"
 expect true and 1 == 2: ""a message"";"
             );
 
-            StringAssert.Contains("Expect failed, got a message at ip:", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, 'a message' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -103,7 +103,7 @@ expect true : ""a message"",
         false;"
             );
 
-            StringAssert.Contains("Expect failed, got falsey at ip:", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, 'false' at ip:", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -114,7 +114,7 @@ expect true : ""a message"",
         true and 1 == 2: ""a message"";"
             );
 
-            StringAssert.Contains("Expect failed, got a message at ip:", testEngine.InterpreterResult);
+            StringAssert.Contains("Expect failed, 'a message' at ip:", testEngine.InterpreterResult);
         }
     }
 }

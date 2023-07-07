@@ -7,6 +7,7 @@ namespace ULox
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
         public string SourceName => _script.Name;
+        public Scanner Scanner => _scanner;
 
         private readonly Scanner _scanner;
         private readonly Script _script;
@@ -17,7 +18,11 @@ namespace ULox
             _script = script;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public string GetSourceSection(int start, int end)
+        {
+            return _scanner.GetSourceSection(start, end);
+        }
+
         public void Advance()
         {
             PreviousToken = CurrentToken;
@@ -58,6 +63,5 @@ namespace ULox
             }
             return false;
         }
-
     }
 }

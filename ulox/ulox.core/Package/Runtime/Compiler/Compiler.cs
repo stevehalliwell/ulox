@@ -669,6 +669,8 @@ namespace ULox
         {
             do
             {
+                //find start of the string so we can later substr it if desired
+                var startIndex = compiler.TokenIterator.PreviousToken.StringSourceIndex+1;
                 compiler.Expression();
                 if (compiler.TokenIterator.Match(TokenType.COLON))
                 {
@@ -676,7 +678,11 @@ namespace ULox
                 }
                 else
                 {
-                    compiler.EmitNULL();
+                    var endIndex = compiler.TokenIterator.CurrentToken.StringSourceIndex;
+                    var length = endIndex - startIndex;
+                    var sourceStringSection = compiler.TokenIterator.GetSourceSection(startIndex, length);
+                    var sectionByte = compiler.AddCustomStringConstant(sourceStringSection.Trim());
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, sectionByte, 0, 0));
                 }
                 compiler.EmitPacket(new ByteCodePacket(OpCode.EXPECT));
             }

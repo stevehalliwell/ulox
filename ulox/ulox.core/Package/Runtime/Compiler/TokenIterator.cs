@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace ULox
+﻿namespace ULox
 {
     public sealed class TokenIterator
     {
@@ -29,7 +27,6 @@ namespace ULox
             CurrentToken = _scanner.Next();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Consume(TokenType tokenType, string msg)
         {
             if (CurrentToken.TokenType == tokenType)
@@ -38,11 +35,9 @@ namespace ULox
                 throw new CompilerException(msg, PreviousToken, $"source '{_script.Name}'");
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Check(TokenType type)
             => CurrentToken.TokenType == type;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Match(TokenType type)
         {
             if (!Check(type))
@@ -51,7 +46,6 @@ namespace ULox
             return true;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool MatchAny(params TokenType[] type)
         {
             for (int i = 0; i < type.Length; i++)

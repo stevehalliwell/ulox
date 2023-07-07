@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -52,7 +51,6 @@ namespace ULox
             return assertInst;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult AreApproxEqual(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -74,7 +72,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult AreEqual(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -85,7 +82,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult AreNotEqual(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -96,7 +92,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult IsTrue(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -106,7 +101,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult IsFalse(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -116,7 +110,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult IsNull(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -126,7 +119,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult IsNotNull(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -136,7 +128,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult DoesContain(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -147,7 +138,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult DoesNotContain(Vm vm)
         {
             var lhs = vm.GetArg(1);
@@ -158,7 +148,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private NativeCallResult Throws(Vm vm)
         {
             var toRun = vm.GetArg(1).val.asClosure.chunk;
@@ -182,13 +171,11 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Pass(Vm vm)
         {
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult Fail(Vm vm)
         {
             var msg = vm.GetArg(1);
@@ -196,28 +183,24 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateStackDump(Vm vm)
         {
             vm.SetNativeReturn(0, Value.New(VmUtil.GenerateValueStackDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateGlobalsDump(Vm vm)
         {
             vm.SetNativeReturn(0, Value.New(VmUtil.GenerateGlobalsDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult GenerateReturnDump(Vm vm)
         {
             vm.SetNativeReturn(0, Value.New(VmUtil.GenerateReturnDump(vm)));
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult IsFrozen(Vm vm)
         {
             var target = vm.GetArg(1);
@@ -229,7 +212,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult Unfreeze(Vm vm)
         {
             var target = vm.GetArg(1);
@@ -241,7 +223,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult str(Vm vm)
         {
             var v = vm.GetArg(1);
@@ -249,7 +230,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static NativeCallResult Duplicate(Vm vm)
         {
             vm.SetNativeReturn(0, Value.Copy(vm.GetArg(1)));

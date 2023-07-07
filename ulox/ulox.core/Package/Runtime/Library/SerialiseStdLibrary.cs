@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -15,7 +14,6 @@ namespace ULox
             return serialiseInst;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult ToJson(Vm vm)
         {
             var obj = vm.GetArg(1);
@@ -27,7 +25,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static NativeCallResult FromJson(Vm vm)
         {
             var jsonString = vm.GetArg(1);

@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -13,13 +12,11 @@ namespace ULox
 
         public string CurrentTestSetName { get; internal set; }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)
         {
             TestDeclaration(compiler);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void TestDeclaration(Compiler compiler)
         {
             //grab name
@@ -56,18 +53,14 @@ namespace ULox
             CurrentTestSetName = null;
         }
 
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EmitTestPacket(Compiler compiler, TestOpType opType, byte b1, byte b2)
             => compiler.EmitPacket(new ByteCodePacket(OpCode.TEST, new ByteCodePacket.TestOpDetails(opType, b1, b2)));
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void AddTestCaseLabel(byte labelUniqueChunkLabel)
         {
             _currentTestcaseLabels.Add(labelUniqueChunkLabel);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TestSetName(Compiler compiler, bool obj)
         {
             var tsname = CurrentTestSetName;

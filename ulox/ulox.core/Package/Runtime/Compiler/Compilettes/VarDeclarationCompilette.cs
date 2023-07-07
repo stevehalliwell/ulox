@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -7,7 +6,6 @@ namespace ULox
     {
         public TokenType MatchingToken => TokenType.VAR;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void VarDeclaration(Compiler compiler)
         {
             if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
@@ -18,7 +16,6 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void PlainVarDeclare(Compiler compiler)
         {
             do
@@ -34,7 +31,6 @@ namespace ULox
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static void MultiVarAssignToReturns(Compiler compiler)
         {
             var varNames = new List<string>();
@@ -64,7 +60,6 @@ namespace ULox
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)
             => VarDeclaration(compiler);
     }

@@ -1,10 +1,7 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace ULox
+﻿namespace ULox
 {
     public sealed class CompoundCharScannerCharMatchTokenGenerator : IScannerTokenGenerator
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token Consume(Scanner scanner)
         {
             switch (scanner.CurrentChar)
@@ -30,7 +27,6 @@ namespace ULox
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool DoesMatchChar(char ch)
         {
             switch (ch)

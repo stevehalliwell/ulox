@@ -24,6 +24,7 @@ namespace ULox
             public byte ContinueLabelID;
             public byte StartLabelID;
             public bool HasExit = false;
+            public int ScopeDepth;
 
             public LoopState(byte exitLabelID)
             {

@@ -201,6 +201,24 @@ namespace ULox
             }
         }
 
+        private void PopBackToScopeDepth(int depth)
+        {
+            var popCount = default(byte);
+
+            var comp = CurrentCompilerState;
+            for (int i = comp.localCount - 1; i >= 0; i--)
+            {
+                if (comp.locals[i].Depth < depth)
+                    break;
+
+                if (!comp.locals[i].IsCaptured)
+                    popCount++;
+            }
+
+            if(popCount > 0)
+                EmitPop(popCount);
+        }
+
         public CompiledScript Compile(Scanner scanner, Script script)
         {
             scanner.SetScript(script);
@@ -856,7 +874,23 @@ namespace ULox
             if (comp.LoopStates.Count == 0)
                 compiler.ThrowCompilerException($"Cannot continue when not inside a loop.");
 
+            compiler.PopBackToScopeDepth(comp.LoopStates.Last().ScopeDepth);
             compiler.EmitGoto(comp.LoopStates.Peek().ContinueLabelID);
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void BreakStatement(Compiler compiler)
+        {
+            var comp = compiler.CurrentCompilerState;
+            if (comp.LoopStates.Count == 0)
+                compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
+
+
+            compiler.PopBackToScopeDepth(comp.LoopStates.Last().ScopeDepth);
+
+            compiler.EmitNULL();
+            compiler.EmitGoto(comp.LoopStates.Peek().ExitLabelID);
+            comp.LoopStates.Peek().HasExit = true;
 
             compiler.ConsumeEndStatement();
         }
@@ -971,19 +1005,6 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void BreakStatement(Compiler compiler)
-        {
-            var comp = compiler.CurrentCompilerState;
-            if (comp.LoopStates.Count == 0)
-                compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
-
-            compiler.EmitNULL();
-            compiler.EmitGoto(comp.LoopStates.Peek().ExitLabelID);
-            comp.LoopStates.Peek().HasExit = true;
-
-            compiler.ConsumeEndStatement();
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void YieldStatement(Compiler compiler)

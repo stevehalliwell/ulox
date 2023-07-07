@@ -89,22 +89,6 @@ print (""hurray"");");
         }
 
         [Test]
-        public void Continue_WhenHit_ShouldReturnToStartOfLoop()
-        {
-            testEngine.Run(@"
-var i = 0;
-while(i < 3)
-{
-    i = i + 1;
-    print (i);
-    continue;
-    print (""FAIL"");
-}");
-
-            Assert.AreEqual("123", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void While_WhenNested_ShouldNSquared()
         {
             testEngine.Run(@"
@@ -145,50 +129,6 @@ while(i < 5)
 }");
 
             Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void For_WhenContinued_ShouldMoveToIterationStep()
-        {
-            testEngine.Run(@"
-for(var i = 0;i < 3; i += 1)
-{
-    print (i);
-    continue;
-    print (""FAIL"");
-}");
-
-            Assert.AreEqual("012", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void For_WhenContinuedAndExternalDeclaredI_ShouldMoveToIterationStep()
-        {
-            testEngine.Run(@"
-var i = 0;
-for(i = 0;i < 3; i += 1)
-{
-    print (i);
-    continue;
-    print (""FAIL"");
-}");
-
-            Assert.AreEqual("012", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void For_WhenContinuedAndExternalDeclaredAndAssignedI_ShouldMoveToIterationStep()
-        {
-            testEngine.Run(@"
-var i = 0;
-for(;i < 3; i += 1)
-{
-    print (i);
-    continue;
-    print (""FAIL"");
-}");
-
-            Assert.AreEqual("012", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -695,5 +635,341 @@ var posList = FromRowCol(outer);
 
         //            Assert.AreEqual("abc", testEngine.InterpreterResult);
         //        }
+
+
+
+        [Test]
+        public void Continue_WhenHit_ShouldReturnToStartOfLoop()
+        {
+            testEngine.Run(@"
+var i = 0;
+while(i < 3)
+{
+    i = i + 1;
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_WhenContinued_ShouldMoveToIterationStep()
+        {
+            testEngine.Run(@"
+for(var i = 0;i < 3; i += 1)
+{
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("012", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_WhenContinuedAndExternalDeclaredI_ShouldMoveToIterationStep()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(i = 0;i < 3; i += 1)
+{
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("012", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_WhenContinuedAndExternalDeclaredAndAssignedI_ShouldMoveToIterationStep()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(;i < 3; i += 1)
+{
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("012", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenContinued_ShouldMoveToIterationStep()
+        {
+            testEngine.Run(@"
+
+var arr = [0,1,2,];
+loop arr
+{
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("012", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenNestedContinued_ShouldMoveToIterationStep()
+        {
+            testEngine.Run(@"
+var arr = [0,1,2,3,4,5,6,7,8,9];
+loop arr
+{
+    var check1 = (item % 2) == 0;
+    if(check1)
+    {
+        continue;
+    }
+    var check2 = (item % 3) == 0;
+    if(check2)
+    {
+        continue;
+    }
+
+    print (item);
+}");
+
+            Assert.AreEqual("157", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenNestedLocalsAndContinued_ShouldMoveToIterationStep()
+        {
+            testEngine.Run(@"
+
+class Thing
+{
+    var a = 1,b = 2,c = 3;
+
+    Meth1(arg1, arg2)
+    {
+        this.a = arg1;
+        this.b = arg2;
+        this.c = arg1 - arg2;
+    }
+
+    Meth2(arg1, arg2)
+    {
+        this.b = arg1;
+        this.c = arg2;
+        this.a = arg1 - arg2;
+    }
+}
+
+var obj = Thing();
+
+var arr = [9,8,7,6,5,4,3,2,1,];
+loop arr
+{
+    obj.Meth1(item, i);
+    if(obj.c > 0)
+    {
+        var mix = (i + item) / -2;
+        obj.Meth2(mix, item);
+        continue;
+    }
+    obj.Meth2(item, i);
+    if(obj.a > 0)
+    {
+        continue;
+    }
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenComplexNestedLocalsAndContinued_ShouldMoveToIterationStep()
+        {
+            testEngine.Run(@"
+class Vec2
+{
+	static Create(x,y)
+	{
+		var ret = Vec2();
+		ret.x = x;
+		ret.y = y;
+		retval = ret;
+	}
+    
+    static Scale(v2, scalar)
+    {
+        retval = Vec2.Create(v2.x* scalar, v2.y*scalar);
+    }
+
+	static Rotate(v2, rad)
+	{
+		var cos = Math.Cos(rad);
+		var sin = Math.Sin(rad);
+		var x = v2.x * cos - v2.y * sin;
+		var y = v2.x * sin + v2.y * cos;
+		retval = Vec2.Create(x,y);
+	}
+
+	static Lerp(a, b, p)
+	{
+		var x = a.x + (b.x - a.x) * p;
+		var y = a.y + (b.y - a.y) * p;
+		retval = Vec2.Create(x,y);
+	}
+
+	static Length(v2)
+	{
+		retval = Math.Sqrt(v2.x*v2.x + v2.y*v2.y);
+	}
+
+	//TODO needs tests
+	static Normalise(v2)
+	{
+		var len = Math.Sqrt(v2.x*v2.x + v2.y*v2.y);
+		retval = Vec2.Create(v2.x/len, v2.y/len);
+	}
+
+	static Dot(lhs, rhs)
+	{
+		retval = lhs.x * rhs.x + lhs.y * rhs.y;
+	}
+
+	static Angle(v)
+	{
+		var rads = Math.Atan2(v.y, v.x);
+		retval = Math.Rad2Deg(rads);
+	}
+
+	var x = 0, y = 0;
+
+	_add(lhs, rhs)
+	{
+		retval = Vec2.Create(lhs.x + rhs.x, lhs.y + rhs.y);
+	}
+
+	_sub(lhs, rhs)
+	{
+		retval = Vec2.Create(lhs.x - rhs.x, lhs.y - rhs.y);
+	}
+
+	_mul(lhs, rhs)
+	{
+		retval = Vec2.Create(lhs.x * rhs.x, lhs.y * rhs.y);
+	}
+
+	_eq(lhs, rhs)
+	{
+		retval = lhs.x == rhs.x and lhs.y == rhs.y;
+	}
+}
+
+data ShipControls
+{
+    var throttle = 0;
+    var rudder = 0;
+}
+
+data Ship
+{
+    var pos = Vec2();
+    var vel = Vec2();
+    var heading = 0;
+    var controls = ShipControls();
+}
+
+system EnemyShipAIBasic
+{
+    Tick(enemyShips, targetShips, dt)
+    {
+        loop enemyShips, ship
+        {
+            var pos = ship.pos;
+            var bestTarget = EnemyTargetSelection.Select(ship, targetShips);
+
+            if (bestTarget)
+            {
+                var distanceAheadScale = 0.1;
+                var headingAlignForFar = 35;
+                var farDist = 15;
+                var posDiff = bestTarget.pos - ship.pos;
+                var velDiff = bestTarget.vel - ship.vel;
+                var headingDiff = ship.heading - bestTarget.heading;
+                var headingDiffAbs = Math.Abs(headingDiff);
+                var approachingDot = Vec2.Dot(Vec2.Normalise(posDiff), Vec2.Normalise(ship.vel));
+                var isMovingTowards = approachingDot > 0;
+                var distance = Vec2.Length(posDiff);
+                var isFar = distance > farDist;
+                var isNear = !isFar;
+                var distNorm = distance / farDist;
+                
+                var aheadTargetRudder =  EnemyShipAIBasic.RudderFromHeadingDiff(headingDiff, headingDiffAbs);
+                var prevThrottle = ship.controls.throttle;
+                var prevRudder = ship.controls.rudder;
+                
+                if(isMovingTowards)
+                {
+                    ship.controls.throttle = 1;
+                    ship.controls.rudder = aheadTargetRudder;
+                    continue;
+                }
+
+                if(isFar)
+                {
+                    ship.controls.throttle = 1;
+                    if(headingDiffAbs < 45)
+                        ship.controls.throttle = 0;
+                    
+                    continue;
+                }
+
+                if(isNear)
+                {
+                    ship.controls.throttle = prevThrottle;
+                    ship.controls.rudder = aheadTargetRudder * distNorm;
+                    continue;
+                }
+            }
+            else
+            {
+                ship.controls.throttle = 1;
+                ship.controls.rudder = 1;
+            }
+        }
+    }
+
+    RudderFromHeadingDiff(headingDiff, absHeadingDiff)
+    {
+        var amt = absHeadingDiff / 180;
+        if(headingDiff > 0)
+            retval = amt;
+        else
+            retval = -amt;
+    }
+}
+
+system EnemyTargetSelection
+{
+    Select(enemyShip, availTargets)
+    {
+        retval = availTargets[0];
+    }
+}
+
+var enemyShips = [];
+for(var i = 0; i < 10; i +=1 )
+{
+    var ship = Ship();
+    ship.pos =  Vec2.Create(i*2, 0);
+    enemyShips.Add(ship);
+}
+var targetShips = [Ship()];
+
+EnemyShipAIBasic.Tick(enemyShips, targetShips, 0.1);
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
     }
 }

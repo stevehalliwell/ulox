@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace ULox
+﻿namespace ULox
 {
     public class TestcaseCompillette : ICompilette
     {
@@ -15,7 +13,6 @@ namespace ULox
             _testDeclarationCompilette = testDeclarationCompilette;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)
         {
             var dataExpExecuteLocation = -1;
@@ -130,14 +127,12 @@ namespace ULox
             TestCaseName = null;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void TestName(Compiler compiler, bool obj)
         {
             var tcname = TestCaseName;
             compiler.AddConstantAndWriteOp(Value.New(tcname));
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)
         {
             compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, indexArgID));
@@ -145,8 +140,7 @@ namespace ULox
             compiler.EmitPacket(new ByteCodePacket(OpCode.COUNT_OF));
             compiler.EmitPacket(new ByteCodePacket(OpCode.LESS));
         }
-        
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+
         public static void IncrementLocalByOne(Compiler compiler, byte indexArgID)
         {
             compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, indexArgID));

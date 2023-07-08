@@ -18,6 +18,7 @@ namespace ULox
         public int Line { get; set; }
         public int CharacterNumber { get; set; }
         public char CurrentChar { get; private set; }
+        public int CurrentIndex => _index;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int Peek() => SafeRead(_index + 1);

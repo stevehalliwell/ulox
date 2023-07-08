@@ -1,6 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace ULox
+﻿namespace ULox
 {
     public sealed class PrintLibrary : IULoxLibrary
     {
@@ -16,7 +14,6 @@ namespace ULox
                 (nameof(print), Value.New(print,1,1))
                                         );
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public NativeCallResult print(Vm vm)
         {
             _printer.Invoke(vm.GetArg(1).ToString());

@@ -1,12 +1,9 @@
-﻿using System.Runtime.CompilerServices;
-
-namespace ULox
+﻿namespace ULox
 {
     public class ReturnStatementCompilette : ICompilette
     {
         public TokenType MatchingToken => TokenType.RETURN;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ReturnStatement(Compiler compiler)
         {
             if (compiler.CurrentCompilerState.functionType == FunctionType.Init)
@@ -17,7 +14,6 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Process(Compiler compiler)
             => ReturnStatement(compiler);
     }

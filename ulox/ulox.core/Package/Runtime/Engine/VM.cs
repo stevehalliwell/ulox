@@ -686,7 +686,7 @@ namespace ULox
 
             if (expected.IsFalsey())
             {
-                ThrowRuntimeException($"Expect failed, got {(msg.IsNull() ? "falsey" : msg.ToString())}");
+                ThrowRuntimeException($"Expect failed, '{msg}'");
             }
         }
 

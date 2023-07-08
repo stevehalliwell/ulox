@@ -31,7 +31,10 @@ namespace ULox
 
             BeginLoop(compiler, loopState);
 
+            compiler.BeginScope();
+            loopState.ScopeDepth = comp.scopeDepth;
             compiler.Statement();
+            compiler.EndScope();
 
             compiler.EmitGoto(loopState.StartLabelID);
 

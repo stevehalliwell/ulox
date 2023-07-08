@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -9,7 +8,7 @@ namespace ULox
         private StringIterator _stringIterator = new StringIterator("");
         public char CurrentChar => _stringIterator.CurrentChar;
 
-        public static readonly Token NoTokenFound = new Token(TokenType.NONE, string.Empty, null, 0, 0);
+        public static readonly Token NoTokenFound = new Token(TokenType.NONE, string.Empty, null, 0, 0, -1);
         public static Token SharedNoToken => NoTokenFound;
 
         private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
@@ -100,13 +99,17 @@ namespace ULox
         public void AddGenerator(IScannerTokenGenerator gen)
             => _scannerGenerators.Add(gen);
 
+        public string GetSourceSection(int start, int len)
+        {
+            return _script.Source.Substring(start, len);
+        }
+
         public void Reset()
         {
             _stringIterator = null;
             _script = default;
         }
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token Next()
         {
             while (!IsAtEnd())
@@ -135,20 +138,17 @@ namespace ULox
             return tokens;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void SetScript(Script script)
         {
             _script = script;
             _stringIterator = new StringIterator(_script.Source);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ThrowScannerException(string msg)
         {
             throw new ScannerException(msg, TokenType.IDENTIFIER, _stringIterator.Line, _stringIterator.CharacterNumber, _script.Name);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Match(char matchingCharToConsume)
         {
             if (_stringIterator.Peek() == matchingCharToConsume)
@@ -159,36 +159,28 @@ namespace ULox
             return false;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance() => _stringIterator.Advance();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsAtEnd() => _stringIterator.Peek() == -1;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char Peek()
             => (char)_stringIterator.Peek();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReadLine()
             => _stringIterator.ReadLine();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token EmitTokenSingle(TokenType token)
             => EmitToken(token, CurrentChar.ToString(), null);
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token EmitToken(TokenType simpleToken, string str, object literal)
-            => new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber);
+            => new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber, _stringIterator.CurrentIndex);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)
         {
             foreach (var item in scannerTokenGenerators)
                 AddGenerator(item);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IScannerTokenGenerator GetMatchingGenerator(char ch)
         {
             var matchinGen = default(IScannerTokenGenerator);

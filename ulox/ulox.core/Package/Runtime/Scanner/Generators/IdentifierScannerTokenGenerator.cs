@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ULox
@@ -20,19 +19,15 @@ namespace ULox
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAlpha(int c)
             => (c >= 'a' && c <= 'z') ||
                 (c >= 'A' && c <= 'Z') ||
                 c == '_';
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAlphaNumber(int c) => IsAlpha(c) || NumberScannerTokenGenerator.IsDigit(c);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool DoesMatchChar(char ch) => IsAlpha(ch);
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();

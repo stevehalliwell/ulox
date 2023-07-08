@@ -32,7 +32,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.ulox",
-					"match": "\\b(if|else|while|for|return|match|break|continue|throw|yield|goto|label)\\b"
+					"match": "\\b(if|else|while|loop|for|return|match|break|continue|throw|yield|goto|label)\\b"
 				},
 				{
 					"name": "keyword.operator.logical.ulox",

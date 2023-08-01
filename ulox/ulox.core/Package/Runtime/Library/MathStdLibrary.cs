@@ -33,7 +33,8 @@ namespace ULox
                 (nameof(Sqrt), Value.New(Sqrt, 1, 1)),
                 (nameof(Tan), Value.New(Tan, 1, 1)),
                 (nameof(Max), Value.New(Max, 1, 2)),
-                (nameof(Min), Value.New(Min, 1, 2))
+                (nameof(Min), Value.New(Min, 1, 2)),
+                (nameof(Clamp), Value.New(Clamp, 1, 3))
                 );
 
             diLibInst.Freeze();
@@ -227,6 +228,16 @@ namespace ULox
             var arg1 = vm.GetArg(1);
             var arg2 = vm.GetArg(2);
             var result = Math.Min(arg1.val.asDouble, arg2.val.asDouble);
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult Clamp(Vm vm)
+        {
+            var arg1 = vm.GetArg(1);
+            var arg2 = vm.GetArg(2);
+            var arg3 = vm.GetArg(3);
+            var result = Math.Min(Math.Max(arg1.val.asDouble, arg2.val.asDouble), arg3.val.asDouble);
             vm.SetNativeReturn(0, Value.New(result));
             return NativeCallResult.SuccessfulExpression;
         }

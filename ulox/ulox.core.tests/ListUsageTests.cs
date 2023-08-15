@@ -335,5 +335,17 @@ print(list.Reduce(accum));
 
             Assert.AreEqual("23", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Clear_When3LitteralItems_ShouldBeCount0()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+arr.Clear();
+print(arr.Count());
+");
+
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
     }
 }

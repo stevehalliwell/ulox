@@ -41,7 +41,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Value> GetArg0NativeListInstance(Vm vm)
+        private static FastList<Value> GetArg0NativeListInstance(Vm vm)
         {
             var inst = vm.GetArg(0);
             var nativeListinst = inst.val.asInstance as NativeListInstance;
@@ -140,7 +140,7 @@ namespace ULox
             var retval = MakeInstance();
             var retvalList = ((NativeListInstance)retval).List;
 
-            retvalList.Capacity = list.Count;
+            retvalList.EnsureCapacity(list.Count);
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -205,7 +205,7 @@ namespace ULox
             var retval = MakeInstance();
             var retvalList = ((NativeListInstance)retval).List;
 
-            retvalList.Capacity = list.Count;
+            retvalList.EnsureCapacity(list.Count);
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -250,7 +250,7 @@ namespace ULox
 
             var retval = MakeInstance();
             var retvalList = ((NativeListInstance)retval).List;
-            retvalList.Capacity = list.Count;
+            retvalList.EnsureCapacity(list.Count);
 
             for (int i = 0; i < orderByArr.Length; i++)
             {
@@ -327,7 +327,7 @@ namespace ULox
             var retval = MakeInstance();
             var retvalList = ((NativeListInstance)retval).List;
 
-            retvalList.Capacity = list.Count;
+            retvalList.EnsureCapacity(list.Count);
 
             for (int i = 0; i < list.Count; i++)
             {

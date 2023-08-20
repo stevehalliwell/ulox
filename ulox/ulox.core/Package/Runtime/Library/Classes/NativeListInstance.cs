@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -11,7 +10,7 @@ namespace ULox
         {
         }
 
-        public List<Value> List { get; } = new List<Value>();
+        public FastList<Value> List { get; } = new FastList<Value>();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(Value ind, Value val)

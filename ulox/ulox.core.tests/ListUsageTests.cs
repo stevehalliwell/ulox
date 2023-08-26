@@ -347,5 +347,27 @@ print(arr.Count());
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Front_When3LitteralItems_ShouldBe1()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+print(arr.Front());
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Back_When3LitteralItems_ShouldBe3()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+print(arr.Back());
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
     }
 }

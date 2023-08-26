@@ -36,7 +36,10 @@ namespace ULox
                 
                 (nameof(Grow), Value.New(Grow, 1, 2)),
                 (nameof(Shrink), Value.New(Shrink, 1, 1)),
-                (nameof(Clear), Value.New(Clear, 1, 0))
+                (nameof(Clear), Value.New(Clear, 1, 0)),
+
+                (nameof(Front), Value.New(Front, 1, 0)),
+                (nameof(Back), Value.New(Back, 1, 0))
                                   );
         }
 
@@ -376,6 +379,20 @@ namespace ULox
             var list = GetArg0NativeListInstance(vm);
             vm.SetNativeReturn(0, Value.New(list.Count));
             list.Clear();
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult Front(Vm vm)
+        {
+            var list = GetArg0NativeListInstance(vm);
+            vm.SetNativeReturn(0, list.Count > 0 ? list[0] : Value.Null());
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult Back(Vm vm)
+        {
+            var list = GetArg0NativeListInstance(vm);
+            vm.SetNativeReturn(0, list.Count > 0 ? list[list.Count - 1] : Value.Null());
             return NativeCallResult.SuccessfulExpression;
         }
     }

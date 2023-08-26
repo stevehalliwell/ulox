@@ -12,6 +12,8 @@ namespace ULox.Core.Bench
         private CompiledScript _ifCompiled;
         private CompiledScript _matchCompiled;
         private CompiledScript _scriptCompiled;
+        private Engine _typeVec2Engine;
+        private Engine _tupleVec2Engine;
 
         [GlobalSetup]
         public void Setup()
@@ -23,6 +25,10 @@ namespace ULox.Core.Bench
             _ifCompiled = engine.Context.CompileScript(BenchmarkScripts.If);
             _matchCompiled = engine.Context.CompileScript(BenchmarkScripts.Match);
             _scriptCompiled = engine.Context.CompileScript(CompileVsExecute.Script);
+            _typeVec2Engine = Engine.CreateDefault();
+            _typeVec2Engine.RunScript(Vec2Variants.Type);
+            _tupleVec2Engine = Engine.CreateDefault();
+            _tupleVec2Engine.RunScript(Vec2Variants.Tuple);
         }
 
         static void Main(string[] args)
@@ -157,6 +163,26 @@ namespace ULox.Core.Bench
             {
                 engine.Context.Vm.Globals.Get(new HashedString("Update"), out var foundUpdate);
                 engine.Context.Vm.PushCallFrameAndRun(foundUpdate, 0);
+            }
+        }
+
+        [Benchmark]
+        public void Vec2Type()
+        {
+            _typeVec2Engine.Context.Vm.Globals.Get(new HashedString("Bench"), out var found);
+            for (int i = 0; i < 25; i++)
+            {
+                _typeVec2Engine.Context.Vm.PushCallFrameAndRun(found, 0);
+            }
+        }
+
+        [Benchmark]
+        public void Vec2Tuple()
+        {
+            _tupleVec2Engine.Context.Vm.Globals.Get(new HashedString("Bench"), out var found);
+            for (int i = 0; i < 25; i++)
+            {
+                _tupleVec2Engine.Context.Vm.PushCallFrameAndRun(found, 0);
             }
         }
     }

@@ -975,7 +975,7 @@ namespace ULox
             if (start)
                 _currentCallFrame.MultiAssignStart = (byte)StackCount;
             else
-                ProcessStackForMultiAssign();
+                CacheStackForMultiAssignValidation();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1012,15 +1012,15 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ProcessStackForMultiAssign()
+        private void CacheStackForMultiAssignValidation()
         {
+            //this is only so the multi return validate mechanism can continue to function,
+            //it's not actually contributing to how multi return works.
             _returnStack.Reset();
-            while (_valueStack.Count > _currentCallFrame.MultiAssignStart)
-                _returnStack.Push(Pop());
-
-            for (int i = 0; i < _returnStack.Count; i++)
+            var returnCount = _valueStack.Count - _currentCallFrame.MultiAssignStart;
+            for (int i = 0; i < returnCount; i++)
             {
-                Push(_returnStack[i]);
+                _returnStack.Push(Value.Null());
             }
         }
 

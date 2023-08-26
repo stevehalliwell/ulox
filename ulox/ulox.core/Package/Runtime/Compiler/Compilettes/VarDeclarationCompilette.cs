@@ -49,14 +49,25 @@ namespace ULox
             compiler.Expression();
 
             compiler.EmitPacket(new ByteCodePacket(OpCode.MULTI_VAR, false));
-            
+
             compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(varNames.Count)));
             compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.MultiReturnMatches));
 
-            for (int i = 0; i < varNames.Count; i++)
+            if (compiler.CurrentCompilerState.scopeDepth == 0)
             {
-                var varName = varNames[i];
-                compiler.DeclareAndDefineCustomVariable(varName);
+                for (int i = varNames.Count - 1; i >= 0; i--)
+                {
+                    var varName = varNames[i];
+                    compiler.DeclareAndDefineCustomVariable(varName);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < varNames.Count; i++)
+                {
+                    var varName = varNames[i];
+                    compiler.DeclareAndDefineCustomVariable(varName);
+                }
             }
         }
 

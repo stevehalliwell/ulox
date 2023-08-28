@@ -47,6 +47,18 @@ namespace ULox.Core.Tests
         }
 
         [Test]
+        public void Remove_WhenDoesNotHaveElement_ShouldHave1Count()
+        {
+            var fastList = new FastList<object>();
+            fastList.Add(new object());
+
+            var res = fastList.Remove(new object());
+
+            Assert.AreEqual(1, fastList.Count);
+            Assert.IsFalse(res);
+        }
+
+        [Test]
         public void Clear_WhenCalledOnOneElement_ShouldHave0Count()
         {
             var fastList = new FastList<object>();
@@ -95,6 +107,28 @@ namespace ULox.Core.Tests
             }
 
             StringAssert.AreEqualIgnoringCase("12", res);
+        }
+
+        [Test]
+        public void EnsureCapacity_WhenLess_ShouldHaveSame()
+        {
+            var fastList = new FastList<object>();
+            var initialCap = fastList.Capacity;
+
+            fastList.EnsureCapacity(1);
+
+            Assert.AreEqual(initialCap, fastList.Capacity);
+        }
+
+        [Test]
+        public void EnsureCapacity_WhenMore_ShouldNotHaveSame()
+        {
+            var fastList = new FastList<object>();
+            var initialCap = fastList.Capacity;
+
+            fastList.EnsureCapacity(100);
+
+            Assert.AreNotEqual(initialCap, fastList.Capacity);
         }
     }
 }

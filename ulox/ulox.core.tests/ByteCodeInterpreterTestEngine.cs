@@ -48,6 +48,7 @@ namespace ULox.Core.Tests
                 _logger(MyEngine.Context.Program.Disassembly);
                 _logger(VmUtil.GenerateGlobalsDump(MyEngine.Context.Vm));
                 _logger(VmUtil.GenerateValueStackDump(MyEngine.Context.Vm));
+                _logger(VmUtil.GenerateReturnDump(MyEngine.Context.Vm));
             }
         }
 

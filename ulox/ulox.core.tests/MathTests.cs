@@ -184,5 +184,82 @@ expect res == 6;
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Round_WhenLower_ShouldBeFloor()
+        {
+            testEngine.Run(@"
+var res = Math.Round(5.4);
+expect res == 5;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Round_WhenUpper_ShouldBeCeil()
+        {
+            testEngine.Run(@"
+var res = Math.Round(5.6);
+expect res == 6;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Sign_WhenPositive_Should1()
+        {
+            testEngine.Run(@"
+var res = Math.Sign(1);
+expect res == 1;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Sign_WhenNegative_ShouldMinus1()
+        {
+            testEngine.Run(@"
+var res = Math.Sign(-1);
+expect res == -1;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Max_When1And2_ShouldBe2()
+        {
+            testEngine.Run(@"
+var res = Math.Max(1,2);
+expect res == 2;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Min_When1And2_ShouldBe1()
+        {
+            testEngine.Run(@"
+var res = Math.Min(1,2);
+expect res == 1;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Clamp_When0And1And2_ShouldBe1()
+        {
+            testEngine.Run(@"
+var res = Math.Clamp(0,1,2);
+expect res == 1;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
     }
 }

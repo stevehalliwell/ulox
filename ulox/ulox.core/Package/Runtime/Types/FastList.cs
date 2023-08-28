@@ -15,6 +15,8 @@ namespace ULox
 
         public int Count => _back + 1;
 
+        public int Capacity => _array.Length;
+
 
         public T this[int index]
         {

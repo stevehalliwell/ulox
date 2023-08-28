@@ -53,6 +53,9 @@ namespace ULox
         public Value GetArg(int index)
             => _valueStack[_currentCallFrame.StackStart + index];
 
+        public Value GetNextArg(ref int index)
+            => _valueStack[_currentCallFrame.StackStart + (++index)];
+
         public int CurrentFrameStackValues => _valueStack.Count - _currentCallFrame.StackStart;
         public Value StackTop => _valueStack.Peek();
         public int StackCount => _valueStack.Count;

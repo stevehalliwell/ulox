@@ -197,7 +197,7 @@ namespace ULox
             var comp = CurrentCompilerState;
             for (int i = comp.localCount - 1; i >= 0; i--)
             {
-                if (comp.locals[i].Depth < depth)
+                if (comp.locals[i].Depth <= depth)
                     break;
 
                 if (!comp.locals[i].IsCaptured)

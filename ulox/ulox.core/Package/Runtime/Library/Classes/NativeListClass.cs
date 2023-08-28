@@ -35,12 +35,16 @@ namespace ULox
                 (nameof(Until), Value.New(Until, 1, 1)),
                 
                 (nameof(Grow), Value.New(Grow, 1, 2)),
-                (nameof(Shrink), Value.New(Shrink, 1, 1))
+                (nameof(Shrink), Value.New(Shrink, 1, 1)),
+                (nameof(Clear), Value.New(Clear, 1, 0)),
+
+                (nameof(Front), Value.New(Front, 1, 0)),
+                (nameof(Back), Value.New(Back, 1, 0))
                                   );
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static List<Value> GetArg0NativeListInstance(Vm vm)
+        private static FastList<Value> GetArg0NativeListInstance(Vm vm)
         {
             var inst = vm.GetArg(0);
             var nativeListinst = inst.val.asInstance as NativeListInstance;
@@ -139,7 +143,7 @@ namespace ULox
             var retval = MakeInstance();
             var retvalList = ((NativeListInstance)retval).List;
 
-            retvalList.Capacity = list.Count;
+            retvalList.EnsureCapacity(list.Count);
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -204,7 +208,7 @@ namespace ULox
             var retval = MakeInstance();
             var retvalList = ((NativeListInstance)retval).List;
 
-            retvalList.Capacity = list.Count;
+            retvalList.EnsureCapacity(list.Count);
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -249,7 +253,7 @@ namespace ULox
 
             var retval = MakeInstance();
             var retvalList = ((NativeListInstance)retval).List;
-            retvalList.Capacity = list.Count;
+            retvalList.EnsureCapacity(list.Count);
 
             for (int i = 0; i < orderByArr.Length; i++)
             {
@@ -326,7 +330,7 @@ namespace ULox
             var retval = MakeInstance();
             var retvalList = ((NativeListInstance)retval).List;
 
-            retvalList.Capacity = list.Count;
+            retvalList.EnsureCapacity(list.Count);
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -367,6 +371,28 @@ namespace ULox
                 }
             }
 
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult Clear(Vm vm)
+        {
+            var list = GetArg0NativeListInstance(vm);
+            vm.SetNativeReturn(0, Value.New(list.Count));
+            list.Clear();
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult Front(Vm vm)
+        {
+            var list = GetArg0NativeListInstance(vm);
+            vm.SetNativeReturn(0, list.Count > 0 ? list[0] : Value.Null());
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult Back(Vm vm)
+        {
+            var list = GetArg0NativeListInstance(vm);
+            vm.SetNativeReturn(0, list.Count > 0 ? list[list.Count - 1] : Value.Null());
             return NativeCallResult.SuccessfulExpression;
         }
     }

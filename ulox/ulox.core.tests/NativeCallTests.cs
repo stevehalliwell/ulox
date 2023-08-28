@@ -165,5 +165,25 @@ Locals();");
 
             Assert.AreEqual("4", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Run_WhenNativeFuncWithMultipleArgs_ShouldReceiveAllInOrder()
+        {
+            NativeCallResult Func(Vm vm)
+            {
+                var index = 0;
+                var a = vm.GetNextArg(ref index).val.asString;
+                var b = vm.GetNextArg(ref index).val.asString;
+                var c = vm.GetNextArg(ref index).val.asString;
+                vm.SetNativeReturn(0, Value.New($"Hello, {a}, {b}, and {c}, I'm native."));
+                return NativeCallResult.SuccessfulExpression;
+            }
+
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("Meth"), Value.New(Func, 1, 3));
+
+            testEngine.Run(@"print (Meth(""you"", ""me"", ""everybody""));");
+
+            Assert.AreEqual("Hello, you, me, and everybody, I'm native.", testEngine.InterpreterResult);
+        }
     }
 }

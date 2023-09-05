@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -27,13 +28,10 @@ namespace ULox
 
             // ensure we add these in the order as we expect them to occur by most to least frequent
             this.AddGenerators(
-                new WhiteSpaceScannerTokenGenerator(),
-                new SingleCharScannerCharMatchTokenGenerator(),
-                identScannerGen,
-                new CompoundCharScannerCharMatchTokenGenerator(),
+                new DirectSymbolScannerMatchTokenGenerator(),
                 new NumberScannerTokenGenerator(),
                 new StringScannerTokenGenerator(),
-                new SlashScannerTokenGenerator()
+                identScannerGen
                 );
 
             identScannerGen.Add(
@@ -159,19 +157,25 @@ namespace ULox
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance() => _stringIterator.Advance();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] 
         public bool IsAtEnd() => _stringIterator.Peek() == -1;
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char Peek()
             => (char)_stringIterator.Peek();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReadLine()
             => _stringIterator.ReadLine();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token EmitTokenSingle(TokenType token)
             => EmitToken(token, CurrentChar.ToString(), null);
         
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Token EmitToken(TokenType simpleToken, string str, object literal)
             => new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber, _stringIterator.CurrentIndex);
 
@@ -183,21 +187,21 @@ namespace ULox
 
         private IScannerTokenGenerator GetMatchingGenerator(char ch)
         {
-            var matchinGen = default(IScannerTokenGenerator);
+            var matchingGen = default(IScannerTokenGenerator);
             for (int i = 0; i < _scannerGenerators.Count; i++)
             {
                 var gen = _scannerGenerators[i];
                 if (gen.DoesMatchChar(ch))
                 {
-                    matchinGen = gen;
+                    matchingGen = gen;
                     break;
                 }
             }
 
-            if (matchinGen == null)
+            if (matchingGen == null)
                 ThrowScannerException($"Unexpected character '{ch}'");
 
-            return matchinGen;
+            return matchingGen;
         }
     }
 }

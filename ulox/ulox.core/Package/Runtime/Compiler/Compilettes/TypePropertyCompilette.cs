@@ -5,23 +5,12 @@
         private TypeCompilette _typeCompilette;
         private TokenType _matchToken;
         private bool _requreEndStatement;
-        private bool _optionalVarKeyword;
 
         public static TypePropertyCompilette CreateForClass()
         {
             var compilette = new TypePropertyCompilette();
             compilette._matchToken = TokenType.VAR;
-            compilette._requreEndStatement = true;
-            compilette._optionalVarKeyword = false;
-            return compilette;
-        }
-
-        public static TypePropertyCompilette CreateForData()
-        {
-            var compilette = new TypePropertyCompilette();
-            compilette._matchToken = TokenType.NONE;
             compilette._requreEndStatement = false;
-            compilette._optionalVarKeyword = true;
             return compilette;
         }
 
@@ -40,9 +29,6 @@
         {
             do
             {
-                if (_optionalVarKeyword)
-                    compiler.TokenIterator.Match(TokenType.VAR);
-                
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                 byte nameConstant = compiler.AddStringConstant();
                 

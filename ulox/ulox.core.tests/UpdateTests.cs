@@ -5,10 +5,10 @@ namespace ULox.Core.Tests
     public class UpdateTests : EngineTestBase
     {
         [Test]
-        public void Update_WhenDataIsEmptyAndSameType_ShouldNotThrow()
+        public void Update_WhenClassIsEmptyAndSameType_ShouldNotThrow()
         {
             testEngine.Run(@"
-data Foo {}
+class Foo {}
 
 var foo = Foo();
 var foo2 = Foo();
@@ -21,10 +21,10 @@ foo = foo update foo2;
         }
         
         [Test]
-        public void Update_WhenDataIsEmptyAndNotSameType_ShouldNotThrow()
+        public void Update_WhenClassIsEmptyAndNotSameType_ShouldNotThrow()
         {
             testEngine.Run(@"
-data Foo {}
+class Foo {}
 
 var foo = Foo();
 var foo2 = {=};
@@ -37,10 +37,10 @@ foo = foo update foo2;
         }
         
         [Test]
-        public void Update_WhenDataIsNotEmptyAndDifferentAndSameType_ShouldUpdateValue()
+        public void Update_WhenClassIsNotEmptyAndDifferentAndSameType_ShouldUpdateValue()
         {
             testEngine.Run(@"
-data Foo { a }
+class Foo { var a; }
 
 var foo = Foo();
 foo.a = 1;

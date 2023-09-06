@@ -6,8 +6,6 @@ namespace ULox
     public enum UserType : byte
     {
         Native,
-        Data,
-        System,
         Class,
         Enum,
     }
@@ -28,30 +26,6 @@ namespace ULox
             compilette.GenerateCompiletteByStageArray();
             compilette.UserType = UserType.Class;
             compilette.MatchingToken = TokenType.CLASS;
-            return compilette;
-        }
-
-        public static TypeCompilette CreateDataCompilette()
-        {
-            var compilette = new TypeCompilette();
-            compilette.AddInnerDeclarationCompilette(new TypeSignsCompilette());
-            compilette.AddInnerDeclarationCompilette(new TypeMixinCompilette());
-            compilette.AddInnerDeclarationCompilette(TypePropertyCompilette.CreateForData());
-            compilette.GenerateCompiletteByStageArray();
-            compilette.UserType = UserType.Data;
-            compilette.MatchingToken = TokenType.DATA;
-            return compilette;
-        }
-
-        public static TypeCompilette CreateSystemCompilette()
-        {
-            var compilette = new TypeCompilette();
-            compilette.AddInnerDeclarationCompilette(new TypeSignsCompilette());
-            compilette.AddInnerDeclarationCompilette(new TypeMixinCompilette());
-            compilette.AddInnerDeclarationCompilette(TypeStaticElementCompilette.CreateForSystem());
-            compilette.GenerateCompiletteByStageArray();
-            compilette.UserType = UserType.System;
-            compilette.MatchingToken = TokenType.SYSTEM;
             return compilette;
         }
 

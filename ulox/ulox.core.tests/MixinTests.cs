@@ -379,42 +379,6 @@ print(foo.a);");
         }
 
         [Test]
-        public void Mixin_WhenDataAndDuplicateFlavours_ShouldHaveOnlyOnePresent()
-        {
-            testEngine.Run(@"
-var globalCounter = 0;
-
-data MixMe
-{
-    a = (globalCounter += 1);
-}
-
-data Combo1
-{
-    mixin MixMe;
-    b = 1;
-}
-
-data Combo2
-{
-    mixin MixMe;
-    c = 2;
-}
-
-data Foo 
-{
-    mixin Combo1, Combo2;
-}
-
-var foo = Foo();
-print(foo.a);
-print(foo.b);
-print(foo.c);");
-
-            Assert.AreEqual("112", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void MixinInits_WhenMultipleInit_ShouldDoAll()
         {
             testEngine.Run(@"

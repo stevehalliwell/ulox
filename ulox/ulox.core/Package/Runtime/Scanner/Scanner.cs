@@ -79,9 +79,6 @@ namespace ULox
 
                 ("expect", TokenType.EXPECT),
 
-                ("data", TokenType.DATA),
-                ("system", TokenType.SYSTEM),
-
                 ("match", TokenType.MATCH),
 
                 ("label", TokenType.LABEL),

@@ -137,14 +137,6 @@ namespace ULox
         {
             switch (UserType)
             {
-            case UserType.Data:
-                if (flavour.UserType != UserType.Data)
-                    vm.ThrowRuntimeException($"Cannot mixin '{flavour.Name}' into data '{Name}' as flavour is '{flavour.UserType}'");
-                break;
-            case UserType.System:
-                if (flavour.UserType != UserType.System)
-                    vm.ThrowRuntimeException($"Cannot mixin '{flavour.Name}' into system '{Name}' as flavour is '{flavour.UserType}'");
-                break;
             case UserType.Class:
                 break;
             case UserType.Enum:

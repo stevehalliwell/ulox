@@ -44,9 +44,7 @@ namespace ULox
                 _classCompiler,
                 _testcaseCompilette,
                 new BuildCompilette(),
-                TypeCompilette.CreateEnumCompilette(),
-                TypeCompilette.CreateDataCompilette(),
-                TypeCompilette.CreateSystemCompilette()
+                TypeCompilette.CreateEnumCompilette()
                 );
 
             this.AddDeclarationCompilette(

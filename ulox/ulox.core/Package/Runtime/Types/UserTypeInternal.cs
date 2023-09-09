@@ -131,6 +131,14 @@ namespace ULox
                     AddInitChain(flavourInitChain.closure, flavourInitChain.instruction);
                 }
             }
+
+            foreach (var fieldName in flavour.FieldNames)
+            {
+                if (_fieldsNames.Contains(fieldName))
+                    continue;
+
+                AddFieldName(fieldName);
+            }
         }
 
         private void ValidateMixin(UserTypeInternal flavour, Vm vm)

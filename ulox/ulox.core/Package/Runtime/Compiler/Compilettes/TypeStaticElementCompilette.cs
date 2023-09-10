@@ -2,35 +2,15 @@
 {
     public class TypeStaticElementCompilette : ITypeBodyCompilette
     {
-        private TokenType _matchToken;
-        private bool _supportVars;
-        
-        public static TypeStaticElementCompilette CreateForClass()
-        {
-            var newCompilette = new TypeStaticElementCompilette();
-            newCompilette._matchToken = TokenType.STATIC;
-            newCompilette._supportVars = true;
-            return newCompilette;
-        }
-
-        public static TypeStaticElementCompilette CreateForSystem()
-        {
-            var newCompilette = new TypeStaticElementCompilette();
-            newCompilette._matchToken = TokenType.NONE;
-            newCompilette._supportVars = false;
-            return newCompilette;
-        }
-
         public TokenType MatchingToken 
-            => _matchToken;
+            => TokenType.STATIC;
         
         public TypeCompiletteStage Stage 
             => TypeCompiletteStage.Static;
 
         public void Process(Compiler compiler)
         {
-            if (_supportVars 
-                && compiler.TokenIterator.Match(TokenType.VAR))
+            if (compiler.TokenIterator.Match(TokenType.VAR))
                 StaticProperty(compiler);
             else
                 StaticMethod(compiler);
@@ -73,10 +53,6 @@
 
             compiler.Function(name.String, FunctionType.Function);
             compiler.EmitPacket(new ByteCodePacket(OpCode.METHOD, constant));
-        }
-
-        public void Start(TypeCompilette typeCompilette)
-        {
         }
     }
 }

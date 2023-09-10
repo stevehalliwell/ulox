@@ -5,6 +5,97 @@ namespace ULox.Core.Tests
     public class ClassTests : EngineTestBase
     {
         [Test]
+        public void ClassInstanceFields_WhenAccessed_ShouldHaveInitialValues()
+        {
+            testEngine.Run(@"
+class Foo { var A = true, review, taste = ""Full""}
+var b = Foo();
+print (b.A);
+print (b.review);
+print (b.taste);");
+
+            Assert.AreEqual("TruenullFull", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ClassMixin_WhenCreated_ShouldHaveValues()
+        {
+            testEngine.Run(@"
+class Foo {var A = true, review, taste = ""Full""}
+class Bar {
+    mixin Foo; 
+var 
+    B = 1;
+}
+var b = Bar();
+print (b.A);
+print (b.review);
+print (b.taste);
+print (b.B);");
+
+            Assert.AreEqual("TruenullFull1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Delcared_WhenTrailingCommaInVarList_ShouldCompile()
+        {
+            testEngine.Run(@"
+class Foo {var a,b,c,}
+print (Foo);");
+
+            Assert.AreEqual("<Class Foo>", testEngine.InterpreterResult);
+        }
+
+//        [Test]
+//        public void Delcared_WhenVarOmittted_ShouldAssumeVars()
+//        {
+//            testEngine.Run(@"
+//class Foo {a,b=1,c,}
+//print (Foo().b);");
+
+//            Assert.AreEqual("1", testEngine.InterpreterResult);
+//        }
+
+
+        [Test]
+        public void Delcared_WhenAllStages_ShouldCompile()
+        {
+            testEngine.Run(@"
+class Foo {var foo=1;}
+class BarProto {var foo,a,b,c;}
+
+class Bar
+{
+    static var a_static = 1;
+
+    mixin Foo;
+    
+    signs BarProto;
+
+    var a = 1, b = 2, c = 3;
+
+    init()
+    {
+        this.a = 10;
+    }
+
+    Meth()
+    {
+        print (this.a + this.b + this.c);
+    }
+}
+
+var bar = Bar();
+print(bar.foo);
+print(bar.a);
+print(bar.b);
+bar.Meth();
+");
+
+            Assert.AreEqual("110215", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Delcared_WhenAccessed_ShouldHaveClassObject()
         {
             testEngine.Run(@"
@@ -355,19 +446,6 @@ maker.brew();");
         }
 
         [Test]
-        public void Engine_Class_Fields()
-        {
-            testEngine.Run(@"
-class T{ }
-
-T.a = 2;
-
-print(T.a);");
-
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Class_Init_Simple1()
         {
             testEngine.Run(@"
@@ -535,23 +613,6 @@ print(t.b);");
         }
 
         [Test]
-        public void Engine_Class_VarInitChainEmpty_AndInit()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a;
-
-    init(){this.a = 20;}
-}
-
-var t = T();
-print(t.a);");
-
-            Assert.AreEqual("20", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Class_VarWithInit()
         {
             testEngine.Run(@"
@@ -670,16 +731,6 @@ var t = T();
 print(t.a);");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Instance_WhenCreated_ShouldHaveInstanceObject()
-        {
-            testEngine.Run(@"
-class Brioche {}
-print (Brioche());");
-
-            Assert.AreEqual("<inst Brioche>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -964,6 +1015,507 @@ print(t.A());
 ");
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+        
+        [Test]
+        public void Engine_Class_StaticFields()
+        {
+            testEngine.Run(@"
+class T
+{
+    static var a = 2;
+}
+print(T.a);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_StaticFields_Modify()
+        {
+            testEngine.Run(@"
+class T
+{
+    static var a = 2;
+}
+T.a = 1;
+
+print(T.a);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_StaticFields_WhenClassModified_ShouldThrow()
+        {
+            testEngine.Run(@"
+class T
+{
+    static var a = 2;
+}
+
+T.b = 5;");
+
+            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.Contains("on a frozen object.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_NoThis_Method_WorksAsStatic()
+        {
+            testEngine.Run(@"
+class T
+{
+    NoMemberMethod()
+    {
+        retval = 7;
+    }
+}
+
+print(T.NoMemberMethod());");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Static_Method_OnClass()
+        {
+            testEngine.Run(@"
+class T
+{
+    static StaticMethod()
+    {
+        retval = 7;
+    }
+}
+
+print(T.StaticMethod());");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Static_Method_OnInstance()
+        {
+            testEngine.Run(@"
+class T
+{
+    static StaticMethod()
+    {
+        retval = 7;
+    }
+}
+
+print(T().StaticMethod());");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+        
+        [Test]
+        public void Mixin_WhenDeclared_ShouldCompileCleanly()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1;
+}
+
+class Foo 
+{
+    mixin MixMe;
+}
+
+print(1);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveMixinVar()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1,b,c;
+}
+
+class Foo 
+{
+    mixin MixMe;
+}
+
+var foo = Foo();
+print(foo.a);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveMixinVarAndSelf()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1,b,c;
+}
+
+class Foo 
+{
+    mixin MixMe;
+
+    var e = 1,f,g;
+}
+
+var foo = Foo();
+print(foo.a);
+print(foo.e);");
+
+            Assert.AreEqual("11", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombinedAndNamesClash_ShouldHaveSelfVar()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1,b,c;
+}
+
+class Foo 
+{
+    mixin MixMe;
+    var a = 2;
+}
+
+var foo = Foo();
+print(foo.a);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenManyCombined_ShouldHaveAll()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1;
+}
+class MixMe2
+{
+    var b = 2;
+}
+class MixMe3
+{
+    var c = 3;
+}
+
+
+class Foo 
+{
+    mixin 
+        MixMe,
+        MixMe2;
+    mixin MixMe3;
+
+    var d = 4;
+}
+
+var foo = Foo();
+print(foo.a);
+print(foo.b);
+print(foo.c);
+print(foo.d);");
+
+            Assert.AreEqual("1234", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenManyCombinedAndMixinsOfMixins_ShouldHaveAll()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1;
+}
+class MixMe2
+{
+    var b = 2;
+}
+class MixMe3
+{
+    var c = 3;
+}
+
+class MixMeSub1
+{
+    var e = 5;
+}
+
+class MixMeSub2
+{
+    var f = 6;
+}
+
+class MixMe4
+{
+    mixin MixMeSub1, MixMeSub2;
+    
+    var g = 7;
+}
+
+class Foo 
+{
+    mixin 
+        MixMe,
+        MixMe2;
+    mixin MixMe3;
+    mixin MixMe4;
+
+    var d = 4;
+}
+
+var foo = Foo();
+print(foo.a);
+print(foo.b);
+print(foo.c);
+print(foo.d);
+print(foo.e);
+print(foo.f);
+print(foo.g);");
+
+            Assert.AreEqual("1234567", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveOriginalVar()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1,b,c;
+}
+
+class Foo 
+{
+    mixin MixMe;
+
+    var bar = 2;
+}
+
+var foo = Foo();
+print(foo.bar);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveFlavourMethod()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe;
+    var bar = 2;
+}
+
+var foo = Foo();
+foo.Speak();");
+
+            Assert.AreEqual("MixMe", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveBoth()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe;
+    Speaketh(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speaketh();");
+
+            Assert.AreEqual("Foo", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenMultipleCombined_ShouldHaveAll()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class MixMe2
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin 
+        MixMe,
+        MixMe2;
+
+    Speaketh(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speaketh();");
+
+            Assert.AreEqual("Foo", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombinedAndNamesClash_ShouldHaveAllPrint()
+        {
+            testEngine.Run(@"
+
+class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class MixMe2
+{
+    Speak(){print(cname);}
+}
+
+
+class MixMe3
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe, MixMe2, MixMe3;
+
+    Speak(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speak();");
+
+            Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenInstanceMethodsCombinedAndNamesClash_ShouldHaveAllPrint()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var MixMeName = cname;
+
+    Speak(){print(this.MixMeName);}
+}
+
+class MixMe2
+{
+    var MixMeName2 = cname;
+
+    Speak(){print(this.MixMeName2);}
+}
+
+
+class MixMe3
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe, MixMe2, MixMe3;
+
+    Speak(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speak();");
+
+            Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenDuplicateFlavours_ShouldHaveOnlyOnePresent()
+        {
+            testEngine.Run(@"
+var globalCounter = 0;
+
+class MixMe
+{
+    var a = (globalCounter += 1);
+}
+
+class Combo1
+{
+    mixin MixMe;
+}
+
+class Combo2
+{
+    mixin MixMe;
+}
+
+class Foo 
+{
+    mixin Combo1, Combo2;
+}
+
+var foo = Foo();
+print(foo.a);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void MixinInits_WhenMultipleInit_ShouldDoAll()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var fizz = 1, negative = -1;
+}
+
+class Bar
+{
+    var buzz = 2, bitcount;
+}
+
+class FooBar
+{
+    mixin Foo, Bar;
+
+    init(fizz, buzz, bitcount){}
+}
+
+var expectedFizz = 10;
+var expectedBuzz = 20;
+var expectedBitcount = 30;
+var result = -1;
+
+var fooBar = FooBar(expectedFizz, expectedBuzz, expectedBitcount);
+result = fooBar.fizz + fooBar.negative + fooBar.buzz + fooBar.bitcount;
+
+print(result);");
+
+            Assert.AreEqual("59", testEngine.InterpreterResult);
         }
     }
 }

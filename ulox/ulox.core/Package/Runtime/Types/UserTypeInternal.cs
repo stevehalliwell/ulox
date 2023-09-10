@@ -94,7 +94,7 @@ namespace ULox
 
             Methods.AddOrSet(key, method);
 
-            if (key == TypeCompilette.InitMethodName)
+            if (key == ClassTypeCompilette.InitMethodName)
             {
                 Initialiser = method;
             }

@@ -2,16 +2,16 @@
 
 namespace ULox
 {
-    public class TypeSignsCompilette : ITypeBodyCompilette
+    public sealed class TypeSignsCompilette : ITypeBodyCompilette
     {
-        private TypeCompilette _typeCompilette;
+        private readonly TypeCompilette _typeCompilette;
 
         public TokenType MatchingToken
             => TokenType.SIGNS;
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Signs;
 
-        public void Start(TypeCompilette typeCompilette)
+        public TypeSignsCompilette(TypeCompilette typeCompilette)
         {
             _typeCompilette = typeCompilette;
         }

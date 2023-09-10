@@ -1,26 +1,16 @@
 ﻿namespace ULox
 {
-    public sealed class TypePropertyCompilette : ITypeBodyCompilette
+    public sealed class TypeInstancePropertyCompilette : ITypeBodyCompilette
     {
-        private TypeCompilette _typeCompilette;
-        private TokenType _matchToken;
-        private bool _requreEndStatement;
-
-        public static TypePropertyCompilette CreateForClass()
-        {
-            var compilette = new TypePropertyCompilette();
-            compilette._matchToken = TokenType.VAR;
-            compilette._requreEndStatement = false;
-            return compilette;
-        }
+        private readonly TypeCompilette _typeCompilette;
 
         public TokenType MatchingToken
-            => _matchToken;
+            => TokenType.VAR;
 
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Var;
 
-        public void Start(TypeCompilette typeCompilette)
+        public TypeInstancePropertyCompilette(TypeCompilette typeCompilette)
         {
             _typeCompilette = typeCompilette;
         }
@@ -31,7 +21,7 @@
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                 byte nameConstant = compiler.AddStringConstant();
-                
+
                 compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
                 compiler.EmitPacket(new ByteCodePacket(OpCode.FIELD, nameConstant));
 
@@ -73,10 +63,7 @@
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (compiler.TokenIterator.Check(TokenType.IDENTIFIER));
 
-            if(_requreEndStatement)
-                compiler.ConsumeEndStatement("property declaration");
-            else
-                compiler.TokenIterator.Match(TokenType.END_STATEMENT);
+            compiler.TokenIterator.Match(TokenType.END_STATEMENT);
         }
     }
 }

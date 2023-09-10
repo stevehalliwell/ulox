@@ -1,15 +1,15 @@
 ﻿namespace ULox
 {
-    public class TypeMixinCompilette : ITypeBodyCompilette
+    public sealed class TypeMixinCompilette : ITypeBodyCompilette
     {
-        private TypeCompilette _typeCompilette;
+        private readonly TypeCompilette _typeCompilette;
 
         public TokenType MatchingToken
             => TokenType.MIXIN;
         public TypeCompiletteStage Stage
             => TypeCompiletteStage.Mixin;
 
-        public void Start(TypeCompilette typeCompilette)
+        public TypeMixinCompilette(TypeCompilette typeCompilette)
         {
             _typeCompilette = typeCompilette;
         }

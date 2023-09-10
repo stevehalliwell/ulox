@@ -35,7 +35,7 @@ namespace ULox
         private void Setup()
         {
             var _testdec = new TestSetDeclarationCompilette();
-            var _classCompiler = TypeCompilette.CreateClassCompilette();
+            var _classCompiler = new ClassTypeCompilette();
             var _testcaseCompilette = new TestcaseCompillette(_testdec);
 
             this.AddDeclarationCompilette(
@@ -44,7 +44,7 @@ namespace ULox
                 _classCompiler,
                 _testcaseCompilette,
                 new BuildCompilette(),
-                TypeCompilette.CreateEnumCompilette()
+                new EnumTypeCompliette()
                 );
 
             this.AddDeclarationCompilette(

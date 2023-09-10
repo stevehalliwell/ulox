@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public class TypeEnumValueCompilette : ITypeBodyCompilette
+    public sealed class EnumTypeCompliette : TypeCompilette
     {
         private enum Mode
         {
@@ -15,29 +15,33 @@ namespace ULox
         private double _previousNumber = -1;
         private Mode _mode = Mode.Unknown;
 
-        public TokenType MatchingToken
-            => TokenType.NONE;
-        public TypeCompiletteStage Stage
-            => TypeCompiletteStage.Var;
+        public override TokenType MatchingToken => TokenType.ENUM;
 
-        public void Start(TypeCompilette typeCompilette)
+        public override UserType UserType => UserType.Enum;
+     
+        public EnumTypeCompliette()
+        {
+            IsReadOnlyAtEnd = true;
+        }
+
+        protected override void Start()
         {
             _enumKeys.Clear();
             _previousNumber = -1;
             _mode = Mode.Unknown;
         }
 
-        public void Process(Compiler compiler)
+        protected override void InnerBodyElement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier next in enum declare.");
-            
+
             do
             {
                 var enumKey = compiler.TokenIterator.PreviousToken.Literal as string;
 
                 if (_enumKeys.Contains(enumKey))
                     compiler.ThrowCompilerException($"Duplicate Enum Key '{enumKey}'");
-                
+
                 _enumKeys.Add(enumKey);
 
                 compiler.AddConstantAndWriteOp(Value.New(enumKey));
@@ -45,7 +49,7 @@ namespace ULox
                 if (compiler.TokenIterator.Match(TokenType.ASSIGN))
                 {
                     SetMode(compiler, Mode.Manual);
-                    compiler.Expression(); 
+                    compiler.Expression();
                 }
                 else
                 {
@@ -56,7 +60,7 @@ namespace ULox
 
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, 1));//get class or inst this on the stack
                 compiler.EmitPacket(new ByteCodePacket(OpCode.ENUM_VALUE));
-                
+
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (compiler.TokenIterator.Match(TokenType.IDENTIFIER));
         }

@@ -18,9 +18,5 @@
             compiler.Function(name, FunctionType.Method);
             compiler.EmitPacket(new ByteCodePacket(OpCode.METHOD, constant,0,0));
         }
-
-        public void Start(TypeCompilette typeCompilette)
-        {
-        }
     }
 }

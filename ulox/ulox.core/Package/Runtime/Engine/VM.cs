@@ -278,7 +278,9 @@ namespace ULox
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble % rhs.val.asDouble));
+                        var lhsd = lhs.val.asDouble;
+                        var rhsd = rhs.val.asDouble;
+                        Push(Value.New(((lhsd % rhsd) + rhsd) % rhsd));
                         break;
                     }
 

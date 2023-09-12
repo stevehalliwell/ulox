@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -9,12 +10,10 @@ namespace ULox
         private StringIterator _stringIterator = new StringIterator("");
         public char CurrentChar => _stringIterator.CurrentChar;
 
-        public static readonly Token NoTokenFound = new Token(TokenType.NONE, string.Empty, null, 0, 0, -1);
-        public static Token SharedNoToken => NoTokenFound;
-
         private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
 
         private Script _script;
+        private List<Token> _tokens;
 
         public Scanner()
         {
@@ -104,33 +103,22 @@ namespace ULox
             _stringIterator = null;
             _script = default;
         }
-        
-        public Token Next()
-        {
-            while (!IsAtEnd())
-            {
-                Advance();
-                var matchinGen = GetMatchingGenerator(CurrentChar);
-                var tok = matchinGen.Consume(this);
-                if (tok.TokenType != TokenType.NONE)
-                    return tok;
-            }
-
-            return EmitTokenSingle(TokenType.EOF);
-        }
 
         public List<Token> Scan(Script script)
         {
             SetScript(script);
-            var tokens = new List<Token>(TokenStartingCapacity);
-            var lastToken = default(Token);
-            do
+            _tokens = new List<Token>(TokenStartingCapacity);
+
+            while (!IsAtEnd())
             {
-                lastToken = Next();
-                tokens.Add(lastToken);
-            } while (lastToken.TokenType != TokenType.EOF);
-            
-            return tokens;
+                Advance();
+                var matchinGen = GetMatchingGenerator(CurrentChar);
+                matchinGen.Consume(this);
+            }
+
+            EmitTokenSingle(TokenType.EOF);
+
+            return _tokens;
         }
 
         public void SetScript(Script script)
@@ -169,12 +157,14 @@ namespace ULox
             => _stringIterator.ReadLine();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Token EmitTokenSingle(TokenType token)
+        public void EmitTokenSingle(TokenType token)
             => EmitToken(token, CurrentChar.ToString(), null);
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Token EmitToken(TokenType simpleToken, string str, object literal)
-            => new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber, _stringIterator.CurrentIndex);
+        public void EmitToken(TokenType simpleToken, string str, object literal)
+        { 
+            _tokens.Add(new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber, _stringIterator.CurrentIndex));
+        }
 
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)
         {

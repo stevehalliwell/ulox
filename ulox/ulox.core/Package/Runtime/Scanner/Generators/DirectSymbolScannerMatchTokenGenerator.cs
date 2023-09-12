@@ -4,58 +4,78 @@ namespace ULox
 {
     public sealed class DirectSymbolScannerMatchTokenGenerator : IScannerTokenGenerator
     {
-        public Token Consume(Scanner scanner)
+        public void Consume(Scanner scanner)
         {
             switch (scanner.CurrentChar)
             {
             case '(':
-                return scanner.EmitTokenSingle(TokenType.OPEN_PAREN);
+                scanner.EmitTokenSingle(TokenType.OPEN_PAREN);
+                break;
             case ')':
-                return scanner.EmitTokenSingle(TokenType.CLOSE_PAREN);
+                scanner.EmitTokenSingle(TokenType.CLOSE_PAREN);
+                break;
             case '{':
-                return scanner.EmitTokenSingle(TokenType.OPEN_BRACE);
+                scanner.EmitTokenSingle(TokenType.OPEN_BRACE);
+                break;
             case '}':
-                return scanner.EmitTokenSingle(TokenType.CLOSE_BRACE);
+                scanner.EmitTokenSingle(TokenType.CLOSE_BRACE);
+                break;
             case '[':
-                return scanner.EmitTokenSingle(TokenType.OPEN_BRACKET);
+                scanner.EmitTokenSingle(TokenType.OPEN_BRACKET);
+                break;
             case ']':
-                return scanner.EmitTokenSingle(TokenType.CLOSE_BRACKET);
+                scanner.EmitTokenSingle(TokenType.CLOSE_BRACKET);
+                break;
             case ',':
-                return scanner.EmitTokenSingle(TokenType.COMMA);
+                scanner.EmitTokenSingle(TokenType.COMMA);
+                break;
             case ';':
-                return scanner.EmitTokenSingle(TokenType.END_STATEMENT);
+                scanner.EmitTokenSingle(TokenType.END_STATEMENT);
+                break;
             case '.':
-                return scanner.EmitTokenSingle(TokenType.DOT);
+                scanner.EmitTokenSingle(TokenType.DOT);
+                break;
             case ':':
-                return scanner.EmitTokenSingle(TokenType.COLON);
+                scanner.EmitTokenSingle(TokenType.COLON);
+                break;
             case '?':
-                return scanner.EmitTokenSingle(TokenType.QUESTION);
+                scanner.EmitTokenSingle(TokenType.QUESTION);
+                break;
                 //compound
             case '+':
-                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.PLUS : TokenType.PLUS_EQUAL);
+                scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.PLUS : TokenType.PLUS_EQUAL);
+                break;
             case '-':
-                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.MINUS : TokenType.MINUS_EQUAL);
+                scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.MINUS : TokenType.MINUS_EQUAL);
+                break;
             case '*':
-                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.STAR : TokenType.STAR_EQUAL);
+                scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.STAR : TokenType.STAR_EQUAL);
+                break;
             case '%':
-                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.PERCENT : TokenType.PERCENT_EQUAL);
+                scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.PERCENT : TokenType.PERCENT_EQUAL);
+                break;
             case '!':
-                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.BANG : TokenType.BANG_EQUAL);
+                scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.BANG : TokenType.BANG_EQUAL);
+                break;
             case '=':
-                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.ASSIGN : TokenType.EQUALITY);
+                scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.ASSIGN : TokenType.EQUALITY);
+                break;
             case '<':
-                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.LESS : TokenType.LESS_EQUAL);
+                scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.LESS : TokenType.LESS_EQUAL);
+                break;
             case '>':
-                return scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.GREATER : TokenType.GREATER_EQUAL);
+                scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.GREATER : TokenType.GREATER_EQUAL);
+                break;
             case '/':
-                return ConsumeSlash(scanner);
+                ConsumeSlash(scanner);
+                break;
                 //whitespace
             case ' ':
             case '\r':
             case '\t':
             case '\n':
             default:
-                return Scanner.SharedNoToken;
+                break;
             }
         }
 
@@ -97,25 +117,24 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Token ConsumeSlash(Scanner scanner)
+        private void ConsumeSlash(Scanner scanner)
         {
             if (scanner.Match('/'))
             {
                 scanner.ReadLine();
-                return Scanner.SharedNoToken;
             }
             else if (scanner.Match('*'))
             {
-                return ConsumeBlockComment(scanner);
+                ConsumeBlockComment(scanner);
             }
             else
             {
-                return scanner.EmitTokenSingle(scanner.Match('=') ? TokenType.SLASH_EQUAL : TokenType.SLASH);
+                scanner.EmitTokenSingle(scanner.Match('=') ? TokenType.SLASH_EQUAL : TokenType.SLASH);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static Token ConsumeBlockComment(Scanner scanner)
+        private static void ConsumeBlockComment(Scanner scanner)
         {
             while (!scanner.IsAtEnd())
             {
@@ -128,7 +147,6 @@ namespace ULox
                     scanner.Advance();
                 }
             }
-            return Scanner.SharedNoToken;
         }
     }
 }

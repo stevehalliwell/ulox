@@ -308,36 +308,5 @@ fun foo(p)
             var ex = Assert.Throws<ScannerException>(Act);
             Assert.AreEqual("Unterminated String got IDENTIFIER in test at 1:14", ex.Message);
         }
-
-        [Test]
-        [TestCase(@"var PI = 3.14;")]
-        [TestCase(@"var a = 1; a = 2 * a;
-fun foo(p)
-{
-    var a = p;
-    var b = ""Hello"";
-    fun bar()
-    {
-        var a = 7;
-    }
-    var res = bar();
-}")]
-        public void Next_WhenCalledTillEmpty_ShouldMatchBatch(string testString)
-        {
-            var testScript = new Script("test", testString);
-            var bulkScanner = new Scanner();
-            var oneAATScanner = new Scanner();
-            var bulkTokens = bulkScanner.Scan(testScript);
-            var oneAATTokens = new List<Token>();
-            oneAATScanner.SetScript(testScript);
-
-            do
-            {
-                var tok = oneAATScanner.Next();
-                oneAATTokens.Add(tok);
-            } while (oneAATTokens.Last().TokenType != TokenType.EOF);
-
-            CollectionAssert.AreEquivalent(bulkTokens, oneAATTokens);
-        }
     }
 }

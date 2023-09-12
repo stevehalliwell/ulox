@@ -208,8 +208,8 @@ namespace ULox
 
         public CompiledScript Compile(Scanner scanner, Script script)
         {
-            scanner.SetScript(script);
-            TokenIterator = new TokenIterator(scanner, script);
+            var tokens = scanner.Scan(script);
+            TokenIterator = new TokenIterator(scanner, script, tokens);
             TokenIterator.Advance();
 
             PushCompilerState(string.Empty, FunctionType.Script);

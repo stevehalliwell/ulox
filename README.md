@@ -81,6 +81,15 @@ someFunc();
 //strings can be combined with '+'
 var someCombinedString = someString + " " + "there";
 
+//all strings are interpolated
+//  within a string code between {} must be an expression and is scanned as being plus-ed with
+//  the string parts that surround it.
+var someName = "Steve";
+var interpedCombined = "Hi {someName}";
+
+//if we want the {, we escape it with \
+var stringWithBrak = "this has a \{ in it."
+
 // native types for list, map, and object types
 var aList = []; //an empty list
 aList.Add(7);   //methods to add remove and the like.

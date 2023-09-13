@@ -25,11 +25,10 @@ namespace ULox
         {
             var identScannerGen = new IdentifierScannerTokenGenerator();
 
-            // ensure we add these in the order as we expect them to occur by most to least frequent
             this.AddGenerators(
+                new StringScannerTokenGenerator(),  //needs the chance to steel } from direct symbol
                 new DirectSymbolScannerMatchTokenGenerator(),
                 new NumberScannerTokenGenerator(),
-                new StringScannerTokenGenerator(),
                 identScannerGen
                 );
 

@@ -202,7 +202,7 @@ print(res);
         public void DeserialiseViaLibrary_WhenGivenKnownObject_ShouldReturnExpectedOutput()
         {
             testEngine.Run(@"
-var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var jsonString = ""\{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var res = Serialise.FromJson(jsonString);
 print(res.a);
 print(res.b);
@@ -216,7 +216,7 @@ print(res.c);
         public void DeserialiseViaLibrary_WhenGivenKnownArray_ShouldReturnExpectedOutput()
         {
             testEngine.Run(@"
-var jsonString = ""{ \""a\"": [ 1.0, 2.0, 3.0 ] }"";
+var jsonString = ""\{ \""a\"": [ 1.0, 2.0, 3.0 ] }"";
 var res = Serialise.FromJson(jsonString);
 ");
 

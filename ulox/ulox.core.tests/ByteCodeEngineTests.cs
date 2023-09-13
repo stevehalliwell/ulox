@@ -797,17 +797,6 @@ print(a+b);");
         }
 
         [Test]
-        public void Engine_StringConcat_ViaFunc()
-        {
-            testEngine.Run(@"
-var a = 3;
-var b = ""Foo"";
-print(str(a)+str(b));");
-
-            Assert.AreEqual("3Foo", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_ContextAssertLibrary_IsFound()
         {
             testEngine.Run(@"

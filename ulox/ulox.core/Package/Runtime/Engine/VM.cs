@@ -22,7 +22,7 @@ namespace ULox
 
         public Vm()
         {
-            var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native", FunctionType.Function);
+            var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native");
             nativeChunk.WritePacket(new ByteCodePacket(OpCode.NATIVE_CALL), 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }

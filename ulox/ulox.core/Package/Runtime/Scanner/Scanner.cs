@@ -62,7 +62,7 @@ namespace ULox
 
                 ("class", TokenType.CLASS),
                 ("mixin", TokenType.MIXIN),
-                ("this", TokenType.THIS),
+                (ClassTypeCompilette.ThisName.String, TokenType.THIS),
                 ("static", TokenType.STATIC),
                 ("init", TokenType.INIT),
                 ("cname", TokenType.CONTEXT_NAME_CLASS),

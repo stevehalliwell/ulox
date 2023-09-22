@@ -283,27 +283,10 @@ namespace ULox
         {
             var newCompState = new CompilerState(compilerStates.Peek(), functionType)
             {
-                chunk = new Chunk(name, TokenIterator?.SourceName, functionType),
+                chunk = new Chunk(name, TokenIterator?.SourceName),
             };
             compilerStates.Push(newCompState);
-
-            AfterCompilerStatePushed();
-        }
-
-        private void AfterCompilerStatePushed()
-        {
-            var functionType = CurrentCompilerState.functionType;
-
-            if (functionType == FunctionType.Method
-                || functionType == FunctionType.Init)
-            {
-                CurrentCompilerState.AddLocal(this, "this", 0);
-            }
-            else
-            {
-                //calls have local 0 as a reference to the closure but are not able to ref it themselves.
-                CurrentCompilerState.AddLocal(this, "", 0);
-            }
+            CurrentCompilerState.AddLocal(this, "", 0);
         }
 
         public void NamedVariable(string name, bool canAssign)
@@ -405,7 +388,7 @@ namespace ULox
             return (getOp, setOp, (byte)argId);
         }
 
-        private Chunk EndCompile()
+        public Chunk EndCompile()
         {
             EmitReturn();
             var returnChunk = compilerStates.Pop().chunk;
@@ -459,6 +442,12 @@ namespace ULox
         public void Function(string name, FunctionType functionType)
         {
             PushCompilerState(name, functionType);
+
+            if (functionType == FunctionType.Method
+               || functionType == FunctionType.Init)
+            {
+                CurrentCompilerState.locals[0] = new CompilerState.Local(ClassTypeCompilette.ThisName.String, 0);
+            }
 
             BeginScope();
             VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));

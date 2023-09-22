@@ -5,6 +5,7 @@ namespace ULox
     public sealed class ClassTypeCompilette : TypeCompilette
     {
         public static readonly HashedString InitMethodName = new HashedString("init");
+        public static readonly HashedString ThisName = new HashedString("this");
 
         private readonly Dictionary<TokenType, ITypeBodyCompilette> _innerDeclarationCompilettes = new Dictionary<TokenType, ITypeBodyCompilette>();
         private ITypeBodyCompilette _bodyCompiletteFallback;
@@ -28,7 +29,7 @@ namespace ULox
             if (CurrentTypeName == null)
                 compiler.ThrowCompilerException("Cannot use the 'this' keyword outside of a class");
 
-            compiler.NamedVariable("this", canAssign);
+            compiler.NamedVariable(ThisName.String, canAssign);
         }
 
         private void AddInnerDeclarationCompilette(ITypeBodyCompilette compilette)

@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System.Xml.Linq;
+
+namespace ULox
 {
     public enum UserType : byte
     {
@@ -75,6 +77,7 @@
             Stage = TypeCompiletteStage.Begin;
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect type name.");
             CurrentTypeName = (string)compiler.TokenIterator.PreviousToken.Literal;
+            compiler.PushCompilerState($"{CurrentTypeName}_typedeclare", FunctionType.TypeDeclare);
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
 
@@ -96,6 +99,11 @@
                 compiler.NamedVariable(CurrentTypeName, false);
                 compiler.EmitPacket(new ByteCodePacket(OpCode.READ_ONLY));
             }
+
+            var chunk = compiler.EndCompile();
+            compiler.EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, compiler.CurrentChunk.AddConstant(Value.New(chunk)), (byte)chunk.UpvalueCount)));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.CALL, 0, 0, 0));
+            compiler.EmitPop();
         }
 
         private void DoClassBody(Compiler compiler)

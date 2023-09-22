@@ -495,7 +495,7 @@ class T
 
 var t = T();");
 
-            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Method' has encountered a late 'Init' stage element in chunk 'unnamed_chunk(test)' at 5:9 'init'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Method' has encountered a late 'Init' stage element in chunk 'T_typedeclare(test)' at 5:9 'init'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -543,7 +543,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element in chunk 'unnamed_chunk(test)' at 5:8 'var'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element in chunk 'T_typedeclare(test)' at 5:8 'var'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1516,6 +1516,185 @@ result = fooBar.fizz + fooBar.negative + fooBar.buzz + fooBar.bitcount;
 print(result);");
 
             Assert.AreEqual("59", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ManyConstants_WhenCompiled_ShouldPass()
+        {
+            testEngine.Run(@"
+class ShipPart
+{
+var
+    name = ""standard"",
+}
+
+class ShipPartAdjust
+{
+var
+    accelAdjust = 0, //todo accel when shooting and not shooting
+    turnPerSecondThrustAdjust = 0,
+    turnPerSecondFreeSpinAdjust = 0,
+    gravityAdjust = 0,
+    dragSharpnessAdjust = 0,
+    sidewaysDragSharpnessAdjust = 0,
+    massAdjust = 0,
+    fireRateAdjust = 0,
+    kickbackAdjust = 0,
+    projectileSpeedAdjust = 0,
+    projectileSpeedInherAdjust = 0,
+    healthAdjust = 0,
+    maxSpeedAdjust = 0,
+    invulnTimeAdjust = 0,
+    timeTilRegenAdjust = 0,
+    healthRegenRateAdjust = 0,
+    comboPickupLifetimeAdjust = 0,
+    //todo accel at full health bonus
+    //todo accel at low health bonus
+}
+
+class ShipBodyPart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    dragSharpness = 0.2,
+    sidewaysDragSharpness = 2,
+    mass = 1,
+    health = 5,
+    invulnTime = 1,
+    timeTilRegen = 1,
+    healthRegenRate = 2,
+}
+
+class ShipWingPart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    gravity = 5,
+    turnPerSecondFreeSpin = 290,
+}
+
+class ShipEnginePart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    accel = 20,
+    maxSpeed = 10,
+}
+
+class ShipTailPart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    turnPerSecondThrust = 190,
+    comboPickupLifetime = 20,
+}
+
+class ShipWeaponPart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    fireRate = 0.05,
+    kickback = 10,
+    projectileSpeed = 10,
+    projectileSpeedInher = 0.5,
+}
+
+class ShipCharacter
+{
+var
+    accel = 20,
+    maxSpeed = 12,
+    turnPerSecondThrust = 190,
+    turnPerSecondFreeSpin = 290,
+    gravity = 10,
+    dragSharpness = 0.5,
+    sidewaysDragSharpness = 3,
+    mass = 1,
+    fireRate = 0.5,
+    kickback = 1,
+    projectileSpeed = 10,
+    projectileSpeedInher = 0.5,
+    maxHealth = 5,
+    invulnTime = -1, 
+    timeTilRegen = 0,
+    healthRegenRate = -1,
+    shotName = ""PlayerSmallShot"",
+    comboPickupLifetime = 20,
+    //todo add pickup range and attract range here as aspects of the ship
+}
+
+class ShipState
+{
+var
+    go, 
+    posX = 0,
+    posY = 0,
+    heading = 0, 
+    velX = 0,
+    velY = 1,
+    extAccelX = 0,
+    extAccelY = 0,
+    controlState = ShipControlState(),
+    shipChar = ShipCharacter(),
+    weaponState = ShipWeaponState(),
+    lastMotionData = ShipLastMotionData(),
+    healthState = ShipHealthState(),
+    scalingState = ShipAttributeScalingState();
+}
+
+class ShipControlState
+{
+var
+    throttle = 0,
+    rudder = 0,
+    trigger = false;
+}
+
+class ShipWeaponState
+{
+var
+    fireRateCounter = 0;
+}
+
+class ShipLastMotionData
+{
+var
+    lastAccel,
+    lastDrag;
+}
+
+class ShipHealthState
+{
+var
+    health = 5,
+    damageQueue = [],
+    timeSinceHit = 0,
+}
+
+class ShipAttributeScalingState
+{
+var
+    fireRateBonus = 1,
+    projectileSpeedBonus = 1,
+    turnPerSecondThrustBonus = 1,
+    turnPerSecondFreeSpinBonus = 1,
+    timeTilRegenBonus = 1,
+    accelBonus = 1,
+    kickbackBonus = 1,
+}
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
         }
     }
 }

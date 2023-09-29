@@ -189,34 +189,23 @@ namespace ULox
                     compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                     byte nameConstant = compiler.AddStringConstant();
 
-                    compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.FIELD, nameConstant));    //TODO: once we make types this would go away, the fields would be setup by type and assigned by initchains
                     _typeCompilette.CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Lexeme);
 
                     //emit jump // to skip this during imperative
                     var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
                     //patch jump previous init fragment if it exists
-                    if (_typeCompilette.PreviousInitFragLabelId != -1)
-                    {
-                        compiler.EmitLabel((byte)_typeCompilette.PreviousInitFragLabelId);
-                    }
-                    else
-                    {
-                        compiler.EmitLabel((byte)_typeCompilette.InitChainLabelId);
-                    }
+                    compiler.EmitLabel(_typeCompilette.PreviousInitFragLabelId != -1
+                        ? (byte)_typeCompilette.PreviousInitFragLabelId
+                        : _typeCompilette.InitChainLabelId);
 
                     compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)0));//get class or inst this on the stack
 
                     //if = consume it and then
                     //eat 1 expression or a push null
                     if (compiler.TokenIterator.Match(TokenType.ASSIGN))
-                    {
                         compiler.Expression();
-                    }
                     else
-                    {
                         compiler.EmitNULL();
-                    }
 
                     //emit set prop
                     compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant));
@@ -295,7 +284,7 @@ namespace ULox
                     {
                         _typeCompilette.CurrentTypeInfoEntry.AddContract(contractName);
                         var (meets, msg) = MeetValidator.ValidateClassMeetsClass(_typeCompilette.CurrentTypeInfoEntry, compiler.TypeInfo.GetUserType(contractName));
-                        if(!meets)
+                        if (!meets)
                         {
                             compiler.ThrowCompilerException($"Class '{_typeCompilette.CurrentTypeName}' does not meet contract '{contractName}'. {msg}");
                         }

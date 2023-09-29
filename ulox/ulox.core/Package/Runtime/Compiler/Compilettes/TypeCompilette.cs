@@ -32,9 +32,6 @@
         protected abstract void InnerBodyElement(Compiler compiler);
 
         public void Process(Compiler compiler)
-            => InnerProcess(compiler);
-
-        private void InnerProcess(Compiler compiler)
         {
             PreviousInitFragLabelId = -1;
 
@@ -60,7 +57,7 @@
         {
             Stage = TypeCompiletteStage.Begin;
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect type name.");
-            _currentTypeInfo = new TypeInfoEntry((string)compiler.TokenIterator.PreviousToken.Literal);
+            _currentTypeInfo = new TypeInfoEntry((string)compiler.TokenIterator.PreviousToken.Literal, UserType);
             compiler.PushCompilerState($"{CurrentTypeName}_typedeclare", FunctionType.TypeDeclare);
             byte nameConstant = compiler.AddStringConstant();
             compiler.DeclareVariable();
@@ -91,7 +88,6 @@
             compiler.EmitPacket(new ByteCodePacket(OpCode.CALL, 0, 0, 0));
             compiler.EmitPop();
 
-            _currentTypeInfo.AddInitChainLabelId(InitChainLabelId);
             compiler.TypeInfo.AddType(_currentTypeInfo);
         }
 

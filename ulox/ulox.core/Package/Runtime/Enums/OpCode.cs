@@ -50,7 +50,6 @@
         GET_PROPERTY,
         SET_PROPERTY,
         METHOD,
-        FIELD,
         INVOKE,
 
         FREEZE,

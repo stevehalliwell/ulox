@@ -28,6 +28,7 @@ namespace ULox
             {
                 var script = _buildQueue.Dequeue();
                 var s = Context.CompileScript(script);
+                Context.Vm.PrepareTypes(Context.Program.TypeInfo);
                 Context.Vm.Interpret(s.TopLevelChunk);
             }
         }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -483,10 +484,6 @@ namespace ULox
 
                 case OpCode.METHOD:
                     DoMethodOp(chunk, packet.b1);
-                    break;
-
-                case OpCode.FIELD:
-                    DoFieldOp(chunk, packet.b1);
                     break;
 
                 case OpCode.MIXIN:
@@ -1166,17 +1163,13 @@ namespace ULox
         {
             var constantIndex = typeDetails.stringConstantId;
             var name = chunk.ReadConstant(constantIndex);
-            var userType = typeDetails.UserType;
-            UserTypeInternal klass = userType == UserType.Enum
-                ? new EnumClass(name.val.asString)
-                : new UserTypeInternal(name.val.asString, userType);
-            var klassValue = Value.New(klass);
+            Globals.Get(name.val.asString, out var klassValue);
             Push(klassValue);
             var initChainLabelID = typeDetails.initLabelId;
             var initChain = chunk.Labels[initChainLabelID];
             if (initChain != 0)
             {
-                klass.AddInitChain(_currentCallFrame.Closure, (ushort)initChain);
+                klassValue.val.asClass.AddInitChain(_currentCallFrame.Closure, (ushort)initChain);
             }
         }
 
@@ -1340,13 +1333,6 @@ namespace ULox
             var klass = Peek(1).val.asClass;
             klass.AddMethod(name, method, this);
             DiscardPop();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoFieldOp(Chunk chunk, byte constantIndex)
-        {
-            var klass = Pop().val.asClass;
-            klass.AddFieldName(chunk.ReadConstant(constantIndex).val.asString);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1522,6 +1508,20 @@ namespace ULox
         internal void MoveInstructionPointerTo(ushort loc)
         {
             _currentCallFrame.InstructionPointer = loc;
+        }
+
+        public void PrepareTypes(TypeInfo typeInfo)
+        {
+            foreach (var type in typeInfo.Types)
+            {
+                if (Globals.Contains(new HashedString(type.Name))) continue;
+
+                var klass = type.UserType == UserType.Class
+                    ? new UserTypeInternal(type)
+                    : new EnumClass(type);
+                klass.PreareFromType(this);
+                Globals.AddOrSet(klass.Name, Value.New(klass));
+            }
         }
     }
 }

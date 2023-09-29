@@ -46,11 +46,28 @@ namespace ULox
         public List<(ClosureInternal closure, ushort instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, ushort)>();
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private readonly List<HashedString> _fieldsNames = new List<HashedString>();
+        protected TypeInfoEntry _typeInfoEntry;
 
         public UserTypeInternal(HashedString name, UserType userType)
         {
             Name = name;
             UserType = userType;
+        }
+
+        public UserTypeInternal(TypeInfoEntry type)
+        {
+            _typeInfoEntry = type;
+
+            Name = new HashedString(type.Name);
+            UserType = type.UserType;
+        }
+
+        public void PreareFromType(Vm vm)
+        {
+            foreach (var field in _typeInfoEntry.Fields)
+            {
+                AddFieldName(new HashedString(field));
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

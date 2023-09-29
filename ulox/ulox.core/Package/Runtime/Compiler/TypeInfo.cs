@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ULox
 {
@@ -8,6 +7,8 @@ namespace ULox
         private Dictionary<string, TypeInfoEntry> _userTypes = new Dictionary<string, TypeInfoEntry>();
 
         public int UserTypeCount => _userTypes.Count;
+
+        public IEnumerable<TypeInfoEntry> Types => _userTypes.Values;
 
         public void AddType(TypeInfoEntry typeInfoEntry)
         {
@@ -30,16 +31,17 @@ namespace ULox
         private List<string> _fields = new List<string>();
         private List<string> _contracts = new List<string>();
         private List<TypeInfoEntry> _mixins = new List<TypeInfoEntry>();
-        private List<byte> _initChainLabelIds = new List<byte>();
         public string Name => _name;
         public IReadOnlyList<Chunk> Methods => _methods;
         public IReadOnlyList<string> Fields => _fields;
         public IReadOnlyList<TypeInfoEntry> Mixins => _mixins;
         public IReadOnlyList<string> Contracts => _contracts;
+        public UserType UserType { get; private set; }
 
-        public TypeInfoEntry(string name)
+        public TypeInfoEntry(string name, UserType userType)
         {
             _name = name;
+            UserType = userType;
         }
 
         public void AddMethod(Chunk chunk)
@@ -63,12 +65,6 @@ namespace ULox
             _fields.AddRange(targetTypeInfoEntry.Fields);
             _methods.AddRange(targetTypeInfoEntry.Methods);
             _contracts.AddRange(targetTypeInfoEntry.Contracts);
-            _initChainLabelIds.AddRange(targetTypeInfoEntry._initChainLabelIds);
-        }
-
-        public void AddInitChainLabelId(byte initChainLabelId)
-        {
-            _initChainLabelIds.Add(initChainLabelId);
         }
     }
 }

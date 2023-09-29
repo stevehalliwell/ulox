@@ -177,7 +177,7 @@ class T
 var t = T();
 t.c = 10;");
 
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -192,7 +192,7 @@ class T
 
 T.c = 10;");
 
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -1056,8 +1056,7 @@ class T
 
 T.b = 5;");
 
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
-            StringAssert.Contains("on a frozen object.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
 
         [Test]

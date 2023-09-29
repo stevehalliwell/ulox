@@ -1111,13 +1111,13 @@ namespace ULox
         public static void Meets(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.MEETS));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.Meets));
         }
 
         public static void Signs(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.SIGNS));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.Signs));
         }
 
         internal byte GotoUniqueChunkLabel(string v)

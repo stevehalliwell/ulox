@@ -528,16 +528,6 @@ namespace ULox
                     DoTypeOfOp();
                     break;
 
-                //can merge into validate, this is not perf critical
-                case OpCode.MEETS:
-                    DoMeetsOp();
-                    break;
-
-                //can merge into validate, this is not perf critical
-                case OpCode.SIGNS:
-                    DoSignsOp();
-                    break;
-
                 case OpCode.COUNT_OF:
                 {
                     var target = PopOrLocal(packet.b1);
@@ -630,23 +620,6 @@ namespace ULox
                 VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
                 VmUtil.GenerateValueStackDump(this),
                 VmUtil.GenerateCallStackDump(this));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMeetsOp()
-        {
-            var (rhs, lhs) = Pop2();
-            var (meets, _) = ProcessContract(lhs, rhs);
-            Push(Value.New(meets));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSignsOp()
-        {
-            var (rhs, lhs) = Pop2();
-            var (meets, msg) = ProcessContract(lhs, rhs);
-            if (!meets)
-                ThrowRuntimeException($"Sign failure with msg '{msg}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -855,8 +828,23 @@ namespace ULox
                 if (requestedResults != availableResults)
                     ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
                 break;
-
+            case ValidateOp.Meets:
+                {
+                    var (rhs, lhs) = Pop2();
+                    var (meets, _) = ProcessContract(lhs, rhs);
+                    Push(Value.New(meets));
+                }
+                break;
+            case ValidateOp.Signs:
+                {
+                    var (rhs, lhs) = Pop2();
+                    var (meets, msg) = ProcessContract(lhs, rhs);
+                    if (!meets)
+                        ThrowRuntimeException($"Sign failure with msg '{msg}'");
+                }
+                break;
             default:
+                ThrowRuntimeException($"Unhandled validate op '{validateOp}'");
                 break;
             }
         }

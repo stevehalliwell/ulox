@@ -52,7 +52,7 @@
         METHOD,
         INVOKE,
 
-        FREEZE,
+        FREEZE, //could collapse with READ_ONLY
 
         MIXIN,
 
@@ -67,9 +67,6 @@
 
         TYPEOF,
 
-        MEETS,
-        SIGNS,
-
         COUNT_OF,
 
         EXPECT,
@@ -79,7 +76,7 @@
         LABEL,
 
         ENUM_VALUE,
-        READ_ONLY,
+        READ_ONLY, //could collapse with FREEZE
 
         UPDATE,
     }

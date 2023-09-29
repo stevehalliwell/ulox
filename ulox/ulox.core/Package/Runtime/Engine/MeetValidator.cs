@@ -125,6 +125,32 @@ namespace ULox
             if (ourArity != contractMethArity)
                 return (false, $"Expected arity '{contractMethArity}' but found '{ourArity}'.");
 
+            if (lhsMatchingChunk.ReturnCount != contractChunk.ReturnCount)
+                return (false, $"Expected return count '{contractChunk.ReturnCount}' but found '{lhsMatchingChunk.ReturnCount}'.");
+
+            return (true, string.Empty);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static (bool meets, string msg) ValidateClassMeetsClass(TypeInfoEntry targetType, TypeInfoEntry contractType)
+        {
+            foreach (var field in contractType.Fields)
+            {
+                if (!targetType.Fields.Contains(field))
+                    return (false, $"Type '{targetType.Name}' does not contain matching field '{field}'.");
+            }
+
+            foreach (var method in contractType.Methods)
+            {
+                var found = targetType.Methods.FirstOrDefault(x => x.Name == method.Name);
+                if (found == null)
+                    return (false, $"Type '{targetType.Name}' does not contain matching method '{method.Name}'.");
+
+                var (meets, msg) = ChunkMatcher(method, found);
+                if(!meets)
+                    return (false, msg);
+            }
+
             return (true, string.Empty);
         }
     }

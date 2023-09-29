@@ -9,7 +9,9 @@ namespace ULox
     {
         private readonly IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
         private readonly PrattParserRuleSet _prattParser = new PrattParserRuleSet();
+        private readonly TypeInfo _typeInfo = new TypeInfo();
 
+        public TypeInfo TypeInfo => _typeInfo;
         public TokenIterator TokenIterator { get; private set; }
 
         public TokenType CurrentTokenType
@@ -439,7 +441,7 @@ namespace ULox
             return AddStringConstant();
         }
 
-        public void Function(string name, FunctionType functionType)
+        public Chunk Function(string name, FunctionType functionType)
         {
             PushCompilerState(name, functionType);
 
@@ -469,7 +471,7 @@ namespace ULox
             TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             Block();
 
-            EndFunction();
+            return EndFunction();
         }
 
         public byte VariableNameListDeclareOptional(Action postDefinePerVar)
@@ -510,7 +512,7 @@ namespace ULox
                 ThrowCompilerException($"Can't have more than 255 returns.");
         }
 
-        public void EndFunction()
+        public Chunk EndFunction()
         {
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
@@ -525,6 +527,8 @@ namespace ULox
                     comp.upvalues[i].isLocal ? (byte)1 : (byte)0,
                     comp.upvalues[i].index)));
             }
+            
+            return function;
         }
 
         public void Block()

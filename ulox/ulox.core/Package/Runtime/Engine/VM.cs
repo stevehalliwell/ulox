@@ -417,7 +417,7 @@ namespace ULox
                     if (Globals.Get(actualName, out var found))
                         Push(found);
                     else
-                        ThrowRuntimeException($"No global of name {actualName} could be found");
+                        ThrowRuntimeException($"No global of name '{actualName}' could be found");
                 }
                 break;
 

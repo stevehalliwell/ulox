@@ -97,13 +97,10 @@
             var classReturnEnd = compiler.GotoUniqueChunkLabel("ClassReturnEnd");
 
             if (PreviousInitFragLabelId != -1)
+            {
                 compiler.EmitLabel((byte)PreviousInitFragLabelId);
-            else
-                compiler.CurrentCompilerState.chunk.AddLabel(InitChainLabelId, 0);
-
-            var loc = compiler.CurrentCompilerState.chunk.Labels[InitChainLabelId];
-            if(loc != 0)
-                _currentTypeInfo.PrependInitChain(compiler.CurrentChunk, (ushort)loc);
+                _currentTypeInfo.PrependInitChain(compiler.CurrentChunk, (byte)InitChainLabelId);
+            }
 
             compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN));
 

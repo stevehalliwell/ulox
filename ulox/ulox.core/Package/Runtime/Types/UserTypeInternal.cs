@@ -44,7 +44,7 @@ namespace ULox
 
         public UserType UserType { get; }
         public Value Initialiser { get; protected set; } = Value.Null();
-        public List<(Chunk chunk, ushort instruction)> InitChains { get; protected set; } = new List<(Chunk, ushort)>();
+        public List<(Chunk chunk, byte labelID)> InitChains { get; protected set; } = new List<(Chunk, byte)>();
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private readonly List<HashedString> _fieldsNames = new List<HashedString>();
         protected TypeInfoEntry _typeInfoEntry;
@@ -63,7 +63,7 @@ namespace ULox
             UserType = type.UserType;
         }
 
-        public void PreareFromType(Vm vm)
+        public void PrepareFromType(Vm vm)
         {
             foreach (var field in _typeInfoEntry.Fields)
             {
@@ -134,12 +134,12 @@ namespace ULox
             }
         }
 
-        public void AddInitChain(Chunk chunk, ushort initChainStartOp)
+        public void AddInitChain(Chunk chunk, byte labelID)
         {
             // This is used internally by the vm only does not need to check for frozen
             if (InitChains.Any(x => x.chunk == chunk)) return;
 
-            InitChains.Add((chunk, initChainStartOp));
+            InitChains.Add((chunk, labelID));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

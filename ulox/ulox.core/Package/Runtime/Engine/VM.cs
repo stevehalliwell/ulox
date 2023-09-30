@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -1343,7 +1342,7 @@ namespace ULox
                 ThrowRuntimeException($"Expected zero args for class '{klass}', as it does not have an 'init' method but got {argCount} args");
             }
 
-            foreach (var (chunk, instruction) in klass.InitChains)
+            foreach (var (chunk, labelID) in klass.InitChains)
             {
                 if (!klass.Initialiser.IsNull())
                     Push(inst);
@@ -1351,7 +1350,7 @@ namespace ULox
                 PushNewCallframe(new CallFrame()
                 {
                     Closure = new ClosureInternal { chunk = chunk },
-                    InstructionPointer = instruction,
+                    InstructionPointer = chunk.Labels[labelID],
                     StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                 });
             }
@@ -1475,7 +1474,7 @@ namespace ULox
                 var klass = type.UserType == UserType.Class
                     ? new UserTypeInternal(type)
                     : new EnumClass(type);
-                klass.PreareFromType(this);
+                klass.PrepareFromType(this);
                 Globals.AddOrSet(klass.Name, Value.New(klass));
             }
         }

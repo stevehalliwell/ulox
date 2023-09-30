@@ -138,7 +138,6 @@ namespace ULox
             case OpCode.DEFINE_GLOBAL:
             case OpCode.FETCH_GLOBAL:
             case OpCode.ASSIGN_GLOBAL:
-            case OpCode.METHOD:
                 DoConstant(packet);
                 break;
             case OpCode.SET_PROPERTY:

@@ -482,10 +482,6 @@ namespace ULox
                     DoUserTypeOp(chunk, packet.typeDetails);
                     break;
 
-                case OpCode.METHOD:
-                    DoMethodOp(chunk, packet.b1);
-                    break;
-
                 case OpCode.MIXIN:
                     DoMixinOp(chunk);
                     break;
@@ -1305,16 +1301,6 @@ namespace ULox
                 ThrowRuntimeException($"Cannot invoke '{methodName}' on '{receiver}'");
                 break;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMethodOp(Chunk chunk, byte constantIndex)
-        {
-            var name = chunk.ReadConstant(constantIndex).val.asString;
-            Value method = Peek();
-            var klass = Peek(1).val.asClass;
-            klass.AddMethod(name, method, this);
-            DiscardPop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

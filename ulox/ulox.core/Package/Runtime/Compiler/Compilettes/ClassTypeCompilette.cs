@@ -64,9 +64,36 @@ namespace ULox
         {
             byte constant = compiler.AddStringConstant();
             var name = compiler.TokenIterator.PreviousToken.Lexeme;
-            var chunk = compiler.Function(name, functionType);
-            compiler.EmitPacket(new ByteCodePacket(OpCode.METHOD, constant, 0, 0)); //todo: remove once we bind types
-            CurrentTypeInfoEntry.AddMethod(chunk);
+
+            compiler.PushCompilerState(name, functionType);
+
+            if (functionType == FunctionType.Method
+               || functionType == FunctionType.Init)
+            {
+                compiler.CurrentCompilerState.locals[0] = new CompilerState.Local(ThisName.String, 0);
+            }
+
+            compiler.BeginScope();
+            compiler.VariableNameListDeclareOptional(() => compiler.IncreaseArity(compiler.AddStringConstant()));
+            var returnCount = compiler.VariableNameListDeclareOptional(() => compiler.IncreaseReturn(compiler.AddStringConstant()));
+
+            if (functionType == FunctionType.Init)
+            {
+                if (returnCount != 0)
+                    compiler.ThrowCompilerException("Init functions cannot specify named return vars.");
+            }
+            else if (returnCount == 0)
+            {
+                var retvalId = compiler.DeclareAndDefineCustomVariable("retval");
+                compiler.IncreaseReturn(retvalId);
+            }
+
+            // The body.
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
+            compiler.Block();
+
+            var function = compiler.EndCompile();
+            CurrentTypeInfoEntry.AddMethod(function);
         }
 
         public sealed class TypeStaticElementCompilette : ITypeBodyCompilette

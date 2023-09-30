@@ -77,6 +77,12 @@ namespace ULox
                     AddInitChain(chunk, loc);
                 }
             }
+
+            foreach (var method in _typeInfoEntry.Methods)
+            {
+                var methodValue = Value.New(new ClosureInternal { chunk = method });
+                AddMethod(new HashedString(method.Name), methodValue, vm);
+            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -145,10 +151,10 @@ namespace ULox
 
             flavours.AddOrSet(flavour.Name, flavourValue);
 
-            foreach (var flavourMeth in flavour.Methods)
-            {
-                AddMethod(flavourMeth.Key, flavourMeth.Value, vm);
-            }
+            //foreach (var flavourMeth in flavour.Methods)
+            //{
+            //    AddMethod(flavourMeth.Key, flavourMeth.Value, vm);
+            //}
 
             foreach (var flavourInitChain in flavour.InitChains)
             {

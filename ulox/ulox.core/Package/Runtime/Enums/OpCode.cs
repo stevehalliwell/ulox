@@ -49,7 +49,6 @@
         TYPE,
         GET_PROPERTY,
         SET_PROPERTY,
-        METHOD,
         INVOKE,
 
         FREEZE, //could collapse with READ_ONLY

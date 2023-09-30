@@ -204,7 +204,7 @@ namespace ULox
                     popCount++;
             }
 
-            if(popCount > 0)
+            if (popCount > 0)
                 EmitPop(popCount);
         }
 
@@ -443,25 +443,19 @@ namespace ULox
 
         public Chunk Function(string name, FunctionType functionType)
         {
-            PushCompilerState(name, functionType);
-
             if (functionType == FunctionType.Method
                || functionType == FunctionType.Init)
             {
-                CurrentCompilerState.locals[0] = new CompilerState.Local(ClassTypeCompilette.ThisName.String, 0);
+                ThrowCompilerException($"Cannot declare a {functionType} function outside of a class.");
             }
+
+            PushCompilerState(name, functionType);
 
             BeginScope();
             VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
             var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
 
-
-            if (functionType == FunctionType.Init)
-            {
-                if (returnCount != 0)
-                    ThrowCompilerException("Init functions cannot specify named return vars.");
-            }
-            else if (returnCount == 0)
+            if (returnCount == 0)
             {
                 var retvalId = DeclareAndDefineCustomVariable("retval");
                 IncreaseReturn(retvalId);
@@ -471,7 +465,21 @@ namespace ULox
             TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             Block();
 
-            return EndFunction();
+            // Create the function object.
+            var comp = CurrentCompilerState;   //we need this to mark upvalues
+            var function = EndCompile();
+            EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount)));
+
+            for (int i = 0; i < function.UpvalueCount; i++)
+            {
+                EmitPacket(
+                    new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(
+                    ClosureType.UpValueInfo,
+                    comp.upvalues[i].isLocal ? (byte)1 : (byte)0,
+                    comp.upvalues[i].index)));
+            }
+
+            return function;
         }
 
         public byte VariableNameListDeclareOptional(Action postDefinePerVar)
@@ -510,25 +518,6 @@ namespace ULox
             CurrentChunk.ReturnConstantIds.Add(argNameConstant);
             if (CurrentChunk.ReturnCount > 255)
                 ThrowCompilerException($"Can't have more than 255 returns.");
-        }
-
-        public Chunk EndFunction()
-        {
-            // Create the function object.
-            var comp = CurrentCompilerState;   //we need this to mark upvalues
-            var function = EndCompile();
-            EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount)));
-
-            for (int i = 0; i < function.UpvalueCount; i++)
-            {
-                EmitPacket(
-                    new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(
-                    ClosureType.UpValueInfo,
-                    comp.upvalues[i].isLocal ? (byte)1 : (byte)0,
-                    comp.upvalues[i].index)));
-            }
-            
-            return function;
         }
 
         public void Block()

@@ -43,7 +43,7 @@ namespace ULox
 
         public UserType UserType { get; }
         public Value Initialiser { get; protected set; } = Value.Null();
-        public List<(ClosureInternal closure, ushort instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, ushort)>();
+        public List<(Chunk chunk, ushort instruction)> InitChains { get; protected set; } = new List<(Chunk, ushort)>();
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private readonly List<HashedString> _fieldsNames = new List<HashedString>();
         protected TypeInfoEntry _typeInfoEntry;
@@ -67,6 +67,15 @@ namespace ULox
             foreach (var field in _typeInfoEntry.Fields)
             {
                 AddFieldName(new HashedString(field));
+            }
+
+            foreach (var (chunk, labelID) in _typeInfoEntry.InitChains)
+            {
+                var loc = (ushort)chunk.Labels[labelID];
+                if (loc != 0)
+                {
+                    AddInitChain(chunk, loc);
+                }
             }
         }
 
@@ -122,11 +131,11 @@ namespace ULox
             }
         }
 
-        public void AddInitChain(ClosureInternal closure, ushort initChainStartOp)
+        public void AddInitChain(Chunk chunk, ushort initChainStartOp)
         {
             // This is used internally by the vm only does not need to check for frozen
 
-            InitChains.Add((closure, initChainStartOp));
+            InitChains.Add((chunk, initChainStartOp));
         }
         
         public void MixinClass(Value flavourValue, Vm vm)
@@ -145,7 +154,7 @@ namespace ULox
             {
                 if (!InitChains.Contains(flavourInitChain))
                 {
-                    AddInitChain(flavourInitChain.closure, flavourInitChain.instruction);
+                    AddInitChain(flavourInitChain.chunk, flavourInitChain.instruction);
                 }
             }
 

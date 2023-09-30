@@ -31,11 +31,13 @@ namespace ULox
         private List<string> _fields = new List<string>();
         private List<string> _contracts = new List<string>();
         private List<TypeInfoEntry> _mixins = new List<TypeInfoEntry>();
+        private List<(Chunk chunk, byte labelID)> _initChains = new List<(Chunk, byte)>();
         public string Name => _name;
         public IReadOnlyList<Chunk> Methods => _methods;
         public IReadOnlyList<string> Fields => _fields;
         public IReadOnlyList<TypeInfoEntry> Mixins => _mixins;
         public IReadOnlyList<string> Contracts => _contracts;
+        public IReadOnlyList<(Chunk chunk, byte labelID)> InitChains => _initChains;
         public UserType UserType { get; private set; }
 
         public TypeInfoEntry(string name, UserType userType)
@@ -65,6 +67,11 @@ namespace ULox
             _fields.AddRange(targetTypeInfoEntry.Fields);
             _methods.AddRange(targetTypeInfoEntry.Methods);
             _contracts.AddRange(targetTypeInfoEntry.Contracts);
+        }
+
+        public void AddInitChain(Chunk currentChunk, byte initChainLabelId)
+        {
+            _initChains.Add((currentChunk, initChainLabelId));
         }
     }
 }

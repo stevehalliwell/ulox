@@ -1153,12 +1153,6 @@ namespace ULox
             var name = chunk.ReadConstant(constantIndex);
             Globals.Get(name.val.asString, out var klassValue);
             Push(klassValue);
-            var initChainLabelID = typeDetails.initLabelId;
-            var initChain = chunk.Labels[initChainLabelID];
-            if (initChain != 0)
-            {
-                klassValue.val.asClass.AddInitChain(_currentCallFrame.Closure, (ushort)initChain);
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1375,14 +1369,14 @@ namespace ULox
                 ThrowRuntimeException($"Expected zero args for class '{klass}', as it does not have an 'init' method but got {argCount} args");
             }
 
-            foreach (var (closure, instruction) in klass.InitChains)
+            foreach (var (chunk, instruction) in klass.InitChains)
             {
                 if (!klass.Initialiser.IsNull())
                     Push(inst);
 
                 PushNewCallframe(new CallFrame()
                 {
-                    Closure = closure,
+                    Closure = new ClosureInternal { chunk = chunk },
                     InstructionPointer = instruction,
                     StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                 });

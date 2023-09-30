@@ -41,10 +41,10 @@
 
             DoClassBody(compiler);
 
+            DoEndType(compiler);
+
             OnPostBody?.Invoke(compiler);
             OnPostBody = null;
-
-            DoEndType(compiler);
 
             _currentTypeInfo = null;
         }
@@ -100,6 +100,8 @@
                 compiler.EmitLabel((byte)PreviousInitFragLabelId);
             else
                 compiler.CurrentCompilerState.chunk.AddLabel(InitChainLabelId, 0);
+
+            _currentTypeInfo.AddInitChain(compiler.CurrentChunk, InitChainLabelId);
 
             compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN));
 

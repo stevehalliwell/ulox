@@ -101,7 +101,9 @@
             else
                 compiler.CurrentCompilerState.chunk.AddLabel(InitChainLabelId, 0);
 
-            _currentTypeInfo.AddInitChain(compiler.CurrentChunk, InitChainLabelId);
+            var loc = compiler.CurrentCompilerState.chunk.Labels[InitChainLabelId];
+            if(loc != 0)
+                _currentTypeInfo.PrependInitChain(compiler.CurrentChunk, (ushort)loc);
 
             compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN));
 

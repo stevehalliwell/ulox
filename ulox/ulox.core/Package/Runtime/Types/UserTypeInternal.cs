@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -38,7 +39,7 @@ namespace ULox
         public Table Methods { get; private set; } = new Table();
         private readonly Table flavours = new Table();
         private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
-        
+
         public HashedString Name { get; protected set; }
 
         public UserType UserType { get; }
@@ -69,13 +70,9 @@ namespace ULox
                 AddFieldName(new HashedString(field));
             }
 
-            foreach (var (chunk, labelID) in _typeInfoEntry.InitChains)
+            foreach (var (chunk, loc) in _typeInfoEntry.InitChains)
             {
-                var loc = (ushort)chunk.Labels[labelID];
-                if (loc != 0)
-                {
-                    AddInitChain(chunk, loc);
-                }
+                AddInitChain(chunk, loc);
             }
 
             foreach (var method in _typeInfoEntry.Methods)
@@ -140,51 +137,9 @@ namespace ULox
         public void AddInitChain(Chunk chunk, ushort initChainStartOp)
         {
             // This is used internally by the vm only does not need to check for frozen
+            if (InitChains.Any(x => x.chunk == chunk)) return;
 
             InitChains.Add((chunk, initChainStartOp));
-        }
-        
-        public void MixinClass(Value flavourValue, Vm vm)
-        {
-            var flavour = flavourValue.val.asClass;
-            ValidateMixin(flavour, vm);
-
-            flavours.AddOrSet(flavour.Name, flavourValue);
-
-            //foreach (var flavourMeth in flavour.Methods)
-            //{
-            //    AddMethod(flavourMeth.Key, flavourMeth.Value, vm);
-            //}
-
-            foreach (var flavourInitChain in flavour.InitChains)
-            {
-                if (!InitChains.Contains(flavourInitChain))
-                {
-                    AddInitChain(flavourInitChain.chunk, flavourInitChain.instruction);
-                }
-            }
-
-            foreach (var fieldName in flavour.FieldNames)
-            {
-                if (_fieldsNames.Contains(fieldName))
-                    continue;
-
-                AddFieldName(fieldName);
-            }
-        }
-
-        private void ValidateMixin(UserTypeInternal flavour, Vm vm)
-        {
-            switch (UserType)
-            {
-            case UserType.Class:
-                break;
-            case UserType.Enum:
-            case UserType.Native:
-            default:
-                vm.ThrowRuntimeException($"Encounted unexpected mixin type on type '{this.Name}'");
-                break;
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

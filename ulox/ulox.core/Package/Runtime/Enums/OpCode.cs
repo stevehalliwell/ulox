@@ -53,8 +53,6 @@
 
         FREEZE, //could collapse with READ_ONLY
 
-        MIXIN,
-
         TEST,
 
         BUILD,

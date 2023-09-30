@@ -270,11 +270,8 @@ namespace ULox
                 {
                     compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
                     var targetname = compiler.TokenIterator.PreviousToken.Literal as string;
-                    compiler.NamedVariable(targetname, false);
                     var targetTypeInfoEntry = compiler.TypeInfo.GetUserType(targetname);
                     _typeCompilette.CurrentTypeInfoEntry.AddMixin(targetTypeInfoEntry);
-                    compiler.NamedVariable(_typeCompilette.CurrentTypeName, false);
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.MIXIN));  //todo: remove once we bind types
                 } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
                 compiler.ConsumeEndStatement("mixin declaration");

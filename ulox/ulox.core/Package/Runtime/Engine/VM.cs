@@ -482,10 +482,6 @@ namespace ULox
                     DoUserTypeOp(chunk, packet.typeDetails);
                     break;
 
-                case OpCode.MIXIN:
-                    DoMixinOp(chunk);
-                    break;
-
                 case OpCode.INVOKE:
                     DoInvokeOp(chunk, packet);
                     break;
@@ -1301,14 +1297,6 @@ namespace ULox
                 ThrowRuntimeException($"Cannot invoke '{methodName}' on '{receiver}'");
                 break;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMixinOp(Chunk chunk)
-        {
-            //pop2
-            var (klass, mixin) = Pop2();
-            klass.val.asClass.MixinClass(mixin, this);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

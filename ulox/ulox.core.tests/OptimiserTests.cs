@@ -14,7 +14,7 @@ namespace ULox.Core.Tests
             base.Setup();
             _opt = testEngine.MyEngine.Context.Program.Optimiser;
             _opt.Enabled = true;
-            _opt.EnableRemoveUnreachableLabels = true;
+            //_opt.EnableRemoveUnreachableLabels = true;
             _opt.EnableLocalizing = true;
             _opt.OptimisationReporter = new OptimisationReporter();
         }

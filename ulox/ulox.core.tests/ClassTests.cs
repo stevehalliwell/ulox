@@ -56,7 +56,6 @@ print (Foo);");
 //            Assert.AreEqual("1", testEngine.InterpreterResult);
 //        }
 
-
         [Test]
         public void Delcared_WhenAllStages_ShouldCompile()
         {
@@ -1077,7 +1076,7 @@ print(T.NoMemberMethod());");
         }
 
         [Test]
-        public void Engine_Static_Method_OnClass()
+        public void Static_Method_OnClass()
         {
             testEngine.Run(@"
 class T
@@ -1093,8 +1092,40 @@ print(T.StaticMethod());");
             Assert.AreEqual("7", testEngine.InterpreterResult);
         }
 
+        //todo we'd like to do this but not currently able due to how methods are stored and looked up
+//        [Test]
+//        public void Method_WhenCalledOnClass_ShouldFail()
+//        {
+//            testEngine.Run(@"
+//class T
+//{
+//    Method()
+//    {
+//        retval = 7;
+//    }
+//}
+
+//print(T.Method());");
+
+//            Assert.AreEqual("this should fail to find name", testEngine.InterpreterResult);
+//        }
+
         [Test]
-        public void Engine_Static_Method_OnInstance()
+        public void Prop_WhenCalledOnClass_ShouldFail()
+        {
+            testEngine.Run(@"
+class T
+{
+    var foo = 1;
+}
+
+var a = T.foo;");
+
+            StringAssert.StartsWith("Undefined property 'foo', cannot bind method as it has no fromClass a", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Static_Method_OnInstance()
         {
             testEngine.Run(@"
 class T

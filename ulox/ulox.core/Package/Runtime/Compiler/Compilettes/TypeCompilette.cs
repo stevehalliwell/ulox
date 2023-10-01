@@ -28,6 +28,7 @@
         }
 
         public abstract UserType UserType { get; }
+        public abstract bool EmitClosureCallAtEnd { get; }
 
         protected abstract void InnerBodyElement(Compiler compiler);
 
@@ -41,7 +42,9 @@
 
             DoClassBody(compiler);
 
+            DoInitChainEnd(compiler);
             DoEndType(compiler);
+            compiler.TypeInfo.AddType(_currentTypeInfo);
 
             OnPostBody?.Invoke(compiler);
             OnPostBody = null;
@@ -49,9 +52,7 @@
             _currentTypeInfo = null;
         }
 
-        protected virtual void Start()
-        {
-        }
+        protected abstract void Start();
 
         private void DoDeclareType(Compiler compiler)
         {
@@ -60,35 +61,24 @@
             _currentTypeInfo = new TypeInfoEntry((string)compiler.TokenIterator.PreviousToken.Literal, UserType);
             compiler.PushCompilerState($"{CurrentTypeName}_typedeclare", FunctionType.TypeDeclare);
             byte nameConstant = compiler.AddStringConstant();
-            compiler.DeclareVariable();
 
             InitChainLabelId = compiler.UniqueChunkLabelStringConstant("InitChain");
-            compiler.EmitPacket(new ByteCodePacket(OpCode.TYPE, new ByteCodePacket.TypeDetails(nameConstant, UserType, InitChainLabelId)));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.FETCH_GLOBAL, nameConstant));
 
-            compiler.DefineVariable(nameConstant);
-            compiler.NamedVariable(CurrentTypeName, false);
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
         }
 
         private void DoEndType(Compiler compiler)
         {
-            DoInitChainEnd(compiler);
-
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
-            compiler.EmitPacket(new ByteCodePacket(OpCode.FREEZE));
-
-            if (IsReadOnlyAtEnd)
-            {
-                compiler.NamedVariable(CurrentTypeName, false);
-                compiler.EmitPacket(new ByteCodePacket(OpCode.READ_ONLY));
-            }
-
             var chunk = compiler.EndCompile();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, compiler.CurrentChunk.AddConstant(Value.New(chunk)), (byte)chunk.UpvalueCount)));
-            compiler.EmitPacket(new ByteCodePacket(OpCode.CALL, 0, 0, 0));
-            compiler.EmitPop();
-
-            compiler.TypeInfo.AddType(_currentTypeInfo);
+            //TODO now only enums need this 
+            if (EmitClosureCallAtEnd)
+            {
+                compiler.EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, compiler.CurrentChunk.AddConstant(Value.New(chunk)), (byte)chunk.UpvalueCount)));
+                compiler.EmitPacket(new ByteCodePacket(OpCode.CALL, 0, 0, 0));
+                compiler.EmitPop();
+            }
         }
 
         private void DoInitChainEnd(Compiler compiler)

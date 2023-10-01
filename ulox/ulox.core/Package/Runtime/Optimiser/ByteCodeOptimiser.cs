@@ -18,7 +18,7 @@ namespace ULox
 
         public bool Enabled { get; set; } = true;
         public bool EnableLocalizing { get; set; } = true;
-        public bool EnableRemoveUnreachableLabels { get; set; } = false;
+        private bool EnableRemoveUnreachableLabels { get; set; } = false;    //todo this would need to consider the typeinfo data now too
 
         public OptimisationReporter OptimisationReporter { get; set; }
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
@@ -139,9 +139,6 @@ namespace ULox
 
             switch (packet.OpCode)
             {
-            case OpCode.TYPE:
-                AddLabelUsage(packet.typeDetails.initLabelId);
-                break;
             case OpCode.TEST:
                 if (packet.testOpDetails.TestOpType == TestOpType.TestFixtureBodyInstruction)
                     AddLabelUsage(packet.testOpDetails.b1);

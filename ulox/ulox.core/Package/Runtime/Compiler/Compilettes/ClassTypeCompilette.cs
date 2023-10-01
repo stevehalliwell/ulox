@@ -14,6 +14,9 @@ namespace ULox
 
         public override UserType UserType => UserType.Class;
 
+        private bool _needsEndClosure = false;
+        public override bool EmitClosureCallAtEnd => _needsEndClosure;
+
         public ClassTypeCompilette()
         {
             AddInnerDeclarationCompilette(new TypeStaticElementCompilette(this));
@@ -37,6 +40,11 @@ namespace ULox
             _innerDeclarationCompilettes[compilette.MatchingToken] = compilette;
             if (compilette.MatchingToken == TokenType.NONE)
                 _bodyCompiletteFallback = compilette;
+        }
+
+        protected override void Start()
+        {
+            _needsEndClosure = false;
         }
 
         protected override void InnerBodyElement(Compiler compiler)
@@ -119,12 +127,13 @@ namespace ULox
                     StaticMethod(compiler);
             }
 
-            private static void StaticProperty(Compiler compiler)
+            private void StaticProperty(Compiler compiler)
             {
                 do
                 {
                     compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                     byte nameConstant = compiler.AddStringConstant();
+                    _classTypeCompilette.CurrentTypeInfoEntry.AddStaticField(compiler.TokenIterator.PreviousToken.Lexeme);
 
                     compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, 1));//get class or inst this on the stack
 
@@ -142,6 +151,7 @@ namespace ULox
                     //emit set prop
                     compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant));
                     compiler.EmitPop();
+                    _classTypeCompilette._needsEndClosure = true;
                 } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
                 compiler.ConsumeEndStatement();

@@ -30,12 +30,14 @@ namespace ULox
         private string _name;
         private List<Chunk> _methods = new List<Chunk>();
         private List<string> _fields = new List<string>();
+        private List<string> _staticFields = new List<string>();
         private List<string> _contracts = new List<string>();
         private List<TypeInfoEntry> _mixins = new List<TypeInfoEntry>();
         private List<(Chunk chunk, byte labelID)> _initChains = new List<(Chunk, byte)>();
         public string Name => _name;
         public IReadOnlyList<Chunk> Methods => _methods;
         public IReadOnlyList<string> Fields => _fields;
+        public IReadOnlyList<string> StaticFields => _staticFields;
         public IReadOnlyList<TypeInfoEntry> Mixins => _mixins;
         public IReadOnlyList<string> Contracts => _contracts;
         public IReadOnlyList<(Chunk chunk, byte labelID)> InitChains => _initChains;
@@ -66,6 +68,7 @@ namespace ULox
         {
             _mixins.Add(targetTypeInfoEntry);
             _fields.AddRange(targetTypeInfoEntry.Fields);
+            _staticFields.AddRange(targetTypeInfoEntry.StaticFields);
             _methods.AddRange(targetTypeInfoEntry.Methods);
             _contracts.AddRange(targetTypeInfoEntry.Contracts);
             _initChains.AddRange(targetTypeInfoEntry.InitChains);
@@ -76,6 +79,11 @@ namespace ULox
             if (_initChains.Any(x => x.chunk == chunk)) return;
 
             _initChains.Insert(0, (chunk, labelID));
+        }
+
+        public void AddStaticField(string name)
+        {
+            _staticFields.Add(name);
         }
     }
 }

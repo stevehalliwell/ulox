@@ -37,7 +37,6 @@ namespace ULox
         };
 
         public Table Methods { get; private set; } = new Table();
-        private readonly Table flavours = new Table();
         private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
 
         public HashedString Name { get; protected set; }
@@ -70,6 +69,11 @@ namespace ULox
                 AddFieldName(new HashedString(field));
             }
 
+            foreach (var staticField in _typeInfoEntry.StaticFields)
+            {
+                Fields.AddOrSet(new HashedString(staticField), Value.Null());
+            }
+
             foreach (var (chunk, loc) in _typeInfoEntry.InitChains)
             {
                 AddInitChain(chunk, loc);
@@ -80,6 +84,10 @@ namespace ULox
                 var methodValue = Value.New(new ClosureInternal { chunk = method });
                 AddMethod(new HashedString(method.Name), methodValue, vm);
             }
+
+            Freeze();
+            if (UserType == UserType.Enum)
+                ReadOnly();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

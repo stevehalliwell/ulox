@@ -477,10 +477,6 @@ namespace ULox
                 }
                 break;
 
-                case OpCode.TYPE:
-                    DoUserTypeOp(chunk, packet.typeDetails);
-                    break;
-
                 case OpCode.INVOKE:
                     DoInvokeOp(chunk, packet);
                     break;
@@ -1138,15 +1134,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoUserTypeOp(Chunk chunk, ByteCodePacket.TypeDetails typeDetails)
-        {
-            var constantIndex = typeDetails.stringConstantId;
-            var name = chunk.ReadConstant(constantIndex);
-            Globals.Get(name.val.asString, out var klassValue);
-            Push(klassValue);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoFreezeOp()
         {
             var instVal = Pop();
@@ -1204,13 +1191,12 @@ namespace ULox
 
             //attempt to bind the method
             var fromClass = instance.FromUserType;
-            var methodName = name;
 
             if (fromClass == null)
-                ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
+                ThrowRuntimeException($"Undefined property '{name}', cannot bind method as it has no fromClass");
 
-            if (!fromClass.Methods.Get(methodName, out var method))
-                ThrowRuntimeException($"Undefined property '{methodName}'");
+            if (!fromClass.Methods.Get(name, out var method))
+                ThrowRuntimeException($"Undefined property '{name}'");
 
             var receiver = targetVal;
             var meth = method.val.asClosure;
@@ -1475,7 +1461,10 @@ namespace ULox
                     ? new UserTypeInternal(type)
                     : new EnumClass(type);
                 klass.PrepareFromType(this);
-                Globals.AddOrSet(klass.Name, Value.New(klass));
+                var klassVal = Value.New(klass);
+                //TODO we want to do this but cannot as static vars require it at the moment
+                //klass.Freeze();
+                Globals.AddOrSet(klass.Name, klassVal);
             }
         }
     }

@@ -18,7 +18,9 @@ namespace ULox
         public override TokenType MatchingToken => TokenType.ENUM;
 
         public override UserType UserType => UserType.Enum;
-     
+
+        public override bool EmitClosureCallAtEnd => true; 
+
         public EnumTypeCompliette()
         {
             IsReadOnlyAtEnd = true;

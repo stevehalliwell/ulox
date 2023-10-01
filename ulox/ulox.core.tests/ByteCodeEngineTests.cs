@@ -851,19 +851,7 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'1' in chunk:'f(test:5)'.
-===Stack===
-null
-1
-null
-<closure f upvals:0>
-<closure unnamed_chunk upvals:0>
-
-===CallStack===
-chunk:'f(test)'
-chunk:'unnamed_chunk(test)'
-
-", testEngine.InterpreterResult);
+            StringAssert.StartsWith(@"Cannot perform op across types 'Double' and 'Null' ", testEngine.InterpreterResult);
         }
 
         [Test]

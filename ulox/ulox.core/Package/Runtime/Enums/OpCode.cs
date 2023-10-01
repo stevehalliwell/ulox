@@ -46,7 +46,6 @@
 
         VALIDATE,
 
-        TYPE,
         GET_PROPERTY,
         SET_PROPERTY,
         INVOKE,

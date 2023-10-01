@@ -178,17 +178,6 @@ namespace ULox
             case OpCode.VALIDATE:
                 stringBuilder.Append($"({packet.ValidateOp})");
                 break;
-            case OpCode.TYPE:
-            {
-                var sc = packet.typeDetails.stringConstantId;
-                stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
-                AppendSpace();
-                stringBuilder.Append($"({packet.typeDetails.UserType})");
-                AppendSpace();
-                PrintLabel(packet.typeDetails.initLabelId);
-                AppendSpace();
-            }
-            break;
             case OpCode.INVOKE:
             {
                 var sc = packet.b1;

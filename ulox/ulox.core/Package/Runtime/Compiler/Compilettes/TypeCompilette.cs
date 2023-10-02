@@ -72,7 +72,6 @@
         {
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACE, "Expect '}' after class body.");
             var chunk = compiler.EndCompile();
-            //TODO now only enums need this 
             if (EmitClosureCallAtEnd)
             {
                 compiler.EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, compiler.CurrentChunk.AddConstant(Value.New(chunk)), (byte)chunk.UpvalueCount)));

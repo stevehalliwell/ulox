@@ -43,7 +43,7 @@ namespace ULox
             var compiled = _compiler.Compile(_scanner, script);
             
             CompiledScripts.Add(compiled);
-            Optimiser.Optimise(compiled);
+            Optimiser.Optimise(compiled, TypeInfo);
             
             return compiled;
         }

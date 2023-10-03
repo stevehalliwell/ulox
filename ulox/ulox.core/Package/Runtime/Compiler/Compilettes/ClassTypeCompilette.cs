@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
@@ -7,8 +8,8 @@ namespace ULox
         public static readonly HashedString InitMethodName = new HashedString("init");
         public static readonly HashedString ThisName = new HashedString("this");
 
-        private readonly Dictionary<TokenType, ITypeBodyCompilette> _innerDeclarationCompilettes = new Dictionary<TokenType, ITypeBodyCompilette>();
-        private ITypeBodyCompilette _bodyCompiletteFallback;
+        private readonly Dictionary<TokenType, (TypeCompiletteStage Stage, Action<Compiler> process)> _innerDeclarationCompilettes;
+        private (TypeCompiletteStage Stage, Action<Compiler> process) _bodyCompiletteFallback;
 
         public override TokenType MatchingToken => TokenType.CLASS;
 
@@ -19,12 +20,15 @@ namespace ULox
 
         public ClassTypeCompilette()
         {
-            AddInnerDeclarationCompilette(new TypeStaticElementCompilette(this));
-            AddInnerDeclarationCompilette(new TypeInitCompilette(this));
-            AddInnerDeclarationCompilette(new TypeMethodCompilette(this));
-            AddInnerDeclarationCompilette(new TypeSignsCompilette(this));
-            AddInnerDeclarationCompilette(new TypeMixinCompilette(this));
-            AddInnerDeclarationCompilette(new TypeInstancePropertyCompilette(this));
+            _bodyCompiletteFallback = (TypeCompiletteStage.Method, c => CompileMethod(c, FunctionType.Method));
+            _innerDeclarationCompilettes = new Dictionary<TokenType, (TypeCompiletteStage, Action<Compiler>)>()
+            {
+                { TokenType.STATIC, (TypeCompiletteStage.Static, StaticElement) },
+                { TokenType.INIT, (TypeCompiletteStage.Init, c => CompileMethod(c, FunctionType.Init)) },
+                { TokenType.VAR, (TypeCompiletteStage.Var, Property) },
+                { TokenType.MIXIN, (TypeCompiletteStage.Mixin, Mixin) },
+                { TokenType.SIGNS, (TypeCompiletteStage.Signs, Signs) },
+            };
         }
 
         public void This(Compiler compiler, bool canAssign)
@@ -33,13 +37,6 @@ namespace ULox
                 compiler.ThrowCompilerException("Cannot use the 'this' keyword outside of a class");
 
             compiler.NamedVariable(ThisName.String, canAssign);
-        }
-
-        private void AddInnerDeclarationCompilette(ITypeBodyCompilette compilette)
-        {
-            _innerDeclarationCompilettes[compilette.MatchingToken] = compilette;
-            if (compilette.MatchingToken == TokenType.NONE)
-                _bodyCompiletteFallback = compilette;
         }
 
         protected override void Start()
@@ -57,7 +54,7 @@ namespace ULox
             }
 
             ValidStage(compiler, compilette.Stage);
-            compilette.Process(compiler);
+            compilette.process(compiler);
         }
 
         private void ValidStage(Compiler compiler, TypeCompiletteStage stage)
@@ -70,6 +67,9 @@ namespace ULox
 
         private void CompileMethod(Compiler compiler, FunctionType functionType)
         {
+            if (functionType != FunctionType.Init)
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
+
             byte constant = compiler.AddStringConstant();
             var name = compiler.TokenIterator.PreviousToken.Lexeme;
 
@@ -104,227 +104,121 @@ namespace ULox
             CurrentTypeInfoEntry.AddMethod(function);
         }
 
-        public sealed class TypeStaticElementCompilette : ITypeBodyCompilette
+        private void StaticProperty(Compiler compiler)
         {
-            private ClassTypeCompilette _classTypeCompilette;
-
-            public TypeStaticElementCompilette(ClassTypeCompilette classTypeCompilette)
+            do
             {
-                _classTypeCompilette = classTypeCompilette;
-            }
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
+                byte nameConstant = compiler.AddStringConstant();
+                CurrentTypeInfoEntry.AddStaticField(compiler.TokenIterator.PreviousToken.Lexeme);
 
-            public TokenType MatchingToken
-                => TokenType.STATIC;
+                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, 1));//get class or inst this on the stack
 
-            public TypeCompiletteStage Stage
-                => TypeCompiletteStage.Static;
-
-            public void Process(Compiler compiler)
-            {
-                if (compiler.TokenIterator.Match(TokenType.VAR))
-                    StaticProperty(compiler);
+                //if = consume it and then
+                //eat 1 expression or a push null
+                if (compiler.TokenIterator.Match(TokenType.ASSIGN))
+                {
+                    compiler.Expression();
+                }
                 else
-                    StaticMethod(compiler);
-            }
-
-            private void StaticProperty(Compiler compiler)
-            {
-                do
                 {
-                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
-                    byte nameConstant = compiler.AddStringConstant();
-                    _classTypeCompilette.CurrentTypeInfoEntry.AddStaticField(compiler.TokenIterator.PreviousToken.Lexeme);
+                    compiler.EmitNULL();
+                }
 
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, 1));//get class or inst this on the stack
+                //emit set prop
+                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant));
+                compiler.EmitPop();
+                _needsEndClosure = true;
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
 
-                    //if = consume it and then
-                    //eat 1 expression or a push null
-                    if (compiler.TokenIterator.Match(TokenType.ASSIGN))
+            compiler.ConsumeEndStatement();
+        }
+
+        private void Property(Compiler compiler)
+        {
+            do
+            {
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
+                byte nameConstant = compiler.AddStringConstant();
+
+                CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Lexeme);
+
+                //emit jump // to skip this during imperative
+                var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
+                //patch jump previous init fragment if it exists
+                compiler.EmitLabel(PreviousInitFragLabelId != -1
+                    ? (byte)PreviousInitFragLabelId
+                    : InitChainLabelId);
+
+                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)0));//get class or inst this on the stack
+
+                //if = consume it and then
+                //eat 1 expression or a push null
+                if (compiler.TokenIterator.Match(TokenType.ASSIGN))
+                    compiler.Expression();
+                else
+                    compiler.EmitNULL();
+
+                //emit set prop
+                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant));
+                compiler.EmitPop();
+                //emit jump // to move to next prop init fragment, defaults to jump nowhere return
+                PreviousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitFragmentJump");
+
+                //patch jump from skip imperative
+                compiler.EmitLabel(initFragmentJump);
+
+                //if trailing comma, eat it
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            } while (compiler.TokenIterator.Check(TokenType.IDENTIFIER));
+
+            compiler.TokenIterator.Match(TokenType.END_STATEMENT);
+        }
+
+        private void Mixin(Compiler compiler)
+        {
+            do
+            {
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
+                var targetname = compiler.TokenIterator.PreviousToken.Literal as string;
+                var targetTypeInfoEntry = compiler.TypeInfo.GetUserType(targetname);
+                CurrentTypeInfoEntry.AddMixin(targetTypeInfoEntry);
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+            compiler.ConsumeEndStatement("mixin declaration");
+        }
+
+        private void Signs(Compiler compiler)
+        {
+            var contractNames = new List<string>();
+            do
+            {
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after signs into class.");
+                contractNames.Add(compiler.TokenIterator.PreviousToken.Literal as string);
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+            compiler.ConsumeEndStatement("signs declaration");
+
+            OnPostBody += (_) =>
+            {
+                foreach (var contractName in contractNames)
+                {
+                    CurrentTypeInfoEntry.AddContract(contractName);
+                    var (meets, msg) = MeetValidator.ValidateClassMeetsClass(CurrentTypeInfoEntry, compiler.TypeInfo.GetUserType(contractName));
+                    if (!meets)
                     {
-                        compiler.Expression();
+                        compiler.ThrowCompilerException($"Class '{CurrentTypeName}' does not meet contract '{contractName}'. {msg}");
                     }
-                    else
-                    {
-                        compiler.EmitNULL();
-                    }
-
-                    //emit set prop
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant));
-                    compiler.EmitPop();
-                    _classTypeCompilette._needsEndClosure = true;
-                } while (compiler.TokenIterator.Match(TokenType.COMMA));
-
-                compiler.ConsumeEndStatement();
-            }
-
-            private void StaticMethod(Compiler compiler)
-            {
-                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
-                _classTypeCompilette.CompileMethod(compiler, FunctionType.Function);
-            }
+                }
+            };
         }
-        public sealed class TypeInitCompilette : ITypeBodyCompilette
+
+        private void StaticElement(Compiler compiler)
         {
-            private ClassTypeCompilette _classTypeCompilette;
-
-            public TypeInitCompilette(ClassTypeCompilette classTypeCompilette)
-            {
-                _classTypeCompilette = classTypeCompilette;
-            }
-
-            public TokenType MatchingToken
-                => TokenType.INIT;
-
-            public TypeCompiletteStage Stage
-                => TypeCompiletteStage.Init;
-
-            public void Process(Compiler compiler)
-            {
-                _classTypeCompilette.CompileMethod(compiler, FunctionType.Init);
-            }
-        }
-        public sealed class TypeMethodCompilette : ITypeBodyCompilette
-        {
-            private ClassTypeCompilette _classTypeCompilette;
-
-            public TypeMethodCompilette(ClassTypeCompilette classTypeCompilette)
-            {
-                _classTypeCompilette = classTypeCompilette;
-            }
-
-            public TokenType MatchingToken
-                => TokenType.NONE;
-
-            public TypeCompiletteStage Stage
-                => TypeCompiletteStage.Method;
-
-            public void Process(Compiler compiler)
-            {
-                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
-                _classTypeCompilette.CompileMethod(compiler, FunctionType.Method);
-            }
-        }
-        public sealed class TypeInstancePropertyCompilette : ITypeBodyCompilette
-        {
-            private readonly TypeCompilette _typeCompilette;
-
-            public TokenType MatchingToken
-                => TokenType.VAR;
-
-            public TypeCompiletteStage Stage
-                => TypeCompiletteStage.Var;
-
-            public TypeInstancePropertyCompilette(TypeCompilette typeCompilette)
-            {
-                _typeCompilette = typeCompilette;
-            }
-
-            public void Process(Compiler compiler)
-            {
-                do
-                {
-                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
-                    byte nameConstant = compiler.AddStringConstant();
-
-                    _typeCompilette.CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Lexeme);
-
-                    //emit jump // to skip this during imperative
-                    var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
-                    //patch jump previous init fragment if it exists
-                    compiler.EmitLabel(_typeCompilette.PreviousInitFragLabelId != -1
-                        ? (byte)_typeCompilette.PreviousInitFragLabelId
-                        : _typeCompilette.InitChainLabelId);
-
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)0));//get class or inst this on the stack
-
-                    //if = consume it and then
-                    //eat 1 expression or a push null
-                    if (compiler.TokenIterator.Match(TokenType.ASSIGN))
-                        compiler.Expression();
-                    else
-                        compiler.EmitNULL();
-
-                    //emit set prop
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant));
-                    compiler.EmitPop();
-                    //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                    _typeCompilette.PreviousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitFragmentJump");
-
-                    //patch jump from skip imperative
-                    compiler.EmitLabel(initFragmentJump);
-
-                    //if trailing comma, eat it
-                    compiler.TokenIterator.Match(TokenType.COMMA);
-                } while (compiler.TokenIterator.Check(TokenType.IDENTIFIER));
-
-                compiler.TokenIterator.Match(TokenType.END_STATEMENT);
-            }
-        }
-        public sealed class TypeMixinCompilette : ITypeBodyCompilette
-        {
-            private readonly TypeCompilette _typeCompilette;
-
-            public TokenType MatchingToken
-                => TokenType.MIXIN;
-            public TypeCompiletteStage Stage
-                => TypeCompiletteStage.Mixin;
-
-            public TypeMixinCompilette(TypeCompilette typeCompilette)
-            {
-                _typeCompilette = typeCompilette;
-            }
-
-            public void Process(Compiler compiler)
-            {
-                do
-                {
-                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
-                    var targetname = compiler.TokenIterator.PreviousToken.Literal as string;
-                    var targetTypeInfoEntry = compiler.TypeInfo.GetUserType(targetname);
-                    _typeCompilette.CurrentTypeInfoEntry.AddMixin(targetTypeInfoEntry);
-                } while (compiler.TokenIterator.Match(TokenType.COMMA));
-
-                compiler.ConsumeEndStatement("mixin declaration");
-            }
-        }
-        public sealed class TypeSignsCompilette : ITypeBodyCompilette
-        {
-            private readonly TypeCompilette _typeCompilette;
-
-            public TokenType MatchingToken
-                => TokenType.SIGNS;
-            public TypeCompiletteStage Stage
-                => TypeCompiletteStage.Signs;
-
-            public TypeSignsCompilette(TypeCompilette typeCompilette)
-            {
-                _typeCompilette = typeCompilette;
-            }
-
-            public void Process(Compiler compiler)
-            {
-                var contractNames = new List<string>();
-                do
-                {
-                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after signs into class.");
-                    contractNames.Add(compiler.TokenIterator.PreviousToken.Literal as string);
-                } while (compiler.TokenIterator.Match(TokenType.COMMA));
-
-                compiler.ConsumeEndStatement("signs declaration");
-
-                _typeCompilette.OnPostBody += (_) =>
-                {
-                    foreach (var contractName in contractNames)
-                    {
-                        _typeCompilette.CurrentTypeInfoEntry.AddContract(contractName);
-                        var (meets, msg) = MeetValidator.ValidateClassMeetsClass(_typeCompilette.CurrentTypeInfoEntry, compiler.TypeInfo.GetUserType(contractName));
-                        if (!meets)
-                        {
-                            compiler.ThrowCompilerException($"Class '{_typeCompilette.CurrentTypeName}' does not meet contract '{contractName}'. {msg}");
-                        }
-                    }
-                };
-            }
+            if (compiler.TokenIterator.Match(TokenType.VAR))
+                StaticProperty(compiler);
+            else
+                CompileMethod(compiler, FunctionType.Function);
         }
     }
 }

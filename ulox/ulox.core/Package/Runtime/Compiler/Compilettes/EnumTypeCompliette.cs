@@ -19,7 +19,7 @@ namespace ULox
 
         public override UserType UserType => UserType.Enum;
 
-        public override bool EmitClosureCallAtEnd => true; 
+        public override bool EmitClosureCallAtEnd => true;
 
         public EnumTypeCompliette()
         {
@@ -69,13 +69,12 @@ namespace ULox
 
         private void SetMode(Compiler compiler, Mode mode)
         {
-            if (_mode == Mode.Unknown)
+            if (_mode != Mode.Unknown)
             {
-                _mode = mode;
-                return;
+                if (mode != _mode)
+                    compiler.ThrowCompilerException($"Cannot mix and match enum assignment modes. Current mode is '{_mode}' but encounted a '{mode}'");
             }
-            if (mode != _mode)
-                compiler.ThrowCompilerException($"Cannot mix and match enum assignment modes. Current mode is '{_mode}' but encounted a '{mode}'");
+            _mode = mode;
         }
     }
 }

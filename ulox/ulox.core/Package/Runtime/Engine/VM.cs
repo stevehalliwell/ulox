@@ -1462,8 +1462,6 @@ namespace ULox
                     : new EnumClass(type);
                 klass.PrepareFromType(this);
                 var klassVal = Value.New(klass);
-                //TODO we want to do this but cannot as static vars require it at the moment
-                //klass.Freeze();
                 Globals.AddOrSet(klass.Name, klassVal);
             }
         }

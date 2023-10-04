@@ -6,5 +6,6 @@
         Function,
         Method,
         Init,
+        TypeDeclare,
     }
 }

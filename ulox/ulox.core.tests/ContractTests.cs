@@ -43,40 +43,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenDataTargetAndITAndTMatchWithVars_ShouldNotThrow()
-        {
-            testEngine.Run(@"
-data IT { a }
-
-class T 
-{
-    signs IT;
-    var a;
-}");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Meets_WhenDataMeetITAndTMatchWithVars_ShouldNotThrow()
-        {
-            testEngine.Run(@"
-class IT
-{
-    var a;
-}
-
-data T 
-{
-    signs IT;
-    a
-}");
-
-            Assert.AreEqual("", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Meets_WhenITAndTDoNotMatch_ShouldThrow()
+        public void Signs_WhenITAndTDoNotMatch_ShouldThrow()
         {
             testEngine.Run(@"
 class IT
@@ -89,11 +56,30 @@ class T
     signs IT;
 }");
 
-            StringAssert.StartsWith("Sign failure with msg ''T' does not contain matching method 'Required'.' at ip:", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Class 'T' does not meet contract 'IT'. Type 'T' does not contain matching method 'Required'", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Meets_WhenITAndTDoNotArity_ShouldThrow()
+        public void Signs_WhenITAndTDoNotMatchArity_ShouldThrow()
+        {
+            testEngine.Run(@"
+class IT
+{
+    Required(){}
+}
+
+class T 
+{
+    signs IT;
+
+    Required(a,b,c){}
+}");
+
+            StringAssert.StartsWith("Class 'T' does not meet contract 'IT'. Expected arity '3' but found '0'", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Signs_WhenITAndTDoNotArity_ShouldThrow()
         {
             testEngine.Run(@"
 class IT
@@ -107,11 +93,11 @@ class T
     Required(a){}
 }");
 
-            StringAssert.StartsWith("Sign failure with msg 'Expected arity '0' but found '1'.' at ip:", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Class 'T' does not meet contract 'IT'. Expected arity '1' but found '0'", testEngine.InterpreterResult);
         }
 
         [Test]
-        public void Meets_WhenITAndTMixinMatch_ShouldNotThrow()
+        public void Signs_WhenITAndTMixinMatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -339,7 +325,7 @@ print(res);
         public void Meets_WhenAFromJsonAndBDynamicMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var jsonString = ""\{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);
 
 var binst = {=};
@@ -438,7 +424,7 @@ print(res);
         public void Meets_WhenAJsonAndBClassMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var jsonString = ""\{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);
 
 class B 
@@ -457,7 +443,7 @@ print(res);
         public void Meets_WhenAJsonAndBClassEmptyMatch_ShouldReturnTrue()
         {
             testEngine.Run(@"
-var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var jsonString = ""\{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);
 
 class B 
@@ -475,7 +461,7 @@ print(res);
         public void Meets_WhenAJsonAndBClassMismatch_ShouldReturnFalse()
         {
             testEngine.Run(@"
-var jsonString = ""{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
+var jsonString = ""\{ \""a\"": 1.0,  \""b\"": 2.0,  \""c\"": 3.0 }"";
 var inst = Serialise.FromJson(jsonString);
 
 class B 

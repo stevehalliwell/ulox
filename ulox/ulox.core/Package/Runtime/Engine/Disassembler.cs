@@ -138,8 +138,6 @@ namespace ULox
             case OpCode.DEFINE_GLOBAL:
             case OpCode.FETCH_GLOBAL:
             case OpCode.ASSIGN_GLOBAL:
-            case OpCode.METHOD:
-            case OpCode.FIELD:
                 DoConstant(packet);
                 break;
             case OpCode.SET_PROPERTY:
@@ -180,17 +178,6 @@ namespace ULox
             case OpCode.VALIDATE:
                 stringBuilder.Append($"({packet.ValidateOp})");
                 break;
-            case OpCode.TYPE:
-            {
-                var sc = packet.typeDetails.stringConstantId;
-                stringBuilder.Append($"({sc}){CurrentChunk.Constants[sc]}");
-                AppendSpace();
-                stringBuilder.Append($"({packet.typeDetails.UserType})");
-                AppendSpace();
-                PrintLabel(packet.typeDetails.initLabelId);
-                AppendSpace();
-            }
-            break;
             case OpCode.INVOKE:
             {
                 var sc = packet.b1;

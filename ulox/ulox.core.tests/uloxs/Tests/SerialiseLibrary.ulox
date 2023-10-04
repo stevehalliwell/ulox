@@ -17,7 +17,7 @@ testset SerialiseLibraryTests
         obj.a = 1;
         obj.b = 2;
         obj.c = 3;
-        var expected = "{
+        var expected = "\{
   \"a\": 1.0,
   \"b\": 2.0,
   \"c\": 3.0
@@ -31,7 +31,7 @@ testset SerialiseLibraryTests
 
     test SimpleFrom
     {
-        var jsonString = "{ \"a\": 1.0,  \"b\": 2.0,  \"c\": 3.0 }";
+        var jsonString = "\{ \"a\": 1.0,  \"b\": 2.0,  \"c\": 3.0 }";
         var res = {=};
         
         res = Serialise.FromJson(jsonString);
@@ -54,8 +54,8 @@ testset SerialiseLibraryTests
         obj.g.Add("a");
         obj.g.Add("b");
         obj.g.Add("c");
-        var expected = "{
-  \"a\": {
+        var expected = "\{
+  \"a\": \{
     \"b\": 1.0,
     \"c\": 2.0,
     \"d\": 3.0
@@ -77,8 +77,8 @@ testset SerialiseLibraryTests
 
     test ComplexFrom
     {
-        var jsonString = "{
-  \"a\": {
+        var jsonString = "\{
+  \"a\": \{
     \"b\": 1.0,
     \"c\": 2.0,
     \"d\": 3.0

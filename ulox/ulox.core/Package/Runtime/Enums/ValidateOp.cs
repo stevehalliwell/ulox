@@ -2,6 +2,8 @@
 {
     public enum ValidateOp : byte
     {
-        MultiReturnMatches
+        MultiReturnMatches,
+        Meets,
+        Signs,
     }
 }

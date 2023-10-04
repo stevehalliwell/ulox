@@ -140,8 +140,9 @@ fun Update()
 var dt = 0;
 var points = [];
 
-data Circle
+class Circle
 {
+var
 	x = 0,
 	y = 0, 
 	py = 0,

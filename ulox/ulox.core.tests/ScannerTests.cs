@@ -310,34 +310,47 @@ fun foo(p)
         }
 
         [Test]
-        [TestCase(@"var PI = 3.14;")]
-        [TestCase(@"var a = 1; a = 2 * a;
-fun foo(p)
-{
-    var a = p;
-    var b = ""Hello"";
-    fun bar()
-    {
-        var a = 7;
-    }
-    var res = bar();
-}")]
-        public void Next_WhenCalledTillEmpty_ShouldMatchBatch(string testString)
+        public void StringInterp_WhenUsed_ShouldMatchTokens()
         {
-            var testScript = new Script("test", testString);
-            var bulkScanner = new Scanner();
-            var oneAATScanner = new Scanner();
-            var bulkTokens = bulkScanner.Scan(testScript);
-            var oneAATTokens = new List<Token>();
-            oneAATScanner.SetScript(testScript);
-
-            do
+            var tokenResults = new TokenType[]
             {
-                var tok = oneAATScanner.Next();
-                oneAATTokens.Add(tok);
-            } while (oneAATTokens.Last().TokenType != TokenType.EOF);
+                TokenType.VAR,
+                TokenType.IDENTIFIER,
+                TokenType.ASSIGN,
+                TokenType.STRING,
+                TokenType.PLUS,
+                TokenType.OPEN_PAREN,
+                TokenType.NUMBER,
+                TokenType.CLOSE_PAREN,
+                TokenType.PLUS,
+                TokenType.STRING,
+                TokenType.END_STATEMENT,
+                TokenType.EOF
+            };
+            var testString = @"var s = ""Hi, {3}"";";
 
-            CollectionAssert.AreEquivalent(bulkTokens, oneAATTokens);
+            var resultingTokenTypes = scanner.Scan(new Script("test", testString));
+
+            CollectionAssert.AreEqual(tokenResults, resultingTokenTypes.Select(x => x.TokenType).ToArray());
+        }
+
+        [Test]
+        public void StringInterp_WhenEscaped_ShouldMatchTokens()
+        {
+            var tokenResults = new TokenType[]
+            {
+                TokenType.VAR,
+                TokenType.IDENTIFIER,
+                TokenType.ASSIGN,
+                TokenType.STRING,
+                TokenType.END_STATEMENT,
+                TokenType.EOF
+            };
+            var testString = @"var s = ""Hi, \{3}"";";
+
+            var resultingTokenTypes = scanner.Scan(new Script("test", testString));
+
+            CollectionAssert.AreEqual(tokenResults, resultingTokenTypes.Select(x => x.TokenType).ToArray());
         }
     }
 }

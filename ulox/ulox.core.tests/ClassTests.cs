@@ -5,6 +5,96 @@ namespace ULox.Core.Tests
     public class ClassTests : EngineTestBase
     {
         [Test]
+        public void ClassInstanceFields_WhenAccessed_ShouldHaveInitialValues()
+        {
+            testEngine.Run(@"
+class Foo { var A = true, review, taste = ""Full""}
+var b = Foo();
+print (b.A);
+print (b.review);
+print (b.taste);");
+
+            Assert.AreEqual("TruenullFull", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ClassMixin_WhenCreated_ShouldHaveValues()
+        {
+            testEngine.Run(@"
+class Foo {var A = true, review, taste = ""Full""}
+class Bar {
+    mixin Foo; 
+var 
+    B = 1;
+}
+var b = Bar();
+print (b.A);
+print (b.review);
+print (b.taste);
+print (b.B);");
+
+            Assert.AreEqual("TruenullFull1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Delcared_WhenTrailingCommaInVarList_ShouldCompile()
+        {
+            testEngine.Run(@"
+class Foo {var a,b,c,}
+print (Foo);");
+
+            Assert.AreEqual("<Class Foo>", testEngine.InterpreterResult);
+        }
+
+//        [Test]
+//        public void Delcared_WhenVarOmittted_ShouldAssumeVars()
+//        {
+//            testEngine.Run(@"
+//class Foo {a,b=1,c,}
+//print (Foo().b);");
+
+//            Assert.AreEqual("1", testEngine.InterpreterResult);
+//        }
+
+        [Test]
+        public void Delcared_WhenAllStages_ShouldCompile()
+        {
+            testEngine.Run(@"
+class Foo {var foo=1;}
+class BarProto {var foo,a,b,c;}
+
+class Bar
+{
+    static var a_static = 1;
+
+    mixin Foo;
+    
+    signs BarProto;
+
+    var a = 1, b = 2, c = 3;
+
+    init()
+    {
+        this.a = 10;
+    }
+
+    Meth()
+    {
+        print (this.a + this.b + this.c);
+    }
+}
+
+var bar = Bar();
+print(bar.foo);
+print(bar.a);
+print(bar.b);
+bar.Meth();
+");
+
+            Assert.AreEqual("110215", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Delcared_WhenAccessed_ShouldHaveClassObject()
         {
             testEngine.Run(@"
@@ -86,7 +176,7 @@ class T
 var t = T();
 t.c = 10;");
 
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -101,7 +191,7 @@ class T
 
 T.c = 10;");
 
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -355,19 +445,6 @@ maker.brew();");
         }
 
         [Test]
-        public void Engine_Class_Fields()
-        {
-            testEngine.Run(@"
-class T{ }
-
-T.a = 2;
-
-print(T.a);");
-
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Class_Init_Simple1()
         {
             testEngine.Run(@"
@@ -417,7 +494,7 @@ class T
 
 var t = T();");
 
-            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Method' has encountered a late 'Init' stage element in chunk 'unnamed_chunk(test)' at 5:9 'init'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Method' has encountered a late 'Init' stage element in chunk 'T_typedeclare(test)' at 5:9 'init'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -465,7 +542,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element in chunk 'unnamed_chunk(test)' at 5:8 'var'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element in chunk 'T_typedeclare(test)' at 5:8 'var'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -532,23 +609,6 @@ print(t.a);
 print(t.b);");
 
             Assert.AreEqual("12", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_VarInitChainEmpty_AndInit()
-        {
-            testEngine.Run(@"
-class T
-{
-    var a;
-
-    init(){this.a = 20;}
-}
-
-var t = T();
-print(t.a);");
-
-            Assert.AreEqual("20", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -670,16 +730,6 @@ var t = T();
 print(t.a);");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Instance_WhenCreated_ShouldHaveInstanceObject()
-        {
-            testEngine.Run(@"
-class Brioche {}
-print (Brioche());");
-
-            Assert.AreEqual("<inst Brioche>", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -964,6 +1014,717 @@ print(t.A());
 ");
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+        
+        [Test]
+        public void Engine_Class_StaticFields()
+        {
+            testEngine.Run(@"
+class T
+{
+    static var a = 2;
+}
+print(T.a);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_StaticFields_Modify()
+        {
+            testEngine.Run(@"
+class T
+{
+    static var a = 2;
+}
+T.a = 1;
+
+print(T.a);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Class_StaticFields_WhenClassModified_ShouldThrow()
+        {
+            testEngine.Run(@"
+class T
+{
+    static var a = 2;
+}
+
+T.b = 5;");
+
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_NoThis_Method_WorksAsStatic()
+        {
+            testEngine.Run(@"
+class T
+{
+    NoMemberMethod()
+    {
+        retval = 7;
+    }
+}
+
+print(T.NoMemberMethod());");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Static_Method_OnClass()
+        {
+            testEngine.Run(@"
+class T
+{
+    static StaticMethod()
+    {
+        retval = 7;
+    }
+}
+
+print(T.StaticMethod());");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        //todo we'd like to do this but not currently able due to how methods are stored and looked up
+//        [Test]
+//        public void Method_WhenCalledOnClass_ShouldFail()
+//        {
+//            testEngine.Run(@"
+//class T
+//{
+//    Method()
+//    {
+//        retval = 7;
+//    }
+//}
+
+//print(T.Method());");
+
+//            Assert.AreEqual("this should fail to find name", testEngine.InterpreterResult);
+//        }
+
+        [Test]
+        public void Prop_WhenCalledOnClass_ShouldFail()
+        {
+            testEngine.Run(@"
+class T
+{
+    var foo = 1;
+}
+
+var a = T.foo;");
+
+            StringAssert.StartsWith("Undefined property 'foo', cannot bind method as it has no fromClass a", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Static_Method_OnInstance()
+        {
+            testEngine.Run(@"
+class T
+{
+    static StaticMethod()
+    {
+        retval = 7;
+    }
+}
+
+print(T().StaticMethod());");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+        
+        [Test]
+        public void Mixin_WhenDeclared_ShouldCompileCleanly()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1;
+}
+
+class Foo 
+{
+    mixin MixMe;
+}
+
+print(1);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveMixinVar()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1,b,c;
+}
+
+class Foo 
+{
+    mixin MixMe;
+}
+
+var foo = Foo();
+print(foo.a);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveMixinVarAndSelf()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1,b,c;
+}
+
+class Foo 
+{
+    mixin MixMe;
+
+    var e = 1,f,g;
+}
+
+var foo = Foo();
+print(foo.a);
+print(foo.e);");
+
+            Assert.AreEqual("11", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombinedAndNamesClash_ShouldHaveSelfVar()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1,b,c;
+}
+
+class Foo 
+{
+    mixin MixMe;
+    var a = 2;
+}
+
+var foo = Foo();
+print(foo.a);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenManyCombined_ShouldHaveAll()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1;
+}
+class MixMe2
+{
+    var b = 2;
+}
+class MixMe3
+{
+    var c = 3;
+}
+
+
+class Foo 
+{
+    mixin 
+        MixMe,
+        MixMe2;
+    mixin MixMe3;
+
+    var d = 4;
+}
+
+var foo = Foo();
+print(foo.a);
+print(foo.b);
+print(foo.c);
+print(foo.d);");
+
+            Assert.AreEqual("1234", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenManyCombinedAndMixinsOfMixins_ShouldHaveAll()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1;
+}
+class MixMe2
+{
+    var b = 2;
+}
+class MixMe3
+{
+    var c = 3;
+}
+
+class MixMeSub1
+{
+    var e = 5;
+}
+
+class MixMeSub2
+{
+    var f = 6;
+}
+
+class MixMe4
+{
+    mixin MixMeSub1, MixMeSub2;
+    
+    var g = 7;
+}
+
+class Foo 
+{
+    mixin 
+        MixMe,
+        MixMe2;
+    mixin MixMe3;
+    mixin MixMe4;
+
+    var d = 4;
+}
+
+var foo = Foo();
+print(foo.a);
+print(foo.b);
+print(foo.c);
+print(foo.d);
+print(foo.e);
+print(foo.f);
+print(foo.g);");
+
+            Assert.AreEqual("1234567", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveOriginalVar()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var a = 1,b,c;
+}
+
+class Foo 
+{
+    mixin MixMe;
+
+    var bar = 2;
+}
+
+var foo = Foo();
+print(foo.bar);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveFlavourMethod()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe;
+    var bar = 2;
+}
+
+var foo = Foo();
+foo.Speak();");
+
+            Assert.AreEqual("MixMe", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombined_ShouldHaveBoth()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe;
+    Speaketh(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speaketh();");
+
+            Assert.AreEqual("Foo", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenMultipleCombined_ShouldHaveAll()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class MixMe2
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin 
+        MixMe,
+        MixMe2;
+
+    Speaketh(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speaketh();");
+
+            Assert.AreEqual("Foo", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenCombinedAndNamesClash_ShouldHaveAllPrint()
+        {
+            testEngine.Run(@"
+
+class MixMe
+{
+    Speak(){print(cname);}
+}
+
+class MixMe2
+{
+    Speak(){print(cname);}
+}
+
+
+class MixMe3
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe, MixMe2, MixMe3;
+
+    Speak(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speak();");
+
+            Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenInstanceMethodsCombinedAndNamesClash_ShouldHaveAllPrint()
+        {
+            testEngine.Run(@"
+class MixMe
+{
+    var MixMeName = cname;
+
+    Speak(){print(this.MixMeName);}
+}
+
+class MixMe2
+{
+    var MixMeName2 = cname;
+
+    Speak(){print(this.MixMeName2);}
+}
+
+
+class MixMe3
+{
+    Speak(){print(cname);}
+}
+
+class Foo 
+{
+    mixin MixMe, MixMe2, MixMe3;
+
+    Speak(){print(cname);}
+}
+
+var foo = Foo();
+foo.Speak();");
+
+            Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Mixin_WhenDuplicateFlavours_ShouldHaveOnlyOnePresent()
+        {
+            testEngine.Run(@"
+var globalCounter = 0;
+
+class MixMe
+{
+    var a = (globalCounter += 1);
+}
+
+class Combo1
+{
+    mixin MixMe;
+}
+
+class Combo2
+{
+    mixin MixMe;
+}
+
+class Foo 
+{
+    mixin Combo1, Combo2;
+}
+
+var foo = Foo();
+print(foo.a);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void MixinInits_WhenMultipleInit_ShouldDoAll()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var fizz = 1, negative = -1;
+}
+
+class Bar
+{
+    var buzz = 2, bitcount;
+}
+
+class FooBar
+{
+    mixin Foo, Bar;
+
+    init(fizz, buzz, bitcount){}
+}
+
+var expectedFizz = 10;
+var expectedBuzz = 20;
+var expectedBitcount = 30;
+var result = -1;
+
+var fooBar = FooBar(expectedFizz, expectedBuzz, expectedBitcount);
+result = fooBar.fizz + fooBar.negative + fooBar.buzz + fooBar.bitcount;
+
+print(result);");
+
+            Assert.AreEqual("59", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ManyConstants_WhenCompiled_ShouldPass()
+        {
+            testEngine.Run(@"
+class ShipPart
+{
+var
+    name = ""standard"",
+}
+
+class ShipPartAdjust
+{
+var
+    accelAdjust = 0, //todo accel when shooting and not shooting
+    turnPerSecondThrustAdjust = 0,
+    turnPerSecondFreeSpinAdjust = 0,
+    gravityAdjust = 0,
+    dragSharpnessAdjust = 0,
+    sidewaysDragSharpnessAdjust = 0,
+    massAdjust = 0,
+    fireRateAdjust = 0,
+    kickbackAdjust = 0,
+    projectileSpeedAdjust = 0,
+    projectileSpeedInherAdjust = 0,
+    healthAdjust = 0,
+    maxSpeedAdjust = 0,
+    invulnTimeAdjust = 0,
+    timeTilRegenAdjust = 0,
+    healthRegenRateAdjust = 0,
+    comboPickupLifetimeAdjust = 0,
+    //todo accel at full health bonus
+    //todo accel at low health bonus
+}
+
+class ShipBodyPart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    dragSharpness = 0.2,
+    sidewaysDragSharpness = 2,
+    mass = 1,
+    health = 5,
+    invulnTime = 1,
+    timeTilRegen = 1,
+    healthRegenRate = 2,
+}
+
+class ShipWingPart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    gravity = 5,
+    turnPerSecondFreeSpin = 290,
+}
+
+class ShipEnginePart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    accel = 20,
+    maxSpeed = 10,
+}
+
+class ShipTailPart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    turnPerSecondThrust = 190,
+    comboPickupLifetime = 20,
+}
+
+class ShipWeaponPart
+{
+    mixin
+        ShipPart, 
+        ShipPartAdjust;
+var
+    fireRate = 0.05,
+    kickback = 10,
+    projectileSpeed = 10,
+    projectileSpeedInher = 0.5,
+}
+
+class ShipCharacter
+{
+var
+    accel = 20,
+    maxSpeed = 12,
+    turnPerSecondThrust = 190,
+    turnPerSecondFreeSpin = 290,
+    gravity = 10,
+    dragSharpness = 0.5,
+    sidewaysDragSharpness = 3,
+    mass = 1,
+    fireRate = 0.5,
+    kickback = 1,
+    projectileSpeed = 10,
+    projectileSpeedInher = 0.5,
+    maxHealth = 5,
+    invulnTime = -1, 
+    timeTilRegen = 0,
+    healthRegenRate = -1,
+    shotName = ""PlayerSmallShot"",
+    comboPickupLifetime = 20,
+    //todo add pickup range and attract range here as aspects of the ship
+}
+
+class ShipState
+{
+var
+    go, 
+    posX = 0,
+    posY = 0,
+    heading = 0, 
+    velX = 0,
+    velY = 1,
+    extAccelX = 0,
+    extAccelY = 0,
+    controlState = ShipControlState(),
+    shipChar = ShipCharacter(),
+    weaponState = ShipWeaponState(),
+    lastMotionData = ShipLastMotionData(),
+    healthState = ShipHealthState(),
+    scalingState = ShipAttributeScalingState();
+}
+
+class ShipControlState
+{
+var
+    throttle = 0,
+    rudder = 0,
+    trigger = false;
+}
+
+class ShipWeaponState
+{
+var
+    fireRateCounter = 0;
+}
+
+class ShipLastMotionData
+{
+var
+    lastAccel,
+    lastDrag;
+}
+
+class ShipHealthState
+{
+var
+    health = 5,
+    damageQueue = [],
+    timeSinceHit = 0,
+}
+
+class ShipAttributeScalingState
+{
+var
+    fireRateBonus = 1,
+    projectileSpeedBonus = 1,
+    turnPerSecondThrustBonus = 1,
+    turnPerSecondFreeSpinBonus = 1,
+    timeTilRegenBonus = 1,
+    accelBonus = 1,
+    kickbackBonus = 1,
+}
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
         }
     }
 }

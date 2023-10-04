@@ -15,7 +15,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ulox.core.bench", "ulox.cor
 		{E1907AB2-7EE6-4494-A737-02031F7C4AF2} = {E1907AB2-7EE6-4494-A737-02031F7C4AF2}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ulox.core.profile", "ulox.core.profile\ulox.core.profile.csproj", "{D477994C-C505-4DD3-88D6-92B443BB484F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ulox.core.profile", "ulox.core.profile\ulox.core.profile.csproj", "{D477994C-C505-4DD3-88D6-92B443BB484F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CA6C4173-40F1-485A-9CD2-7399943E7653} = {CA6C4173-40F1-485A-9CD2-7399943E7653}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

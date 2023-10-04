@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -36,21 +37,57 @@ namespace ULox
         };
 
         public Table Methods { get; private set; } = new Table();
-        private readonly Table flavours = new Table();
         private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
-        
+
         public HashedString Name { get; protected set; }
 
         public UserType UserType { get; }
         public Value Initialiser { get; protected set; } = Value.Null();
-        public List<(ClosureInternal closure, ushort instruction)> InitChains { get; protected set; } = new List<(ClosureInternal, ushort)>();
+        public List<(Chunk chunk, byte labelID)> InitChains { get; protected set; } = new List<(Chunk, byte)>();
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private readonly List<HashedString> _fieldsNames = new List<HashedString>();
+        protected TypeInfoEntry _typeInfoEntry;
 
         public UserTypeInternal(HashedString name, UserType userType)
         {
             Name = name;
             UserType = userType;
+        }
+
+        public UserTypeInternal(TypeInfoEntry type)
+        {
+            _typeInfoEntry = type;
+
+            Name = new HashedString(type.Name);
+            UserType = type.UserType;
+        }
+
+        public void PrepareFromType(Vm vm)
+        {
+            foreach (var field in _typeInfoEntry.Fields)
+            {
+                AddFieldName(new HashedString(field));
+            }
+
+            foreach (var staticField in _typeInfoEntry.StaticFields)
+            {
+                Fields.AddOrSet(new HashedString(staticField), Value.Null());
+            }
+
+            foreach (var (chunk, loc) in _typeInfoEntry.InitChains)
+            {
+                AddInitChain(chunk, loc);
+            }
+
+            foreach (var method in _typeInfoEntry.Methods)
+            {
+                var methodValue = Value.New(new ClosureInternal { chunk = method });
+                AddMethod(new HashedString(method.Name), methodValue, vm);
+            }
+
+            Freeze();
+            if (UserType == UserType.Enum)
+                ReadOnly();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -94,7 +131,7 @@ namespace ULox
 
             Methods.AddOrSet(key, method);
 
-            if (key == TypeCompilette.InitMethodName)
+            if (key == ClassTypeCompilette.InitMethodName)
             {
                 Initialiser = method;
             }
@@ -105,54 +142,12 @@ namespace ULox
             }
         }
 
-        public void AddInitChain(ClosureInternal closure, ushort initChainStartOp)
+        public void AddInitChain(Chunk chunk, byte labelID)
         {
             // This is used internally by the vm only does not need to check for frozen
+            if (InitChains.Any(x => x.chunk == chunk)) return;
 
-            InitChains.Add((closure, initChainStartOp));
-        }
-        
-        public void MixinClass(Value flavourValue, Vm vm)
-        {
-            var flavour = flavourValue.val.asClass;
-            ValidateMixin(flavour, vm);
-
-            flavours.AddOrSet(flavour.Name, flavourValue);
-
-            foreach (var flavourMeth in flavour.Methods)
-            {
-                AddMethod(flavourMeth.Key, flavourMeth.Value, vm);
-            }
-
-            foreach (var flavourInitChain in flavour.InitChains)
-            {
-                if (!InitChains.Contains(flavourInitChain))
-                {
-                    AddInitChain(flavourInitChain.closure, flavourInitChain.instruction);
-                }
-            }
-        }
-
-        private void ValidateMixin(UserTypeInternal flavour, Vm vm)
-        {
-            switch (UserType)
-            {
-            case UserType.Data:
-                if (flavour.UserType != UserType.Data)
-                    vm.ThrowRuntimeException($"Cannot mixin '{flavour.Name}' into data '{Name}' as flavour is '{flavour.UserType}'");
-                break;
-            case UserType.System:
-                if (flavour.UserType != UserType.System)
-                    vm.ThrowRuntimeException($"Cannot mixin '{flavour.Name}' into system '{Name}' as flavour is '{flavour.UserType}'");
-                break;
-            case UserType.Class:
-                break;
-            case UserType.Enum:
-            case UserType.Native:
-            default:
-                vm.ThrowRuntimeException($"Encounted unexpected mixin type on type '{this.Name}'");
-                break;
-            }
+            InitChains.Add((chunk, labelID));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

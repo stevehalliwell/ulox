@@ -8,7 +8,7 @@ namespace ULox.Core.Tests
     {
         public static Chunk GenerateManualChunk()
         {
-            var chunk = new Chunk("main", "native", FunctionType.Script);
+            var chunk = new Chunk("main", "native");
 
             chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
             chunk.AddConstantAndWriteInstruction(Value.New(1), 1);
@@ -797,17 +797,6 @@ print(a+b);");
         }
 
         [Test]
-        public void Engine_StringConcat_ViaFunc()
-        {
-            testEngine.Run(@"
-var a = 3;
-var b = ""Foo"";
-print(str(a)+str(b));");
-
-            Assert.AreEqual("3Foo", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_ContextAssertLibrary_IsFound()
         {
             testEngine.Run(@"
@@ -862,19 +851,7 @@ var c = b + a;
 f(null,1);"
             );
 
-            Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'1' in chunk:'f(test:5)'.
-===Stack===
-null
-1
-null
-<closure f upvals:0>
-<closure unnamed_chunk upvals:0>
-
-===CallStack===
-chunk:'f(test)'
-chunk:'unnamed_chunk(test)'
-
-", testEngine.InterpreterResult);
+            StringAssert.StartsWith(@"Cannot perform op across types 'Double' and 'Null' ", testEngine.InterpreterResult);
         }
 
         [Test]

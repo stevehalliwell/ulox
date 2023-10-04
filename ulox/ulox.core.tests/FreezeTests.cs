@@ -15,7 +15,7 @@ class Foo
 var inst = Foo();
 inst.a = 10;");
 
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -31,7 +31,7 @@ class Foo
 var inst = Foo();
 inst.a = 10;");
 
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -60,7 +60,7 @@ class Foo
 freeze Foo;
 Foo.a = 10;");
 
-            StringAssert.StartsWith("Attempted to Create a new field", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
 
         [Test]

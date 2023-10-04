@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace ULox
 {
@@ -6,11 +7,12 @@ namespace ULox
     {
         private readonly StringBuilder workingSpaceStringBuilder = new StringBuilder();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDigit(int ch) => ch >= '0' && ch <= '9';
 
         public bool DoesMatchChar(char ch) => IsDigit(ch);
 
-        public Token Consume(Scanner scanner)
+        public void Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();
 
@@ -35,7 +37,7 @@ namespace ULox
 
             var numStr = workingSpaceStringBuilder.ToString();
 
-            return scanner.EmitToken(
+            scanner.EmitToken(
                 TokenType.NUMBER,
                 numStr,
                 double.Parse(numStr));

@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -8,12 +10,10 @@ namespace ULox
         private StringIterator _stringIterator = new StringIterator("");
         public char CurrentChar => _stringIterator.CurrentChar;
 
-        public static readonly Token NoTokenFound = new Token(TokenType.NONE, string.Empty, null, 0, 0, -1);
-        public static Token SharedNoToken => NoTokenFound;
-
         private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
 
         private Script _script;
+        private List<Token> _tokens;
 
         public Scanner()
         {
@@ -25,15 +25,11 @@ namespace ULox
         {
             var identScannerGen = new IdentifierScannerTokenGenerator();
 
-            // ensure we add these in the order as we expect them to occur by most to least frequent
             this.AddGenerators(
-                new WhiteSpaceScannerTokenGenerator(),
-                new SingleCharScannerCharMatchTokenGenerator(),
-                identScannerGen,
-                new CompoundCharScannerCharMatchTokenGenerator(),
+                new StringScannerTokenGenerator(),  //needs the chance to steel } from direct symbol
+                new DirectSymbolScannerMatchTokenGenerator(),
                 new NumberScannerTokenGenerator(),
-                new StringScannerTokenGenerator(),
-                new SlashScannerTokenGenerator()
+                identScannerGen
                 );
 
             identScannerGen.Add(
@@ -66,7 +62,7 @@ namespace ULox
 
                 ("class", TokenType.CLASS),
                 ("mixin", TokenType.MIXIN),
-                ("this", TokenType.THIS),
+                (ClassTypeCompilette.ThisName.String, TokenType.THIS),
                 ("static", TokenType.STATIC),
                 ("init", TokenType.INIT),
                 ("cname", TokenType.CONTEXT_NAME_CLASS),
@@ -80,9 +76,6 @@ namespace ULox
                 ("countof", TokenType.COUNT_OF),
 
                 ("expect", TokenType.EXPECT),
-
-                ("data", TokenType.DATA),
-                ("system", TokenType.SYSTEM),
 
                 ("match", TokenType.MATCH),
 
@@ -109,33 +102,22 @@ namespace ULox
             _stringIterator = null;
             _script = default;
         }
-        
-        public Token Next()
-        {
-            while (!IsAtEnd())
-            {
-                Advance();
-                var matchinGen = GetMatchingGenerator(CurrentChar);
-                var tok = matchinGen.Consume(this);
-                if (tok.TokenType != TokenType.NONE)
-                    return tok;
-            }
-
-            return EmitTokenSingle(TokenType.EOF);
-        }
 
         public List<Token> Scan(Script script)
         {
             SetScript(script);
-            var tokens = new List<Token>(TokenStartingCapacity);
-            var lastToken = default(Token);
-            do
+            _tokens = new List<Token>(TokenStartingCapacity);
+
+            while (!IsAtEnd())
             {
-                lastToken = Next();
-                tokens.Add(lastToken);
-            } while (lastToken.TokenType != TokenType.EOF);
-            
-            return tokens;
+                Advance();
+                var matchinGen = GetMatchingGenerator(CurrentChar);
+                matchinGen.Consume(this);
+            }
+
+            EmitTokenSingle(TokenType.EOF);
+
+            return _tokens;
         }
 
         public void SetScript(Script script)
@@ -159,21 +141,29 @@ namespace ULox
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance() => _stringIterator.Advance();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)] 
         public bool IsAtEnd() => _stringIterator.Peek() == -1;
-
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char Peek()
             => (char)_stringIterator.Peek();
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ReadLine()
             => _stringIterator.ReadLine();
 
-        public Token EmitTokenSingle(TokenType token)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitTokenSingle(TokenType token)
             => EmitToken(token, CurrentChar.ToString(), null);
-        
-        public Token EmitToken(TokenType simpleToken, string str, object literal)
-            => new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber, _stringIterator.CurrentIndex);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void EmitToken(TokenType simpleToken, string str, object literal)
+        { 
+            _tokens.Add(new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber, _stringIterator.CurrentIndex));
+        }
 
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)
         {
@@ -183,21 +173,21 @@ namespace ULox
 
         private IScannerTokenGenerator GetMatchingGenerator(char ch)
         {
-            var matchinGen = default(IScannerTokenGenerator);
+            var matchingGen = default(IScannerTokenGenerator);
             for (int i = 0; i < _scannerGenerators.Count; i++)
             {
                 var gen = _scannerGenerators[i];
                 if (gen.DoesMatchChar(ch))
                 {
-                    matchinGen = gen;
+                    matchingGen = gen;
                     break;
                 }
             }
 
-            if (matchinGen == null)
+            if (matchingGen == null)
                 ThrowScannerException($"Unexpected character '{ch}'");
 
-            return matchinGen;
+            return matchingGen;
         }
     }
 }

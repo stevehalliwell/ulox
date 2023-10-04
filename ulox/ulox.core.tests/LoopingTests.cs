@@ -865,13 +865,13 @@ class Vec2
 	}
 }
 
-data ShipControls
+class ShipControls
 {
     var throttle = 0;
     var rudder = 0;
 }
 
-data Ship
+class Ship
 {
     var pos = Vec2();
     var vel = Vec2();
@@ -879,7 +879,7 @@ data Ship
     var controls = ShipControls();
 }
 
-system EnemyShipAIBasic
+class EnemyShipAIBasic
 {
     Tick(enemyShips, targetShips, dt)
     {
@@ -949,7 +949,7 @@ system EnemyShipAIBasic
     }
 }
 
-system EnemyTargetSelection
+class EnemyTargetSelection
 {
     Select(enemyShip, availTargets)
     {

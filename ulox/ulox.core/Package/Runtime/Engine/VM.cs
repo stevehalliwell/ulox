@@ -22,7 +22,7 @@ namespace ULox
 
         public Vm()
         {
-            var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native", FunctionType.Function);
+            var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native");
             nativeChunk.WritePacket(new ByteCodePacket(OpCode.NATIVE_CALL), 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }
@@ -278,7 +278,9 @@ namespace ULox
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble % rhs.val.asDouble));
+                        var lhsd = lhs.val.asDouble;
+                        var rhsd = rhs.val.asDouble;
+                        Push(Value.New(((lhsd % rhsd) + rhsd) % rhsd));
                         break;
                     }
 
@@ -415,7 +417,7 @@ namespace ULox
                     if (Globals.Get(actualName, out var found))
                         Push(found);
                     else
-                        ThrowRuntimeException($"No global of name {actualName} could be found");
+                        ThrowRuntimeException($"No global of name '{actualName}' could be found");
                 }
                 break;
 
@@ -475,22 +477,6 @@ namespace ULox
                 }
                 break;
 
-                case OpCode.TYPE:
-                    DoUserTypeOp(chunk, packet.typeDetails);
-                    break;
-
-                case OpCode.METHOD:
-                    DoMethodOp(chunk, packet.b1);
-                    break;
-
-                case OpCode.FIELD:
-                    DoFieldOp(chunk, packet.b1);
-                    break;
-
-                case OpCode.MIXIN:
-                    DoMixinOp(chunk);
-                    break;
-
                 case OpCode.INVOKE:
                     DoInvokeOp(chunk, packet);
                     break;
@@ -527,16 +513,6 @@ namespace ULox
 
                 case OpCode.TYPEOF:
                     DoTypeOfOp();
-                    break;
-
-                //can merge into validate, this is not perf critical
-                case OpCode.MEETS:
-                    DoMeetsOp();
-                    break;
-
-                //can merge into validate, this is not perf critical
-                case OpCode.SIGNS:
-                    DoSignsOp();
                     break;
 
                 case OpCode.COUNT_OF:
@@ -631,23 +607,6 @@ namespace ULox
                 VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
                 VmUtil.GenerateValueStackDump(this),
                 VmUtil.GenerateCallStackDump(this));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMeetsOp()
-        {
-            var (rhs, lhs) = Pop2();
-            var (meets, _) = ProcessContract(lhs, rhs);
-            Push(Value.New(meets));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSignsOp()
-        {
-            var (rhs, lhs) = Pop2();
-            var (meets, msg) = ProcessContract(lhs, rhs);
-            if (!meets)
-                ThrowRuntimeException($"Sign failure with msg '{msg}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -856,8 +815,23 @@ namespace ULox
                 if (requestedResults != availableResults)
                     ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
                 break;
-
+            case ValidateOp.Meets:
+                {
+                    var (rhs, lhs) = Pop2();
+                    var (meets, _) = ProcessContract(lhs, rhs);
+                    Push(Value.New(meets));
+                }
+                break;
+            case ValidateOp.Signs:
+                {
+                    var (rhs, lhs) = Pop2();
+                    var (meets, msg) = ProcessContract(lhs, rhs);
+                    if (!meets)
+                        ThrowRuntimeException($"Sign failure with msg '{msg}'");
+                }
+                break;
             default:
+                ThrowRuntimeException($"Unhandled validate op '{validateOp}'");
                 break;
             }
         }
@@ -1160,25 +1134,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoUserTypeOp(Chunk chunk, ByteCodePacket.TypeDetails typeDetails)
-        {
-            var constantIndex = typeDetails.stringConstantId;
-            var name = chunk.ReadConstant(constantIndex);
-            var userType = typeDetails.UserType;
-            UserTypeInternal klass = userType == UserType.Enum
-                ? new EnumClass(name.val.asString)
-                : new UserTypeInternal(name.val.asString, userType);
-            var klassValue = Value.New(klass);
-            Push(klassValue);
-            var initChainLabelID = typeDetails.initLabelId;
-            var initChain = chunk.Labels[initChainLabelID];
-            if (initChain != 0)
-            {
-                klass.AddInitChain(_currentCallFrame.Closure, (ushort)initChain);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoFreezeOp()
         {
             var instVal = Pop();
@@ -1236,13 +1191,12 @@ namespace ULox
 
             //attempt to bind the method
             var fromClass = instance.FromUserType;
-            var methodName = name;
 
             if (fromClass == null)
-                ThrowRuntimeException($"Cannot bind method '{methodName}', there is no fromClass");
+                ThrowRuntimeException($"Undefined property '{name}', cannot bind method as it has no fromClass");
 
-            if (!fromClass.Methods.Get(methodName, out var method))
-                ThrowRuntimeException($"Undefined property '{methodName}'");
+            if (!fromClass.Methods.Get(name, out var method))
+                ThrowRuntimeException($"Undefined property '{name}'");
 
             var receiver = targetVal;
             var meth = method.val.asClosure;
@@ -1331,31 +1285,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMethodOp(Chunk chunk, byte constantIndex)
-        {
-            var name = chunk.ReadConstant(constantIndex).val.asString;
-            Value method = Peek();
-            var klass = Peek(1).val.asClass;
-            klass.AddMethod(name, method, this);
-            DiscardPop();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoFieldOp(Chunk chunk, byte constantIndex)
-        {
-            var klass = Pop().val.asClass;
-            klass.AddFieldName(chunk.ReadConstant(constantIndex).val.asString);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMixinOp(Chunk chunk)
-        {
-            //pop2
-            var (klass, mixin) = Pop2();
-            klass.val.asClass.MixinClass(mixin, this);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CallMethod(BoundMethod asBoundMethod, byte argCount)
         {
             _valueStack[_valueStack.Count - 1 - argCount] = asBoundMethod.Receiver;
@@ -1365,9 +1294,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void CreateInstance(UserTypeInternal asClass, byte argCount)
         {
-            if (asClass.UserType == UserType.System)
-                ThrowRuntimeException($"Attempted to create an instance of the system '{asClass.Name}', this is not allowed");
-
             var instInternal = asClass.MakeInstance();
             var inst = Value.New(instInternal);
             _valueStack[_valueStack.Count - 1 - argCount] = inst;
@@ -1402,15 +1328,15 @@ namespace ULox
                 ThrowRuntimeException($"Expected zero args for class '{klass}', as it does not have an 'init' method but got {argCount} args");
             }
 
-            foreach (var (closure, instruction) in klass.InitChains)
+            foreach (var (chunk, labelID) in klass.InitChains)
             {
                 if (!klass.Initialiser.IsNull())
                     Push(inst);
 
                 PushNewCallframe(new CallFrame()
                 {
-                    Closure = closure,
-                    InstructionPointer = instruction,
+                    Closure = new ClosureInternal { chunk = chunk },
+                    InstructionPointer = chunk.Labels[labelID],
                     StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                 });
             }
@@ -1523,6 +1449,21 @@ namespace ULox
         internal void MoveInstructionPointerTo(ushort loc)
         {
             _currentCallFrame.InstructionPointer = loc;
+        }
+
+        public void PrepareTypes(TypeInfo typeInfo)
+        {
+            foreach (var type in typeInfo.Types)
+            {
+                if (Globals.Contains(new HashedString(type.Name))) continue;
+
+                var klass = type.UserType == UserType.Class
+                    ? new UserTypeInternal(type)
+                    : new EnumClass(type);
+                klass.PrepareFromType(this);
+                var klassVal = Value.New(klass);
+                Globals.AddOrSet(klass.Name, klassVal);
+            }
         }
     }
 }

@@ -81,6 +81,15 @@ someFunc();
 //strings can be combined with '+'
 var someCombinedString = someString + " " + "there";
 
+//all strings are interpolated
+//  within a string code between {} must be an expression and is scanned as being plus-ed with
+//  the string parts that surround it.
+var someName = "Steve";
+var interpedCombined = "Hi {someName}";
+
+//if we want the {, we escape it with \
+var stringWithBrak = "this has a \{ in it."
+
 // native types for list, map, and object types
 var aList = []; //an empty list
 aList.Add(7);   //methods to add remove and the like.
@@ -176,7 +185,7 @@ loop myArr    // auto defines, item, i, count. In that order, you can provide cu
     print("Val " + item + " @ " + i " of " + count);
 }
 
-//user created data types are enum, class, data, and system
+//user created data types are enum, class
 
 //enums are named values, similar in intent and usage to c style languages
 enum Foo
@@ -187,14 +196,15 @@ enum Foo
     Baz = 8,
 }
 
-//data is the most straight forward, it is simply a named prototype for a collection of vars
-data Addresss
+//a class with data only is the most straight forward, it is simply a named prototype for a collection of vars
+class Addresss
 {
+var
     number = 0, //as with other vars they can be given a starting value
     street,
     state,
     postcode,
-    country // data syntax is very tolerant, you can leave dangling commas or end with a ;
+    country // class var syntax is very tolerant, you can leave dangling commas or end with a ;
 }
 
 var anAddress = Address();
@@ -225,8 +235,8 @@ class MyFoo
 //to get an instance of the class, we invoke it's name and match it's init args
 var myFoo = MyFoo(1);
 
-//System is a special type that contains only non-instance functions, akin to a dynamic with function args that is frozen.
-system FooSystem
+//Classes can be used without instances if they don't use this or if the method is marked static
+class FooSystem
 {
     Bar(someState, dt)
     {
@@ -234,7 +244,6 @@ system FooSystem
     }
 }
 
-//calling the system func is as expected, type and method name. Same as a static method in a class.
 FooSystem.Bar(a, 0.1);
 
 //ulox does not have inheritance, it does have mixins. These combine the elements of the type into the containing one.

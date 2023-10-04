@@ -12,6 +12,12 @@ namespace ULox
             Fields.AddOrSet(AllEnumHash, Value.New(NativeListClass.CreateInstance()));
         }
 
+        public EnumClass(TypeInfoEntry type) 
+            : this(new HashedString(type.Name))
+        {
+            _typeInfoEntry = type;
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddEnumValue(Value key, Value val)
         {

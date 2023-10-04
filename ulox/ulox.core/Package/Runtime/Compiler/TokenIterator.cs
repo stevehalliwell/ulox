@@ -1,19 +1,24 @@
-﻿namespace ULox
+﻿using System.Collections.Generic;
+
+namespace ULox
 {
     public sealed class TokenIterator
     {
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
         public string SourceName => _script.Name;
-        public Scanner Scanner => _scanner;
 
         private readonly Scanner _scanner;
         private readonly Script _script;
+        private readonly List<Token> _tokens;
         
-        public TokenIterator(Scanner scanner, Script script)
+        private int _currentTokenIndex = -1;
+
+        public TokenIterator(Scanner scanner, Script script, List<Token> tokens)
         {
             _scanner = scanner;
             _script = script;
+            _tokens = tokens;
         }
 
         public string GetSourceSection(int start, int end)
@@ -24,7 +29,7 @@
         public void Advance()
         {
             PreviousToken = CurrentToken;
-            CurrentToken = _scanner.Next();
+            CurrentToken = _tokens[++_currentTokenIndex];
         }
 
         public void Consume(TokenType tokenType, string msg)

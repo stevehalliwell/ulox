@@ -27,7 +27,7 @@ namespace ULox
         private OpCode _prevOoCode;
         private int _deadCodeStart = -1;
 
-        public void Optimise(CompiledScript compiledScript)
+        public void Optimise(CompiledScript compiledScript, TypeInfo typeInfo)
         {
             if (!Enabled)
                 return;
@@ -38,7 +38,7 @@ namespace ULox
             if (EnableRemoveUnreachableLabels)
             {
                 MarkNoJumpGotoLabelAsDead();
-                MarkUnsedLabelsAsDead(compiledScript);
+                MarkUnsedLabelsAsDead(compiledScript, typeInfo);
             }
             RemoveMarkedInstructions();
             OptimisationReporter?.PostOptimise(compiledScript);
@@ -70,7 +70,7 @@ namespace ULox
             }
         }
 
-        private void MarkUnsedLabelsAsDead(CompiledScript compiledScript)
+        private void MarkUnsedLabelsAsDead(CompiledScript compiledScript, TypeInfo typeInfo)
         {
             foreach (var chunk in compiledScript.AllChunks)
             {
@@ -78,7 +78,8 @@ namespace ULox
                 {
                     var matches = _labelUsage.Where(x => x.chunk == chunk && x.label == label.Key);
                     var used = matches.Any(x => !_toRemove.Any(y => y.chunk == chunk && y.inst == x.from));
-                    if (!used)
+                    var usedByTypes = typeInfo?.Types.Any(x => x.InitChains.Any(y => y.chunk == chunk && y.labelID == label.Key)) ?? false;
+                    if (!used && !usedByTypes)
                     {
                         _toRemove.Add((chunk, label.Value));
                     }
@@ -139,9 +140,6 @@ namespace ULox
 
             switch (packet.OpCode)
             {
-            case OpCode.TYPE:
-                AddLabelUsage(packet.typeDetails.initLabelId);
-                break;
             case OpCode.TEST:
                 if (packet.testOpDetails.TestOpType == TestOpType.TestFixtureBodyInstruction)
                     AddLabelUsage(packet.testOpDetails.b1);

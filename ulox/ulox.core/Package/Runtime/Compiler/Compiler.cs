@@ -9,7 +9,9 @@ namespace ULox
     {
         private readonly IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
         private readonly PrattParserRuleSet _prattParser = new PrattParserRuleSet();
+        private readonly TypeInfo _typeInfo = new TypeInfo();
 
+        public TypeInfo TypeInfo => _typeInfo;
         public TokenIterator TokenIterator { get; private set; }
 
         public TokenType CurrentTokenType
@@ -35,7 +37,7 @@ namespace ULox
         private void Setup()
         {
             var _testdec = new TestSetDeclarationCompilette();
-            var _classCompiler = TypeCompilette.CreateClassCompilette();
+            var _classCompiler = new ClassTypeCompilette();
             var _testcaseCompilette = new TestcaseCompillette(_testdec);
 
             this.AddDeclarationCompilette(
@@ -44,9 +46,7 @@ namespace ULox
                 _classCompiler,
                 _testcaseCompilette,
                 new BuildCompilette(),
-                TypeCompilette.CreateEnumCompilette(),
-                TypeCompilette.CreateDataCompilette(),
-                TypeCompilette.CreateSystemCompilette()
+                new EnumTypeCompliette()
                 );
 
             this.AddDeclarationCompilette(
@@ -204,14 +204,14 @@ namespace ULox
                     popCount++;
             }
 
-            if(popCount > 0)
+            if (popCount > 0)
                 EmitPop(popCount);
         }
 
         public CompiledScript Compile(Scanner scanner, Script script)
         {
-            scanner.SetScript(script);
-            TokenIterator = new TokenIterator(scanner, script);
+            var tokens = scanner.Scan(script);
+            TokenIterator = new TokenIterator(scanner, script, tokens);
             TokenIterator.Advance();
 
             PushCompilerState(string.Empty, FunctionType.Script);
@@ -285,27 +285,10 @@ namespace ULox
         {
             var newCompState = new CompilerState(compilerStates.Peek(), functionType)
             {
-                chunk = new Chunk(name, TokenIterator?.SourceName, functionType),
+                chunk = new Chunk(name, TokenIterator?.SourceName),
             };
             compilerStates.Push(newCompState);
-
-            AfterCompilerStatePushed();
-        }
-
-        private void AfterCompilerStatePushed()
-        {
-            var functionType = CurrentCompilerState.functionType;
-
-            if (functionType == FunctionType.Method
-                || functionType == FunctionType.Init)
-            {
-                CurrentCompilerState.AddLocal(this, "this", 0);
-            }
-            else
-            {
-                //calls have local 0 as a reference to the closure but are not able to ref it themselves.
-                CurrentCompilerState.AddLocal(this, "", 0);
-            }
+            CurrentCompilerState.AddLocal(this, "", 0);
         }
 
         public void NamedVariable(string name, bool canAssign)
@@ -407,7 +390,7 @@ namespace ULox
             return (getOp, setOp, (byte)argId);
         }
 
-        private Chunk EndCompile()
+        public Chunk EndCompile()
         {
             EmitReturn();
             var returnChunk = compilerStates.Pop().chunk;
@@ -458,21 +441,21 @@ namespace ULox
             return AddStringConstant();
         }
 
-        public void Function(string name, FunctionType functionType)
+        public Chunk Function(string name, FunctionType functionType)
         {
+            if (functionType == FunctionType.Method
+               || functionType == FunctionType.Init)
+            {
+                ThrowCompilerException($"Cannot declare a {functionType} function outside of a class.");
+            }
+
             PushCompilerState(name, functionType);
 
             BeginScope();
             VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
             var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
 
-
-            if (functionType == FunctionType.Init)
-            {
-                if (returnCount != 0)
-                    ThrowCompilerException("Init functions cannot specify named return vars.");
-            }
-            else if (returnCount == 0)
+            if (returnCount == 0)
             {
                 var retvalId = DeclareAndDefineCustomVariable("retval");
                 IncreaseReturn(retvalId);
@@ -482,7 +465,21 @@ namespace ULox
             TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before function body.");
             Block();
 
-            EndFunction();
+            // Create the function object.
+            var comp = CurrentCompilerState;   //we need this to mark upvalues
+            var function = EndCompile();
+            EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount)));
+
+            for (int i = 0; i < function.UpvalueCount; i++)
+            {
+                EmitPacket(
+                    new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(
+                    ClosureType.UpValueInfo,
+                    comp.upvalues[i].isLocal ? (byte)1 : (byte)0,
+                    comp.upvalues[i].index)));
+            }
+
+            return function;
         }
 
         public byte VariableNameListDeclareOptional(Action postDefinePerVar)
@@ -521,23 +518,6 @@ namespace ULox
             CurrentChunk.ReturnConstantIds.Add(argNameConstant);
             if (CurrentChunk.ReturnCount > 255)
                 ThrowCompilerException($"Can't have more than 255 returns.");
-        }
-
-        public void EndFunction()
-        {
-            // Create the function object.
-            var comp = CurrentCompilerState;   //we need this to mark upvalues
-            var function = EndCompile();
-            EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount)));
-
-            for (int i = 0; i < function.UpvalueCount; i++)
-            {
-                EmitPacket(
-                    new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(
-                    ClosureType.UpValueInfo,
-                    comp.upvalues[i].isLocal ? (byte)1 : (byte)0,
-                    comp.upvalues[i].index)));
-            }
         }
 
         public void Block()
@@ -1120,13 +1100,13 @@ namespace ULox
         public static void Meets(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.MEETS));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.Meets));
         }
 
         public static void Signs(Compiler compiler, bool canAssign)
         {
             compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.SIGNS));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.Signs));
         }
 
         internal byte GotoUniqueChunkLabel(string v)

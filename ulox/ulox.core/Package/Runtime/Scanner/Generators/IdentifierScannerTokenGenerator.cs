@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace ULox
@@ -24,11 +25,12 @@ namespace ULox
                 (c >= 'A' && c <= 'Z') ||
                 c == '_';
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsAlphaNumber(int c) => IsAlpha(c) || NumberScannerTokenGenerator.IsDigit(c);
 
         public bool DoesMatchChar(char ch) => IsAlpha(ch);
 
-        public Token Consume(Scanner scanner)
+        public void Consume(Scanner scanner)
         {
             workingSpaceStringBuilder.Clear();
 
@@ -46,7 +48,7 @@ namespace ULox
             if (keywords.TryGetValue(identString, out var keywordTokenType))
                 token = keywordTokenType;
 
-            return scanner.EmitToken(token, identString, identString);
+            scanner.EmitToken(token, identString, identString);
         }
     }
 }

@@ -28,17 +28,15 @@ namespace ULox
         public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
         public string Name { get; set; }
         public string SourceName { get; }
-        public FunctionType FunctionType { get; internal set; }
         public byte Arity => (byte)ArgumentConstantIds.Count;
         public byte ReturnCount => (byte)ReturnConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Chunk(string chunkName, string sourceName, FunctionType functionType)
+        public Chunk(string chunkName, string sourceName)
         {
             Name = string.IsNullOrEmpty(chunkName) ? DefaultChunkName : chunkName;
             SourceName = sourceName;
-            FunctionType = functionType;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

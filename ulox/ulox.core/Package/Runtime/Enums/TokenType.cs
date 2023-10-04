@@ -65,8 +65,6 @@
 
         THROW,
 
-        DATA,
-        SYSTEM,
         CLASS,
         THIS,
         STATIC,

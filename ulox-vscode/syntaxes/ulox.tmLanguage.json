@@ -89,7 +89,7 @@
 					}
 				},
 				{
-					"match": "\\b(class|data|system|enum)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(<)\\s*([A-Za-z_][A-Za-z0-9_]*))?\\b",
+					"match": "\\b(class|enum)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(<)\\s*([A-Za-z_][A-Za-z0-9_]*))?\\b",
 					"captures": {
 						"1": {
 							"name": "storage.type.class.ulox"
@@ -123,7 +123,7 @@
 				},
 				{
 					"name": "keyword.bultin.ulox",
-					"match": "\\b(typeof|countof|mixin|static|build|init)\\b"
+					"match": "\\b(typeof|countof|mixin|static|build|init|var)\\b"
 				}
 			]
 		},

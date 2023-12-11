@@ -49,8 +49,8 @@ namespace ULox
                 new EnumTypeCompliette()
                 );
 
-            this.AddDeclarationCompilette(
-                (TokenType.FUNCTION, FunctionDeclaration));
+
+            AddDeclarationCompilette(new CompiletteAction(TokenType.FUNCTION, FunctionDeclaration));
 
             this.AddStatementCompilette(
                 new ReturnStatementCompilette(),

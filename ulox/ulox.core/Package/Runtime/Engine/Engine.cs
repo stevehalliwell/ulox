@@ -10,7 +10,7 @@ namespace ULox
         public Engine(Context executionContext)
         {
             Context = executionContext;
-            Context.Vm.SetEngine(this);
+            Context.Vm.Engine = this;
             Context.AddLibrary(new StdLibrary());
         }
 

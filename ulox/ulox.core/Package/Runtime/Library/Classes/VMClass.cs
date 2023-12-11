@@ -11,7 +11,7 @@ namespace ULox
         public VMClass(Func<Vm> createVM) : base(new HashedString("VM"), UserType.Native)
         {
             CreateVM = createVM;
-            this.AddMethod(ClassTypeCompilette.InitMethodName, Value.New(InitInstance, 1, 0), null);
+            AddMethod(ClassTypeCompilette.InitMethodName, Value.New(InitInstance, 1, 0), null);
             this.AddMethodsToClass(
                 (nameof(AddGlobal), Value.New(AddGlobal, 1, 2)),
                 (nameof(GetGlobal), Value.New(GetGlobal, 1, 1)),
@@ -20,6 +20,7 @@ namespace ULox
                 (nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing, 1, 0)),
                 (nameof(Resume), Value.New(Resume, 1, 0))
                                   );
+            AddFieldName(VMFieldName);
         }
 
         private NativeCallResult InitInstance(Vm vm)
@@ -67,7 +68,7 @@ namespace ULox
             Vm ourVM = GetArg0Vm(vm);
             var chunk = vm.GetArg(1).val.asClosure.chunk;
             ourVM.Interpret(chunk);
-            vm.SetNativeReturn(0, ourVM.StackTop);
+            vm.SetNativeReturn(0, ourVM.ValueStack.Peek());
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -75,7 +76,7 @@ namespace ULox
         {
             Vm ourVM = GetArg0Vm(vm);
             ourVM.Run();
-            vm.SetNativeReturn(0, ourVM.StackTop);
+            vm.SetNativeReturn(0, ourVM.ValueStack.Peek());
             return NativeCallResult.SuccessfulExpression;
         }
 

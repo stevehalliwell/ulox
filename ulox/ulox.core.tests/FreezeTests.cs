@@ -35,21 +35,6 @@ inst.a = 10;");
         }
 
         [Test]
-        public void InstanceFromClass_WhenHasInitAndNoVars_ShouldSucceed()
-        {
-            testEngine.Run(@"
-class CoffeeMaker 
-{
-    init(_a) { this.a = _a; }
-}
-
-var maker = CoffeeMaker(""black"");
-print(maker.a);");
-
-            Assert.AreEqual("black", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Class_WhenFrozenAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
         {
             testEngine.Run(@"

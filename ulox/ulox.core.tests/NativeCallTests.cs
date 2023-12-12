@@ -172,9 +172,9 @@ Locals();");
             NativeCallResult Func(Vm vm)
             {
                 var index = 0;
-                var a = vm.GetNextArg(ref index).val.asString;
-                var b = vm.GetNextArg(ref index).val.asString;
-                var c = vm.GetNextArg(ref index).val.asString;
+                var a = vm.GetArg(++index).val.asString;
+                var b = vm.GetArg(++index).val.asString;
+                var c = vm.GetArg(++index).val.asString;
                 vm.SetNativeReturn(0, Value.New($"Hello, {a}, {b}, and {c}, I'm native."));
                 return NativeCallResult.SuccessfulExpression;
             }

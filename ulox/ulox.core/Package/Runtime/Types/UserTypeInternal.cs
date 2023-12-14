@@ -93,7 +93,15 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public virtual InstanceInternal MakeInstance()
         {
-            return new InstanceInternal(this);
+            var ret = new InstanceInternal(this);
+
+            foreach (var fieldName in _fieldsNames)
+            {
+                ret.SetField(fieldName, Value.Null());
+            }
+
+            ret.Freeze();
+            return ret;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -155,10 +163,6 @@ namespace ULox
         {
             return overloadableOperators[OpCodeToOverloadIndex[opCode]];
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void FinishCreation(InstanceInternal inst)
-            => inst.Freeze();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddFieldName(HashedString fieldName)

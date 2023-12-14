@@ -75,15 +75,13 @@ fun RandVec2() (x,y)
 
 class Ball
 {
-	init()
-	{
-		var (x,y) = RandVec2();
-		this.posx = x;
-		this.posy = y;
+	var posx = 0;
+    var posy = 0;
+    var velx = 0;
+    var vely = 0;
 
-		var (vx,vy) = RandVec2();
-		this.velx = vx;
-		this.vely = vy;
+	init(posx, posy, velx, vely)
+	{
 	}
 }
 
@@ -93,7 +91,9 @@ fun SetupGame()
 
 	for(var i = 0; i < numBallsToSpawn; i += 1)
 	{
-		balls.Add(Ball());
+		var (x,y) = RandVec2();
+		var (vx,vy) = RandVec2();
+		balls.Add(Ball(x,y,vx,vy));
 	}
 	print(balls.Count());
 }
@@ -106,7 +106,6 @@ fun Update()
 
 	loop balls
 	{
-		//print(GenerateStackDump());
   		item.posx = item.posx + item.velx * dt;
   		item.posy = item.posy + item.vely * dt;
 

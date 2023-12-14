@@ -13,6 +13,13 @@
                                   );
         }
 
+        public override InstanceInternal MakeInstance()
+        {
+            var res = base.MakeInstance();
+            res.Unfreeze();
+            return res;
+        }
+
         private NativeCallResult HasField(Vm vm)
         {
             var obj = vm.GetArg(1);
@@ -43,12 +50,6 @@
             inst.Fields.Remove(fieldNameStr);
 
             return NativeCallResult.SuccessfulExpression;
-        }
-
-        public override void FinishCreation(InstanceInternal inst)
-        {
-            base.FinishCreation(inst);
-            inst.Unfreeze();
         }
     }
 }

@@ -1,15 +1,16 @@
 // init is called when an instance is created
 class WithInitVal
 {
+	var someValue;
 	init(val)
 	{
 		// this keyword gets access to the instance currently running the method
-		this.val = val;
+		this.someValue = val;
 	}
 }
 
 var foo = WithInitVal(7);
-print(foo.val);
+print(foo.someValue);
 
 // class vars are initialised prior to init
 class WithVars

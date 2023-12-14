@@ -15,7 +15,7 @@ namespace ULox
         internal FastStack<CallFrame> CallFrames => _callFrames;
         private CallFrame _currentCallFrame;
         private Chunk _currentChunk;
-        public Engine Engine { get; private set; }
+        public Engine Engine { get; internal set; }
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         public Table Globals { get; private set; } = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
@@ -36,7 +36,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public (Value, Value) Pop2()
         {
-#if FASTSTACK_FORCE_CLEAR
+#if !FASTSTACK_FORCE_CLEAR
             _valueStack.DiscardPop(2);
             return (_valueStack.Peek(-2), _valueStack.Peek(-1));
 #else
@@ -52,15 +52,6 @@ namespace ULox
 
         public Value GetArg(int index)
             => _valueStack[_currentCallFrame.StackStart + index];
-
-        public Value GetNextArg(ref int index)
-            => _valueStack[_currentCallFrame.StackStart + (++index)];
-
-        public int CurrentFrameStackValues => _valueStack.Count - _currentCallFrame.StackStart;
-        public Value StackTop => _valueStack.Peek();
-        public int StackCount => _valueStack.Count;
-
-        public void SetEngine(Engine engine) => Engine = engine;
 
         public InterpreterResult PushCallFrameAndRun(Value func, byte args)
         {
@@ -113,7 +104,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ByteCodePacket ReadPacket(Chunk chunk)
+        private ByteCodePacket ReadPacket(Chunk chunk)
             => chunk.Instructions[_currentCallFrame.InstructionPointer++];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -132,27 +123,6 @@ namespace ULox
             {
                 ValueStack.Push(Value.Null());
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private byte PopCallFrame()
-        {
-            var poppedStackStart = _currentCallFrame.StackStart;
-            //remove top
-            _callFrames.Pop();
-
-            //update cache
-            if (_callFrames.Count > 0)
-            {
-                _currentCallFrame = _callFrames.Peek();
-                _currentChunk = _currentCallFrame.Closure.chunk;
-            }
-            else
-            {
-                _currentCallFrame = default;
-                _currentChunk = default;
-            }
-            return poppedStackStart;
         }
 
         public InterpreterResult Interpret(Chunk chunk)
@@ -194,7 +164,7 @@ namespace ULox
                     break;
 
                 case OpCode.RETURN:
-                    if (DoReturnOp(chunk))
+                    if (DoReturnOp())
                         return InterpreterResult.OK;
 
                     break;
@@ -452,7 +422,7 @@ namespace ULox
                         VmUtil.GenerateCallStackDump(this));
                 }
                 case OpCode.BUILD:
-                    DoBuildOp(chunk);
+                    DoBuildOp();
                     break;
 
                 case OpCode.NATIVE_CALL:
@@ -460,7 +430,7 @@ namespace ULox
                     break;
 
                 case OpCode.VALIDATE:
-                    DoValidateOp(chunk, packet.ValidateOp);
+                    DoValidateOp(packet.ValidateOp);
                     break;
 
                 case OpCode.GET_PROPERTY:
@@ -804,7 +774,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoValidateOp(Chunk chunk, ValidateOp validateOp)
+        private void DoValidateOp(ValidateOp validateOp)
         {
             switch (validateOp)
             {
@@ -837,7 +807,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoBuildOp(Chunk chunk)
+        private void DoBuildOp()
         {
             var givenVar = Pop();
             var str = givenVar.str();
@@ -862,7 +832,7 @@ namespace ULox
             var type = closureDetails.ClosureType;
             var b1 = closureDetails.b1;
             var b2 = closureDetails.b2;
-            ClosureInternal closure = default;
+            var closure = default(ClosureInternal);
 
             if (type != ClosureType.Closure)
                 ThrowRuntimeException($"Closure type '{type}' unexpected.");
@@ -895,7 +865,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoReturnOp(Chunk chunk)
+        private bool DoReturnOp()
         {
             var origCallFrameCount = _callFrames.Count;
             var wantsToYieldOnReturn = _currentCallFrame.YieldOnReturn;
@@ -911,7 +881,7 @@ namespace ULox
         {
             if (_currentCallFrame.nativeFunc == null)
                 ThrowRuntimeException($"{opCode} without nativeFunc encountered. This is not allowed");
-            var argCount = CurrentFrameStackValues;
+            var argCount = _valueStack.Count - _currentCallFrame.StackStart;
             var res = _currentCallFrame.nativeFunc.Invoke(this);
 
             if (res == NativeCallResult.SuccessfulExpression)
@@ -940,45 +910,12 @@ namespace ULox
             {
                 _returnStack.Push(ValueStack[_currentCallFrame.StackStart]);
             }
-            FinishReturnOp();
-        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMultiVarOp(Chunk chunk, bool start)
-        {
-            if (start)
-                _currentCallFrame.MultiAssignStart = (byte)StackCount;
-            else
-                CacheStackForMultiAssignValidation();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void FinishReturnOp()
-        {
             CloseUpvalues(_currentCallFrame.StackStart);
 
             PopFrameAndDiscard();
-            TransferReturnToStack();
-        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopFrameAndDiscard()
-        {
-            var prevStackStart = PopCallFrame();
-            DiscardPopToCount(prevStackStart);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DiscardPopToCount(byte prevStackStart)
-        {
-            var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
-
-            DiscardPop(toRemove);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void TransferReturnToStack()
-        {
+            //transform from return stack to value stack
             for (int i = 0; i < _returnStack.Count; i++)
             {
                 Push(_returnStack[i]);
@@ -986,16 +923,46 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CacheStackForMultiAssignValidation()
+        private void DoMultiVarOp(Chunk chunk, bool start)
         {
-            //this is only so the multi return validate mechanism can continue to function,
-            //it's not actually contributing to how multi return works.
-            _returnStack.Reset();
-            var returnCount = _valueStack.Count - _currentCallFrame.MultiAssignStart;
-            for (int i = 0; i < returnCount; i++)
+            if (start)
+                _currentCallFrame.MultiAssignStart = (byte)_valueStack.Count;
+            else
             {
-                _returnStack.Push(Value.Null());
+                //this is only so the multi return validate mechanism can continue to function,
+                //it's not actually contributing to how multi return works.
+                _returnStack.Reset();
+                var returnCount = _valueStack.Count - _currentCallFrame.MultiAssignStart;
+                for (int i = 0; i < returnCount; i++)
+                {
+                    _returnStack.Push(Value.Null());
+                }
             }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void PopFrameAndDiscard()
+        {
+            var poppedStackStart = _currentCallFrame.StackStart;
+            //remove top
+            _callFrames.Pop();
+
+            //update cache
+            if (_callFrames.Count > 0)
+            {
+                _currentCallFrame = _callFrames.Peek();
+                _currentChunk = _currentCallFrame.Closure.chunk;
+            }
+            else
+            {
+                _currentCallFrame = default;
+                _currentChunk = default;
+            }
+
+            var prevStackStart = poppedStackStart;
+            var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
+
+            DiscardPop(toRemove);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1107,15 +1074,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PushFrameCallNative(CallFrame.NativeCallDelegate nativeCallDel, byte argCount, byte returnCount)
         {
-            PushFrameCallNativeWithFixedStackStart(nativeCallDel, (byte)(_valueStack.Count - argCount - 1), argCount, returnCount);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PushFrameCallNativeWithFixedStackStart(CallFrame.NativeCallDelegate nativeCallDel, byte stackStart, byte argCount, byte returnCount)
-        {
             PushNewCallframe(new CallFrame()
             {
-                StackStart = stackStart,
+                StackStart = (byte)(_valueStack.Count - argCount - 1),
                 Closure = NativeCallClosure,
                 nativeFunc = nativeCallDel,
                 InstructionPointer = 0,
@@ -1296,41 +1257,24 @@ namespace ULox
         {
             var instInternal = asClass.MakeInstance();
             var inst = Value.New(instInternal);
-            _valueStack[_valueStack.Count - 1 - argCount] = inst;
-
-            InitNewInstance(asClass, argCount, inst);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void InitNewInstance(UserTypeInternal klass, byte argCount, Value inst)
-        {
             var stackCount = _valueStack.Count;
             var instLocOnStack = (byte)(stackCount - argCount - 1);
+            _valueStack[instLocOnStack] = inst;
 
-            DuplicateStackValuesNew(instLocOnStack, argCount);
-            PushFrameCallNativeWithFixedStackStart(ClassFinishCreation, instLocOnStack, argCount, 1);
-
-            if (!klass.Initialiser.IsNull())
+            //InitNewInstance
+            if (!asClass.Initialiser.IsNull())
             {
                 //with an init list we don't return this
-                PushCallFrameFromValue(klass.Initialiser, argCount);
-
-                //push a native call here so we can bind the fields to init param names
-                if (klass.Initialiser.type == ValueType.Closure &&
-                    klass.Initialiser.val.asClosure.chunk.Arity > 0)
-                {
-                    DuplicateStackValuesNew(instLocOnStack, argCount);
-                    PushFrameCallNative(CopyMatchingParamsToFields, argCount, 1);
-                }
+                PushCallFrameFromValue(asClass.Initialiser, argCount);
             }
             else if (argCount != 0)
             {
-                ThrowRuntimeException($"Expected zero args for class '{klass}', as it does not have an 'init' method but got {argCount} args");
+                ThrowRuntimeException($"Expected zero args for class '{asClass}', as it does not have an 'init' method but got {argCount} args");
             }
 
-            foreach (var (chunk, labelID) in klass.InitChains)
+            foreach (var (chunk, labelID) in asClass.InitChains)
             {
-                if (!klass.Initialiser.IsNull())
+                if (!asClass.Initialiser.IsNull())
                     Push(inst);
 
                 PushNewCallframe(new CallFrame()
@@ -1340,45 +1284,6 @@ namespace ULox
                     StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                 });
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private NativeCallResult CopyMatchingParamsToFields(Vm vm)
-        {
-            var instVal = vm.GetArg(0);
-
-            var inst = instVal.val.asInstance;
-
-            var initChunk = inst.FromUserType.Initialiser.val.asClosure.chunk;
-            var argConstantIds = initChunk.ArgumentConstantIds;
-
-            const int argOffset = 1;
-
-            for (int i = 0; i < argConstantIds.Count; i++)
-            {
-                var arg = initChunk.Constants[i];
-                if (arg.type == ValueType.String)
-                {
-                    var paramName = arg.val.asString;
-                    if (inst.Fields.Contains(paramName))
-                    {
-                        var value = vm.GetArg(i + argOffset);
-                        inst.SetField(paramName, value);
-                    }
-                }
-            }
-
-            return NativeCallResult.SuccessfulStatement;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private NativeCallResult ClassFinishCreation(Vm vm)
-        {
-            var instVal = vm.GetArg(0);
-            var inst = instVal.val.asInstance;
-            inst.FromUserType.FinishCreation(inst);
-            vm.SetNativeReturn(0, instVal);
-            return NativeCallResult.SuccessfulExpression;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

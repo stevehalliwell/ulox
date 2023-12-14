@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ULox
 {
@@ -24,8 +25,8 @@ namespace ULox
             _innerDeclarationCompilettes = new Dictionary<TokenType, (TypeCompiletteStage, Action<Compiler>)>()
             {
                 { TokenType.STATIC, (TypeCompiletteStage.Static, StaticElement) },
-                { TokenType.INIT, (TypeCompiletteStage.Init, c => CompileMethod(c, FunctionType.Init)) },
                 { TokenType.VAR, (TypeCompiletteStage.Var, Property) },
+                { TokenType.INIT, (TypeCompiletteStage.Init, c => CompileMethod(c, FunctionType.Init)) },
                 { TokenType.MIXIN, (TypeCompiletteStage.Mixin, Mixin) },
                 { TokenType.SIGNS, (TypeCompiletteStage.Signs, Signs) },
             };
@@ -87,6 +88,19 @@ namespace ULox
 
             if (functionType == FunctionType.Init)
             {
+                foreach (var argId in compiler.CurrentCompilerState.chunk.ArgumentConstantIds)
+                {
+                    var argName = compiler.CurrentCompilerState.chunk.ReadConstant(argId).val.asString.String;
+                    if (CurrentTypeInfoEntry.Fields.FirstOrDefault(x => x == argName) != null)
+                    {
+                        var (_1,_2, id) = compiler.ResolveNameLookupOpCode(argName);
+                        compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)0));
+                        compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)id));
+                        compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, (byte)argId));
+                        compiler.EmitPop();
+                    }
+                }
+
                 if (returnCount != 0)
                     compiler.ThrowCompilerException("Init functions cannot specify named return vars.");
             }

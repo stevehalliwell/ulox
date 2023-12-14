@@ -276,9 +276,8 @@ var t = T(1,2);");
         {
             testEngine.Run(@"
 class CoffeeMaker {
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
+    var coffee; 
+    init(coffee) {}
 
     brew() {
         print (""Enjoy your cup of "" + this.coffee);
@@ -300,9 +299,8 @@ delegate();");
         {
             testEngine.Run(@"
 class CoffeeMaker {
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
+    var coffee; 
+    init(coffee) {}
 
     brew() {
         print (""Enjoy your cup of "" + this.coffee);
@@ -331,9 +329,8 @@ delegate();");
         {
             testEngine.Run(@"
 class CoffeeMaker {
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
+    var coffee; 
+    init(coffee) {}
 
     brew(method) {
         print (""Enjoy your cup of "" + this.coffee + "" ("" + method  + "")"");
@@ -357,9 +354,8 @@ delegate(""V60"");");
         {
             testEngine.Run(@"
 class CoffeeMaker {
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
+    var coffee; 
+    init(coffee) {}
 
     brew() {
         print (""Enjoy your cup of "" + this.coffee);
@@ -387,9 +383,8 @@ delegate();");
         {
             testEngine.Run(@"
 class CoffeeMaker {
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
+    var coffee; 
+    init(coffee) {}
 
     brew() {
         print (""Enjoy your cup of "" + this.coffee);
@@ -427,9 +422,8 @@ runner.RunIt(delegate);");
             testEngine.Run(@"
 class CoffeeMaker {
 var brew;
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
+    var coffee; 
+    init(coffee) {}
 }
 
 var maker = CoffeeMaker(""coffee and chicory"");
@@ -449,9 +443,8 @@ maker.brew();");
         {
             testEngine.Run(@"
 class CoffeeMaker {
-    init(_coffee) {
-        this.coffee = _coffee;
-    }
+    var coffee; 
+    init(coffee) {}
 
     brew() {
         print (""Enjoy your cup of "" + this.coffee);
@@ -718,7 +711,7 @@ print(res.a);");
         }
 
         [Test]
-        public void Init_WhenCreatingField_ShouldSucceed()
+        public void Init_AttempCreateField_ShouldFail()
         {
             testEngine.Run(@"
 class T
@@ -729,7 +722,7 @@ class T
 var t = T();
 print(t.a);");
 
-            Assert.AreEqual("1", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Attempted to create a new entry", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -738,7 +731,7 @@ print(t.a);");
             testEngine.Run(@"
 class T
 {
-    init(){this.name = ""name"";}
+    var name = ""name"";
     Say(){print (this.name);}
 }
 var t = T();
@@ -753,7 +746,7 @@ t.Say();");
             testEngine.Run(@"
 class T
 {
-    init(){this.a = 1;}
+    var a = 1;
     Set(v)
     {
         this.a = v;
@@ -773,7 +766,7 @@ print (t.a);");
             testEngine.Run(@"
 class T
 {
-    init(){this.a = 1;}
+    var a = 1;
     Set()
     {
      this.a = 7;
@@ -793,7 +786,7 @@ print (t.a);");
             testEngine.Run(@"
 class T
 {
-    init(){this.a = 1;}
+    var a = 1;
     Set()
     {
         this.a = 7;

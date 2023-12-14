@@ -210,7 +210,7 @@ var
 var anAddress = Address();
 anAddress.number = 7;
 
-//classes are the most feature rich.
+//classes are the feature rich.
 //  The order of elements declared within the class is enforced
 class MyFoo
 {

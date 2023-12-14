@@ -8,6 +8,8 @@ class Method
 
 class WithInit
 {
+    var a,b;
+    
     init(a,b)
     {
         this.a = a;

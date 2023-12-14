@@ -12,7 +12,6 @@ namespace ULox
 
         public List<CompiledScript> CompiledScripts { get; } = new List<CompiledScript>();
 
-
         public string Disassembly
         {
             get

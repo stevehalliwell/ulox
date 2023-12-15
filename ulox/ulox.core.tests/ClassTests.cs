@@ -1719,5 +1719,25 @@ var
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Field_InMethodWithoutThis_ShouldAutoLocate()
+        {
+            testEngine.Run(@"
+class CoffeeMaker {
+    var coffee; 
+    init(coffee) {}
+
+    brew() {
+        print (""Enjoy your cup of {coffee}"");
+        coffee = null;
+    }
+}
+
+var maker = CoffeeMaker(""coffee and chicory"");
+maker.brew();");
+
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
+        }
     }
 }

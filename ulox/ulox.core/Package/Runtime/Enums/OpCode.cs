@@ -48,6 +48,8 @@
 
         GET_PROPERTY,
         SET_PROPERTY,
+        GET_FIELD,
+        SET_FIELD,
         INVOKE,
 
         FREEZE, //could collapse with READ_ONLY

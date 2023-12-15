@@ -23,6 +23,7 @@ namespace ULox
         private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly List<Chunk> _allChunks = new List<Chunk>();
+        private ClassTypeCompilette _classCompiler;
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -37,7 +38,7 @@ namespace ULox
         private void Setup()
         {
             var _testdec = new TestSetDeclarationCompilette();
-            var _classCompiler = new ClassTypeCompilette();
+            _classCompiler = new ClassTypeCompilette();
             var _testcaseCompilette = new TestcaseCompillette(_testdec);
 
             this.AddDeclarationCompilette(
@@ -293,11 +294,11 @@ namespace ULox
 
         public void NamedVariable(string name, bool canAssign)
         {
-            (var getOp, var setOp, var argId) = ResolveNameLookupOpCode(name);
+            var resolveRes = ResolveNameLookupOpCode(name);
 
             if (!canAssign)
             {
-                EmitPacket(new ByteCodePacket(getOp, argId));
+                EmitPacketFromResolveGet(resolveRes);
                 return;
             }
 
@@ -305,19 +306,29 @@ namespace ULox
             {
                 Expression();
 
-                EmitPacket(new ByteCodePacket(setOp, argId));
+                EmitPacketFromResolveSet(resolveRes);
                 return;
             }
 
-            if (HandleCompoundAssignToken(getOp, setOp, argId))
+            if (HandleCompoundAssignToken(resolveRes))
             {
                 return;
             }
 
-            EmitPacket(new ByteCodePacket(getOp, argId));
+            EmitPacketFromResolveGet(resolveRes);
         }
 
-        private bool HandleCompoundAssignToken(OpCode getOp, OpCode setOp, byte argId)
+        public void EmitPacketFromResolveGet(ResolveNameLookupResult resolveRes)
+        {
+            EmitPacket(new ByteCodePacket(resolveRes.GetOp, resolveRes.ArgId));
+        }
+
+        public void EmitPacketFromResolveSet(ResolveNameLookupResult resolveRes)
+        {
+            EmitPacket(new ByteCodePacket(resolveRes.SetOp, resolveRes.ArgId));
+        }
+
+        private bool HandleCompoundAssignToken(ResolveNameLookupResult resolveRes)
         {
             if (TokenIterator.MatchAny(TokenType.PLUS_EQUAL,
                               TokenType.MINUS_EQUAL,
@@ -330,7 +341,7 @@ namespace ULox
                 Expression();
 
                 //expand the compound op
-                EmitPacket(new ByteCodePacket(getOp, argId));
+                EmitPacketFromResolveGet(resolveRes);
                 EmitPacket(new ByteCodePacket(OpCode.SWAP));
 
                 // self assign ops have to be done here as they tail the previous ordered instructions
@@ -357,37 +368,48 @@ namespace ULox
                     break;
                 }
 
-                EmitPacket(new ByteCodePacket(setOp, argId));
+                EmitPacketFromResolveSet(resolveRes);
                 return true;
             }
             return false;
         }
 
-        public (OpCode getOp, OpCode setOp, byte argId) ResolveNameLookupOpCode(string name)
+        public struct ResolveNameLookupResult
         {
-            var getOp = OpCode.FETCH_GLOBAL;
-            var setOp = OpCode.ASSIGN_GLOBAL;
+            public OpCode GetOp;
+            public OpCode SetOp;
+            public byte ArgId;
+
+            public ResolveNameLookupResult(OpCode getOp, OpCode setOp, byte argId)
+            {
+                GetOp = getOp;
+                SetOp = setOp;
+                ArgId = argId;
+            }
+        }
+
+        public ResolveNameLookupResult ResolveNameLookupOpCode(string name)
+        {
             var argId = CurrentCompilerState.ResolveLocal(this, name);
             if (argId != -1)
             {
-                getOp = OpCode.GET_LOCAL;
-                setOp = OpCode.SET_LOCAL;
-            }
-            else
-            {
-                argId = CurrentCompilerState.ResolveUpvalue(this, name);
-                if (argId != -1)
-                {
-                    getOp = OpCode.GET_UPVALUE;
-                    setOp = OpCode.SET_UPVALUE;
-                }
-                else
-                {
-                    argId = CurrentChunk.AddConstant(Value.New(name));
-                }
+                return new ResolveNameLookupResult(OpCode.GET_LOCAL, OpCode.SET_LOCAL, (byte)argId);
             }
 
-            return (getOp, setOp, (byte)argId);
+            argId = CurrentCompilerState.ResolveUpvalue(this, name);
+            if (argId != -1)
+            {
+                return new ResolveNameLookupResult(OpCode.GET_UPVALUE, OpCode.SET_UPVALUE, (byte)argId);
+            }
+
+            if (!string.IsNullOrEmpty(_classCompiler.CurrentTypeName)
+                && _classCompiler.CurrentTypeInfoEntry.Fields.Contains(name))
+            {
+                return new ResolveNameLookupResult(OpCode.GET_FIELD, OpCode.SET_FIELD, AddCustomStringConstant(name));
+            }
+
+            argId = CurrentChunk.AddConstant(Value.New(name));
+            return new ResolveNameLookupResult(OpCode.FETCH_GLOBAL, OpCode.ASSIGN_GLOBAL, (byte)argId);
         }
 
         public Chunk EndCompile()
@@ -863,7 +885,7 @@ namespace ULox
 
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after match statement.");
             var matchArgName = compiler.TokenIterator.PreviousToken.Lexeme;
-            var (matchGetOp, _, matchArgID) = compiler.ResolveNameLookupOpCode(matchArgName);
+            var resolveRes = compiler.ResolveNameLookupOpCode(matchArgName);
 
             var lastElseLabel = -1;
 
@@ -879,7 +901,7 @@ namespace ULox
                 }
 
                 compiler.Expression();
-                compiler.EmitPacket(new ByteCodePacket(matchGetOp, matchArgID));
+                compiler.EmitPacketFromResolveGet(resolveRes);
                 compiler.EmitPacket(new ByteCodePacket(OpCode.EQUAL));
                 lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
                 compiler.EmitPop();
@@ -964,8 +986,8 @@ namespace ULox
 
                 if (!requirePop)
                 {
-                    var (getOp, _, argId) = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
-                    compiler.EmitPacket(new ByteCodePacket(getOp, argId));
+                    var resolveRes = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
+                    compiler.EmitPacketFromResolveGet(resolveRes);
                 }
             }
         }
@@ -1165,6 +1187,11 @@ namespace ULox
 
             var existingPrefixes = CurrentChunk.Constants.Count(x => x.type == ValueType.String && x.val.asString.String.Contains(prefix));
             return $"{prefix}{CurrentChunk.SourceName}{existingPrefixes}";
+        }
+
+        internal byte ResolveLocal(string argName)
+        {
+            return (byte)CurrentCompilerState.ResolveLocal(this, argName);
         }
     }
 }

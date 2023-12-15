@@ -16,7 +16,7 @@
             //temp
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after loop statement with arg.");
             var arrayName = compiler.TokenIterator.PreviousToken.Lexeme;
-            var (arrayGetOp, _, arrayArgId) = compiler.ResolveNameLookupOpCode(arrayName);
+            var arrayResolveRes = compiler.ResolveNameLookupOpCode(arrayName);
             var itemName = "item";
             var itemArgID = (byte)0;
             var indexName = "i";
@@ -53,13 +53,13 @@
             }
 
             //skip the loop if the target is null
-            compiler.EmitPacket(new ByteCodePacket(arrayGetOp, arrayArgId));
+            compiler.EmitPacketFromResolveGet(arrayResolveRes);
             compiler.EmitGotoIf(loopState.ExitLabelID);
             loopState.HasExit = true;
             compiler.EmitPop();
 
             //prep count
-            compiler.EmitPacket(new ByteCodePacket(arrayGetOp, arrayArgId));
+            compiler.EmitPacketFromResolveGet(arrayResolveRes);
             compiler.EmitPacket(new ByteCodePacket(OpCode.COUNT_OF));
             compiler.EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, countNameID));
             compiler.EmitPop();
@@ -85,10 +85,9 @@
                 loopState.StartLabelID = newStartLabel;
                 compiler.EmitLabel(bodyJump);
             }
-
             //prep item infront of body
             {
-                compiler.EmitPacket(new ByteCodePacket(arrayGetOp, arrayArgId));
+                compiler.EmitPacketFromResolveGet(arrayResolveRes);
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, indexArgID));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_INDEX));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, itemArgID));

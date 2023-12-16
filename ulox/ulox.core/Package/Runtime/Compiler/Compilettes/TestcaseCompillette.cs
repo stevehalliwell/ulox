@@ -6,6 +6,9 @@
         public string TestCaseName { get; private set; }
 
         private const string AnonTestPrefix = "Anon_Test_";
+        private const string TestDataSourceVarName = "testDataSource";
+        private const string TestDataRowVarName = "testDataRow";
+        private const string TestDataIndexVarName = "testDataIndex";
         private readonly TestSetDeclarationCompilette _testDeclarationCompilette;
 
         public TestcaseCompillette(TestSetDeclarationCompilette testDeclarationCompilette)
@@ -32,15 +35,15 @@
                 dataExpExecuteLocation = compiler.LabelUniqueChunkLabel("DataExpExecuteLocation");
 
                 //expression
-                compiler.DeclareAndDefineCustomVariable("testDataSource");
+                compiler.DeclareAndDefineCustomVariable(TestDataSourceVarName);
                 compiler.EmitNULL();
-                compiler.DeclareAndDefineCustomVariable("testDataRow");
+                compiler.DeclareAndDefineCustomVariable(TestDataRowVarName);
                 compiler.EmitNULL();
-                compiler.DeclareAndDefineCustomVariable("testDataIndex");
+                compiler.DeclareAndDefineCustomVariable(TestDataIndexVarName);
                 compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(0)));
                 compiler.Expression();
-                var (_, _, res) = compiler.ResolveNameLookupOpCode("testDataSource");
-                testDataSourceLocalId = res;
+                var res = compiler.ResolveLocal(TestDataSourceVarName);
+                testDataSourceLocalId = (byte)res;
                 compiler.EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, testDataSourceLocalId));
                 compiler.EmitPop();
 
@@ -84,7 +87,7 @@
 
                 //need to deal with the args
                 //get testset data row
-                var (_, _, testDataIndexLocalIdRes) = compiler.ResolveNameLookupOpCode("testDataIndex");
+                var testDataIndexLocalIdRes = compiler.ResolveLocal(TestDataIndexVarName);
                 testDataIndexLocalId = testDataIndexLocalIdRes;
 
                 preRowCountCheck = compiler.LabelUniqueChunkLabel("preRowCountCheck");
@@ -97,7 +100,7 @@
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, testDataSourceLocalId));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, testDataIndexLocalId));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_INDEX));
-                var (_, _, testDataRowLocalId) = compiler.ResolveNameLookupOpCode("testDataRow");
+                var testDataRowLocalId = compiler.ResolveLocal(TestDataRowVarName);
                 compiler.EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, testDataRowLocalId));
                 compiler.EmitPop();
                 //appy row as inputs to the test

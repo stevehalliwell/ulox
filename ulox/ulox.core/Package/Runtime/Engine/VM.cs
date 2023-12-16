@@ -522,7 +522,12 @@ namespace ULox
                 case OpCode.UPDATE:
                     DoUpdateOp();
                     break;
-
+                case OpCode.GET_FIELD:
+                    DoGetFieldOp(chunk, packet.b1);
+                    break;
+                case OpCode.SET_FIELD:
+                    DoSetFieldOp(chunk, packet.b1);
+                    break;
                 case OpCode.NONE:
                 default:
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
@@ -1190,6 +1195,33 @@ namespace ULox
             instance.SetField(name, newVal);
 
             Push(newVal);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoGetFieldOp(Chunk chunk, byte b1)
+        {
+            var argID = chunk.ReadConstant(b1);
+            var target = _valueStack[_currentCallFrame.StackStart];
+            if (target.type != ValueType.Instance)
+                ThrowRuntimeException($"Cannot get field on non instance type '{target.type}'");
+
+            var inst = target.val.asInstance;
+            if (!inst.Fields.Get(argID.val.asString, out var val))
+                ThrowRuntimeException($"No field of name '{argID.val.asString}' found on '{inst}'");
+
+            Push(val);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void DoSetFieldOp(Chunk chunk, byte b1)
+        {
+            var argID = chunk.ReadConstant(b1);
+            var target = _valueStack[_currentCallFrame.StackStart];
+            if (target.type != ValueType.Instance)
+                ThrowRuntimeException($"Cannot set field on non instance type '{target.type}'");
+
+            var inst = target.val.asInstance;
+            inst.SetField(argID.val.asString, Peek());
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

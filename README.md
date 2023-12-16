@@ -230,6 +230,12 @@ class MyFoo
     {
         this.a = arg;
     }
+
+    //you can omit the this. for fields of the instance
+    Baz(arg)
+    {
+        a = arg;
+    }
 }
 
 //to get an instance of the class, we invoke it's name and match it's init args

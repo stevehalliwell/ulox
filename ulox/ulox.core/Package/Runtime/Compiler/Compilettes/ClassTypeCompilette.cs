@@ -93,9 +93,10 @@ namespace ULox
                     var argName = compiler.CurrentCompilerState.chunk.ReadConstant(argId).val.asString.String;
                     if (CurrentTypeInfoEntry.Fields.FirstOrDefault(x => x == argName) != null)
                     {
-                        var (_1,_2, id) = compiler.ResolveNameLookupOpCode(argName);
-                        compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)0));
-                        compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)id));
+                        var argResolveRes = compiler.ResolveNameLookupOpCode(argName);
+                        var thisResolveRes = compiler.ResolveNameLookupOpCode(ThisName.String);
+                        compiler.EmitPacketFromResolveGet(thisResolveRes);
+                        compiler.EmitPacketFromResolveGet(argResolveRes);
                         compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, (byte)argId));
                         compiler.EmitPop();
                     }

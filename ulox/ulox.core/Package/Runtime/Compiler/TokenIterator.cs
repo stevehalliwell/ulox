@@ -8,22 +8,20 @@ namespace ULox
         public Token PreviousToken { get; private set; }
         public string SourceName => _script.Name;
 
-        private readonly Scanner _scanner;
         private readonly Script _script;
         private readonly List<Token> _tokens;
         
         private int _currentTokenIndex = -1;
 
-        public TokenIterator(Scanner scanner, Script script, List<Token> tokens)
+        public TokenIterator(Script script, List<Token> tokens)
         {
-            _scanner = scanner;
             _script = script;
             _tokens = tokens;
         }
 
-        public string GetSourceSection(int start, int end)
+        public string GetSourceSection(int start, int len)
         {
-            return _scanner.GetSourceSection(start, end);
+            return _script.Source.Substring(start, len);
         }
 
         public void Advance()

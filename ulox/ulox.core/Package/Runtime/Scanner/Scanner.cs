@@ -92,11 +92,6 @@ namespace ULox
         public void AddGenerator(IScannerTokenGenerator gen)
             => _scannerGenerators.Add(gen);
 
-        public string GetSourceSection(int start, int len)
-        {
-            return _script.Source.Substring(start, len);
-        }
-
         public void Reset()
         {
             _stringIterator = null;
@@ -162,7 +157,13 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitToken(TokenType simpleToken, string str, object literal)
         { 
-            _tokens.Add(new Token(simpleToken, str, literal, _stringIterator.Line, _stringIterator.CharacterNumber, _stringIterator.CurrentIndex));
+            _tokens.Add(new Token(
+                simpleToken, 
+                str, 
+                literal, 
+                _stringIterator.Line, 
+                _stringIterator.CharacterNumber, 
+                _stringIterator.CurrentIndex));
         }
 
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)

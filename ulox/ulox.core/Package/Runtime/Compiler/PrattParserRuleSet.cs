@@ -22,15 +22,14 @@ namespace ULox
         public void ParsePrecedence(Compiler compiler, Precedence pre)
         {
             compiler.TokenIterator.Advance();
-            var rule = GetRule(compiler.PreviousTokenType);
+            var rule = GetRule(compiler.TokenIterator.PreviousToken.TokenType);
 
             var canAssign = pre <= Precedence.Assignment;
             rule.Prefix(compiler, canAssign);
 
-            while (pre <= GetRule(compiler.CurrentTokenType).Precedence)
+            while (pre <= (rule = GetRule(compiler.TokenIterator.CurrentToken.TokenType)).Precedence)
             {
                 compiler.TokenIterator.Advance();
-                rule = GetRule(compiler.PreviousTokenType);
                 rule.Infix(compiler, canAssign);
             }
 

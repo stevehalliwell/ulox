@@ -14,12 +14,6 @@ namespace ULox
         public TypeInfo TypeInfo => _typeInfo;
         public TokenIterator TokenIterator { get; private set; }
 
-        public TokenType CurrentTokenType
-            => TokenIterator?.CurrentToken.TokenType ?? TokenType.NONE;
-
-        public TokenType PreviousTokenType
-            => TokenIterator?.PreviousToken.TokenType ?? TokenType.NONE;
-
         private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly List<Chunk> _allChunks = new List<Chunk>();
@@ -212,12 +206,12 @@ namespace ULox
         public CompiledScript Compile(Scanner scanner, Script script)
         {
             var tokens = scanner.Scan(script);
-            TokenIterator = new TokenIterator(scanner, script, tokens);
+            TokenIterator = new TokenIterator(script, tokens);
             TokenIterator.Advance();
 
             PushCompilerState(string.Empty, FunctionType.Script);
 
-            while (CurrentTokenType != TokenType.EOF)
+            while (TokenIterator.CurrentToken.TokenType != TokenType.EOF)
             {
                 Declaration();
             }
@@ -228,7 +222,7 @@ namespace ULox
 
         public void Declaration()
         {
-            if (declarationCompilettes.TryGetValue(CurrentTokenType, out var complette))
+            if (declarationCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
             {
                 TokenIterator.Advance();
                 complette.Process(this);
@@ -243,7 +237,7 @@ namespace ULox
 
         public void Statement()
         {
-            if (statementCompilettes.TryGetValue(CurrentTokenType, out var complette))
+            if (statementCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
             {
                 TokenIterator.Advance();
                 complette.Process(this);
@@ -336,7 +330,7 @@ namespace ULox
                               TokenType.SLASH_EQUAL,
                               TokenType.PERCENT_EQUAL))
             {
-                var assignTokenType = PreviousTokenType;
+                var assignTokenType = TokenIterator.PreviousToken.TokenType;
 
                 Expression();
 
@@ -608,7 +602,7 @@ namespace ULox
 
         public static void Binary(Compiler compiler, bool canAssign)
         {
-            TokenType operatorType = compiler.PreviousTokenType;
+            TokenType operatorType = compiler.TokenIterator.PreviousToken.TokenType;
 
             // Compile the right operand.
             var rule = compiler._prattParser.GetRule(operatorType);
@@ -998,7 +992,7 @@ namespace ULox
 
         public static void Unary(Compiler compiler, bool canAssign)
         {
-            var op = compiler.PreviousTokenType;
+            var op = compiler.TokenIterator.PreviousToken.TokenType;
 
             compiler.ParsePrecedence(Precedence.Unary);
 
@@ -1013,7 +1007,7 @@ namespace ULox
 
         public static void Literal(Compiler compiler, bool canAssign)
         {
-            switch (compiler.PreviousTokenType)
+            switch (compiler.TokenIterator.PreviousToken.TokenType)
             {
             case TokenType.TRUE: compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(true))); break;
             case TokenType.FALSE: compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(false))); break;

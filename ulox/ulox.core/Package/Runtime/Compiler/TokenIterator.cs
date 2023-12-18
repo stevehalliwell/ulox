@@ -2,6 +2,18 @@
 
 namespace ULox
 {
+    public enum DesugarStepRequest
+    {
+        None,
+        Replace,
+    }
+
+    public interface IDesugarStep
+    {
+        DesugarStepRequest RequestFromState(TokenIterator tokenIterator);
+        Token ProcessReplace(Token currentToken, int currentTokenIndex, List<Token> tokens);
+    }
+
     public sealed class TokenIterator
     {
         public Token CurrentToken { get; private set; }
@@ -10,6 +22,7 @@ namespace ULox
 
         private readonly Script _script;
         private readonly List<Token> _tokens;
+        private readonly List<IDesugarStep> _desugarSteps = new List<IDesugarStep>();
 
         private int _currentTokenIndex = -1;
 
@@ -17,6 +30,9 @@ namespace ULox
         {
             _script = script;
             _tokens = tokens;
+
+            _desugarSteps.Add(new StringInterpDesugar());
+            _desugarSteps.Add(new WhileDesugar());
         }
 
         public string GetSourceSection(int start, int len)
@@ -28,67 +44,20 @@ namespace ULox
         {
             PreviousToken = CurrentToken;
             CurrentToken = _tokens[++_currentTokenIndex];
-            if (CurrentToken.TokenType == TokenType.STRING)
+
+            foreach (var desugarStep in _desugarSteps)
             {
-                var literalString = CurrentToken.Literal as string;
-                var newStr = literalString;
-                var locStart = InterpolationStart(literalString, 0);
-                if (locStart != -1)
+                var request = desugarStep.RequestFromState(this);
+                switch (request)
                 {
-                    var locEnd = InterpolationEnd(literalString, locStart + 1);
-                    newStr = literalString.Substring(0, locStart);
-
-                    var interpStr = literalString.Substring(locStart + 1, locEnd - locStart - 1);
-                    var postInterpStr = literalString.Substring(locEnd + 1);
-                    var scanner = new Scanner();
-                    var interpTokens = scanner.Scan(new Script(_script.Name + "_interp", interpStr));
-                    interpTokens.RemoveAt(interpTokens.Count-1);
-                    interpTokens.Insert(0, new Token(
-                        TokenType.OPEN_PAREN,
-                        "(",
-                        null,
-                        CurrentToken.Line,
-                        CurrentToken.Character, //tmp
-                        CurrentToken.StringSourceIndex));//tmp
-                    interpTokens.Insert(0, new Token(
-                        TokenType.PLUS,
-                        "+",
-                        null,
-                        CurrentToken.Line,
-                        CurrentToken.Character, //tmp
-                        CurrentToken.StringSourceIndex));//tmp
-                    interpTokens.Add(new Token(
-                       TokenType.CLOSE_PAREN,
-                       ")",
-                       null,
-                       CurrentToken.Line,
-                       CurrentToken.Character, //tmp
-                       CurrentToken.StringSourceIndex));//tmp
-                    interpTokens.Add(new Token(
-                       TokenType.PLUS,
-                       "+",
-                       null,
-                       CurrentToken.Line,
-                       CurrentToken.Character, //tmp
-                       CurrentToken.StringSourceIndex));//tmp
-                    interpTokens.Add(new Token(
-                       TokenType.STRING,
-                       postInterpStr,
-                       postInterpStr,
-                       CurrentToken.Line,
-                       CurrentToken.Character, //tmp
-                       CurrentToken.StringSourceIndex));//tmp
-                    _tokens.InsertRange(_currentTokenIndex + 1, interpTokens);
+                case DesugarStepRequest.Replace:
+                    CurrentToken = desugarStep.ProcessReplace(CurrentToken, _currentTokenIndex, _tokens);
+                    break;
+                case DesugarStepRequest.None:
+                    break;
+                default:
+                    throw new System.ArgumentOutOfRangeException(nameof(request), request, null);
                 }
-
-                newStr = System.Text.RegularExpressions.Regex.Unescape(newStr);
-                CurrentToken = new Token(
-                    TokenType.STRING,
-                    newStr,
-                    newStr,
-                    CurrentToken.Line,
-                    CurrentToken.Character,
-                    CurrentToken.StringSourceIndex);
             }
         }
 
@@ -121,43 +90,6 @@ namespace ULox
                 return true;
             }
             return false;
-        }
-
-        private static int InterpolationStart(string literalString, int startAt)
-        {
-            var loc = literalString.IndexOf('{', startAt);
-            if (loc == -1)
-                return -1;
-
-            if (loc == 0)
-                return loc;
-
-            var prevChar = literalString[loc - 1];
-            if (prevChar == '\\')
-                return InterpolationStart(literalString, loc + 1);
-
-            return loc;
-        }
-
-        private static int InterpolationEnd(string literalString, int loc)
-        {
-            var end = literalString.Length;
-            var requiredClose = 1;
-            while (loc < end)
-            {
-                var ch = literalString[loc];
-                if (ch == '{')
-                    requiredClose++;
-                else if (ch == '}')
-                    requiredClose--;
-                
-                if (requiredClose <= 0)
-                    return loc;
-                
-                loc++;
-            }
-
-            return loc;
         }
     }
 }

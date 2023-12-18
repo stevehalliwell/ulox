@@ -50,7 +50,6 @@ namespace ULox
             this.AddStatementCompilette(
                 new ReturnStatementCompilette(),
                 new LoopStatementCompilette(),
-                new WhileStatementCompilette(),
                 new ForStatementCompilette());
 
             this.AddStatementCompilette(

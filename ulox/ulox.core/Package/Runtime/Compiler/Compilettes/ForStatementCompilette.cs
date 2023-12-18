@@ -27,9 +27,11 @@ namespace ULox
             {
                 var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
                 loopState.ContinueLabelID = newStartLabel;
-                compiler.Expression();
-                compiler.EmitPop();
-
+                if (compiler.TokenIterator.CurrentToken.TokenType != TokenType.CLOSE_PAREN)
+                {
+                    compiler.Expression();
+                    compiler.EmitPop();
+                }
                 compiler.EmitGoto(loopState.StartLabelID);
                 loopState.StartLabelID = newStartLabel;
                 compiler.EmitLabel(bodyJump);

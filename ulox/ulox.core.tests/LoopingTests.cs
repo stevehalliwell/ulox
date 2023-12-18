@@ -655,6 +655,22 @@ while(i < 3)
         }
 
         [Test]
+        public void For_WhenUsedAsWhile_ShouldCompile()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(;i < 3;)
+{
+    i = i + 1;
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void For_WhenContinued_ShouldMoveToIterationStep()
         {
             testEngine.Run(@"

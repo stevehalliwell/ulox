@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ULox.Core.Tests
 {
@@ -58,7 +59,43 @@ i+= 1;
 
             AdvanceGather(tokenIterator, res);
 
-            Assert.AreEqual(res.Count, startingCount+2);
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.FOR));
+        }
+
+        [Test]
+        public void Loop_WhenInfinite_ShouldBeFor()
+        {
+            var scriptContent = @"
+loop
+{
+break;
+}";
+            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.FOR));
+        }
+
+        [Test]
+        public void PlusEqual_WhenDesugar_ShouldAssignAndExpPlus()
+        {
+            var scriptContent = @"
+var a = 1;
+a +=1;
+print(a);";
+            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsFalse(res.Any(x => x.TokenType == TokenType.PLUS_EQUAL));
         }
 
         private static (List<Token> tokens, TokenIterator tokenIterator) Prepare(string scriptContent)

@@ -23,11 +23,42 @@ loop
         }
 
         [Test]
+        public void For_WhenBreakAt5_ShouldPrintUpTo6()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(;;)
+{
+    print (i);
+    i = i + 1;
+    if(i > 5)
+        break;
+    print (i);
+}");
+
+            Assert.AreEqual("01122334455", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Loop_WhenNoEscape_ShouldNotCompile()
         {
             testEngine.Run(@"
 var i = 0;
 loop
+{
+    print (i);
+    i = i + 1;
+}");
+
+            Assert.AreEqual("Loops must contain a termination in chunk 'unnamed_chunk(test)' at 7:2.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_WhenNoEscape_ShouldNotCompile()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(;;)
 {
     print (i);
     i = i + 1;

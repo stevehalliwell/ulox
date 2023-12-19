@@ -33,6 +33,7 @@ namespace ULox
 
             _desugarSteps.Add(new StringInterpDesugar());
             _desugarSteps.Add(new WhileDesugar());
+            _desugarSteps.Add(new EndlessLoopDesugar());
         }
 
         public string GetSourceSection(int start, int len)
@@ -90,6 +91,13 @@ namespace ULox
                 return true;
             }
             return false;
+        }
+
+        public TokenType PeekType()
+        {
+            if (CurrentToken.TokenType == TokenType.EOF)
+                return TokenType.EOF;
+            return _tokens[_currentTokenIndex + 1].TokenType;
         }
     }
 }

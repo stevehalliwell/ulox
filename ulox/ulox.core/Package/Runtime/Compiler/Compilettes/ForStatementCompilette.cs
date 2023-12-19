@@ -11,15 +11,21 @@ namespace ULox
 
         protected override void BeginLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
+            var hasCondition = false;
             //condition
             {
-                compiler.Expression();
+                if (!compiler.TokenIterator.Check(TokenType.END_STATEMENT))
+                {
+                    hasCondition = true;
+                    compiler.Expression();
+                    loopState.HasExit = true;
+                }
                 compiler.ConsumeEndStatement("loop condition");
 
                 // Jump out of the loop if the condition is false.
                 compiler.EmitGotoIf(loopState.ExitLabelID);
-                loopState.HasExit = true;
-                compiler.EmitPop(); // Condition.
+                if(hasCondition)
+                    compiler.EmitPop(); // Condition.
             }
 
             var bodyJump = compiler.GotoUniqueChunkLabel("loop_body");

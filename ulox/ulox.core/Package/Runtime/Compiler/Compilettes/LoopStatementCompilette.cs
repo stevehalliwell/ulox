@@ -9,10 +9,6 @@
 
         protected override void BeginLoop(Compiler compiler, CompilerState.LoopState loopState)
         {
-            //if we have a { then its a inf loop
-            if (compiler.TokenIterator.Check(TokenType.OPEN_BRACE))
-                return;
-
             //temp
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after loop statement with arg.");
             var arrayName = compiler.TokenIterator.PreviousToken.Lexeme;

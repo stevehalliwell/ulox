@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
@@ -34,6 +35,7 @@ namespace ULox
             _desugarSteps.Add(new StringInterpDesugar());
             _desugarSteps.Add(new WhileDesugar());
             _desugarSteps.Add(new EndlessLoopDesugar());
+            _desugarSteps.Add(new CompoundAssignDesugar());
         }
 
         public string GetSourceSection(int start, int len)

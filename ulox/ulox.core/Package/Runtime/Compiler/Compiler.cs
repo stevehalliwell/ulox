@@ -303,11 +303,6 @@ namespace ULox
                 return;
             }
 
-            if (HandleCompoundAssignToken(resolveRes))
-            {
-                return;
-            }
-
             EmitPacketFromResolveGet(resolveRes);
         }
 
@@ -319,52 +314,6 @@ namespace ULox
         public void EmitPacketFromResolveSet(ResolveNameLookupResult resolveRes)
         {
             EmitPacket(new ByteCodePacket(resolveRes.SetOp, resolveRes.ArgId));
-        }
-
-        private bool HandleCompoundAssignToken(ResolveNameLookupResult resolveRes)
-        {
-            if (TokenIterator.MatchAny(TokenType.PLUS_EQUAL,
-                              TokenType.MINUS_EQUAL,
-                              TokenType.STAR_EQUAL,
-                              TokenType.SLASH_EQUAL,
-                              TokenType.PERCENT_EQUAL))
-            {
-                var assignTokenType = TokenIterator.PreviousToken.TokenType;
-
-                Expression();
-
-                //expand the compound op
-                EmitPacketFromResolveGet(resolveRes);
-                EmitPacket(new ByteCodePacket(OpCode.SWAP));
-
-                // self assign ops have to be done here as they tail the previous ordered instructions
-                switch (assignTokenType)
-                {
-                case TokenType.PLUS_EQUAL:
-                    EmitPacket(new ByteCodePacket(OpCode.ADD));
-                    break;
-
-                case TokenType.MINUS_EQUAL:
-                    EmitPacket(new ByteCodePacket(OpCode.SUBTRACT));
-                    break;
-
-                case TokenType.STAR_EQUAL:
-                    EmitPacket(new ByteCodePacket(OpCode.MULTIPLY));
-                    break;
-
-                case TokenType.SLASH_EQUAL:
-                    EmitPacket(new ByteCodePacket(OpCode.DIVIDE));
-                    break;
-
-                case TokenType.PERCENT_EQUAL:
-                    EmitPacket(new ByteCodePacket(OpCode.MODULUS));
-                    break;
-                }
-
-                EmitPacketFromResolveSet(resolveRes);
-                return true;
-            }
-            return false;
         }
 
         public struct ResolveNameLookupResult
@@ -416,14 +365,6 @@ namespace ULox
         public void EmitReturn()
         {
             EmitPacket(new ByteCodePacket(OpCode.RETURN));
-        }
-
-        private void PreEmptyReturnEmit()
-        {
-            if (CurrentCompilerState.functionType == FunctionType.Init)
-                EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)0));
-            else
-                EmitNULL();
         }
 
         public byte ExpressionList(TokenType terminatorToken, string missingTermError)

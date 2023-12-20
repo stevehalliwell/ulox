@@ -10,8 +10,8 @@ namespace ULox
 
     public interface IDesugarStep
     {
-        DesugarStepRequest RequestFromState(TokenIterator tokenIterator);
-        Token ProcessReplace(Token currentToken, int currentTokenIndex, List<Token> tokens);
+        DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator);
+        void ProcessDesugar(int currentTokenIndex, List<Token> tokens);
     }
 
     public sealed class TokenIterator
@@ -49,11 +49,12 @@ namespace ULox
 
             foreach (var desugarStep in _desugarSteps)
             {
-                var request = desugarStep.RequestFromState(this);
+                var request = desugarStep.IsDesugarRequested(this);
                 switch (request)
                 {
                 case DesugarStepRequest.Replace:
-                    CurrentToken = desugarStep.ProcessReplace(CurrentToken, _currentTokenIndex, _tokens);
+                    desugarStep.ProcessDesugar(_currentTokenIndex, _tokens);
+                    CurrentToken = _tokens[_currentTokenIndex];
                     break;
                 case DesugarStepRequest.None:
                     break;

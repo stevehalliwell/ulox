@@ -4,11 +4,12 @@ namespace ULox
 {
     public class LoopDesugar : IDesugarStep
     {
-        public Token ProcessReplace(Token currentToken, int currentTokenIndex, List<Token> tokens)
+        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens)
         {
             if (tokens[currentTokenIndex + 1].TokenType == TokenType.OPEN_BRACE)
             {
-                return ProcessReplaceEndlessLoop(currentToken, currentTokenIndex, tokens);
+                ProcessReplaceEndlessLoop(currentTokenIndex, tokens);
+                return;
             }
 
             //we expect
@@ -28,7 +29,8 @@ namespace ULox
             //            }
             //        }
             //    }
-            var returnToken = currentToken.MutateType(TokenType.IF);
+            var currentToken = tokens[currentTokenIndex];
+            tokens[currentTokenIndex] = currentToken.MutateType(TokenType.IF);
 
             var itemIdent = "item";
             var iIdent = "i";
@@ -133,26 +135,22 @@ namespace ULox
                 currentToken.MutateType(TokenType.CLOSE_BRACKET),
                 currentToken.MutateType(TokenType.END_STATEMENT),
                 });
-
-            return returnToken;
         }
 
-        public Token ProcessReplaceEndlessLoop(Token currentToken, int currentTokenIndex, List<Token> tokens)
+        public void ProcessReplaceEndlessLoop(int currentTokenIndex, List<Token> tokens)
         {
             //we expect `loop {` and we are going to replace with `for(;;)`
-            var returnToken = currentToken.MutateType(TokenType.FOR);
+            var currentToken = tokens[currentTokenIndex];
+            tokens[currentTokenIndex] = currentToken.MutateType(TokenType.FOR);
 
             tokens.InsertRange(currentTokenIndex + 1, new[] {
                 currentToken.MutateType(TokenType.OPEN_PAREN),
                 currentToken.MutateType(TokenType.END_STATEMENT),
                 currentToken.MutateType(TokenType.END_STATEMENT),
                 currentToken.MutateType(TokenType.CLOSE_PAREN),});
-
-
-            return returnToken;
         }
 
-        public DesugarStepRequest RequestFromState(TokenIterator tokenIterator)
+        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator)
         {
             return tokenIterator.CurrentToken.TokenType == TokenType.LOOP
                 ? DesugarStepRequest.Replace

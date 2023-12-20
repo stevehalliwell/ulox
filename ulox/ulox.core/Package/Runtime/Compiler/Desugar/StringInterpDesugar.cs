@@ -4,15 +4,16 @@ namespace ULox
 {
     public class StringInterpDesugar : IDesugarStep
     {
-        public DesugarStepRequest RequestFromState(TokenIterator tokenIterator)
+        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator)
         {
             return tokenIterator.CurrentToken.TokenType == TokenType.STRING
                 ? DesugarStepRequest.Replace
                 : DesugarStepRequest.None;
         }
 
-        public Token ProcessReplace(Token currentToken, int currentTokenIndex, List<Token> tokens)
+        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens)
         {
+            var currentToken = tokens[currentTokenIndex];
             var literalString = currentToken.Literal as string;
             var newStr = literalString;
             var locStart = InterpolationStart(literalString, 0);
@@ -37,13 +38,12 @@ namespace ULox
             }
 
             newStr = System.Text.RegularExpressions.Regex.Unescape(newStr);
-            currentToken = currentToken.Mutate(TokenType.STRING, newStr, newStr);
+            tokens[currentTokenIndex] = currentToken.Mutate(TokenType.STRING, newStr, newStr);
 
             if (interpTokens != null)
             {
                 tokens.InsertRange(currentTokenIndex + 1, interpTokens);
             }
-            return currentToken;
         }
 
         private static int InterpolationStart(string literalString, int startAt)

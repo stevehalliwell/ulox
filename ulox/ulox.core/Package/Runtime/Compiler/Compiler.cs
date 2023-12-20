@@ -798,6 +798,7 @@ namespace ULox
             compiler.EmitLabel(afterIfLabel);
         }
 
+        //todo could this become sugar?
         public static void MatchStatement(Compiler compiler)
         {
             //make a scope

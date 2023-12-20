@@ -23,10 +23,7 @@ namespace ULox
             case ValueType.Instance:
                 if (v.val.asInstance is NativeListInstance listInst)
                 {
-                    if (name != null)
-                        _writer.StartNamedArray(name.String);
-                    else
-                        _writer.StartArray();
+                    _writer.StartArray(name.String);
 
                     foreach (var elm in listInst.List)
                     {
@@ -56,7 +53,7 @@ namespace ULox
                 break;
 
             default:
-                if(name != null)
+                if (name != null)
                     _writer.WriteNameAndValue(name.String, v);
                 else
                     _writer.WriteValue(v);

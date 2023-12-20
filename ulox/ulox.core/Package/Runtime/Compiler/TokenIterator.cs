@@ -82,14 +82,6 @@ namespace ULox
             return true;
         }
 
-        public TokenType PeekType(int ahead = 1)
-        {
-            if (CurrentToken.TokenType == TokenType.EOF
-                || _currentTokenIndex + ahead >= _tokens.Count)
-                return TokenType.EOF;
-            return _tokens[_currentTokenIndex + ahead].TokenType;
-        }
-
         public static int FindClosing(List<Token> tokens, int startingIndex, TokenType increaseType, TokenType decreaseType)
         {
             var loc = startingIndex;

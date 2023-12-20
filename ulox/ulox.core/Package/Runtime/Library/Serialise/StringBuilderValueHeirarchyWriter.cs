@@ -30,7 +30,7 @@ namespace ULox
             _indent++;
         }
 
-        public void StartNamedArray(string name)
+        public void StartArray(string name)
         {
             AppendIndent();
             _sb.AppendLine($"{name}:[");
@@ -45,12 +45,6 @@ namespace ULox
         public void StartElement()
         {
             _indent++;
-        }
-
-        public void StartArray()
-        {
-            AppendIndent();
-            _sb.AppendLine("[");
         }
 
         public void WriteValue(Value v)

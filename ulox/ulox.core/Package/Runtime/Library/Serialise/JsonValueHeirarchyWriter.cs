@@ -35,7 +35,7 @@ namespace ULox
         public void EndElement()
             => _jsonWriter.WriteEndObject();
 
-        public void StartNamedArray(string name)
+        public void StartArray(string name)
         {
             _jsonWriter.WritePropertyName(name);
             _jsonWriter.WriteStartArray();
@@ -46,9 +46,6 @@ namespace ULox
 
         public void StartElement()
             => _jsonWriter.WriteStartObject();
-
-        public void StartArray()
-            => _jsonWriter.WriteStartArray();
 
         public void WriteValue(Value v)
         {

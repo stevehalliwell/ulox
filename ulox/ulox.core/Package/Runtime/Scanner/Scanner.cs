@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -139,9 +138,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Advance() => _stringIterator.Advance();
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)] 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsAtEnd() => _stringIterator.Peek() == -1;
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public char Peek()
             => (char)_stringIterator.Peek();
@@ -156,13 +155,13 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitToken(TokenType simpleToken, string str, object literal)
-        { 
+        {
             _tokens.Add(new Token(
-                simpleToken, 
-                str, 
-                literal, 
-                _stringIterator.Line, 
-                _stringIterator.CharacterNumber, 
+                simpleToken,
+                str,
+                literal,
+                _stringIterator.Line,
+                _stringIterator.CharacterNumber,
                 _stringIterator.CurrentIndex));
         }
 

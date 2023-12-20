@@ -8,7 +8,6 @@
         PUSH_VALUE,
 
         POP,
-        SWAP,
         DUPLICATE,
 
         DEFINE_GLOBAL,

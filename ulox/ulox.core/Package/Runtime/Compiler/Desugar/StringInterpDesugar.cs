@@ -27,51 +27,17 @@ namespace ULox
                 var scanner = new Scanner();
                 interpTokens = scanner.Scan(new Script("_interp", interpStr));
                 interpTokens.RemoveAt(interpTokens.Count - 1);
-                interpTokens.Insert(0, new Token(
-                    TokenType.OPEN_PAREN,
-                    "(",
-                    null,
-                    currentToken.Line,
-                    currentToken.Character, //tmp
-                    currentToken.StringSourceIndex));//tmp
-                interpTokens.Insert(0, new Token(
-                    TokenType.PLUS,
-                    "+",
-                    null,
-                    currentToken.Line,
-                    currentToken.Character, //tmp
-                    currentToken.StringSourceIndex));//tmp
-                interpTokens.Add(new Token(
-                   TokenType.CLOSE_PAREN,
-                   ")",
-                   null,
-                   currentToken.Line,
-                   currentToken.Character, //tmp
-                   currentToken.StringSourceIndex));//tmp
-                interpTokens.Add(new Token(
-                   TokenType.PLUS,
-                   "+",
-                   null,
-                   currentToken.Line,
-                   currentToken.Character, //tmp
-                   currentToken.StringSourceIndex));//tmp
-                interpTokens.Add(new Token(
-                   TokenType.STRING,
-                   postInterpStr,
-                   postInterpStr,
-                   currentToken.Line,
-                   currentToken.Character, //tmp
-                   currentToken.StringSourceIndex));//tmp
+                interpTokens.InsertRange(0, new[] {
+                    currentToken.MutateType(TokenType.PLUS),
+                    currentToken.MutateType(TokenType.OPEN_PAREN),});
+                interpTokens.AddRange(new[] {
+                   currentToken.MutateType(TokenType.CLOSE_PAREN),
+                   currentToken.MutateType(TokenType.PLUS),
+                   currentToken.Mutate(TokenType.STRING,postInterpStr,postInterpStr),});
             }
 
             newStr = System.Text.RegularExpressions.Regex.Unescape(newStr);
-            currentToken = new Token(
-                TokenType.STRING,
-                newStr,
-                newStr,
-                currentToken.Line,
-                currentToken.Character,
-                currentToken.StringSourceIndex);
+            currentToken = currentToken.Mutate(TokenType.STRING, newStr, newStr);
 
             if (interpTokens != null)
             {

@@ -200,18 +200,30 @@ loop arr
         public void Loop_WhenGivenNumberArray_ShouldPrintItems()
         {
             testEngine.Run(@"
-var arr = [];
-arr.Add(""a"");
-arr.Add(""b"");
-arr.Add(""c"");
+var arr = [1,2,3];
 
 loop arr
 {
     print(item);
+}");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_WhenGivenNumberArray_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+
+for(var i = 0; i < arr.Count(); i += 1)
+{
+    var item = arr[i];
+    print(item);
 }
 ");
 
-            Assert.AreEqual("abc", testEngine.InterpreterResult);
+            Assert.AreEqual("123", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -462,73 +474,73 @@ print(arr.Count());
             Assert.AreEqual("3132", testEngine.InterpreterResult);
         }
 
-        [Test]
-        public void Loop_WhenIndexAlreadyInScope_ShouldThrow()
-        {
-            testEngine.Run(@"
-{
-var arr = [];
-arr.Add(1);
-var i = 7;
+//        [Test]
+//        public void Loop_WhenIndexAlreadyInScope_ShouldThrow()
+//        {
+//            testEngine.Run(@"
+//{
+//var arr = [];
+//arr.Add(1);
+//var i = 7;
 
-loop arr
-{
-}
-}");
+//loop arr
+//{
+//}
+//}");
 
-            StringAssert.StartsWith("Loop index name 'i' already exists at this scope in chunk 'unnamed_chunk(test)' at", testEngine.InterpreterResult);
-        }
+//            StringAssert.StartsWith("Loop index name 'i' already exists at this scope in chunk 'unnamed_chunk(test)' at", testEngine.InterpreterResult);
+//        }
 
-        [Test]
-        public void Loop_WhenItemAlreadyInScope_ShouldThrow()
-        {
-            testEngine.Run(@"
-{
-var arr = [];
-arr.Add(1);
-var item = 7;
+//        [Test]
+//        public void Loop_WhenItemAlreadyInScope_ShouldThrow()
+//        {
+//            testEngine.Run(@"
+//{
+//var arr = [];
+//arr.Add(1);
+//var item = 7;
 
-loop arr
-{
-}
-}");
+//loop arr
+//{
+//}
+//}");
 
-            StringAssert.StartsWith("Loop item name 'item' already exists at this scope", testEngine.InterpreterResult);
-        }
+//            StringAssert.StartsWith("Loop item name 'item' already exists at this scope", testEngine.InterpreterResult);
+//        }
 
-        [Test]
-        public void Loop_WhenCustomIndexAlreadyInScope_ShouldThrow()
-        {
-            testEngine.Run(@"
-{
-var arr = [];
-arr.Add(1);
-var j = 7;
+//        [Test]
+//        public void Loop_WhenCustomIndexAlreadyInScope_ShouldThrow()
+//        {
+//            testEngine.Run(@"
+//{
+//var arr = [];
+//arr.Add(1);
+//var j = 7;
 
-loop arr, jtem, j
-{
-}
-}");
+//loop arr, jtem, j
+//{
+//}
+//}");
 
-            StringAssert.StartsWith("Loop index name 'j' already exists at this scope", testEngine.InterpreterResult);
-        }
+//            StringAssert.StartsWith("Loop index name 'j' already exists at this scope", testEngine.InterpreterResult);
+//        }
 
-        [Test]
-        public void Loop_WhenCustomItemAlreadyInScope_ShouldThrow()
-        {
-            testEngine.Run(@"
-{
-var arr = [];
-arr.Add(1);
-var jtem = 7;
+//        [Test]
+//        public void Loop_WhenCustomItemAlreadyInScope_ShouldThrow()
+//        {
+//            testEngine.Run(@"
+//{
+//var arr = [];
+//arr.Add(1);
+//var jtem = 7;
 
-loop arr, jtem
-{
-}
-}");
+//loop arr, jtem
+//{
+//}
+//}");
 
-            StringAssert.StartsWith("Loop item name 'jtem' already exists at this scope in chunk", testEngine.InterpreterResult);
-        }
+//            StringAssert.StartsWith("Loop item name 'jtem' already exists at this scope in chunk", testEngine.InterpreterResult);
+//        }
 
         [Test]
         public void Loop_WhenNested_ShouldPrintExpected()
@@ -621,9 +633,9 @@ var someObj = {a=1,c=10,d={a=1,},};
 
 loop arr
 {
-    loop arr, ji, j, jount
+    loop arr, jtem, j, jount
     {
-        print(i+ji);
+        print(i+jtem);
     }
 }");
 

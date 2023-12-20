@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ULox
 {
@@ -34,8 +33,8 @@ namespace ULox
 
             _desugarSteps.Add(new StringInterpDesugar());
             _desugarSteps.Add(new WhileDesugar());
-            _desugarSteps.Add(new EndlessLoopDesugar());
             _desugarSteps.Add(new CompoundAssignDesugar());
+            _desugarSteps.Add(new LoopDesugar());
         }
 
         public string GetSourceSection(int start, int len)
@@ -83,23 +82,34 @@ namespace ULox
             return true;
         }
 
-        public bool MatchAny(params TokenType[] type)
+        public TokenType PeekType(int ahead = 1)
         {
-            for (int i = 0; i < type.Length; i++)
-            {
-                if (!Check(type[i])) continue;
-
-                Advance();
-                return true;
-            }
-            return false;
+            if (CurrentToken.TokenType == TokenType.EOF
+                || _currentTokenIndex + ahead >= _tokens.Count)
+                return TokenType.EOF;
+            return _tokens[_currentTokenIndex + ahead].TokenType;
         }
 
-        public TokenType PeekType()
+        public static int FindClosing(List<Token> tokens, int startingIndex, TokenType increaseType, TokenType decreaseType)
         {
-            if (CurrentToken.TokenType == TokenType.EOF)
-                return TokenType.EOF;
-            return _tokens[_currentTokenIndex + 1].TokenType;
+            var loc = startingIndex;
+            var end = tokens.Count;
+            var requiredClose = 1;
+            while (loc < end)
+            {
+                var tok = tokens[loc];
+                if (tok.TokenType == increaseType)
+                    requiredClose++;
+                else if (tok.TokenType == decreaseType)
+                    requiredClose--;
+
+                if (requiredClose <= 0)
+                    return loc;
+
+                loc++;
+            }
+
+            return loc;
         }
     }
 }

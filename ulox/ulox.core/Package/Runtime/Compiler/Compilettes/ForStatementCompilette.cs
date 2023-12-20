@@ -2,15 +2,32 @@
 
 namespace ULox
 {
-    public class ForStatementCompilette : ConfigurableLoopingStatementCompilette
+    public sealed class ForStatementCompilette : ICompilette
     {
-        public ForStatementCompilette()
-            : base(TokenType.FOR)
+        public TokenType MatchingToken { get; } = TokenType.FOR;
+
+        public void Process(Compiler compiler)
         {
+            ConfigurableLoopingStatement(compiler);
         }
 
-        protected override void BeginLoop(Compiler compiler, CompilerState.LoopState loopState)
+        private static void ConfigurableLoopingStatement(Compiler compiler)
         {
+            compiler.BeginScope();
+
+            var comp = compiler.CurrentCompilerState;
+            var loopState = new LoopState(compiler.UniqueChunkLabelStringConstant("loop_exit"));
+            comp.LoopStates.Push(loopState);
+
+            //preloop
+            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
+            //we really only want a var decl, var assign, or empty but Declaration covers everything
+            compiler.Declaration();
+
+            loopState.StartLabelID = compiler.LabelUniqueChunkLabel("loop_start");
+            loopState.ContinueLabelID = loopState.StartLabelID;
+
+            //begine loop
             var hasCondition = false;
             //condition
             {
@@ -24,7 +41,7 @@ namespace ULox
 
                 // Jump out of the loop if the condition is false.
                 compiler.EmitGotoIf(loopState.ExitLabelID);
-                if(hasCondition)
+                if (hasCondition)
                     compiler.EmitPop(); // Condition.
             }
 
@@ -42,15 +59,22 @@ namespace ULox
                 loopState.StartLabelID = newStartLabel;
                 compiler.EmitLabel(bodyJump);
             }
-            
-            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
-        }
 
-        protected override void PreLoop(Compiler compiler, LoopState loopState)
-        {
-            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
-            //we really only want a var decl, var assign, or empty but Declaration covers everything
-            compiler.Declaration();
+            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
+
+            compiler.BeginScope();
+            loopState.ScopeDepth = comp.scopeDepth;
+            compiler.Statement();
+            compiler.EndScope();
+
+            compiler.EmitGoto(loopState.StartLabelID);
+
+            if (!loopState.HasExit)
+                compiler.ThrowCompilerException("Loops must contain a termination");
+            compiler.EmitLabel(loopState.ExitLabelID);
+            compiler.EmitPop();
+
+            compiler.EndScope();
         }
     }
 }

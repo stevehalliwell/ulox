@@ -7,14 +7,8 @@ namespace ULox
         public Token ProcessReplace(Token currentToken, int currentTokenIndex, List<Token> tokens)
         {
             var prevToken = tokens[currentTokenIndex - 1];
-            //we expect `loop {` and we are going to replace with `for(;true;)`
-            var returnToken = new Token(
-                TokenType.ASSIGN,
-                currentToken.Lexeme,
-                currentToken.Literal,
-                currentToken.Line,
-                currentToken.Character,
-                currentToken.StringSourceIndex);
+
+            var returnToken = currentToken.MutateType(TokenType.ASSIGN);
 
             var flatTokenType = currentToken.TokenType;
             switch (currentToken.TokenType)
@@ -38,14 +32,7 @@ namespace ULox
 
             tokens.InsertRange(currentTokenIndex + 1, new[] {
                 prevToken,
-                new Token(
-                flatTokenType,
-                "",
-                "",
-                currentToken.Line,
-                currentToken.Character,
-                currentToken.StringSourceIndex),});
-
+                currentToken.MutateType(flatTokenType),});
 
             return returnToken;
         }

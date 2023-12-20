@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿//#define TABLE_ARRAY_ALLOWED
+#if TABLE_ARRAY_ALLOWED
+using System.Collections;
 using System.Collections.Generic;
 
 namespace ULox
@@ -94,3 +96,4 @@ namespace ULox
         }
     }
 }
+#endif

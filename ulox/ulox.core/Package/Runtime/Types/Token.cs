@@ -24,5 +24,27 @@
             Character = character;
             StringSourceIndex = stringSourceIndex;
         }
+
+        public Token MutateType(TokenType newType)
+        {
+            return new Token(
+                newType,
+                Lexeme,
+                Literal,
+                Line,
+                Character,
+                StringSourceIndex);
+        }
+
+        public Token Mutate(TokenType tokenType, string lexeme, object literal)
+        {
+            return new Token(
+                tokenType,
+                lexeme,
+                literal,
+                Line,
+                Character,
+                StringSourceIndex);
+        }
     }
 }

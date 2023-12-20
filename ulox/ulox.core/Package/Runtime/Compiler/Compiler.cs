@@ -49,7 +49,6 @@ namespace ULox
 
             this.AddStatementCompilette(
                 new ReturnStatementCompilette(),
-                new LoopStatementCompilette(),
                 new ForStatementCompilette());
 
             this.AddStatementCompilette(
@@ -508,19 +507,6 @@ namespace ULox
             var id = AddCustomStringConstant(varName);
             DefineVariable(id);
             return id;
-        }
-
-        public byte DeclareAndDefineLocal(string itemName, string errorPrefix)
-        {
-            if (CurrentCompilerState.ResolveLocal(this, itemName) != -1)
-                ThrowCompilerException($"{errorPrefix} '{itemName}' already exists at this scope");
-
-            CurrentCompilerState.DeclareVariableByName(this, itemName);
-            CurrentCompilerState.MarkInitialised();
-            var itemArgId = (byte)CurrentCompilerState.ResolveLocal(this, itemName);
-            EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(0)));
-            EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, itemArgId));
-            return itemArgId;
         }
 
         public void DeclareVariable()

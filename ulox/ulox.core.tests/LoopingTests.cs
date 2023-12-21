@@ -474,73 +474,131 @@ print(arr.Count());
             Assert.AreEqual("3132", testEngine.InterpreterResult);
         }
 
-//        [Test]
-//        public void Loop_WhenIndexAlreadyInScope_ShouldThrow()
-//        {
-//            testEngine.Run(@"
-//{
-//var arr = [];
-//arr.Add(1);
-//var i = 7;
+        [Test]
+        public void Loop_WhenIndexAlreadyInScope_ShouldThrow()
+        {
+            testEngine.Run(@"
+{
+var arr = [];
+arr.Add(1);
+var i = 7;
 
-//loop arr
-//{
-//}
-//}");
+loop arr
+{
+}
+}");
 
-//            StringAssert.StartsWith("Loop index name 'i' already exists at this scope in chunk 'unnamed_chunk(test)' at", testEngine.InterpreterResult);
-//        }
+            StringAssert.StartsWith("Cannot declare var with name 'i'", testEngine.InterpreterResult);
+        }
 
-//        [Test]
-//        public void Loop_WhenItemAlreadyInScope_ShouldThrow()
-//        {
-//            testEngine.Run(@"
-//{
-//var arr = [];
-//arr.Add(1);
-//var item = 7;
+        [Test]
+        public void Loop_WhenItemAlreadyInScope_ShouldThrow()
+        {
+            testEngine.Run(@"
+{
+var arr = [];
+arr.Add(1);
+var item = 7;
 
-//loop arr
-//{
-//}
-//}");
+loop arr
+{
+}
+}");
 
-//            StringAssert.StartsWith("Loop item name 'item' already exists at this scope", testEngine.InterpreterResult);
-//        }
+            StringAssert.StartsWith("Cannot declare var with name 'item'", testEngine.InterpreterResult);
+        }
 
-//        [Test]
-//        public void Loop_WhenCustomIndexAlreadyInScope_ShouldThrow()
-//        {
-//            testEngine.Run(@"
-//{
-//var arr = [];
-//arr.Add(1);
-//var j = 7;
+        [Test]
+        public void Loop_When2Siblings_ShouldCompile()
+        {
+            testEngine.Run(@"
+{
+    var arr = [];
 
-//loop arr, jtem, j
-//{
-//}
-//}");
+    loop arr
+    {
+    }
 
-//            StringAssert.StartsWith("Loop index name 'j' already exists at this scope", testEngine.InterpreterResult);
-//        }
+    loop arr
+    {
+    }
+}");
 
-//        [Test]
-//        public void Loop_WhenCustomItemAlreadyInScope_ShouldThrow()
-//        {
-//            testEngine.Run(@"
-//{
-//var arr = [];
-//arr.Add(1);
-//var jtem = 7;
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
 
-//loop arr, jtem
-//{
-//}
-//}");
+        [Test]
+        public void For_When2Siblings_ShouldCompile()
+        {
+            testEngine.Run(@"
+{
+    var arr = [];
 
-//            StringAssert.StartsWith("Loop item name 'jtem' already exists at this scope in chunk", testEngine.InterpreterResult);
-//        }
+    if(arr)
+    {
+        var count = countof arr;
+        if(count > 0)
+        {
+            var i = 0;
+            var item = arr[i];
+            for(; i < count; i += 1)
+            {
+                item = arr[i];
+            }
+        }
+    }
+
+    if(arr)
+    {
+        var count = countof arr;
+        if(count > 0)
+        {
+            var i = 0;
+            var item = arr[i];
+            for(; i < count; i += 1)
+            {
+                item = arr[i];
+            }
+        }
+    }
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenCustomIndexAlreadyInScope_ShouldThrow()
+        {
+            testEngine.Run(@"
+{
+var arr = [];
+arr.Add(1);
+var j = 7;
+
+loop arr, jtem, j
+{
+}
+}");
+
+            StringAssert.StartsWith("Cannot declare var with name 'j'", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_WhenCustomItemAlreadyInScope_ShouldThrow()
+        {
+            testEngine.Run(@"
+{
+var arr = [];
+arr.Add(1);
+var jtem = 7;
+
+loop arr, jtem
+{
+}
+}");
+
+            StringAssert.StartsWith("Cannot declare var with name 'jtem'", testEngine.InterpreterResult);
+        }
 
         [Test]
         public void Loop_WhenNested_ShouldPrintExpected()

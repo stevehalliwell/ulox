@@ -130,11 +130,9 @@ namespace ULox
             for (int i = localCount - 1; i >= 0; i--)
             {
                 var local = locals[i];
-                if (local.Depth != -1 && local.Depth < scopeDepth)
-                    break;
 
                 if (declName == local.Name)
-                    compiler.ThrowCompilerException($"Already a variable with name '{declName}' in this scope");
+                    compiler.ThrowCompilerException($"Cannot declare var with name '{declName}' at scope depth '{scopeDepth}' a var of the same name already exists at depth '{local.Depth}'");
             }
 
             AddLocal(compiler, declName);

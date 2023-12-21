@@ -88,11 +88,13 @@ break;
         public void Loop_WhenArr_ShouldBeFor()
         {
             var scriptContent = @"
+{
 var arr = [1,2,3];
 
 loop arr
 {
     print(item);
+}
 }";
             var (tokens, tokenIterator) = Prepare(scriptContent);
             var startingCount = tokens.Count;
@@ -108,11 +110,12 @@ loop arr
         public void For_WhenArr_ShouldBeFor()
         {
             var scriptContent = @"
+{
 var arr = [1,2,3];
 
 if(arr)
 {
-    var count = arr.Count();
+    var count = countof arr;
     if(count > 0)
     {
         var i = 0;
@@ -123,6 +126,7 @@ if(arr)
             print(item);
         }
     }
+}
 }";
             var (tokens, tokenIterator) = Prepare(scriptContent);
             var startingCount = tokens.Count;

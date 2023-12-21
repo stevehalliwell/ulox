@@ -2,9 +2,12 @@
 
 namespace ULox
 {
-    public class VarDeclarationCompilette : ICompilette
+    public static class CompilerDeclarations
     {
-        public TokenType MatchingToken => TokenType.VAR;
+        public static void FunctionDeclaration(Compiler compiler)
+        {
+            Compiler.InnerFunctionDeclaration(compiler, true);
+        }
 
         public static void VarDeclaration(Compiler compiler)
         {
@@ -20,14 +23,14 @@ namespace ULox
         {
             do
             {
-                var global = compiler.ParseVariable("Expect variable name");
+                var id = compiler.ParseVariable("Expect variable name");
 
                 if (compiler.TokenIterator.Match(TokenType.ASSIGN))
                     compiler.Expression();
                 else
                     compiler.EmitNULL();
 
-                compiler.DefineVariable(global);
+                compiler.DefineVariable(id);
             } while (compiler.TokenIterator.Match(TokenType.COMMA));
         }
 
@@ -70,8 +73,5 @@ namespace ULox
                 }
             }
         }
-
-        public void Process(Compiler compiler)
-            => VarDeclaration(compiler);
     }
 }

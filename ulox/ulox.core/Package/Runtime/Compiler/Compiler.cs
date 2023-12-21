@@ -8,7 +8,8 @@ namespace ULox
     public sealed class Compiler
     {
         private readonly IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
-        private readonly PrattParserRuleSet _prattParser = new PrattParserRuleSet();
+        //temp
+        public readonly PrattParserRuleSet _prattParser = new PrattParserRuleSet();
         private readonly TypeInfo _typeInfo = new TypeInfo();
 
         public TypeInfo TypeInfo => _typeInfo;
@@ -17,7 +18,7 @@ namespace ULox
         private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly List<Chunk> _allChunks = new List<Chunk>();
-        private ClassTypeCompilette _classCompiler;
+        private readonly ClassTypeCompilette _classCompiler = new ClassTypeCompilette();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -32,76 +33,75 @@ namespace ULox
         private void Setup()
         {
             var _testdec = new TestSetDeclarationCompilette();
-            _classCompiler = new ClassTypeCompilette();
             var _testcaseCompilette = new TestcaseCompillette(_testdec);
 
-            this.AddDeclarationCompilette(
-                new VarDeclarationCompilette(),
+            AddDeclarationCompilette(
                 _testdec,
                 _classCompiler,
                 _testcaseCompilette,
-                new BuildCompilette(),
-                new EnumTypeCompliette()
+                new EnumTypeDeclarationCompliette()
                 );
 
+            AddDeclarationCompilette(
+                (TokenType.FUNCTION, CompilerDeclarations.FunctionDeclaration),
+                (TokenType.VAR, CompilerDeclarations.VarDeclaration)
+                );
 
-            AddDeclarationCompilette(new CompiletteAction(TokenType.FUNCTION, FunctionDeclaration));
+            AddStatementCompilette(
+                (TokenType.IF, CompilerStatements.IfStatement),
+                (TokenType.YIELD, CompilerStatements.YieldStatement),
+                (TokenType.BREAK, CompilerStatements.BreakStatement),
+                (TokenType.CONTINUE, CompilerStatements.ContinueStatement),
+                (TokenType.OPEN_BRACE, CompilerStatements.BlockStatement),
+                (TokenType.THROW, CompilerStatements.ThrowStatement),
+                (TokenType.END_STATEMENT, CompilerStatements.NoOpStatement),
+                (TokenType.FREEZE, CompilerStatements.FreezeStatement),
+                (TokenType.EXPECT, CompilerStatements.ExpectStatement),
+                (TokenType.MATCH, CompilerStatements.MatchStatement),
+                (TokenType.LABEL, CompilerStatements.LabelStatement),
+                (TokenType.GOTO, CompilerStatements.GotoStatement),
+                (TokenType.READ_ONLY, CompilerStatements.ReadOnlyStatement),
+                (TokenType.RETURN, CompilerStatements.ReturnStatement),
+                (TokenType.FOR, CompilerStatements.ForStatement),
+                (TokenType.BUILD, CompilerStatements.BuildStatement)
+                );
 
-            this.AddStatementCompilette(
-                new ReturnStatementCompilette(),
-                new ForStatementCompilette());
-
-            this.AddStatementCompilette(
-                (TokenType.IF, IfStatement),
-                (TokenType.YIELD, YieldStatement),
-                (TokenType.BREAK, BreakStatement),
-                (TokenType.CONTINUE, ContinueStatement),
-                (TokenType.OPEN_BRACE, BlockStatement),
-                (TokenType.THROW, ThrowStatement),
-                (TokenType.END_STATEMENT, NoOpStatement),
-                (TokenType.FREEZE, FreezeStatement),
-                (TokenType.EXPECT, ExpectStatement),
-                (TokenType.MATCH, MatchStatement),
-                (TokenType.LABEL, LabelStatement),
-                (TokenType.GOTO, GotoStatement),
-                (TokenType.READ_ONLY, ReadOnlyStatement));
-
-            this.SetPrattRules(
-                (TokenType.MINUS, new ActionParseRule(Unary, Binary, Precedence.Term)),
-                (TokenType.PLUS, new ActionParseRule(null, Binary, Precedence.Term)),
-                (TokenType.SLASH, new ActionParseRule(null, Binary, Precedence.Factor)),
-                (TokenType.STAR, new ActionParseRule(null, Binary, Precedence.Factor)),
-                (TokenType.PERCENT, new ActionParseRule(null, Binary, Precedence.Factor)),
-                (TokenType.BANG, new ActionParseRule(Unary, null, Precedence.None)),
-                (TokenType.NUMBER, new ActionParseRule(Literal, null, Precedence.None)),
-                (TokenType.TRUE, new ActionParseRule(Literal, null, Precedence.None)),
-                (TokenType.FALSE, new ActionParseRule(Literal, null, Precedence.None)),
-                (TokenType.NULL, new ActionParseRule(Literal, null, Precedence.None)),
-                (TokenType.BANG_EQUAL, new ActionParseRule(null, Binary, Precedence.Equality)),
-                (TokenType.EQUALITY, new ActionParseRule(null, Binary, Precedence.Equality)),
-                (TokenType.LESS, new ActionParseRule(null, Binary, Precedence.Comparison)),
-                (TokenType.LESS_EQUAL, new ActionParseRule(null, Binary, Precedence.Comparison)),
-                (TokenType.GREATER, new ActionParseRule(null, Binary, Precedence.Comparison)),
-                (TokenType.GREATER_EQUAL, new ActionParseRule(null, Binary, Precedence.Comparison)),
-                (TokenType.STRING, new ActionParseRule(Literal, null, Precedence.None)),
-                (TokenType.IDENTIFIER, new ActionParseRule(Variable, null, Precedence.None)),
-                (TokenType.AND, new ActionParseRule(null, And, Precedence.And)),
-                (TokenType.OR, new ActionParseRule(null, Or, Precedence.Or)),
-                (TokenType.OPEN_PAREN, new ActionParseRule(Grouping, Call, Precedence.Call)),
-                (TokenType.CONTEXT_NAME_FUNC, new ActionParseRule(FName, null, Precedence.None)),
-                (TokenType.OPEN_BRACKET, new ActionParseRule(BracketCreate, BracketSubScript, Precedence.Call)),
-                (TokenType.OPEN_BRACE, new ActionParseRule(BraceCreateDynamic, null, Precedence.Call)),
-                (TokenType.DOT, new ActionParseRule(null, Dot, Precedence.Call)),
-                (TokenType.THIS, new ActionParseRule(_classCompiler.This, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_CLASS, new ActionParseRule(_classCompiler.CName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TEST, new ActionParseRule(_testcaseCompilette.TestName, null, Precedence.None)),
-                (TokenType.CONTEXT_NAME_TESTSET, new ActionParseRule(_testdec.TestSetName, null, Precedence.None)),
-                (TokenType.TYPEOF, new ActionParseRule(TypeOf, null, Precedence.Term)),
-                (TokenType.MEETS, new ActionParseRule(null, Meets, Precedence.Comparison)),
-                (TokenType.SIGNS, new ActionParseRule(null, Signs, Precedence.Comparison)),
-                (TokenType.FUNCTION, new ActionParseRule(FunExp, null, Precedence.Call)),
-                (TokenType.COUNT_OF, new ActionParseRule(CountOf, null, Precedence.None)),
-                (TokenType.UPDATE, new ActionParseRule(null, Update, Precedence.Comparison))
+            SetPrattRules(
+                (TokenType.MINUS, CompilerExpressions.Unary, CompilerExpressions.Binary, Precedence.Term),
+                (TokenType.PLUS, null, CompilerExpressions.Binary, Precedence.Term),
+                (TokenType.SLASH, null, CompilerExpressions.Binary, Precedence.Factor),
+                (TokenType.STAR, null, CompilerExpressions.Binary, Precedence.Factor),
+                (TokenType.PERCENT, null, CompilerExpressions.Binary, Precedence.Factor),
+                (TokenType.BANG, CompilerExpressions.Unary, null, Precedence.None),
+                (TokenType.NUMBER, CompilerExpressions.Literal, null, Precedence.None),
+                (TokenType.TRUE, CompilerExpressions.Literal, null, Precedence.None),
+                (TokenType.FALSE, CompilerExpressions.Literal, null, Precedence.None),
+                (TokenType.NULL, CompilerExpressions.Literal, null, Precedence.None),
+                (TokenType.BANG_EQUAL, null, CompilerExpressions.Binary, Precedence.Equality),
+                (TokenType.EQUALITY, null, CompilerExpressions.Binary, Precedence.Equality),
+                (TokenType.LESS, null, CompilerExpressions.Binary, Precedence.Comparison),
+                (TokenType.LESS_EQUAL, null, CompilerExpressions.Binary, Precedence.Comparison),
+                (TokenType.GREATER, null, CompilerExpressions.Binary, Precedence.Comparison),
+                (TokenType.GREATER_EQUAL, null, CompilerExpressions.Binary, Precedence.Comparison),
+                (TokenType.STRING, CompilerExpressions.Literal, null, Precedence.None),
+                (TokenType.IDENTIFIER, CompilerExpressions.Variable, null, Precedence.None),
+                (TokenType.AND, null, CompilerExpressions.And, Precedence.And),
+                (TokenType.OR, null, CompilerExpressions.Or, Precedence.Or),
+                (TokenType.OPEN_PAREN, CompilerExpressions.Grouping, CompilerExpressions.Call, Precedence.Call),
+                (TokenType.CONTEXT_NAME_FUNC, CompilerExpressions.FName, null, Precedence.None),
+                (TokenType.OPEN_BRACKET, CompilerExpressions.BracketCreate, CompilerExpressions.BracketSubScript, Precedence.Call),
+                (TokenType.OPEN_BRACE, CompilerExpressions.BraceCreateDynamic, null, Precedence.Call),
+                (TokenType.DOT, null, CompilerExpressions.Dot, Precedence.Call),
+                (TokenType.THIS, _classCompiler.This, null, Precedence.None),
+                (TokenType.CONTEXT_NAME_CLASS, _classCompiler.CName, null, Precedence.None),
+                (TokenType.CONTEXT_NAME_TEST, _testcaseCompilette.TestName, null, Precedence.None),
+                (TokenType.CONTEXT_NAME_TESTSET, _testdec.TestSetName, null, Precedence.None),
+                (TokenType.TYPEOF, CompilerExpressions.TypeOf, null, Precedence.Term),
+                (TokenType.MEETS, null, CompilerExpressions.Meets, Precedence.Comparison),
+                (TokenType.SIGNS, null, CompilerExpressions.Signs, Precedence.Comparison),
+                (TokenType.FUNCTION, CompilerExpressions.FunExp, null, Precedence.Call),
+                (TokenType.COUNT_OF, CompilerExpressions.CountOf, null, Precedence.None),
+                (TokenType.UPDATE, null, CompilerExpressions.Update, Precedence.Comparison)
                               );
         }
 
@@ -115,6 +115,38 @@ namespace ULox
         public void ThrowCompilerException(string msg)
         {
             throw new CompilerException(msg, TokenIterator.PreviousToken, $"chunk '{CurrentChunk.GetLocationString()}'");
+        }
+
+        public void AddDeclarationCompilette(params (TokenType match, Action<Compiler> action)[] compilettes)
+        {
+            foreach (var item in compilettes)
+            {
+                AddDeclarationCompilette(new CompiletteAction(item.match, item.action));
+            }
+        }
+
+        public void AddDeclarationCompilette(params ICompilette[] compilettes)
+        {
+            foreach (var item in compilettes)
+            {
+                AddDeclarationCompilette(item);
+            }
+        }
+
+        public void AddStatementCompilette(params (TokenType match, System.Action<Compiler> action)[] processActions)
+        {
+            foreach (var item in processActions)
+            {
+                AddStatementCompilette(new CompiletteAction(item.match, item.action));
+            }
+        }
+
+        public void SetPrattRules(params (TokenType tt, Action<Compiler, bool> prefix, Action<Compiler, bool> infix, Precedence pre)[] rules)
+        {
+            foreach (var (tt, preAct, inAct, prec) in rules)
+            {
+                SetPrattRule(tt, new ActionParseRule(preAct, inAct, prec));
+            }
         }
 
         public void AddDeclarationCompilette(ICompilette compilette)
@@ -183,7 +215,7 @@ namespace ULox
             }
         }
 
-        private void PopBackToScopeDepth(int depth)
+        public void PopBackToScopeDepth(int depth)
         {
             var popCount = default(byte);
 
@@ -526,366 +558,7 @@ namespace ULox
             EndScope();
         }
 
-        public static void Binary(Compiler compiler, bool canAssign)
-        {
-            TokenType operatorType = compiler.TokenIterator.PreviousToken.TokenType;
-
-            // Compile the right operand.
-            var rule = compiler._prattParser.GetRule(operatorType);
-            compiler.ParsePrecedence((Precedence)(rule.Precedence + 1));
-
-            switch (operatorType)
-            {
-            case TokenType.PLUS: compiler.EmitPacket(new ByteCodePacket(OpCode.ADD)); break;
-            case TokenType.MINUS: compiler.EmitPacket(new ByteCodePacket(OpCode.SUBTRACT)); break;
-            case TokenType.STAR: compiler.EmitPacket(new ByteCodePacket(OpCode.MULTIPLY)); break;
-            case TokenType.SLASH: compiler.EmitPacket(new ByteCodePacket(OpCode.DIVIDE)); break;
-            case TokenType.PERCENT: compiler.EmitPacket(new ByteCodePacket(OpCode.MODULUS)); break;
-            case TokenType.EQUALITY: compiler.EmitPacket(new ByteCodePacket(OpCode.EQUAL)); break;
-            case TokenType.GREATER: compiler.EmitPacket(new ByteCodePacket(OpCode.GREATER)); break;
-            case TokenType.LESS: compiler.EmitPacket(new ByteCodePacket(OpCode.LESS)); break;
-            case TokenType.BANG_EQUAL: compiler.EmitPacket(new ByteCodePacket(OpCode.EQUAL)); compiler.EmitPacket(new ByteCodePacket(OpCode.NOT)); break;
-            case TokenType.GREATER_EQUAL: compiler.EmitPacket(new ByteCodePacket(OpCode.LESS)); compiler.EmitPacket(new ByteCodePacket(OpCode.NOT)); break;
-            case TokenType.LESS_EQUAL: compiler.EmitPacket(new ByteCodePacket(OpCode.GREATER)); compiler.EmitPacket(new ByteCodePacket(OpCode.NOT)); break;
-
-            default:
-                break;
-            }
-        }
-
-        public static void FreezeStatement(Compiler compiler)
-        {
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.FREEZE));
-            compiler.ConsumeEndStatement();
-        }
-
-        public static void ExpectStatement(Compiler compiler)
-        {
-            do
-            {
-                //find start of the string so we can later substr it if desired
-                var startIndex = compiler.TokenIterator.PreviousToken.StringSourceIndex + 1;
-                compiler.Expression();
-                if (compiler.TokenIterator.Match(TokenType.COLON))
-                {
-                    compiler.Expression();
-                }
-                else
-                {
-                    var endIndex = compiler.TokenIterator.CurrentToken.StringSourceIndex;
-                    var length = endIndex - startIndex;
-                    var sourceStringSection = compiler.TokenIterator.GetSourceSection(startIndex, length);
-                    var sectionByte = compiler.AddCustomStringConstant(sourceStringSection.Trim());
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, sectionByte, 0, 0));
-                }
-                compiler.EmitPacket(new ByteCodePacket(OpCode.EXPECT));
-            }
-            while (compiler.TokenIterator.Match(TokenType.COMMA));
-
-            compiler.ConsumeEndStatement();
-        }
-
-        private static void BraceCreateDynamic(Compiler compiler, bool arg2)
-        {
-            var midTok = TokenType.ASSIGN;
-            if (compiler.TokenIterator.Match(midTok)
-                  && compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
-            {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
-            }
-            else if (compiler.TokenIterator.Check(TokenType.IDENTIFIER))
-            {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
-
-                while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
-                {
-                    //we need to copy the dynamic inst
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.DUPLICATE));
-                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier.");
-                    //add the constant
-                    var identConstantID = compiler.AddStringConstant();
-                    //read the colon
-                    compiler.TokenIterator.Consume(midTok, "Expect '=' after identifiier.");
-                    //do expression
-                    compiler.Expression();
-                    //we need a set property
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, identConstantID));
-                    compiler.EmitPop();
-
-                    //if comma consume
-                    compiler.TokenIterator.Match(TokenType.COMMA);
-                }
-            }
-            else
-            {
-                compiler.ThrowCompilerException("Expect identifier or '=' after '{'");
-            }
-        }
-
-        public static void TypeOf(Compiler compiler, bool canAssign)
-        {
-            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after typeof.");
-            compiler.Expression();
-            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after typeof.");
-            compiler.EmitPacket(new ByteCodePacket(OpCode.TYPEOF));
-        }
-
-        public static void BracketCreate(Compiler compiler, bool canAssign)
-        {
-            if (compiler.TokenIterator.Match(TokenType.COLON)
-                && compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
-            {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Map));
-                return;
-            }
-
-            var nativeTypeInstruction = compiler.CurrentChunkInstructinCount;
-            compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.List));
-
-            var firstLoop = true;
-            var isList = true;
-
-            while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
-            {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.DUPLICATE));
-                compiler.Expression();
-
-                if (firstLoop
-                    && compiler.TokenIterator.Check(TokenType.COLON))
-                {
-                    //switch to map
-                    isList = false;
-                    compiler.WriteAt(nativeTypeInstruction, new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Map));
-                }
-
-                if (isList)
-                {
-                    var constantNameId = compiler.AddCustomStringConstant("Add");
-                    const byte argCount = 1;
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount, 0));
-                }
-                else
-                {
-                    compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after key");
-                    compiler.Expression();
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.SET_INDEX));
-                }
-                compiler.EmitPop();
-
-                compiler.TokenIterator.Match(TokenType.COMMA);
-                firstLoop = false;
-            }
-
-            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");
-        }
-
-        public static void BracketSubScript(Compiler compiler, bool canAssign)
-        {
-            compiler.Expression();
-            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, "Expect close of bracket after open and expression");
-            if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
-            {
-                compiler.Expression();
-                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_INDEX));
-            }
-            else
-            {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_INDEX));
-            }
-        }
-
-        public static void Dot(Compiler compiler, bool canAssign)
-        {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
-            byte nameId = compiler.AddStringConstant();
-
-            if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
-            {
-                compiler.Expression();
-                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameId));
-            }
-            else if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
-            {
-                var argCount = compiler.ArgumentList();
-                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, nameId, argCount));
-            }
-            else
-            {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_PROPERTY, nameId));
-            }
-        }
-
-        public static void FName(Compiler compiler, bool canAssign)
-        {
-            var fname = compiler.CurrentChunk.Name;
-            compiler.AddConstantAndWriteOp(Value.New(fname));
-        }
-
-        public static void ThrowStatement(Compiler compiler)
-        {
-            if (!compiler.TokenIterator.Check(TokenType.END_STATEMENT))
-            {
-                compiler.Expression();
-            }
-            else
-            {
-                compiler.EmitNULL();
-            }
-
-            compiler.ConsumeEndStatement();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
-        }
-
-        public static void ContinueStatement(Compiler compiler)
-        {
-            var comp = compiler.CurrentCompilerState;
-            if (comp.LoopStates.Count == 0)
-                compiler.ThrowCompilerException($"Cannot continue when not inside a loop.");
-
-            compiler.PopBackToScopeDepth(comp.LoopStates.Last().ScopeDepth);
-            compiler.EmitGoto(comp.LoopStates.Peek().ContinueLabelID);
-            compiler.ConsumeEndStatement();
-        }
-
-        public static void BreakStatement(Compiler compiler)
-        {
-            var comp = compiler.CurrentCompilerState;
-            if (comp.LoopStates.Count == 0)
-                compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
-
-
-            compiler.PopBackToScopeDepth(comp.LoopStates.Last().ScopeDepth);
-
-            compiler.EmitNULL();
-            compiler.EmitGoto(comp.LoopStates.Peek().ExitLabelID);
-            comp.LoopStates.Peek().HasExit = true;
-
-            compiler.ConsumeEndStatement();
-        }
-
-        public static void IfStatement(Compiler compiler)
-        {
-            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
-            compiler.Expression();
-            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
-
-            //todo can we make goto_if consume the value in the vm so we don't need to play pop wackamole
-            var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if_false");
-            compiler.EmitPop();
-
-            compiler.Statement();
-
-            var afterIfLabel = compiler.GotoUniqueChunkLabel("if_end");
-
-            if (compiler.TokenIterator.Match(TokenType.ELSE))
-            {
-                var elseJump = compiler.GotoUniqueChunkLabel("else");
-
-                compiler.EmitLabel(thenjumpLabel);
-                compiler.EmitPop();
-
-                compiler.Statement();
-
-                compiler.EmitLabel(elseJump);
-            }
-            else
-            {
-                compiler.EmitLabel(thenjumpLabel);
-                compiler.EmitPop();
-            }
-
-            compiler.EmitLabel(afterIfLabel);
-        }
-
-        //todo could this become sugar?
-        public static void MatchStatement(Compiler compiler)
-        {
-            //make a scope
-            compiler.BeginScope();
-
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after match statement.");
-            var matchArgName = compiler.TokenIterator.PreviousToken.Lexeme;
-            var resolveRes = compiler.ResolveNameLookupOpCode(matchArgName);
-
-            var lastElseLabel = -1;
-
-            var matchEndLabelID = compiler.UniqueChunkLabelStringConstant(nameof(MatchStatement));
-
-            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
-            do
-            {
-                if (lastElseLabel != -1)
-                {
-                    compiler.EmitLabel((byte)lastElseLabel);
-                    compiler.EmitPop();
-                }
-
-                compiler.Expression();
-                compiler.EmitPacketFromResolveGet(resolveRes);
-                compiler.EmitPacket(new ByteCodePacket(OpCode.EQUAL));
-                lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
-                compiler.EmitPop();
-                compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
-                compiler.Statement();
-                compiler.EmitGoto(matchEndLabelID);
-            } while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE));
-
-            if (lastElseLabel != -1)
-                compiler.EmitLabel((byte)lastElseLabel);
-
-            compiler.AddConstantAndWriteOp(Value.New($"Match on '{matchArgName}' did have a matching case."));
-            compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
-
-            compiler.EmitLabel(matchEndLabelID);
-
-            compiler.EndScope();
-        }
-
-        public static void LabelStatement(Compiler compiler)
-        {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
-            var labelName = compiler.TokenIterator.PreviousToken.Lexeme;
-            var id = compiler.AddCustomStringConstant(labelName);
-            compiler.EmitLabel(id);
-
-            compiler.ConsumeEndStatement();
-        }
-
-        public static void GotoStatement(Compiler compiler)
-        {
-            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'goto' statement.");
-            var labelNameID = compiler.AddStringConstant();
-
-            compiler.EmitGoto(labelNameID);
-
-            compiler.ConsumeEndStatement();
-        }
-
-        public static void ReadOnlyStatement(Compiler compiler)
-        {
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.READ_ONLY));
-
-            compiler.ConsumeEndStatement();
-        }
-
-        public static void YieldStatement(Compiler compiler)
-        {
-            compiler.EmitPacket(new ByteCodePacket(OpCode.YIELD));
-
-            compiler.ConsumeEndStatement();
-        }
-
-        public static void BlockStatement(Compiler compiler)
-            => compiler.BlockStatement();
-
-        public static void FunctionDeclaration(Compiler compiler)
-        {
-            InnerFunctionDeclaration(compiler, true);
-        }
-
-        private static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)
+        public static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)
         {
             var isNamed = compiler.TokenIterator.Check(TokenType.IDENTIFIER);
             var globalName = -1;
@@ -910,49 +583,6 @@ namespace ULox
                     var resolveRes = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
                     compiler.EmitPacketFromResolveGet(resolveRes);
                 }
-            }
-        }
-
-        public static void NoOpStatement(Compiler compiler)
-        {
-        }
-
-        public static void Unary(Compiler compiler, bool canAssign)
-        {
-            var op = compiler.TokenIterator.PreviousToken.TokenType;
-
-            compiler.ParsePrecedence(Precedence.Unary);
-
-            switch (op)
-            {
-            case TokenType.MINUS: compiler.EmitPacket(new ByteCodePacket(OpCode.NEGATE)); break;
-            case TokenType.BANG: compiler.EmitPacket(new ByteCodePacket(OpCode.NOT)); break;
-            default:
-                break;
-            }
-        }
-
-        public static void Literal(Compiler compiler, bool canAssign)
-        {
-            switch (compiler.TokenIterator.PreviousToken.TokenType)
-            {
-            case TokenType.TRUE: compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(true))); break;
-            case TokenType.FALSE: compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(false))); break;
-            case TokenType.NULL: compiler.EmitNULL(); break;
-            case TokenType.NUMBER:
-            {
-                var number = (double)compiler.TokenIterator.PreviousToken.Literal;
-
-                compiler.DoNumberConstant(number);
-            }
-            break;
-
-            case TokenType.STRING:
-            {
-                var str = (string)compiler.TokenIterator.PreviousToken.Literal;
-                compiler.AddConstantAndWriteOp(Value.New(str));
-            }
-            break;
             }
         }
 
@@ -981,75 +611,6 @@ namespace ULox
             }
 
             AddConstantAndWriteOp(Value.New(number));
-        }
-
-        public static void Variable(Compiler compiler, bool canAssign)
-        {
-            var name = (string)compiler.TokenIterator.PreviousToken.Literal;
-            compiler.NamedVariable(name, canAssign);
-        }
-
-        public static void And(Compiler compiler, bool canAssign)
-        {
-            var endJumpLabel = compiler.GotoIfUniqueChunkLabel("and");
-
-            compiler.EmitPop();
-            compiler.ParsePrecedence(Precedence.And);
-
-            compiler.EmitLabel(endJumpLabel);
-        }
-
-        public static void Or(Compiler compiler, bool canAssign)
-        {
-            var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("else_or");
-            var endJump = compiler.GotoUniqueChunkLabel("or");
-
-            compiler.EmitLabel(elseJumpLabel);
-            compiler.EmitPop();
-
-            compiler.ParsePrecedence(Precedence.Or);
-
-            compiler.EmitLabel(endJump);
-        }
-
-        public static void Grouping(Compiler compiler, bool canAssign)
-        {
-            compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
-        }
-
-        public static void FunExp(Compiler compiler, bool canAssign)
-        {
-            InnerFunctionDeclaration(compiler, false);
-        }
-
-        public static void CountOf(Compiler compiler, bool canAssign)
-        {
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.COUNT_OF));
-        }
-
-        public static void Update(Compiler compiler, bool canAssign)
-        {
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.UPDATE));
-        }
-
-        public static void Call(Compiler compiler, bool canAssign)
-        {
-            var argCount = compiler.ArgumentList();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.CALL, argCount, 0, 0));
-        }
-
-        public static void Meets(Compiler compiler, bool canAssign)
-        {
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.Meets));
-        }
-
-        public static void Signs(Compiler compiler, bool canAssign)
-        {
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.Signs));
         }
 
         internal byte GotoUniqueChunkLabel(string v)
@@ -1113,6 +674,11 @@ namespace ULox
         internal byte ResolveLocal(string argName)
         {
             return (byte)CurrentCompilerState.ResolveLocal(this, argName);
+        }
+
+        public bool DoesLocalAlreadyExist(string argName)
+        {
+            return CurrentCompilerState.ResolveLocal(this, argName) != -1;
         }
     }
 }

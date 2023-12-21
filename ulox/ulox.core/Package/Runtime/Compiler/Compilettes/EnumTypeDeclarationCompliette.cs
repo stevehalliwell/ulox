@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public sealed class EnumTypeCompliette : TypeCompilette
+    public sealed class EnumTypeDeclarationCompliette : TypeCompilette
     {
         private enum Mode
         {
@@ -21,7 +21,7 @@ namespace ULox
 
         public override bool EmitClosureCallAtEnd => true;
 
-        public EnumTypeCompliette()
+        public EnumTypeDeclarationCompliette()
         {
             IsReadOnlyAtEnd = true;
         }

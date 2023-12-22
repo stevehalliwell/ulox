@@ -83,26 +83,6 @@ namespace ULox
             }
         }
 
-        [StructLayout(LayoutKind.Explicit)]
-        public readonly struct TypeDetails
-        {
-            public UserType UserType => (UserType)_userType;
-
-            [FieldOffset(0)]
-            public readonly byte stringConstantId;
-            [FieldOffset(1)]
-            public readonly byte _userType;
-            [FieldOffset(2)]
-            public readonly byte initLabelId;
-
-            public TypeDetails(byte nameConstant, UserType userType, byte initChainLabelId) : this()
-            {
-                stringConstantId = nameConstant;
-                _userType = (byte)userType;
-                initLabelId = initChainLabelId;
-            }
-        }
-
         public OpCode OpCode => (OpCode)_opCode;
         public NativeType NativeType => (NativeType)b1;
         public ValidateOp ValidateOp => (ValidateOp)b1;
@@ -119,9 +99,6 @@ namespace ULox
 
         [FieldOffset(1)]
         public readonly ushort u1;
-
-        [FieldOffset(1)]
-        public readonly TypeDetails typeDetails;
 
         [FieldOffset(1)]
         public readonly PushValueDetails pushValueDetails;
@@ -180,11 +157,6 @@ namespace ULox
         public ByteCodePacket(OpCode opCode, bool b) : this(opCode)
         {
             b1 = b ? (byte)1 : (byte)0;
-        }
-
-        public ByteCodePacket(OpCode opCode, TypeDetails typeDetails) : this(opCode)
-        {
-            this.typeDetails = typeDetails;
         }
 
         public ByteCodePacket(PushValueDetails details) : this(OpCode.PUSH_VALUE)

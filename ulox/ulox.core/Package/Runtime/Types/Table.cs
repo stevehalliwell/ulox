@@ -20,10 +20,7 @@ namespace ULox
 
         public bool Get(HashedString key, out Value ourContractMatchingMeth) => _values.TryGetValue(key, out ourContractMatchingMeth);
 
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
         public void AddOrSet(HashedString hashedString, Value val)
         {

@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System;
+
+namespace ULox
 {
     public class ActionParseRule : IParseRule
     {
@@ -7,8 +9,8 @@
         public Precedence Precedence { get; }
 
         public ActionParseRule(
-            System.Action<Compiler, bool> prefix,
-            System.Action<Compiler, bool> infix,
+            Action<Compiler, bool> prefix,
+            Action<Compiler, bool> infix,
             Precedence pre)
         {
             PrefixAction = prefix;

@@ -23,11 +23,42 @@ loop
         }
 
         [Test]
+        public void For_WhenBreakAt5_ShouldPrintUpTo6()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(;;)
+{
+    print (i);
+    i = i + 1;
+    if(i > 5)
+        break;
+    print (i);
+}");
+
+            Assert.AreEqual("01122334455", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Loop_WhenNoEscape_ShouldNotCompile()
         {
             testEngine.Run(@"
 var i = 0;
 loop
+{
+    print (i);
+    i = i + 1;
+}");
+
+            Assert.AreEqual("Loops must contain a termination in chunk 'unnamed_chunk(test)' at 7:2.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_WhenNoEscape_ShouldNotCompile()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(;;)
 {
     print (i);
     i = i + 1;
@@ -169,18 +200,30 @@ loop arr
         public void Loop_WhenGivenNumberArray_ShouldPrintItems()
         {
             testEngine.Run(@"
-var arr = [];
-arr.Add(""a"");
-arr.Add(""b"");
-arr.Add(""c"");
+var arr = [1,2,3];
 
 loop arr
 {
     print(item);
+}");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_WhenGivenNumberArray_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+
+for(var i = 0; i < arr.Count(); i += 1)
+{
+    var item = arr[i];
+    print(item);
 }
 ");
 
-            Assert.AreEqual("abc", testEngine.InterpreterResult);
+            Assert.AreEqual("123", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -445,7 +488,7 @@ loop arr
 }
 }");
 
-            StringAssert.StartsWith("Loop index name 'i' already exists at this scope in chunk 'unnamed_chunk(test)' at", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot declare var with name 'i'", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -462,7 +505,65 @@ loop arr
 }
 }");
 
-            StringAssert.StartsWith("Loop item name 'item' already exists at this scope", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot declare var with name 'item'", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Loop_When2Siblings_ShouldCompile()
+        {
+            testEngine.Run(@"
+{
+    var arr = [];
+
+    loop arr
+    {
+    }
+
+    loop arr
+    {
+    }
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_When2Siblings_ShouldCompile()
+        {
+            testEngine.Run(@"
+{
+    var arr = [];
+
+    if(arr)
+    {
+        var count = countof arr;
+        if(count > 0)
+        {
+            var i = 0;
+            var item = arr[i];
+            for(; i < count; i += 1)
+            {
+                item = arr[i];
+            }
+        }
+    }
+
+    if(arr)
+    {
+        var count = countof arr;
+        if(count > 0)
+        {
+            var i = 0;
+            var item = arr[i];
+            for(; i < count; i += 1)
+            {
+                item = arr[i];
+            }
+        }
+    }
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -479,7 +580,7 @@ loop arr, jtem, j
 }
 }");
 
-            StringAssert.StartsWith("Loop index name 'j' already exists at this scope", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot declare var with name 'j'", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -496,7 +597,7 @@ loop arr, jtem
 }
 }");
 
-            StringAssert.StartsWith("Loop item name 'jtem' already exists at this scope in chunk", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot declare var with name 'jtem'", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -590,9 +691,9 @@ var someObj = {a=1,c=10,d={a=1,},};
 
 loop arr
 {
-    loop arr, ji, j, jount
+    loop arr, jtem, j, jount
     {
-        print(i+ji);
+        print(i+jtem);
     }
 }");
 
@@ -644,6 +745,22 @@ var posList = FromRowCol(outer);
             testEngine.Run(@"
 var i = 0;
 while(i < 3)
+{
+    i = i + 1;
+    print (i);
+    continue;
+    print (""FAIL"");
+}");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void For_WhenUsedAsWhile_ShouldCompile()
+        {
+            testEngine.Run(@"
+var i = 0;
+for(;i < 3;)
 {
     i = i + 1;
     print (i);

@@ -876,7 +876,7 @@ fun Foo()
     var a = 2; 
 }");
 
-            StringAssert.StartsWith("Already a variable with name 'a'", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot declare var with name 'a'", testEngine.InterpreterResult);
         }
 
         [Test]

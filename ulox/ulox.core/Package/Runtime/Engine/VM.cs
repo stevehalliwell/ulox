@@ -337,16 +337,6 @@ namespace ULox
                     DiscardPop(packet.b1);
                     break;
 
-                case OpCode.SWAP:
-                {
-                    //swap last stack values
-                    var count = _valueStack.Count;
-                    var temp = _valueStack[count - 1];
-                    _valueStack[count - 1] = _valueStack[count - 2];
-                    _valueStack[count - 2] = temp;
-                }
-                break;
-
                 case OpCode.DUPLICATE:
                 {
                     var v = PopOrLocal(packet.b1);
@@ -791,20 +781,20 @@ namespace ULox
                     ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
                 break;
             case ValidateOp.Meets:
-                {
-                    var (rhs, lhs) = Pop2();
-                    var (meets, _) = ProcessContract(lhs, rhs);
-                    Push(Value.New(meets));
-                }
-                break;
+            {
+                var (rhs, lhs) = Pop2();
+                var (meets, _) = ProcessContract(lhs, rhs);
+                Push(Value.New(meets));
+            }
+            break;
             case ValidateOp.Signs:
-                {
-                    var (rhs, lhs) = Pop2();
-                    var (meets, msg) = ProcessContract(lhs, rhs);
-                    if (!meets)
-                        ThrowRuntimeException($"Sign failure with msg '{msg}'");
-                }
-                break;
+            {
+                var (rhs, lhs) = Pop2();
+                var (meets, msg) = ProcessContract(lhs, rhs);
+                if (!meets)
+                    ThrowRuntimeException($"Sign failure with msg '{msg}'");
+            }
+            break;
             default:
                 ThrowRuntimeException($"Unhandled validate op '{validateOp}'");
                 break;
@@ -892,10 +882,6 @@ namespace ULox
             if (res == NativeCallResult.SuccessfulExpression)
             {
                 ProcessReturns();
-            }
-            else if (res == NativeCallResult.SuccessfulStatement)
-            {
-                PopFrameAndDiscard();
             }
         }
 

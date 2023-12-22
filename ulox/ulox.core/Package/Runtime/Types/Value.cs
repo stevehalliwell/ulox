@@ -34,7 +34,7 @@ namespace ULox
             public override string ToString() => $"<{UserType.Native} {_typename}>";
         }
 
-        
+
         public ValueType type;
         public ValueTypeDataUnion val;
 
@@ -73,7 +73,7 @@ namespace ULox
 
             case ValueType.NativeFunction:
                 return "<NativeFunc>";
-                
+
             case ValueType.Upvalue:
                 return $"<upvalue {val.asUpvalue.index}>";
 
@@ -82,12 +82,12 @@ namespace ULox
             case ValueType.Instance:
             case ValueType.BoundMethod:
                 return val.asObject.ToString();
-                
+
             case ValueType.Object:
                 if (val.asObject is TypeNameClass typenameClass)
                     return typenameClass.ToString();
                 return $"<object {val.asObject}>";
-                
+
             case ValueType.CombinedClosures:
             default:
                 throw new System.NotImplementedException();
@@ -130,31 +130,31 @@ namespace ULox
             => new Value() { type = valueType, val = dataUnion };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(double val) 
+        public static Value New(double val)
             => New(ValueType.Double, new ValueTypeDataUnion() { asDouble = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(bool val) 
+        public static Value New(bool val)
             => New(ValueType.Bool, new ValueTypeDataUnion() { asBool = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(HashedString val) 
+        public static Value New(HashedString val)
             => New(ValueType.String, new ValueTypeDataUnion() { asString = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(string val) 
+        public static Value New(string val)
             => New(new HashedString(val));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(Chunk val) 
+        public static Value New(Chunk val)
             => New(ValueType.Chunk, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(CallFrame.NativeCallDelegate val, byte returnCount, byte argCount)
-        { 
-            return New(ValueType.NativeFunction, new ValueTypeDataUnion() { asNativeFunc = val , asByte0 = returnCount, asByte1 = argCount});
+        {
+            return New(ValueType.NativeFunction, new ValueTypeDataUnion() { asNativeFunc = val, asByte0 = returnCount, asByte1 = argCount });
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(ClosureInternal val)
         {
@@ -164,27 +164,27 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(UpvalueInternal val) 
+        public static Value New(UpvalueInternal val)
             => New(ValueType.Upvalue, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(UserTypeInternal val) 
+        public static Value New(UserTypeInternal val)
             => New(ValueType.UserType, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(InstanceInternal val) 
+        public static Value New(InstanceInternal val)
             => New(ValueType.Instance, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value New(BoundMethod val) 
+        public static Value New(BoundMethod val)
             => New(ValueType.BoundMethod, new ValueTypeDataUnion() { asObject = val });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value Null() 
+        public static Value Null()
             => new Value() { type = ValueType.Null };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value Object(object obj) 
+        public static Value Object(object obj)
             => New(ValueType.Object, new ValueTypeDataUnion() { asObject = obj });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -201,14 +201,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool Equals(ref Value rhs)
             => Compare(ref this, ref rhs);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator ==(Value left, Value right)
-            => left.Equals(ref right);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool operator !=(Value left, Value right)
-            => !(left == right);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Compare(ref Value lhs, ref Value rhs)
@@ -244,7 +236,7 @@ namespace ULox
 
                 case ValueType.Closure:
                     return lhs.val.asClosure == rhs.val.asClosure;
-                    
+
                 case ValueType.NativeFunction:
                 case ValueType.CombinedClosures:
                 case ValueType.Upvalue:
@@ -266,7 +258,7 @@ namespace ULox
 
             case ValueType.Bool:
                 return val.asBool.GetHashCode();
-                
+
             case ValueType.String:
                 return val.asString.Hash;
             case ValueType.CombinedClosures:
@@ -347,7 +339,7 @@ namespace ULox
                 lhs.val.asString = rhs.val.asString;
                 break;
             case ValueType.Instance:
-                if(lhs.val.asInstance is INativeCollection lhsNativeCol
+                if (lhs.val.asInstance is INativeCollection lhsNativeCol
                     && rhs.val.asInstance is INativeCollection rhsNativeCol
                     && lhsNativeCol.GetType() == rhsNativeCol.GetType())
                 {
@@ -375,35 +367,6 @@ namespace ULox
             }
 
             return lhs;
-        }
-
-        public bool IsCallableWithArity(int arity)
-        {
-            switch (this.type)
-            {
-            case ValueType.Null:
-            case ValueType.Double:
-            case ValueType.Bool:
-            case ValueType.Upvalue:
-            case ValueType.String:
-            case ValueType.UserType:
-            case ValueType.Instance:
-            case ValueType.Object:
-                return false;
-            case ValueType.Chunk:
-                return val.asChunk.Arity == arity;
-            case ValueType.NativeFunction:
-                return true;//hope so
-            case ValueType.Closure:
-                return val.asClosure.chunk.Arity == arity;
-            case ValueType.CombinedClosures:
-                return val.asCombined[0].chunk.Arity == arity;
-            case ValueType.BoundMethod:
-                return val.asBoundMethod.Method.chunk.Arity == arity;
-
-            default:
-                throw new UloxException($"Unhandled value type '{this.type}' in {nameof(IsCallableWithArity)}");
-            }
         }
     }
 }

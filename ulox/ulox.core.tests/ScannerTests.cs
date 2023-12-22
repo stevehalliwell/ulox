@@ -310,31 +310,6 @@ fun foo(p)
         }
 
         [Test]
-        public void StringInterp_WhenUsed_ShouldMatchTokens()
-        {
-            var tokenResults = new TokenType[]
-            {
-                TokenType.VAR,
-                TokenType.IDENTIFIER,
-                TokenType.ASSIGN,
-                TokenType.STRING,
-                TokenType.PLUS,
-                TokenType.OPEN_PAREN,
-                TokenType.NUMBER,
-                TokenType.CLOSE_PAREN,
-                TokenType.PLUS,
-                TokenType.STRING,
-                TokenType.END_STATEMENT,
-                TokenType.EOF
-            };
-            var testString = @"var s = ""Hi, {3}"";";
-
-            var resultingTokenTypes = scanner.Scan(new Script("test", testString));
-
-            CollectionAssert.AreEqual(tokenResults, resultingTokenTypes.Select(x => x.TokenType).ToArray());
-        }
-
-        [Test]
         public void StringInterp_WhenEscaped_ShouldMatchTokens()
         {
             var tokenResults = new TokenType[]

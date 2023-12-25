@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
@@ -35,6 +36,9 @@ namespace ULox
             _desugarSteps.Add(new WhileDesugar());
             _desugarSteps.Add(new CompoundAssignDesugar());
             _desugarSteps.Add(new LoopDesugar());
+            _desugarSteps.Add(new ListDesugar());
+            _desugarSteps.Add(new MapDesugar());
+            _desugarSteps.Add(new DynamicDesugar());
         }
 
         public string GetSourceSection(int start, int len)
@@ -103,6 +107,14 @@ namespace ULox
             }
 
             return loc;
+        }
+
+        public TokenType PeekType(int v)
+        {
+            var index = _currentTokenIndex + v;
+            if (index < 0 || index >= _tokens.Count)
+                return TokenType.EOF;
+            return _tokens[index].TokenType;
         }
     }
 }

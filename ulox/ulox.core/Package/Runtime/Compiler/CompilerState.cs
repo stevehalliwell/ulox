@@ -58,7 +58,6 @@ namespace ULox
         }
 
         public Stack<LoopState> LoopStates { get; } = new Stack<LoopState>();
-        private Local LastLocal => locals[localCount - 1];
 
         public void AddLocal(Compiler compiler, string name, int depth = -1)
         {
@@ -141,7 +140,7 @@ namespace ULox
         public void MarkInitialised()
         {
             if (scopeDepth == 0) return;
-            LastLocal.Depth = scopeDepth;
+            locals[localCount - 1].Depth = scopeDepth;
         }
     }
 }

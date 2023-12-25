@@ -6,7 +6,7 @@ namespace ULox
     {
         public static void FunctionDeclaration(Compiler compiler)
         {
-            Compiler.InnerFunctionDeclaration(compiler, true);
+            CompilerExpressions.InnerFunctionDeclaration(compiler, true);
         }
 
         public static void VarDeclaration(Compiler compiler)

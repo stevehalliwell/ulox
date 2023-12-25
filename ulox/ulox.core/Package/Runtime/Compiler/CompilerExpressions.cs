@@ -1,4 +1,6 @@
-﻿namespace ULox
+﻿using System;
+
+namespace ULox
 {
     public static class CompilerExpressions
     {
@@ -55,7 +57,29 @@
             {
                 var number = (double)compiler.TokenIterator.PreviousToken.Literal;
 
-                compiler.DoNumberConstant(number);
+                var isInt = number == Math.Truncate(number);
+
+                if (isInt && number < int.MaxValue && number >= int.MinValue)
+                {
+                    compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails((int)number)));
+                    return;
+                }
+
+                var asFloat = (float)number;
+                var asDoubleAgain = (double)asFloat;
+                var convertedDif = Math.Abs(number - asDoubleAgain);
+                var relativeDif = convertedDif / number;
+                var isFloat = !float.IsNaN(asFloat)
+                    && !double.IsNaN(convertedDif)
+                    && relativeDif < 0.00001;
+
+                if (isFloat)
+                {
+                    compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(asFloat)));
+                    return;
+                }
+
+                compiler.AddConstantAndWriteOp(Value.New(number));
             }
             break;
 
@@ -104,19 +128,40 @@
 
         public static void FunExp(Compiler compiler, bool canAssign)
         {
-            Compiler.InnerFunctionDeclaration(compiler, false);
+            InnerFunctionDeclaration(compiler, false);
+        }
+
+        public static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)
+        {
+            var isNamed = compiler.TokenIterator.Check(TokenType.IDENTIFIER);
+            var globalName = -1;
+            if (isNamed)
+            {
+                globalName = compiler.ParseVariable("Expect function name.");
+                compiler.CurrentCompilerState.MarkInitialised();
+            }
+
+            compiler.Function(
+                globalName != -1
+                ? compiler.TokenIterator.PreviousToken.Lexeme
+                : "anonymous",
+                 FunctionType.Function);
+
+            if (globalName != -1)
+            {
+                compiler.DefineVariable((byte)globalName);
+
+                if (!requirePop)
+                {
+                    var resolveRes = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
+                    compiler.EmitPacketFromResolveGet(resolveRes);
+                }
+            }
         }
 
         //todo can this be sugar?
         public static void BracketCreate(Compiler compiler, bool canAssign)
         {
-            if (compiler.TokenIterator.Match(TokenType.COLON)
-                && compiler.TokenIterator.Match(TokenType.CLOSE_BRACKET))
-            {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Map));
-                return;
-            }
-
             var nativeTypeInstruction = compiler.CurrentChunkInstructinCount;
             compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.List));
 
@@ -161,12 +206,7 @@
         public static void BraceCreateDynamic(Compiler compiler, bool arg2)
         {
             var midTok = TokenType.ASSIGN;
-            if (compiler.TokenIterator.Match(midTok)
-                  && compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
-            {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
-            }
-            else if (compiler.TokenIterator.Check(TokenType.IDENTIFIER))
+            if (compiler.TokenIterator.Check(TokenType.IDENTIFIER))
             {
                 compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
 

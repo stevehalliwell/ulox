@@ -155,6 +155,52 @@ print(a);";
             Assert.IsFalse(res.Any(x => x.TokenType == TokenType.PLUS_EQUAL));
         }
 
+        [Test]
+        public void EmptyList_WhenDesugar_ShouldIdentList()
+        {
+            var scriptContent = @"
+var a = [];
+";
+            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.Lexeme == "List"));
+        }
+
+        [Test]
+        public void EmptyMap_WhenDesugar_ShouldIdentMap()
+        {
+            var scriptContent = @"
+var a = [:];
+";
+            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.IsTrue(res.Any(x => x.Lexeme == "Map"));
+        }
+
+        [Test]
+        public void EmptyDynamic_WhenDesugar_ShouldIdentDynamic()
+        {
+            var scriptContent = @"
+var a = {=};
+";
+            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.IsTrue(res.Any(x => x.Lexeme == "Dynamic"));
+        }
+
         private static (List<Token> tokens, TokenIterator tokenIterator) Prepare(string scriptContent)
         {
             var scanner = new Scanner();

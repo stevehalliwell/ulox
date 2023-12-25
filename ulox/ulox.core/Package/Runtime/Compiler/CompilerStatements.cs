@@ -113,6 +113,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        //todo could be sugar?
         public static void ExpectStatement(Compiler compiler)
         {
             do

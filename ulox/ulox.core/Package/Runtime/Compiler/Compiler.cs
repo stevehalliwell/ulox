@@ -32,13 +32,13 @@ namespace ULox
 
         private void Setup()
         {
-            var _testdec = new TestSetDeclarationCompilette();
-            var _testcaseCompilette = new TestcaseCompillette(_testdec);
+            var testdec = new TestSetDeclarationCompilette();
+            var testcaseCompilette = new TestcaseCompillette(testdec);
 
             AddDeclarationCompilette(
-                _testdec,
+                testdec,
                 _classCompiler,
-                _testcaseCompilette,
+                testcaseCompilette,
                 new EnumTypeDeclarationCompliette()
                 );
 
@@ -94,8 +94,8 @@ namespace ULox
                 (TokenType.DOT, null, CompilerExpressions.Dot, Precedence.Call),
                 (TokenType.THIS, _classCompiler.This, null, Precedence.None),
                 (TokenType.CONTEXT_NAME_CLASS, _classCompiler.CName, null, Precedence.None),
-                (TokenType.CONTEXT_NAME_TEST, _testcaseCompilette.TestName, null, Precedence.None),
-                (TokenType.CONTEXT_NAME_TESTSET, _testdec.TestSetName, null, Precedence.None),
+                (TokenType.CONTEXT_NAME_TEST, testcaseCompilette.TestName, null, Precedence.None),
+                (TokenType.CONTEXT_NAME_TESTSET, testdec.TestSetName, null, Precedence.None),
                 (TokenType.TYPEOF, CompilerExpressions.TypeOf, null, Precedence.Term),
                 (TokenType.MEETS, null, CompilerExpressions.Meets, Precedence.Comparison),
                 (TokenType.SIGNS, null, CompilerExpressions.Signs, Precedence.Comparison),
@@ -558,61 +558,6 @@ namespace ULox
             EndScope();
         }
 
-        public static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)
-        {
-            var isNamed = compiler.TokenIterator.Check(TokenType.IDENTIFIER);
-            var globalName = -1;
-            if (isNamed)
-            {
-                globalName = compiler.ParseVariable("Expect function name.");
-                compiler.CurrentCompilerState.MarkInitialised();
-            }
-
-            compiler.Function(
-                globalName != -1
-                ? compiler.TokenIterator.PreviousToken.Lexeme
-                : "anonymous",
-                 FunctionType.Function);
-
-            if (globalName != -1)
-            {
-                compiler.DefineVariable((byte)globalName);
-
-                if (!requirePop)
-                {
-                    var resolveRes = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
-                    compiler.EmitPacketFromResolveGet(resolveRes);
-                }
-            }
-        }
-
-        public void DoNumberConstant(double number)
-        {
-            var isInt = number == Math.Truncate(number);
-
-            if (isInt && number < int.MaxValue && number >= int.MinValue)
-            {
-                EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails((int)number)));
-                return;
-            }
-
-            var asFloat = (float)number;
-            var asDoubleAgain = (double)asFloat;
-            var convertedDif = Math.Abs(number - asDoubleAgain);
-            var relativeDif = convertedDif / number;
-            var isFloat = !float.IsNaN(asFloat)
-                && !double.IsNaN(convertedDif)
-                && relativeDif < 0.00001;
-
-            if (isFloat)
-            {
-                EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(asFloat)));
-                return;
-            }
-
-            AddConstantAndWriteOp(Value.New(number));
-        }
-
         internal byte GotoUniqueChunkLabel(string v)
         {
             byte labelNameID = UniqueChunkLabelStringConstant(v);
@@ -674,11 +619,6 @@ namespace ULox
         internal byte ResolveLocal(string argName)
         {
             return (byte)CurrentCompilerState.ResolveLocal(this, argName);
-        }
-
-        public bool DoesLocalAlreadyExist(string argName)
-        {
-            return CurrentCompilerState.ResolveLocal(this, argName) != -1;
         }
     }
 }

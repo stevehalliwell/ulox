@@ -369,5 +369,30 @@ print(arr.Back());
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Engine_List_ByName()
+        {
+            testEngine.Run(@"
+var list = List();
+
+for(var i = 0; i < 5; i += 1)
+    list.Add(i+1);
+
+var c = list.Count();
+print(c);
+
+for(var i = 0; i < c; i += 1)
+    print(list[i]);
+
+for(var i = 0; i < c; i +=1)
+    list[i] = -i-1;
+
+for(var i = 0; i < c; i += 1)
+    print(list[i]);
+");
+
+            Assert.AreEqual("512345-1-2-3-4-5", testEngine.InterpreterResult);
+        }
     }
 }

@@ -88,6 +88,7 @@ namespace ULox
 
             if (functionType == FunctionType.Init)
             {
+                //todo can be sugar
                 foreach (var argId in compiler.CurrentCompilerState.chunk.ArgumentConstantIds)
                 {
                     var argName = compiler.CurrentCompilerState.chunk.ReadConstant(argId).val.asString.String;

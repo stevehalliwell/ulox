@@ -162,41 +162,21 @@ namespace ULox
         //todo can this be sugar?
         public static void BracketCreate(Compiler compiler, bool canAssign)
         {
-            var nativeTypeInstruction = compiler.CurrentChunkInstructinCount;
             compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.List));
 
-            var firstLoop = true;
-            var isList = true;
 
             while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
             {
                 compiler.EmitPacket(new ByteCodePacket(OpCode.DUPLICATE));
                 compiler.Expression();
 
-                if (firstLoop
-                    && compiler.TokenIterator.Check(TokenType.COLON))
-                {
-                    //switch to map
-                    isList = false;
-                    compiler.WriteAt(nativeTypeInstruction, new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Map));
-                }
+                var constantNameId = compiler.AddCustomStringConstant("Add");
+                const byte argCount = 1;
+                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount, 0));
 
-                if (isList)
-                {
-                    var constantNameId = compiler.AddCustomStringConstant("Add");
-                    const byte argCount = 1;
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount, 0));
-                }
-                else
-                {
-                    compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after key");
-                    compiler.Expression();
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.SET_INDEX));
-                }
                 compiler.EmitPop();
 
                 compiler.TokenIterator.Match(TokenType.COMMA);
-                firstLoop = false;
             }
 
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");

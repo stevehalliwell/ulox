@@ -720,12 +720,13 @@ var posList = FromRowCol(outer);
             Assert.AreEqual("hihi", testEngine.InterpreterResult);
         }
 
-        //todo: we want this test to work but it requires a change in loopstatement to create 
-        //  a local temp var instead of taking an identifier
-        //        [Test]
-        //        public void Loop_WhenGivenInstanceFieldIdentifier_ShouldPrintItems()
-        //        {
-        //            testEngine.Run(@"
+        //todo: we want this to work but it requires a change in loopstatement 
+        // the desugar would need to change so that first finds the end of the arr expression
+        //  assigns that to a new unique local var, and then use that new var from then on
+        //[Test]
+        //public void Loop_WhenGivenInstanceFieldIdentifier_ShouldPrintItems()
+        //{
+        //    testEngine.Run(@"
         //var thing = {=};
         //thing.arr = [""a"",""b"",""c"",];
 
@@ -734,8 +735,8 @@ var posList = FromRowCol(outer);
         //    print(item);
         //}");
 
-        //            Assert.AreEqual("abc", testEngine.InterpreterResult);
-        //        }
+        //    Assert.AreEqual("abc", testEngine.InterpreterResult);
+        //}
 
 
 

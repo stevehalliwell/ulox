@@ -173,11 +173,6 @@ namespace ULox
         public byte AddCustomStringConstant(string str)
             => CurrentChunk.AddConstant(Value.New(str));
 
-        public void WriteAt(int at, ByteCodePacket packet)
-        {
-            CurrentChunk.Instructions[at] = packet;
-        }
-
         public void EndScope()
         {
             var comp = CurrentCompilerState;
@@ -612,6 +607,11 @@ namespace ULox
             if (TokenIterator.Match(TokenType.IDENTIFIER))
                 return TokenIterator.PreviousToken.Lexeme;
 
+            return ChunkUniqueName(prefix);
+        }
+
+        private string ChunkUniqueName(string prefix)
+        {
             var existingPrefixes = CurrentChunk.Constants.Count(x => x.type == ValueType.String && x.val.asString.String.Contains(prefix));
             return $"{prefix}{CurrentChunk.SourceName}{existingPrefixes}";
         }

@@ -85,6 +85,17 @@ print(countof arr);
         }
 
         [Test]
+        public void Count_WhenChainAddNotEmpty_SohuldBe3()
+        {
+            testEngine.Run(@"
+var arr = [].Add(1).Add(2).Add(3);
+print(countof arr);
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_NativeList_Add_CountInc()
         {
             testEngine.Run(@"

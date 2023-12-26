@@ -3,7 +3,6 @@
     public enum NativeType : byte
     {
         List,
-        Map,
         Dynamic,
     }
 }

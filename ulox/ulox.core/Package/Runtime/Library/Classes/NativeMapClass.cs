@@ -18,6 +18,7 @@ namespace ULox
             this.AddMethodsToClass(
                 (nameof(Count), Value.New(Count,1, 0)),
                 (nameof(Create), Value.New(Create, 1, 2)),
+                (nameof(CreateOrUpdate), Value.New(CreateOrUpdate, 1, 2)),
                 (nameof(Read), Value.New(Read, 1, 1)),
                 (nameof(ReadOrDefault), Value.New(ReadOrDefault, 1, 2)),
                 (nameof(Update), Value.New(Update, 1, 2)),
@@ -54,6 +55,19 @@ namespace ULox
 
             map[key] = val;
             vm.SetNativeReturn(0, Value.New(true));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private NativeCallResult CreateOrUpdate(Vm vm)
+        {
+            ThrowIfReadOnly(vm);
+            var map = GetArg0NativeMapInstance(vm);
+            var key = vm.GetArg(1);
+            var val = vm.GetArg(2);
+
+            map[key] = val;
+            
+            vm.SetNativeReturn(0, vm.GetArg(0));
             return NativeCallResult.SuccessfulExpression;
         }
 

@@ -30,7 +30,6 @@ namespace ULox
             //        }
             //    }
             var currentToken = tokens[currentTokenIndex];
-            tokens[currentTokenIndex] = currentToken.MutateType(TokenType.IF);
 
             var itemIdent = "item";
             var iIdent = "i";
@@ -55,7 +54,7 @@ namespace ULox
             }
 
             //remove the existing 'arr {' it's just easier that way
-            tokens.RemoveRange(currentTokenIndex + 1, toRemove);
+            tokens.RemoveRange(currentTokenIndex, toRemove+1);
 
             //find and insert closing } and add another, as we are going to insert 2 {
             var closingBrace = TokenIterator.FindClosing(tokens, currentTokenIndex, TokenType.OPEN_BRACE, TokenType.CLOSE_BRACE);
@@ -64,8 +63,9 @@ namespace ULox
                 currentToken.MutateType(TokenType.CLOSE_BRACE),});
 
 
-            tokens.InsertRange(currentTokenIndex + 1, new[] {
+            tokens.InsertRange(currentTokenIndex, new[] {
                 //if arr is valid
+                currentToken.MutateType(TokenType.IF),
                 currentToken.MutateType(TokenType.OPEN_PAREN),
                 origIdent,
                 currentToken.MutateType(TokenType.CLOSE_PAREN),

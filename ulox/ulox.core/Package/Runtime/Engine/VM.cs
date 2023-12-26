@@ -727,9 +727,6 @@ namespace ULox
             case NativeType.List:
                 Push(NativeListClass.SharedNativeListClassValue);
                 break;
-            case NativeType.Map:
-                Push(NativeMapClass.SharedNativeMapClassValue);
-                break;
             case NativeType.Dynamic:
                 Push(DynamicClass.SharedDynamicClassValue);
                 break;

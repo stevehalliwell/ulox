@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
-    public sealed class Compiler
+    public sealed class Compiler : ICompilerDesugarContext
     {
         private readonly IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
         //temp
@@ -236,7 +236,7 @@ namespace ULox
         public CompiledScript Compile(Scanner scanner, Script script)
         {
             var tokens = scanner.Scan(script);
-            TokenIterator = new TokenIterator(script, tokens);
+            TokenIterator = new TokenIterator(script, tokens, this);
             TokenIterator.Advance();
 
             PushCompilerState(string.Empty, FunctionType.Script);
@@ -619,6 +619,16 @@ namespace ULox
         internal byte ResolveLocal(string argName)
         {
             return (byte)CurrentCompilerState.ResolveLocal(this, argName);
+        }
+
+        public bool IsInClass()
+        {
+            return _classCompiler.CurrentTypeInfoEntry != null;
+        }
+
+        public bool DoesClassHaveMatchingField(string x)
+        {
+            return _classCompiler.CurrentTypeInfoEntry.Fields.Contains(x);
         }
     }
 }

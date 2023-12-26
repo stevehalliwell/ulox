@@ -4,7 +4,7 @@ namespace ULox
 {
     public class LoopDesugar : IDesugarStep
     {
-        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens)
+        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context)
         {
             if (tokens[currentTokenIndex + 1].TokenType == TokenType.OPEN_BRACE)
             {
@@ -150,7 +150,7 @@ namespace ULox
                 currentToken.MutateType(TokenType.CLOSE_PAREN),});
         }
 
-        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator)
+        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator, ICompilerDesugarContext context)
         {
             return tokenIterator.CurrentToken.TokenType == TokenType.LOOP
                 ? DesugarStepRequest.Replace

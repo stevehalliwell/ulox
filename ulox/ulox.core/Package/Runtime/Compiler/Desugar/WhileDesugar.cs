@@ -4,7 +4,7 @@ namespace ULox
 {
     public class WhileDesugar : IDesugarStep
     {
-        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens)
+        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context)
         {
             //we expect `while (exp)` and we are going to replace with `for(;exp;)`
             var currentToken = tokens[currentTokenIndex];
@@ -19,7 +19,7 @@ namespace ULox
             tokens[currentTokenIndex] = returnToken;
         }
 
-        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator)
+        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator, ICompilerDesugarContext context)
         {
             return tokenIterator.CurrentToken.TokenType == TokenType.WHILE 
                 ? DesugarStepRequest.Replace 

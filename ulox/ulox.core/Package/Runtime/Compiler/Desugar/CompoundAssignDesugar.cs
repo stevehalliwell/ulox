@@ -4,7 +4,7 @@ namespace ULox
 {
     public class CompoundAssignDesugar : IDesugarStep
     {
-        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens)
+        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context)
         {
             var currentToken = tokens[currentTokenIndex];
             var prevToken = tokens[currentTokenIndex - 1];
@@ -36,7 +36,7 @@ namespace ULox
                 currentToken.MutateType(flatTokenType),});
         }
 
-        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator)
+        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator, ICompilerDesugarContext context)
         {
             //we pretty dump right now
             if(tokenIterator.PreviousToken.TokenType != TokenType.IDENTIFIER)

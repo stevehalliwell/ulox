@@ -18,7 +18,7 @@ namespace ULox
             _sequnceMatch = sequnceMatch;
         }
 
-        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens)
+        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context)
         {
             var currentToken = tokens[currentTokenIndex];
             var returnToken = currentToken.Mutate(TokenType.IDENTIFIER, _nativeTypeName, _nativeTypeName);
@@ -33,7 +33,7 @@ namespace ULox
             tokens[currentTokenIndex] = returnToken;
         }
 
-        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator)
+        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator, ICompilerDesugarContext context)
         {
             var currentToken = tokenIterator.CurrentToken;
             if (currentToken.TokenType != _sequnceMatch[0])

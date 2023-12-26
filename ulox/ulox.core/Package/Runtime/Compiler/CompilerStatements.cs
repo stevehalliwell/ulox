@@ -114,6 +114,7 @@ namespace ULox
         }
 
         //todo could be sugar?
+        //could be come if (!(exp)) throw "Expects failed, {msg}"
         public static void ExpectStatement(Compiler compiler)
         {
             do
@@ -141,6 +142,7 @@ namespace ULox
         }
 
         //todo could this become sugar?
+        //could become if (a) statement elseif (b) statement // else throw $"Match on '{matchArgName}' did have a matching case."
         public static void MatchStatement(Compiler compiler)
         {
             //make a scope

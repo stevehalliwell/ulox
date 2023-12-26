@@ -4,14 +4,14 @@ namespace ULox
 {
     public class StringInterpDesugar : IDesugarStep
     {
-        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator)
+        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator, ICompilerDesugarContext context)
         {
             return tokenIterator.CurrentToken.TokenType == TokenType.STRING
                 ? DesugarStepRequest.Replace
                 : DesugarStepRequest.None;
         }
 
-        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens)
+        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context)
         {
             var currentToken = tokens[currentTokenIndex];
             var literalString = currentToken.Literal as string;

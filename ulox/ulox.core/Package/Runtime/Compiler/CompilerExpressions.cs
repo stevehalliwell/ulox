@@ -65,12 +65,14 @@ namespace ULox
                     return;
                 }
 
+                var tooLongForFloat = compiler.TokenIterator.PreviousToken.Lexeme.Length > 6;
                 var asFloat = (float)number;
                 var asDoubleAgain = (double)asFloat;
                 var convertedDif = Math.Abs(number - asDoubleAgain);
                 var relativeDif = convertedDif / number;
                 var isFloat = !float.IsNaN(asFloat)
                     && !double.IsNaN(convertedDif)
+                    && !tooLongForFloat
                     && relativeDif < 0.00001;
 
                 if (isFloat)
@@ -159,7 +161,7 @@ namespace ULox
             }
         }
 
-        //todo can this be sugar?
+        //todo list inital values be sugar?
         public static void BracketCreate(Compiler compiler, bool canAssign)
         {
             compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.List));
@@ -182,7 +184,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");
         }
 
-        //todo can be sugar?
+        //todo dynamic initial values be sugar?
         public static void BraceCreateDynamic(Compiler compiler, bool arg2)
         {
             var midTok = TokenType.ASSIGN;

@@ -6,6 +6,19 @@ namespace ULox.Core.Tests
     public class MathTests : EngineTestBase
     {
         [Test]
+        public void Literal_WhenDouble_ShouldNotLosePrecision()
+        {
+            testEngine.Run(@"
+var a = 10000000.01;
+var b = 10000000.02;
+var c = a+b;
+print(c);
+");
+
+            Assert.AreEqual("20000000.03", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Rand_WhenNext_ShouldReturn01()
         {
             testEngine.Run(@"

@@ -113,7 +113,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        //todo could be sugar?
+        //todo expects be sugar?
         //could be come if (!(exp)) throw "Expects failed, {msg}"
         public static void ExpectStatement(Compiler compiler)
         {
@@ -141,7 +141,7 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        //todo could this become sugar?
+        //todo match be sugar?
         //could become if (a) statement elseif (b) statement // else throw $"Match on '{matchArgName}' did have a matching case."
         public static void MatchStatement(Compiler compiler)
         {

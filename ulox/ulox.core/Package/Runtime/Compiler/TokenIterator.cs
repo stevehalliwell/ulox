@@ -12,6 +12,7 @@ namespace ULox
     {
         bool DoesClassHaveMatchingField(string x);
         bool IsInClass();
+        string UniqueLocalName(string prefix);
     }
 
     public interface IDesugarStep

@@ -112,18 +112,76 @@ loop arr
             var scriptContent = @"
 {
 var arr = [1,2,3];
-
-if(arr)
 {
-    var count = countof arr;
-    if(count > 0)
+    var arr0 = arr;
+    if(arr)
     {
-        var i = 0;
-        var item = arr[i];
-        for(; i < count; i += 1)
+        var count = countof arr;
+        if(count > 0)
         {
-            item = arr[i];
-            print(item);
+            var i = 0;
+            var item = arr[i];
+            for(; i < count; i += 1)
+            {
+                item = arr[i];
+                print(item);
+            }
+        }
+    }
+}
+}";
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.FOR));
+        }
+
+        [Test]
+        public void Loop_WhenExpArr_ShouldBeFor()
+        {
+            var scriptContent = @"
+{
+var dyn = { arr = [1,2,3], };
+
+loop dyn.arr
+{
+    print(item);
+}
+}";
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.FOR));
+        }
+
+        [Test]
+        public void For_WhenExpArr_ShouldBeFor()
+        {
+            var scriptContent = @"
+{
+var dyn = { arr = [1,2,3], };
+{
+    var arr0 = dyn.arr;
+    if(arr0)
+    {
+        var count = countof arr0;
+        if(count > 0)
+        {
+            var i = 0;
+            var item = arr0[i];
+            for(; i < count; i += 1)
+            {
+                item = arr0[i];
+                print(item);
+            }
         }
     }
 }
@@ -253,6 +311,7 @@ class Foo
         {
             public bool IsInClassValue { get; set; }
             public HashSet<string> ClassFieldNames { get; set; } = new HashSet<string>();
+            private int _uniqueNameCount = 0;
 
             public bool DoesClassHaveMatchingField(string x)
             {
@@ -262,6 +321,11 @@ class Foo
             public bool IsInClass()
             {
                 return IsInClassValue;
+            }
+
+            public string UniqueLocalName(string prefix)
+            {
+                return $"{prefix}{_uniqueNameCount++}";
             }
         }
     }

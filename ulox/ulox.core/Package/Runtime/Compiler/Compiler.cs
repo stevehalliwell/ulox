@@ -630,5 +630,10 @@ namespace ULox
         {
             return _classCompiler.CurrentTypeInfoEntry.Fields.Contains(x);
         }
+
+        public string UniqueLocalName(string prefix)
+        {
+            return ChunkUniqueName(prefix);
+        }
     }
 }

@@ -425,12 +425,6 @@ namespace ULox
 
         public Chunk Function(string name, FunctionType functionType)
         {
-            if (functionType == FunctionType.Method
-               || functionType == FunctionType.Init)
-            {
-                ThrowCompilerException($"Cannot declare a {functionType} function outside of a class.");
-            }
-
             PushCompilerState(name, functionType);
 
             BeginScope();

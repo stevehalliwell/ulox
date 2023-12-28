@@ -166,18 +166,12 @@ namespace ULox
         {
             compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.List));
 
-
             while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
             {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.DUPLICATE));
                 compiler.Expression();
 
                 var constantNameId = compiler.AddCustomStringConstant("Add");
-                const byte argCount = 1;
-                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, argCount, 0));
-
-                compiler.EmitPop();
-
+                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, 1, 0));
                 compiler.TokenIterator.Match(TokenType.COMMA);
             }
 
@@ -195,7 +189,7 @@ namespace ULox
                 while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
                 {
                     //we need to copy the dynamic inst
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.DUPLICATE));
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.DUPLICATE));  //todo this is now the only thing that uses this
                     compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier.");
                     //add the constant
                     var identConstantID = compiler.AddStringConstant();

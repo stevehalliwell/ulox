@@ -106,6 +106,7 @@ match a
         [Test]
         public void Match_WhenBoolFalseAndMissing_ShouldThrow()
         {
+            testEngine.ReThrow = true;
             void Act () => testEngine.Run(@"
 var a = false;
 
@@ -115,7 +116,7 @@ match a
 }
 ");
 
-            var ex = Assert.Throws<PanicException>(Act);
+            var ex = Assert.Throws<RuntimeUloxException>(Act);
             StringAssert.Contains("Match on 'a' did have a matching case", ex.Message);
         }
         
@@ -152,6 +153,7 @@ match a
         [Test]
         public void Match_WhenInt2AndUnmatched_ShouldFail()
         {
+            testEngine.ReThrow = true;
             void Act() => testEngine.Run(@"
 var a = 2;
 
@@ -161,7 +163,7 @@ match a
     1: print(2);
 }");
 
-            var ex = Assert.Throws<PanicException>(Act);
+            var ex = Assert.Throws<RuntimeUloxException>(Act);
             StringAssert.Contains("Match on 'a' did have a matching case", ex.Message);
         }
 

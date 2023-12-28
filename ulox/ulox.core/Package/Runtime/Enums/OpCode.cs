@@ -66,8 +66,6 @@
 
         COUNT_OF,
 
-        EXPECT,
-
         GOTO,
         GOTO_IF_FALSE,
         LABEL,

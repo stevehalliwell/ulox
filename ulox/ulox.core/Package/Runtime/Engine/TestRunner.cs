@@ -150,8 +150,10 @@ namespace ULox
                 childVM.MoveInstructionPointerTo(instructionLoc);
                 childVM.Run();
             }
-            catch (PanicException)
+            catch (UloxException e)
             {
+                if (e.Message.StartsWith(nameof(TestRunner)))
+                    throw;
                 //eat it, results in incomplete test
             }
         }

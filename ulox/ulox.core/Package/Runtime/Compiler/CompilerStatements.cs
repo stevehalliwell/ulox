@@ -113,8 +113,10 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        //todo expects be sugar?
-        //could be come if (!(exp)) throw "Expects failed, {msg}"
+        //todo expects be desugar
+        //could be come if (!(exp)) throw "Expects failed, '{msg}'"
+        //problem is we don't know what an exp or statement is yet, tokens would need to either be ast or know similar for
+        //  us to be able to scan ahead and reorder them correctly
         public static void ExpectStatement(Compiler compiler)
         {
             do
@@ -122,6 +124,12 @@ namespace ULox
                 //find start of the string so we can later substr it if desired
                 var startIndex = compiler.TokenIterator.PreviousToken.StringSourceIndex + 1;
                 compiler.Expression();
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NOT));
+                var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if_false");
+                compiler.EmitPop(1);
+               
+                compiler.AddConstantAndWriteOp(Value.New("Expect failed, '"));
+
                 if (compiler.TokenIterator.Match(TokenType.COLON))
                 {
                     compiler.Expression();
@@ -134,7 +142,13 @@ namespace ULox
                     var sectionByte = compiler.AddCustomStringConstant(sourceStringSection.Trim());
                     compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, sectionByte, 0, 0));
                 }
-                compiler.EmitPacket(new ByteCodePacket(OpCode.EXPECT));
+               
+                compiler.AddConstantAndWriteOp(Value.New("'"));
+                compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
+                compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
+                compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
+                compiler.EmitLabel(thenjumpLabel);
+                compiler.EmitPop(1);
             }
             while (compiler.TokenIterator.Match(TokenType.COMMA));
 

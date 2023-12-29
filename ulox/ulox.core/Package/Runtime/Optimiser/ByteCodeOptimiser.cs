@@ -18,6 +18,7 @@ namespace ULox
 
         public bool Enabled { get; set; } = true;
         public bool EnableLocalizing { get; set; } = true;
+        public bool EnableDeadCodeRemoval{ get; set; } = true;
         public bool EnableRemoveUnreachableLabels { get; set; } = false;
 
         public OptimisationReporter OptimisationReporter { get; set; }
@@ -44,49 +45,6 @@ namespace ULox
             OptimisationReporter?.PostOptimise(compiledScript);
         }
 
-        private void MarkNoJumpGotoLabelAsDead()
-        {
-            foreach (var (chunk, from, label) in _labelUsage)
-            {
-                var labelLoc = chunk.Labels[label];
-
-                if (from - 1 >= labelLoc)
-                    continue;
-
-                var found = false;
-                for (int i = from + 1; i < labelLoc; i++)
-                {
-                    if (!_toRemove.Any(d => d.chunk == chunk && d.inst == i))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-
-                if (!found)
-                {
-                    _toRemove.Add((chunk, from));
-                }
-            }
-        }
-
-        private void MarkUnsedLabelsAsDead(CompiledScript compiledScript, TypeInfo typeInfo)
-        {
-            foreach (var chunk in compiledScript.AllChunks)
-            {
-                foreach (var label in chunk.Labels)
-                {
-                    var matches = _labelUsage.Where(x => x.chunk == chunk && x.label == label.Key);
-                    var used = matches.Any(x => !_toRemove.Any(y => y.chunk == chunk && y.inst == x.from));
-                    var usedByTypes = typeInfo?.Types.Any(x => x.InitChains.Any(y => y.chunk == chunk && y.labelID == label.Key)) ?? false;
-                    if (!used && !usedByTypes)
-                    {
-                        _toRemove.Add((chunk, label.Value));
-                    }
-                }
-            }
-        }
-
         private void RemoveMarkedInstructions()
         {
             _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
@@ -107,34 +65,28 @@ namespace ULox
             _deadCodeStart = -1;
         }
 
-        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
         protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
         {
-        }
-
-        private void AddLabelUsage(byte labelId)
-        {
-            _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));
         }
 
         protected override void ProcessPacket(ByteCodePacket packet)
         {
             var opCode = packet.OpCode;
-            if (_deadCodeStart == -1
-                && _prevOoCode == OpCode.GOTO
-                && opCode != OpCode.LABEL)
+            if (EnableDeadCodeRemoval)
             {
-                _deadCodeStart = CurrentInstructionIndex;
-            }
+                if (_deadCodeStart == -1
+                    && _prevOoCode == OpCode.GOTO
+                    && opCode != OpCode.LABEL)
+                {
+                    _deadCodeStart = CurrentInstructionIndex;
+                }
 
-            if (opCode == OpCode.LABEL
-                && _deadCodeStart != -1)
-            {
-                _toRemove.AddRange(Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart).Select(b => (CurrentChunk, b)));
-                _deadCodeStart = -1;
+                if (opCode == OpCode.LABEL
+                    && _deadCodeStart != -1)
+                {
+                    _toRemove.AddRange(Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart).Select(b => (CurrentChunk, b)));
+                    _deadCodeStart = -1;
+                }
             }
             _prevOoCode = opCode;
 
@@ -148,7 +100,7 @@ namespace ULox
                 break;
             case OpCode.GOTO:
             case OpCode.GOTO_IF_FALSE:
-                ProcessGoto(packet);
+                AddLabelUsage(packet.b1);
                 break;
             case OpCode.ADD:
             case OpCode.SUBTRACT:
@@ -177,6 +129,15 @@ namespace ULox
                 _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.SetProp));
                 break;
             }
+        }
+
+        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
+        {
+        }
+
+        private void AddLabelUsage(byte labelId)
+        {
+            _labelUsage.Add((CurrentChunk, CurrentInstructionIndex, labelId));
         }
 
         private void AttemptRegisterise()
@@ -282,13 +243,47 @@ namespace ULox
             }
         }
 
-        private void ProcessGoto(ByteCodePacket packet)
+        private void MarkNoJumpGotoLabelAsDead()
         {
-            var endingLocation = CurrentChunk.Labels[packet.b1];
-            if (endingLocation != CurrentInstructionIndex + 1)
-                AddLabelUsage(packet.b1);
-            else
-                _toRemove.Add((CurrentChunk, CurrentInstructionIndex));
+            foreach (var (chunk, from, label) in _labelUsage)
+            {
+                var labelLoc = chunk.Labels[label];
+
+                if (from - 1 >= labelLoc)
+                    continue;
+
+                var found = false;
+                for (int i = from + 1; i < labelLoc; i++)
+                {
+                    if (!_toRemove.Any(d => d.chunk == chunk && d.inst == i))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    _toRemove.Add((chunk, from));
+                }
+            }
+        }
+
+        private void MarkUnsedLabelsAsDead(CompiledScript compiledScript, TypeInfo typeInfo)
+        {
+            foreach (var chunk in compiledScript.AllChunks)
+            {
+                foreach (var label in chunk.Labels)
+                {
+                    var matches = _labelUsage.Where(x => x.chunk == chunk && x.label == label.Key);
+                    var used = matches.Any(x => !_toRemove.Any(y => y.chunk == chunk && y.inst == x.from));
+                    var usedByTypes = typeInfo?.Types.Any(x => x.InitChains.Any(y => y.chunk == chunk && y.labelID == label.Key)) ?? false;
+                    if (!used && !usedByTypes)
+                    {
+                        _toRemove.Add((chunk, label.Value));
+                    }
+                }
+            }
         }
     }
 }

@@ -39,12 +39,14 @@ namespace ULox
 
                 compiler.Statement();
 
+                compiler.EmitGoto(afterIfLabel);
                 compiler.EmitLabel(elseJump);
             }
             else
             {
                 compiler.EmitLabel(wasFalseLabel);
                 compiler.EmitPop();
+                compiler.EmitGoto(afterIfLabel);
             }
 
             compiler.EmitLabel(afterIfLabel);
@@ -275,7 +277,7 @@ namespace ULox
             var bodyJump = compiler.GotoUniqueChunkLabel("loop_body");
             //increment
             {
-                var newStartLabel = compiler.LabelUniqueChunkLabel("loop_start");
+                var newStartLabel = compiler.LabelUniqueChunkLabel("loop_continue");
                 loopState.ContinueLabelID = newStartLabel;
                 if (compiler.TokenIterator.CurrentToken.TokenType != TokenType.CLOSE_PAREN)
                 {

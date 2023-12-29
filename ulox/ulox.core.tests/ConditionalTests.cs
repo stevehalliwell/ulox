@@ -7,7 +7,11 @@ namespace ULox.Core.Tests
         [Test]
         public void If_WhenFalseSingleStatementBody_ShouldSkipAfter()
         {
-            testEngine.Run(@"if(1 > 2) print (""ERROR""); print (""End"");");
+            testEngine.Run(@"
+if(1 > 2) 
+    print (""ERROR""); 
+
+print (""End"");");
 
             Assert.AreEqual("End", testEngine.InterpreterResult);
         }

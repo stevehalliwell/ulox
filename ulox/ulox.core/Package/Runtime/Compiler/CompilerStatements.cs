@@ -23,7 +23,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
 
             //todo can we make goto_if consume the value in the vm so we don't need to play pop wackamole
-            var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if_false");
+            var wasFalseLabel = compiler.GotoIfUniqueChunkLabel("if_false");
             compiler.EmitPop();
 
             compiler.Statement();
@@ -34,7 +34,7 @@ namespace ULox
             {
                 var elseJump = compiler.GotoUniqueChunkLabel("else");
 
-                compiler.EmitLabel(thenjumpLabel);
+                compiler.EmitLabel(wasFalseLabel);
                 compiler.EmitPop();
 
                 compiler.Statement();
@@ -43,7 +43,7 @@ namespace ULox
             }
             else
             {
-                compiler.EmitLabel(thenjumpLabel);
+                compiler.EmitLabel(wasFalseLabel);
                 compiler.EmitPop();
             }
 

@@ -149,9 +149,9 @@ namespace ULox
             return locationName;
         }
 
-        internal int GetLabelPosition(byte labelID)
+        public ushort GetLabelPosition(byte labelID)
         {
-            return _labelIdToInstruction[labelID];
+            return (ushort)(_labelIdToInstruction[labelID] + 1);
         }
 
         internal void AddLabel(byte id, int currentChunkInstructinCount)

@@ -485,6 +485,7 @@ namespace ULox
                     break;
 
                 case OpCode.LABEL:
+                    ThrowRuntimeException($"Unexpected OpCode '{opCode}'");
                     break;
 
                 case OpCode.ENUM_VALUE:
@@ -1273,7 +1274,7 @@ namespace ULox
                 PushNewCallframe(new CallFrame()
                 {
                     Closure = new ClosureInternal { chunk = chunk },
-                    InstructionPointer = chunk.Labels[labelID],
+                    InstructionPointer = chunk.GetLabelPosition(labelID),
                     StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                 });
             }

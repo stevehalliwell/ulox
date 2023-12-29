@@ -95,7 +95,7 @@ namespace ULox
             {
                 var name = chunk.ReadConstant(b2).val.asString;
                 var label = b1;
-                var loc = (ushort)chunk.Labels[label];
+                var loc = chunk.GetLabelPosition(label);
 
                 CurrentTestSetName = name;
                 if (Enabled)
@@ -111,7 +111,7 @@ namespace ULox
                 break;
             case TestOpType.TestFixtureBodyInstruction:
             {
-                var loc = (ushort)chunk.Labels[b1];
+                var loc = chunk.GetLabelPosition(b1);
                 SetFixtureLoc(loc);
             }
             break;

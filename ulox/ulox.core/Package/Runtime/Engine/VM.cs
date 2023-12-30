@@ -24,7 +24,7 @@ namespace ULox
 
         public Vm()
         {
-            var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native");
+            var nativeChunk = new Chunk("NativeCallChunkWrapper", "Native", "");
             nativeChunk.WritePacket(new ByteCodePacket(OpCode.NATIVE_CALL), 0);
             NativeCallClosure = new ClosureInternal() { chunk = nativeChunk };
         }
@@ -45,9 +45,6 @@ namespace ULox
             return (_valueStack.Pop(), _valueStack.Pop());
 #endif
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DiscardPop(int amt = 1) => _valueStack.DiscardPop(amt);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value Peek(int ind = 0) => _valueStack.Peek(ind);
@@ -175,7 +172,7 @@ namespace ULox
 
                     break;
                 case OpCode.MULTI_VAR:
-                    DoMultiVarOp(chunk, packet.BoolValue);
+                    DoMultiVarOp(packet.BoolValue);
                     break;
                 case OpCode.YIELD:
                     return InterpreterResult.YIELD;
@@ -340,7 +337,7 @@ namespace ULox
                 break;
 
                 case OpCode.POP:
-                    DiscardPop(packet.b1);
+                    _valueStack.DiscardPop(packet.b1);
                     break;
 
                 case OpCode.DUPLICATE:
@@ -352,11 +349,11 @@ namespace ULox
                 break;
 
                 case OpCode.GET_LOCAL:
-                    Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
+                    _valueStack.Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
                     break;
 
                 case OpCode.SET_LOCAL:
-                    _valueStack[_currentCallFrame.StackStart + packet.b1] = Peek();
+                    _valueStack[_currentCallFrame.StackStart + packet.b1] = _valueStack.Peek();
                     break;
 
                 case OpCode.GET_UPVALUE:
@@ -521,7 +518,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Value PopOrLocal(byte b1)
         {
-            return b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            return b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE 
+                ? _valueStack.Pop() 
+                : _valueStack[_currentCallFrame.StackStart + b1];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -722,7 +721,7 @@ namespace ULox
         private void DoCloseUpvalueOp()
         {
             CloseUpvalues(_valueStack.Count - 1);
-            DiscardPop();
+            _valueStack.DiscardPop();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -891,7 +890,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMultiVarOp(Chunk chunk, bool start)
+        private void DoMultiVarOp(bool start)
         {
             if (start)
                 _currentCallFrame.MultiAssignStart = (byte)_valueStack.Count;
@@ -930,7 +929,7 @@ namespace ULox
             var prevStackStart = poppedStackStart;
             var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
 
-            DiscardPop(toRemove);
+            _valueStack.DiscardPop(toRemove);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1025,7 +1024,7 @@ namespace ULox
         private void Call(ClosureInternal closureInternal, byte argCount)
         {
             if (argCount != closureInternal.chunk.Arity)
-                ThrowRuntimeException($"Wrong number of params given to '{closureInternal.chunk.Name}'" +
+                ThrowRuntimeException($"Wrong number of params given to '{closureInternal.chunk.ChunkName}'" +
                     $", got '{argCount}' but expected '{closureInternal.chunk.Arity}'");
 
 
@@ -1094,19 +1093,20 @@ namespace ULox
             //the problem here is we don't know that the targetVal is of the same type that we are caching so
             //  turn it off for now.
 
-            InstanceInternal instance = null;
+            var instance = default(InstanceInternal);
 
             switch (targetVal.type)
             {
-            default:
-                ThrowRuntimeException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'");
-                break;
             case ValueType.UserType:
                 instance = targetVal.val.asClass;
                 break;
 
             case ValueType.Instance:
                 instance = targetVal.val.asInstance;
+                break;
+
+            default:
+                ThrowRuntimeException($"Only classes and instances have properties. Got a {targetVal.type} with value '{targetVal}'");
                 break;
             }
 

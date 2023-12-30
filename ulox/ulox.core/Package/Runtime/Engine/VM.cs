@@ -626,14 +626,13 @@ namespace ULox
                 case ValueType.Instance:
                     return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
                 default:
-                    ThrowRuntimeException($"Unsupported meets operation, got left hand side of type '{lhs.type}'");
                     break;
                 }
                 break;
             default:
-                ThrowRuntimeException($"Unsupported meets operation, got left hand side of type '{lhs.type}'");
                 break;
             }
+            ThrowRuntimeException($"Unsupported meets operation, got left hand side of type '{lhs.type}' and right hand side of type '{rhs.type}'");
             return default;
         }
 
@@ -1126,7 +1125,7 @@ namespace ULox
                 ThrowRuntimeException($"Undefined property '{name}', cannot bind method as it has no fromClass");
 
             if (!fromClass.Methods.Get(name, out var method))
-                ThrowRuntimeException($"Undefined property '{name}'");
+                ThrowRuntimeException($"Undefined method '{name}'");
 
             var receiver = targetVal;
             var meth = method.val.asClosure;

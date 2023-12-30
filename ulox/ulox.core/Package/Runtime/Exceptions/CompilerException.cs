@@ -6,6 +6,7 @@
         {
             return msg + $" in {location} at {previousToken.Line}:{previousToken.Character}{LiteralStringPartial(previousToken.Literal)}.";
         }
+
         public  static string MessageFromContext(string msg, Token previousToken, Chunk location)
         {
             return msg + $" in {ChunkToLocationStr(location)} at {previousToken.Line}:{previousToken.Character}{LiteralStringPartial(previousToken.Literal)}.";

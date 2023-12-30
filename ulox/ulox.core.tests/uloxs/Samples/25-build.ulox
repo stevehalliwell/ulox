@@ -1,0 +1,9 @@
+//build allows you to enqueue and execute scripts
+// we're going to build a known other script but we could also build and run everything in this folder via the platform
+
+var files = Platform.FindFiles("./uloxs/", "01-Hello.ulox", true);
+
+loop files
+{
+    build item;
+}

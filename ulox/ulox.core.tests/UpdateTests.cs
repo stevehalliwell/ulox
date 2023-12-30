@@ -71,6 +71,48 @@ print(foo);
         }
 
         [Test]
+        public void Update_WhenNumber_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+var foo = 1;
+var foo2 = 2;
+
+foo = foo update foo2;
+print(foo);
+");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Update_WhenBool_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+var foo = true;
+var foo2 = false;
+
+foo = foo update foo2;
+print(foo);
+");
+
+            Assert.AreEqual("False", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Update_WhenString_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+var foo = ""Hello"";
+var foo2 = ""World"";
+
+foo = foo update foo2;
+print(foo);
+");
+
+            Assert.AreEqual("World", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Update_WhenNotSameValueType_ShouldNotUpdateValue()
         {
             testEngine.Run(@"
@@ -79,8 +121,7 @@ var foo2 = false;
 
 foo = foo update foo2;
 print(foo);
-"
-            );
+");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }

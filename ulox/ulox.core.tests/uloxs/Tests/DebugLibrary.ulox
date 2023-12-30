@@ -21,4 +21,13 @@ testset DebugLibraryTests
         
         expect result != null;
     }
+
+    test GenerateReturnDump
+    {
+        var result;
+        
+        result = GenerateReturnDump();
+        
+        expect result != null;
+    }
 }

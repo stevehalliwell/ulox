@@ -128,7 +128,7 @@ namespace ULox
                 compiler.Expression();
                 compiler.EmitPacket(new ByteCodePacket(OpCode.NOT));
                 var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if_false");
-                compiler.EmitPop(1);
+                compiler.EmitPop();
                
                 compiler.AddConstantAndWriteOp(Value.New("Expect failed, '"));
 
@@ -150,7 +150,7 @@ namespace ULox
                 compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
                 compiler.EmitLabel(thenjumpLabel);
-                compiler.EmitPop(1);
+                compiler.EmitPop();
             }
             while (compiler.TokenIterator.Match(TokenType.COMMA));
 

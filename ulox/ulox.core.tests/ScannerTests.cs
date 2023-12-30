@@ -146,25 +146,6 @@ new TokenType[]
                 .SetName("Comments");
 
             yield return new TestCaseData(
-@"var a = 1 < 2 ? 3 : 4;",
-new TokenType[]
-{
-            TokenType.VAR,
-            TokenType.IDENTIFIER,
-            TokenType.ASSIGN,
-            TokenType.NUMBER,
-            TokenType.LESS,
-            TokenType.NUMBER,
-            TokenType.QUESTION,
-            TokenType.NUMBER,
-            TokenType.COLON,
-            TokenType.NUMBER,
-            TokenType.END_STATEMENT,
-            TokenType.EOF,
-})
-                .SetName("Conditional");
-
-            yield return new TestCaseData(
 @"""hello"" + "" "" + ""world""",
 new TokenType[]
 {

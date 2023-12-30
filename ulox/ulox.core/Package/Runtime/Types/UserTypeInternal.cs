@@ -82,7 +82,7 @@ namespace ULox
             foreach (var method in _typeInfoEntry.Methods)
             {
                 var methodValue = Value.New(new ClosureInternal { chunk = method });
-                AddMethod(new HashedString(method.Name), methodValue, vm);
+                AddMethod(new HashedString(method.ChunkName), methodValue, vm);
             }
 
             Freeze();

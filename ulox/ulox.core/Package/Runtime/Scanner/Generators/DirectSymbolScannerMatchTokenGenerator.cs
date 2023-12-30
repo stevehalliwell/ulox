@@ -38,9 +38,6 @@ namespace ULox
             case ':':
                 scanner.EmitTokenSingle(TokenType.COLON);
                 break;
-            case '?':
-                scanner.EmitTokenSingle(TokenType.QUESTION);
-                break;
                 //compound
             case '+':
                 scanner.EmitTokenSingle(!scanner.Match('=') ? TokenType.PLUS : TokenType.PLUS_EQUAL);
@@ -93,7 +90,6 @@ namespace ULox
             case ';':
             case '.':
             case ':':
-            case '?':
                 //potential compound
             case '+':
             case '-':

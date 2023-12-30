@@ -64,5 +64,14 @@ print( pair.first + pair.second);");
         }
 
 
+        [Test]
+        public void Freeze_WhenNumber_ShouldFail()
+        {
+            testEngine.Run(@"
+var foo = 7;
+freeze foo;");
+
+            StringAssert.StartsWith("Freeze attempted on unsupported type 'Double'", testEngine.InterpreterResult);
+        }
     }
 }

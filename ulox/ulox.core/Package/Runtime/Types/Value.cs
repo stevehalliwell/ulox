@@ -68,7 +68,7 @@ namespace ULox
                 var chunk = val.asChunk;
                 if (chunk == null)
                     return "<Null Chunk in Value.ToString. Illegal.>";
-                var name = chunk.Name;
+                var name = chunk.ChunkName;
                 return "<fn " + name + "> ";
 
             case ValueType.NativeFunction:

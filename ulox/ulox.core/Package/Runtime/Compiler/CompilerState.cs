@@ -15,6 +15,7 @@ namespace ULox
             public string Name { get; }
             public int Depth { get; set; }
             public bool IsCaptured { get; set; }
+            public bool IsAccessed { get; set; }
         }
 
         public sealed class LoopState
@@ -76,6 +77,8 @@ namespace ULox
                 {
                     if (local.Depth == -1)
                         compiler.ThrowCompilerException($"Cannot referenece variable '{name}' in it's own initialiser");
+
+                    local.IsAccessed = true;
                     return i;
                 }
             }

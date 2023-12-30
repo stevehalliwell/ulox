@@ -75,4 +75,9 @@
 
         UPDATE,
     }
+
+    public static class OpCodeUtil
+    {
+        public const int NumberOfOpCodes = (int)OpCode.UPDATE + 1;
+    }
 }

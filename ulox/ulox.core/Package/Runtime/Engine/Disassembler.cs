@@ -112,7 +112,7 @@ namespace ULox
 
         protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
         {
-            stringBuilder.AppendLine(chunk.Name);
+            stringBuilder.AppendLine(chunk.FullName);
 
             DoArgs(chunk);
 

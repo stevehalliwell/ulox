@@ -1,46 +1,117 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Text;
 
 namespace ULox
 {
     public sealed class OptimisationReporter
     {
-        public CompiledScriptStatistics Pre = new CompiledScriptStatistics();
-        public CompiledScriptStatistics Post = new CompiledScriptStatistics();
+        public sealed class CompiledScriptStatistics : CompiledScriptIterator
+        {
+            public sealed class ChunkStatistics
+            {
+                public int InstructionCount { get; set; }
+                public int[] OpCodeOccurances = new int[OpCodeUtil.NumberOfOpCodes];
+            }
+
+            public Dictionary<Chunk, ChunkStatistics> ChunkLookUp = new Dictionary<Chunk, ChunkStatistics>();
+            private ChunkStatistics _current;
+
+            protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
+            {
+                _current.InstructionCount = chunk.Instructions.Count;
+            }
+
+            protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
+            {
+                _current = new ChunkStatistics();
+                ChunkLookUp.Add(chunk, _current);
+            }
+
+            protected override void ProcessPacket(ByteCodePacket packet)
+            {
+                _current.OpCodeOccurances[(byte)packet.OpCode]++;
+            }
+        }
+
+        private CompiledScriptStatistics _pre = new CompiledScriptStatistics();
+        private CompiledScriptStatistics _post = new CompiledScriptStatistics();
         
         public void PreOptimise(CompiledScript compiledScript)
         {
-            Pre.Iterate(compiledScript);
+            _pre.Iterate(compiledScript);
         }
 
         public void PostOptimise(CompiledScript compiledScript)
         {
-            Post.Iterate(compiledScript);
+            _post.Iterate(compiledScript);
         }
 
-        public string GetReport()
+        public OptimisationReport GetReport()
+        {
+            return OptimisationReport.Create(_pre, _post);
+        }
+    }
+
+    public sealed class OptimisationReport
+    {
+        public sealed class ChunkOptimisationReport
+        {
+            public string Name;
+            public int InstructionCountBefore;
+            public int InstructionCountAfter;
+            public int[] OpCodeOccurancesBefore = new int[OpCodeUtil.NumberOfOpCodes];
+            public int[] OpCodeOccurancesAfter = new int[OpCodeUtil.NumberOfOpCodes];
+        }
+
+        private readonly List<ChunkOptimisationReport> _chunkOptimisationReports = new List<ChunkOptimisationReport>();
+
+        public IReadOnlyList<ChunkOptimisationReport> ChunkOptimisationReports => _chunkOptimisationReports;
+
+        public string GenerateStringReport()
         {
             var sb = new StringBuilder();
-            foreach (var item in Post.ChunkLookUp)
+            foreach (var item in ChunkOptimisationReports)
             {
-                var pre = Pre.ChunkLookUp[item.Key];
-                sb.AppendLine($"Chunk: {item.Key.Name}");
-                sb.AppendLine($"  Instructions: {pre.InstructionCount} -> {item.Value.InstructionCount}");
+                sb.AppendLine($"Chunk: {item.Name}");
+                sb.AppendLine($"  Instructions: {item.InstructionCountBefore} -> {item.InstructionCountAfter}");
                 var hasHeader = false;
-                for (int i = 0; i < pre.OpCodeOccurances.Length; i++)
+                for (int i = 0; i < item.OpCodeOccurancesBefore.Length; i++)
                 {
-                    if (pre.OpCodeOccurances[i] != item.Value.OpCodeOccurances[i])
+                    if (item.OpCodeOccurancesBefore[i] != item.OpCodeOccurancesAfter[i])
                     {
-                        if(!hasHeader)
+                        if (!hasHeader)
                         {
                             sb.AppendLine($"  OpCode Occurances:");
                             hasHeader = true;
                         }
-                        sb.AppendLine($"    {(OpCode)i}: {pre.OpCodeOccurances[i]} -> {item.Value.OpCodeOccurances[i]}");
+                        sb.AppendLine($"    {(OpCode)i}: {item.OpCodeOccurancesBefore[i]} -> {item.OpCodeOccurancesAfter[i]}");
                     }
                 }
             }
 
             return sb.ToString();
+        }
+
+        public static OptimisationReport Create(OptimisationReporter.CompiledScriptStatistics pre, OptimisationReporter.CompiledScriptStatistics post)
+        {
+            var report = new OptimisationReport();
+            foreach (var item in post.ChunkLookUp)
+            {
+                var preChunk = pre.ChunkLookUp[item.Key];
+                var chunkReport = new ChunkOptimisationReport()
+                {
+                    Name = item.Key.FullName,
+                    InstructionCountBefore = preChunk.InstructionCount,
+                    InstructionCountAfter = item.Value.InstructionCount,
+                };
+                for (int i = 0; i < preChunk.OpCodeOccurances.Length; i++)
+                {
+                    chunkReport.OpCodeOccurancesBefore[i] = preChunk.OpCodeOccurances[i];
+                    chunkReport.OpCodeOccurancesAfter[i] = item.Value.OpCodeOccurances[i];
+                }
+                report._chunkOptimisationReports.Add(chunkReport);
+            }
+            return report;
         }
     }
 }

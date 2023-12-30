@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace ULox.Core.Tests
 {
@@ -13,11 +14,17 @@ namespace ULox.Core.Tests
         {
             _logger = logger;
             MyEngine = Engine.CreateDefault();
+            MyEngine.Context.Vm.Statistics = new VmStatisticsReporter();
             MyEngine.Context.OnLog += logger;
             MyEngine.Context.OnLog += AppendResult;
         }
 
         public string InterpreterResult { get; private set; } = string.Empty;
+
+        public string JoinedCompilerMessages =>
+            string.Join(
+                Environment.NewLine, 
+                MyEngine.Context.Program.CompiledScripts.SelectMany(x => x.CompilerMessages));
 
         public void Run(string testString)
         {
@@ -45,10 +52,12 @@ namespace ULox.Core.Tests
                 _logger(MyEngine.Context.Vm.TestRunner.GenerateDump());
                 _logger(InterpreterResult);
                 _logger(MyEngine.Context.Program.Disassembly);
+                _logger(JoinedCompilerMessages);
                 _logger(VmUtil.GenerateGlobalsDump(MyEngine.Context.Vm));
                 _logger(VmUtil.GenerateValueStackDump(MyEngine.Context.Vm));
                 _logger(VmUtil.GenerateReturnDump(MyEngine.Context.Vm));
-                _logger(MyEngine.Context.Program.Optimiser?.OptimisationReporter?.GetReport() ?? string.Empty);
+                _logger(MyEngine.Context.Vm.Statistics?.GetReport().GenerateStringReport() ?? string.Empty);
+                _logger(MyEngine.Context.Program.Optimiser.OptimisationReporter?.GetReport().GenerateStringReport() ?? string.Empty);
             }
         }
 

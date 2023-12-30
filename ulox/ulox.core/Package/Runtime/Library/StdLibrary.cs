@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace ULox
 {
@@ -170,7 +169,7 @@ namespace ULox
             }
 
             if (!didThrow)
-                vm.ThrowRuntimeException($"'{toRun.Name}' did not throw, but should have");
+                vm.ThrowRuntimeException($"'{toRun.ChunkName}' did not throw, but should have");
 
             return NativeCallResult.SuccessfulExpression;
         }

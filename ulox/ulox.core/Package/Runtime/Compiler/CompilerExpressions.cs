@@ -245,7 +245,7 @@ namespace ULox
 
         public static void FName(Compiler compiler, bool canAssign)
         {
-            var fname = compiler.CurrentChunk.Name;
+            var fname = compiler.CurrentChunk.ChunkName;
             compiler.AddConstantAndWriteOp(Value.New(fname));
         }
 

@@ -26,17 +26,20 @@ namespace ULox
         public List<byte> ReturnConstantIds { get; } = new List<byte>(5);
         public IReadOnlyList<Value> Constants => _constants.AsReadOnly();
         public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
-        public string Name { get; set; }
+        public string ChunkName { get; set; }
         public string SourceName { get; }
+        public string ContainingChunkChainName { get;}
+        public string FullName => $"{SourceName}:{ContainingChunkChainName}.{ChunkName}";
         public byte Arity => (byte)ArgumentConstantIds.Count;
         public byte ReturnCount => (byte)ReturnConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Chunk(string chunkName, string sourceName)
+        public Chunk(string chunkName, string sourceName, string containingChunkChainName)
         {
-            Name = string.IsNullOrEmpty(chunkName) ? DefaultChunkName : chunkName;
+            ChunkName = string.IsNullOrEmpty(chunkName) ? DefaultChunkName : chunkName;
             SourceName = sourceName;
+            ContainingChunkChainName = containingChunkChainName;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -138,7 +141,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetLocationString(int line = -1)
         {
-            var locationName = Name;
+            var locationName = ChunkName;
 
             var scriptOrgin = SourceName;
             if (!string.IsNullOrEmpty(scriptOrgin))
@@ -149,6 +152,7 @@ namespace ULox
             return locationName;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort GetLabelPosition(byte labelID)
         {
             return (ushort)(_labelIdToInstruction[labelID] + 1);

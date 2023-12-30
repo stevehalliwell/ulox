@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#define VM_STATS
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -19,6 +20,7 @@ namespace ULox
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         public Table Globals { get; private set; } = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
+        public VmStatistics Statistics { get; set; }
 
         public Vm()
         {
@@ -156,6 +158,10 @@ namespace ULox
 
                 var packet = ReadPacket(chunk);
                 var opCode = packet.OpCode;
+
+#if VM_STATS
+                Statistics?.ProcessingOpCode(chunk, opCode);
+#endif
 
                 switch (opCode)
                 {

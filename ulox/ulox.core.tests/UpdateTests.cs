@@ -149,8 +149,8 @@ print(foo meets foo2);
         public void Update_WhenPartialWithNativeCollections_ShouldUpdateValue()
         {
             testEngine.Run(@"
-var foo = {a=[], b=2, d=[1:1, 2:2,]};
-var foo2 = {a=[1,2], c=3, d=[""a"":1, ""b"":2, ""c"":3,]};
+var foo = {a=[], b=2, d = Map().CreateOrUpdate(1,1).CreateOrUpdate(2,2)};
+var foo2 = {a=[1,2], c=3, d = Map().CreateOrUpdate(""a"",1).CreateOrUpdate(""b"",2).CreateOrUpdate(""c"",3)};
 
 foo = foo update foo2;
 print(foo.a.Count());

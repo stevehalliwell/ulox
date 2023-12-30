@@ -656,13 +656,15 @@ print (res);
         [Test]
         public void Engine_Throw()
         {
-            Assert.Throws<PanicException>(() => testEngine.Run(@"throw;"), "Null");
+            testEngine.ReThrow = true;
+            Assert.Throws<RuntimeUloxException>(() => testEngine.Run(@"throw;"), "Null");
         }
 
         [Test]
         public void Engine_Throw_Exp()
         {
-            Assert.Throws<PanicException>(() => testEngine.Run(@"throw 2+3;"), "5");
+            testEngine.ReThrow = true;
+            Assert.Throws<RuntimeUloxException>(() => testEngine.Run(@"throw 2+3;"), "5");
         }
 
         [Test]

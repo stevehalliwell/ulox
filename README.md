@@ -99,11 +99,6 @@ var anotherList = [1,2,3,4,]; // inline declare the value of a list
 var aMap = [:]; //an empty map
 aMap.Create(1,"hi");    //CRUD methods on map 
 
-var anotherMap = [  // inline map declare
-    name:"ulox",
-    type:"dynamic",
-    ];
-
 var dynObject = {=};    //an empty object
 dynObject.a = 7;    // these objects are not 'frozen' so fields can be added and adjusted 
 

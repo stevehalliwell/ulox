@@ -13,5 +13,5 @@ m.Delete(key);
 m[key] = expected;
 print(m[key]);
 
-// can also be created inline
-var m = ["dog":"woof", "cat":"meow"];
+// can also be chain created
+var m = [:].CreateOrUpdate("dog","woof").CreateOrUpdate("cat","meow");

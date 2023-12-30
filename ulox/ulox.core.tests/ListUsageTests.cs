@@ -85,6 +85,17 @@ print(countof arr);
         }
 
         [Test]
+        public void Count_WhenChainAddNotEmpty_SohuldBe3()
+        {
+            testEngine.Run(@"
+var arr = [].Add(1).Add(2).Add(3);
+print(countof arr);
+");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_NativeList_Add_CountInc()
         {
             testEngine.Run(@"
@@ -368,6 +379,31 @@ print(arr.Back());
 ");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_List_ByName()
+        {
+            testEngine.Run(@"
+var list = List();
+
+for(var i = 0; i < 5; i += 1)
+    list.Add(i+1);
+
+var c = list.Count();
+print(c);
+
+for(var i = 0; i < c; i += 1)
+    print(list[i]);
+
+for(var i = 0; i < c; i +=1)
+    list[i] = -i-1;
+
+for(var i = 0; i < c; i += 1)
+    print(list[i]);
+");
+
+            Assert.AreEqual("512345-1-2-3-4-5", testEngine.InterpreterResult);
         }
     }
 }

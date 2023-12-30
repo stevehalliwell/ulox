@@ -13,7 +13,7 @@ namespace ULox.Core.Tests
         public void Empty_WhenDesugar_DoesNotThrow()
         {
             var scriptContent = @"";
-            var (_, tokenIterator) = Prepare(scriptContent);
+            var (_, tokenIterator, _) = Prepare(scriptContent);
             var res = new List<Token>();
 
             AdvanceGather(tokenIterator, res);
@@ -25,7 +25,7 @@ namespace ULox.Core.Tests
         public void DeclareVar_WhenDesugar_ShouldHaveSame()
         {
             var scriptContent = @"var s = 1;";
-            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
             var startingCount = tokens.Count;
             var res = new List<Token>();
 
@@ -38,7 +38,7 @@ namespace ULox.Core.Tests
         public void StringInterp_WhenDesugar_ShouldHaveMoreTokens()
         {
             var scriptContent = @"var s = ""Hi, {3}"";";
-            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
             var startingCount = tokens.Count;
             var res = new List<Token>();
 
@@ -56,7 +56,7 @@ while(i<10)
 {
 i+= 1;
 }";
-            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
             var startingCount = tokens.Count;
             var res = new List<Token>();
 
@@ -74,7 +74,7 @@ loop
 {
 break;
 }";
-            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
             var startingCount = tokens.Count;
             var res = new List<Token>();
 
@@ -96,7 +96,7 @@ loop arr
     print(item);
 }
 }";
-            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
             var startingCount = tokens.Count;
             var res = new List<Token>();
 
@@ -112,23 +112,81 @@ loop arr
             var scriptContent = @"
 {
 var arr = [1,2,3];
-
-if(arr)
 {
-    var count = countof arr;
-    if(count > 0)
+    var arr0 = arr;
+    if(arr)
     {
-        var i = 0;
-        var item = arr[i];
-        for(; i < count; i += 1)
+        var count = countof arr;
+        if(count > 0)
         {
-            item = arr[i];
-            print(item);
+            var i = 0;
+            var item = arr[i];
+            for(; i < count; i += 1)
+            {
+                item = arr[i];
+                print(item);
+            }
         }
     }
 }
 }";
-            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.FOR));
+        }
+
+        [Test]
+        public void Loop_WhenExpArr_ShouldBeFor()
+        {
+            var scriptContent = @"
+{
+var dyn = { arr = [1,2,3], };
+
+loop dyn.arr
+{
+    print(item);
+}
+}";
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.FOR));
+        }
+
+        [Test]
+        public void For_WhenExpArr_ShouldBeFor()
+        {
+            var scriptContent = @"
+{
+var dyn = { arr = [1,2,3], };
+{
+    var arr0 = dyn.arr;
+    if(arr0)
+    {
+        var count = countof arr0;
+        if(count > 0)
+        {
+            var i = 0;
+            var item = arr0[i];
+            for(; i < count; i += 1)
+            {
+                item = arr0[i];
+                print(item);
+            }
+        }
+    }
+}
+}";
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
             var startingCount = tokens.Count;
             var res = new List<Token>();
 
@@ -145,7 +203,7 @@ if(arr)
 var a = 1;
 a +=1;
 print(a);";
-            var (tokens, tokenIterator) = Prepare(scriptContent);
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
             var startingCount = tokens.Count;
             var res = new List<Token>();
 
@@ -155,13 +213,83 @@ print(a);";
             Assert.IsFalse(res.Any(x => x.TokenType == TokenType.PLUS_EQUAL));
         }
 
-        private static (List<Token> tokens, TokenIterator tokenIterator) Prepare(string scriptContent)
+        [Test]
+        public void EmptyList_WhenDesugar_ShouldIdentList()
+        {
+            var scriptContent = @"
+var a = [];
+";
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.Lexeme == "List"));
+        }
+
+        [Test]
+        public void EmptyMap_WhenDesugar_ShouldIdentMap()
+        {
+            var scriptContent = @"
+var a = [:];
+";
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.IsTrue(res.Any(x => x.Lexeme == "Map"));
+        }
+
+        [Test]
+        public void EmptyDynamic_WhenDesugar_ShouldIdentDynamic()
+        {
+            var scriptContent = @"
+var a = {=};
+";
+            var (tokens, tokenIterator, _) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.IsTrue(res.Any(x => x.Lexeme == "Dynamic"));
+        }
+
+        [Test]
+        public void Init_WhenDesugar_ShouldSelfAssign()
+        {
+            var scriptContent = @"
+class Foo
+{
+    var bar, bat, baz;
+    init(bar, baz, goo){}
+}
+";
+            var (tokens, tokenIterator, context) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+            context.IsInClassValue = true;
+            context.ClassFieldNames.Add("bar");
+            context.ClassFieldNames.Add("bat");
+            context.ClassFieldNames.Add("baz");
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+        }
+
+        private static (List<Token> tokens, TokenIterator tokenIterator, DummyContext context) Prepare(string scriptContent)
         {
             var scanner = new Scanner();
             var script = new Script("test", scriptContent);
             var tokens = scanner.Scan(script);
-            var tokenIterator = new TokenIterator(script, tokens);
-            return (tokens, tokenIterator);
+            var context = new DummyContext();
+            var tokenIterator = new TokenIterator(script, tokens, context);
+            return (tokens, tokenIterator, context);
         }
 
         private static void AdvanceGather(TokenIterator tokenIterator, List<Token> list)
@@ -177,6 +305,28 @@ print(a);";
             list.Add(tokenIterator.CurrentToken);
 
             TestContext.Write(string.Join(Environment.NewLine, list.Select(x => $"{x.TokenType}-{x.Lexeme}-{x.Literal}")));
+        }
+
+        public class DummyContext : ICompilerDesugarContext
+        {
+            public bool IsInClassValue { get; set; }
+            public HashSet<string> ClassFieldNames { get; set; } = new HashSet<string>();
+            private int _uniqueNameCount = 0;
+
+            public bool DoesClassHaveMatchingField(string x)
+            {
+                return ClassFieldNames.Contains(x);
+            }
+
+            public bool IsInClass()
+            {
+                return IsInClassValue;
+            }
+
+            public string UniqueLocalName(string prefix)
+            {
+                return $"{prefix}{_uniqueNameCount++}";
+            }
         }
     }
 }

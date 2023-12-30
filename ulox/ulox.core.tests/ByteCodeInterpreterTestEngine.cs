@@ -30,7 +30,6 @@ namespace ULox.Core.Tests
             {
                 MyEngine.RunScript(script);
             }
-            catch (PanicException) { throw; }
             catch (UloxException e)
             {
                 AppendResult(e.Message);

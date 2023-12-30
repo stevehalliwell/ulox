@@ -720,24 +720,37 @@ var posList = FromRowCol(outer);
             Assert.AreEqual("hihi", testEngine.InterpreterResult);
         }
 
-        //todo: we want this test to work but it requires a change in loopstatement to create 
-        //  a local temp var instead of taking an identifier
-        //        [Test]
-        //        public void Loop_WhenGivenInstanceFieldIdentifier_ShouldPrintItems()
-        //        {
-        //            testEngine.Run(@"
-        //var thing = {=};
-        //thing.arr = [""a"",""b"",""c"",];
+        [Test]
+        public void Loop_WhenGivenInstanceFieldIdentifier_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var thing = {=};
+thing.arr = [""a"",""b"",""c"",];
 
-        //loop (thing.arr)
-        //{
-        //    print(item);
-        //}");
+loop thing.arr
+{
+    print(item);
+}"
+);
 
-        //            Assert.AreEqual("abc", testEngine.InterpreterResult);
-        //        }
+            Assert.AreEqual("abc", testEngine.InterpreterResult);
+        }
 
+        [Test]
+        public void Loop_WhenGivenInstanceFieldIdentifierAndCustomNames_ShouldPrintItemsAndInfo()
+        {
+            testEngine.Run(@"
+var thing = {=};
+thing.arr = [""a"",""b"",""c"",];
 
+loop thing.arr, jtem, j, jnt
+{
+    print(""{jtem}_{j}_{jnt} - "");
+}"
+);
+
+            Assert.AreEqual("a_0_3 - b_1_3 - c_2_3 - ", testEngine.InterpreterResult);
+        }
 
         [Test]
         public void Continue_WhenHit_ShouldReturnToStartOfLoop()

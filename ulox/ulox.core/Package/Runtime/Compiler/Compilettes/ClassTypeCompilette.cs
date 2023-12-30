@@ -88,20 +88,6 @@ namespace ULox
 
             if (functionType == FunctionType.Init)
             {
-                foreach (var argId in compiler.CurrentCompilerState.chunk.ArgumentConstantIds)
-                {
-                    var argName = compiler.CurrentCompilerState.chunk.ReadConstant(argId).val.asString.String;
-                    if (CurrentTypeInfoEntry.Fields.FirstOrDefault(x => x == argName) != null)
-                    {
-                        var argResolveRes = compiler.ResolveNameLookupOpCode(argName);
-                        var thisResolveRes = compiler.ResolveNameLookupOpCode(ThisName.String);
-                        compiler.EmitPacketFromResolveGet(thisResolveRes);
-                        compiler.EmitPacketFromResolveGet(argResolveRes);
-                        compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, (byte)argId));
-                        compiler.EmitPop();
-                    }
-                }
-
                 if (returnCount != 0)
                     compiler.ThrowCompilerException("Init functions cannot specify named return vars.");
             }

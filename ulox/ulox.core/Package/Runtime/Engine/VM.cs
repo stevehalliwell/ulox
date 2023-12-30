@@ -401,16 +401,9 @@ namespace ULox
                     break;
 
                 case OpCode.THROW:
-                {
-                    var frame = _callFrames.Peek();
-                    var currentInstruction = frame.InstructionPointer;
-                    throw new PanicException(
-                        Pop().ToString(),
-                        currentInstruction,
-                        VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
-                        VmUtil.GenerateValueStackDump(this),
-                        VmUtil.GenerateCallStackDump(this));
-                }
+                    ThrowRuntimeException(Pop().ToString());
+                    break;
+
                 case OpCode.BUILD:
                     DoBuildOp();
                     break;
@@ -481,10 +474,6 @@ namespace ULox
                     DoCountOfOp(target);
                 }
                 break;
-
-                case OpCode.EXPECT:
-                    DoExpectOp();
-                    break;
 
                 case OpCode.GOTO:
                     _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
@@ -607,17 +596,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoExpectOp()
-        {
-            var (msg, expected) = Pop2();
-
-            if (expected.IsFalsey())
-            {
-                ThrowRuntimeException($"Expect failed, '{msg}'");
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoReadOnlyOp(Chunk chunk)
         {
             var target = Pop();
@@ -726,9 +704,6 @@ namespace ULox
             {
             case NativeType.List:
                 Push(NativeListClass.SharedNativeListClassValue);
-                break;
-            case NativeType.Map:
-                Push(NativeMapClass.SharedNativeMapClassValue);
                 break;
             case NativeType.Dynamic:
                 Push(DynamicClass.SharedDynamicClassValue);

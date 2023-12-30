@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace ULox
 {
     public class LoopDesugar : IDesugarStep
     {
-        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens)
+        public void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context)
         {
             if (tokens[currentTokenIndex + 1].TokenType == TokenType.OPEN_BRACE)
             {
@@ -30,14 +32,26 @@ namespace ULox
             //        }
             //    }
             var currentToken = tokens[currentTokenIndex];
-            tokens[currentTokenIndex] = currentToken.MutateType(TokenType.IF);
 
             var itemIdent = "item";
             var iIdent = "i";
             var countIdent = "count";
             var toRemove = 2;
+            var origIdentTok = tokens[currentTokenIndex + 1];
+            var uniqueArrName = context.UniqueLocalName("arr");
+            var arrIdent = origIdentTok.Mutate(TokenType.IDENTIFIER, uniqueArrName, uniqueArrName);
 
-            var origIdent = tokens[currentTokenIndex + 1];
+            var openBlockLoc = tokens.FindIndex(currentTokenIndex, x => x.TokenType == TokenType.OPEN_BRACE);
+            var nextCommaLoc = tokens.FindIndex(currentTokenIndex, x => x.TokenType == TokenType.COMMA);
+            var endArrExpAt = openBlockLoc;
+            if (nextCommaLoc != -1 && nextCommaLoc < openBlockLoc)
+            {
+                //we have more args
+                endArrExpAt = nextCommaLoc;
+            }
+
+            toRemove = endArrExpAt - currentTokenIndex;
+
             if (tokens[currentTokenIndex + toRemove].TokenType == TokenType.COMMA)
             {
                 itemIdent = tokens[currentTokenIndex + toRemove + 1].Lexeme;
@@ -54,20 +68,32 @@ namespace ULox
                 }
             }
 
-            //remove the existing 'arr {' it's just easier that way
-            tokens.RemoveRange(currentTokenIndex + 1, toRemove);
+            var expToPreserve = tokens.GetRange(currentTokenIndex + 1, endArrExpAt - currentTokenIndex - 1);
+
+            //remove the existing 'arr ... {' it's just easier that way
+            tokens.RemoveRange(currentTokenIndex, toRemove + 1);
 
             //find and insert closing } and add another, as we are going to insert 2 {
             var closingBrace = TokenIterator.FindClosing(tokens, currentTokenIndex, TokenType.OPEN_BRACE, TokenType.CLOSE_BRACE);
             tokens.InsertRange(closingBrace, new[] {
                 currentToken.MutateType(TokenType.CLOSE_BRACE),
+                currentToken.MutateType(TokenType.CLOSE_BRACE),
                 currentToken.MutateType(TokenType.CLOSE_BRACE),});
 
+            tokens.InsertRange(currentTokenIndex, new[] {
+                //make local name for arr exp
+                currentToken.MutateType(TokenType.OPEN_BRACE),
+                currentToken.MutateType(TokenType.VAR),
+                arrIdent,
+                currentToken.MutateType(TokenType.ASSIGN) }
+            .Concat(expToPreserve)
+            .Concat(new[] {
+                currentToken.MutateType(TokenType.END_STATEMENT),
 
-            tokens.InsertRange(currentTokenIndex + 1, new[] {
                 //if arr is valid
+                currentToken.MutateType(TokenType.IF),
                 currentToken.MutateType(TokenType.OPEN_PAREN),
-                origIdent,
+                arrIdent,
                 currentToken.MutateType(TokenType.CLOSE_PAREN),
                 currentToken.MutateType(TokenType.OPEN_BRACE),
 
@@ -77,7 +103,7 @@ namespace ULox
                 currentToken.Mutate(TokenType.IDENTIFIER, countIdent, countIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
                 currentToken.MutateType(TokenType.COUNT_OF),
-                origIdent,
+                arrIdent,
                 currentToken.MutateType(TokenType.END_STATEMENT),
 
                 //if count >0
@@ -100,7 +126,7 @@ namespace ULox
                 currentToken.MutateType(TokenType.VAR),
                 currentToken.Mutate(TokenType.IDENTIFIER, string.Empty, itemIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
-                origIdent,
+                arrIdent,
                 currentToken.MutateType(TokenType.OPEN_BRACKET),
                 currentToken.Mutate(TokenType.IDENTIFIER, iIdent, iIdent),
                 currentToken.MutateType(TokenType.CLOSE_BRACKET),
@@ -129,12 +155,12 @@ namespace ULox
                 //make item = arr[i]
                 currentToken.Mutate(TokenType.IDENTIFIER, itemIdent, itemIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
-                origIdent,
+                arrIdent,
                 currentToken.MutateType(TokenType.OPEN_BRACKET),
                 currentToken.Mutate(TokenType.IDENTIFIER, iIdent, iIdent),
                 currentToken.MutateType(TokenType.CLOSE_BRACKET),
                 currentToken.MutateType(TokenType.END_STATEMENT),
-                });
+                }));
         }
 
         public void ProcessReplaceEndlessLoop(int currentTokenIndex, List<Token> tokens)
@@ -150,7 +176,7 @@ namespace ULox
                 currentToken.MutateType(TokenType.CLOSE_PAREN),});
         }
 
-        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator)
+        public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator, ICompilerDesugarContext context)
         {
             return tokenIterator.CurrentToken.TokenType == TokenType.LOOP
                 ? DesugarStepRequest.Replace

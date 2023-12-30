@@ -151,7 +151,7 @@ print (res);
 }");
 
             Assert.AreEqual("4", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 28 -> 27", _opt.OptimisationReporter.GetReport());
+            StringAssert.Contains("Instructions: 20 -> 19", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -167,7 +167,7 @@ print (l[index]);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 33 -> 30", _opt.OptimisationReporter.GetReport());
+            StringAssert.Contains("Instructions: 25 -> 22", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]
@@ -210,7 +210,7 @@ print(a);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 12 -> 11", _opt.OptimisationReporter.GetReport());
+            StringAssert.Contains("Instructions: 13 -> 12", _opt.OptimisationReporter.GetReport());
         }
 
         [Test]

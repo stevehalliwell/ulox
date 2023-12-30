@@ -63,6 +63,18 @@ print(map[1]);
         }
 
         [Test]
+        public void Engine_MapByNameThenSet_MatchesValue()
+        {
+            testEngine.Run(@"
+var map = Map();
+map[1] = 2;
+print(map[1]);
+");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_MapSetAndUpdate_MatchesValue()
         {
             testEngine.Run(@"
@@ -76,30 +88,6 @@ print(map[""a""]);
         }
 
         [Test]
-        public void Map_WhenInlineCreate_ShouldMatchesValue()
-        {
-            testEngine.Run(@"
-var map = [""a"":2, ""b"":5, ""c"":{a=1},];
-print(map[""a""]);
-print(map[""b""]);
-print(map[""c""].a);
-");
-
-            Assert.AreEqual("251", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Invalid_WhenMixingMapThenlist_ShouldFail()
-        {
-            testEngine.Run(@"
-var map = [""a"":2,3,4];
-print(map[""a""]);
-");
-
-            Assert.AreEqual("Expect ':' after key in source 'test' at 2:19 '3'.", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Invalid_WhenMixingListThenMap_ShouldFail()
         {
             testEngine.Run(@"
@@ -108,6 +96,21 @@ print(map[""a""]);
 ");
 
             Assert.AreEqual("Expected to compile Expression, but encountered error in chunk 'unnamed_chunk(test)' at 2:20.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void CreateOrUpdate_Chained_ShouldHaveExpected()
+        {
+            testEngine.Run(@"
+var d = Map()
+    .CreateOrUpdate(1,1)
+    .CreateOrUpdate(2,2);
+
+print(d[1]);
+print(d[2]);
+");
+
+            Assert.AreEqual("12", testEngine.InterpreterResult);
         }
     }
 }

@@ -64,6 +64,7 @@ namespace ULox
             var inst = vm.GetArg(0);
             var nativeListinst = inst.val.asInstance as NativeListInstance;
             nativeListinst.List.Add(top);
+            vm.SetNativeReturn(0, inst);
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -92,7 +93,8 @@ namespace ULox
         {
             ThrowIfReadOnly(vm);
             var top = vm.GetArg(1);
-            GetArg0NativeListInstance(vm).Remove(top);
+            var inst = GetArg0NativeListInstance(vm);
+            inst.Remove(top);
             return NativeCallResult.SuccessfulExpression;
         }
 

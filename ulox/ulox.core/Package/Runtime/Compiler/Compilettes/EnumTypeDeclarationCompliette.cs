@@ -56,7 +56,7 @@ namespace ULox
                 else
                 {
                     SetMode(compiler, Mode.Auto);
-                    compiler.DoNumberConstant(++_previousNumber);
+                    compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails((int)++_previousNumber)));
                 }
 
 

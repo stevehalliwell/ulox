@@ -144,7 +144,7 @@ testset MapTests
     {
         var dogNoise = "woof";
         var catNoise = "meow";
-        var m = ["dog":dogNoise, "cat":catNoise];
+        var m = Map().CreateOrUpdate("dog",dogNoise).CreateOrUpdate("cat",catNoise);
         
         Assert.AreEqual(dogNoise, m.Read("dog"));
 		Assert.AreEqual(catNoise, m.Read("cat"));

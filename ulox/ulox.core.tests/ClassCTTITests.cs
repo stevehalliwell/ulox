@@ -45,7 +45,7 @@ class Foo
 
             var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Foo");
             Assert.AreEqual(1, ctti.Methods.Count);
-            Assert.AreEqual("Bar", ctti.Methods[0].Name);
+            Assert.AreEqual("Bar", ctti.Methods[0].ChunkName);
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
@@ -60,7 +60,7 @@ class Foo
 
             var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Foo");
             Assert.AreEqual(1, ctti.Methods.Count);
-            Assert.AreEqual("init", ctti.Methods[0].Name);
+            Assert.AreEqual("init", ctti.Methods[0].ChunkName);
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
@@ -134,7 +134,7 @@ class Bar
 
             var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Bar");
             Assert.AreEqual(1, ctti.Methods.Count);
-            Assert.AreEqual("Meth", ctti.Methods[0].Name);
+            Assert.AreEqual("Meth", ctti.Methods[0].ChunkName);
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 

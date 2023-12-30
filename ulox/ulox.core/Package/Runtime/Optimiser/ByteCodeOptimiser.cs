@@ -4,6 +4,7 @@ using System.Linq;
 namespace ULox
 {
     //todo mark dead all lines after a return with no label after it
+    //todo labels used by only a single goto, remove the goto and put the instruction in its place
     public sealed class ByteCodeOptimiser : CompiledScriptIterator
     {
         public const byte NOT_LOCAL_BYTE = byte.MaxValue;

@@ -49,7 +49,7 @@ namespace ULox
             {
                 var chunkStats = new ChunkStatistics()
                 {
-                    name = item.Key.Name,
+                    name = item.Key.FullName,
                     OpCodeOccurances = item.Value.OpCodeOccurances,
                 };
                 report._chunkStatistics.Add(chunkStats);

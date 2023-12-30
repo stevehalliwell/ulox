@@ -6,7 +6,7 @@
         public Value[] upvalues;
         public override string ToString()
         {
-            return $"<closure {chunk.Name} upvals:{upvalues.Length}>";
+            return $"<closure {chunk.ChunkName} upvals:{upvalues.Length}>";
         }
     }
 }

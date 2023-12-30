@@ -322,9 +322,16 @@ namespace ULox
 
         public void PushCompilerState(string name, FunctionType functionType)
         {
-            var newCompState = new CompilerState(compilerStates.Peek(), functionType)
+            var parentChainName = string.Empty;
+            if (CurrentCompilerState?.chunk?.ContainingChunkChainName != null
+                && CurrentCompilerState?.chunk?.ContainingChunkChainName != null)
             {
-                chunk = new Chunk(name, TokenIterator?.SourceName),
+                parentChainName = $"{CurrentCompilerState?.chunk?.ContainingChunkChainName}.{CurrentCompilerState?.chunk?.ChunkName}";
+            }
+
+            var newCompState = new CompilerState(CurrentCompilerState, functionType)
+            {
+                chunk = new Chunk(name, TokenIterator?.SourceName, parentChainName),
             };
             compilerStates.Push(newCompState);
             CurrentCompilerState.AddLocal(this, "", 0);

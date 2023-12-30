@@ -142,9 +142,9 @@ namespace ULox
 
             foreach (var method in contractType.Methods)
             {
-                var found = targetType.Methods.FirstOrDefault(x => x.Name == method.Name);
+                var found = targetType.Methods.FirstOrDefault(x => x.ChunkName == method.ChunkName);
                 if (found == null)
-                    return (false, $"Type '{targetType.Name}' does not contain matching method '{method.Name}'.");
+                    return (false, $"Type '{targetType.Name}' does not contain matching method '{method.ChunkName}'.");
 
                 var (meets, msg) = ChunkMatcher(method, found);
                 if(!meets)

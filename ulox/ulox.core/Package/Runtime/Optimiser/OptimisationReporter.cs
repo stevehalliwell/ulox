@@ -100,7 +100,7 @@ namespace ULox
                 var preChunk = pre.ChunkLookUp[item.Key];
                 var chunkReport = new ChunkOptimisationReport()
                 {
-                    Name = item.Key.Name,
+                    Name = item.Key.FullName,
                     InstructionCountBefore = preChunk.InstructionCount,
                     InstructionCountAfter = item.Value.InstructionCount,
                 };

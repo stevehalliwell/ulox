@@ -36,7 +36,6 @@
         LESS,
         LESS_EQUAL,
 
-        QUESTION,
         COLON,
 
         IDENTIFIER,

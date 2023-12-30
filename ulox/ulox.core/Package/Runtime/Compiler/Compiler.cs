@@ -18,7 +18,8 @@ namespace ULox
         private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly List<Chunk> _allChunks = new List<Chunk>();
-        private readonly ClassTypeCompilette _classCompiler = new ClassTypeCompilette();
+        private readonly ClassTypeCompilette _classCompiler = new ClassTypeCompilette(); 
+        private readonly List<CompilerMessage> _messages = new List<CompilerMessage>();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -110,11 +111,17 @@ namespace ULox
             compilerStates.Clear();
             TokenIterator = null;
             _allChunks.Clear();
+            _messages.Clear();
         }
 
         public void ThrowCompilerException(string msg)
         {
-            throw new CompilerException(msg, TokenIterator.PreviousToken, $"chunk '{CurrentChunk.GetLocationString()}'");
+            throw new CompilerException(msg, TokenIterator.PreviousToken, CurrentChunk);
+        }
+
+        public void CompilerMessage(string msg)
+        {
+            _messages.Add(new CompilerMessage(CompilerMessageUtil.MessageFromContext(msg, TokenIterator.PreviousToken, CurrentChunk)));
         }
 
         public void AddDeclarationCompilette(params (TokenType match, Action<Compiler> action)[] compilettes)
@@ -185,9 +192,11 @@ namespace ULox
             var popCount = default(byte);
 
             while (comp.localCount > 0 &&
-                comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
+                 comp.locals[comp.localCount - 1].Depth > comp.scopeDepth)
             {
-                if (comp.locals[comp.localCount - 1].IsCaptured)
+                var loc = comp.locals[comp.localCount - 1];
+
+                if (loc.IsCaptured)
                 {
                     if (popCount > 0)
                     {
@@ -201,6 +210,12 @@ namespace ULox
                 {
                     popCount++;
                 }
+
+                if (loc.Depth > 0 && !loc.IsAccessed)
+                {
+                    CompilerMessage($"Local '{loc.Name}' is unused.");
+                }
+
                 CurrentCompilerState.localCount--;
             }
 
@@ -242,7 +257,11 @@ namespace ULox
             }
 
             var topChunk = EndCompile();
-            return new CompiledScript(topChunk, script.GetHashCode(), _allChunks.GetRange(0, _allChunks.Count));
+            return new CompiledScript(
+                topChunk,
+                script.GetHashCode(),
+                _allChunks.GetRange(0, _allChunks.Count),
+                _messages.GetRange(0, _messages.Count));
         }
 
         public void Declaration()
@@ -311,6 +330,7 @@ namespace ULox
             CurrentCompilerState.AddLocal(this, "", 0);
         }
 
+        //todo mark usage so we can emit warnings for un used or write but not read
         public void NamedVariable(string name, bool canAssign)
         {
             var resolveRes = ResolveNameLookupOpCode(name);
@@ -383,6 +403,7 @@ namespace ULox
         public Chunk EndCompile()
         {
             EmitReturn();
+            EndScope();
             var returnChunk = compilerStates.Pop().chunk;
             _allChunks.Add(returnChunk);
             return returnChunk;
@@ -423,18 +444,31 @@ namespace ULox
             return AddStringConstant();
         }
 
+        public byte FuncArgsAndReturns()
+        {
+            BeginScope();
+            VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
+            var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
+            return returnCount;
+        }
+
+        public void AutoDefineRetval()
+        {
+            var retvalId = DeclareAndDefineCustomVariable("retval");
+            CurrentCompilerState.locals[CurrentCompilerState.localCount-1].IsAccessed = true;
+            IncreaseReturn(retvalId);
+        }
+
         public Chunk Function(string name, FunctionType functionType)
         {
             PushCompilerState(name, functionType);
 
-            BeginScope();
-            VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
-            var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
+            var returnCount = FuncArgsAndReturns();
 
             if (returnCount == 0)
             {
-                var retvalId = DeclareAndDefineCustomVariable("retval");
-                IncreaseReturn(retvalId);
+                AutoDefineRetval();
+
             }
 
             // The body.

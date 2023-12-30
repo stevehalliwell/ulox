@@ -71,7 +71,7 @@ namespace ULox
             if (functionType != FunctionType.Init)
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
 
-            byte constant = compiler.AddStringConstant();
+            var _ = compiler.AddStringConstant();
             var name = compiler.TokenIterator.PreviousToken.Lexeme;
 
             compiler.PushCompilerState(name, functionType);
@@ -82,9 +82,7 @@ namespace ULox
                 compiler.CurrentCompilerState.locals[0] = new CompilerState.Local(ThisName.String, 0);
             }
 
-            compiler.BeginScope();
-            compiler.VariableNameListDeclareOptional(() => compiler.IncreaseArity(compiler.AddStringConstant()));
-            var returnCount = compiler.VariableNameListDeclareOptional(() => compiler.IncreaseReturn(compiler.AddStringConstant()));
+            byte returnCount = compiler.FuncArgsAndReturns();
 
             if (functionType == FunctionType.Init)
             {
@@ -93,8 +91,7 @@ namespace ULox
             }
             else if (returnCount == 0)
             {
-                var retvalId = compiler.DeclareAndDefineCustomVariable("retval");
-                compiler.IncreaseReturn(retvalId);
+                compiler.AutoDefineRetval();
             }
 
             // The body.

@@ -484,9 +484,6 @@ namespace ULox
                         _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
                     break;
 
-                case OpCode.LABEL:
-                    break;
-
                 case OpCode.ENUM_VALUE:
                 {
                     var (enumObject, val, key) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);
@@ -1273,7 +1270,7 @@ namespace ULox
                 PushNewCallframe(new CallFrame()
                 {
                     Closure = new ClosureInternal { chunk = chunk },
-                    InstructionPointer = chunk.Labels[labelID],
+                    InstructionPointer = chunk.GetLabelPosition(labelID),
                     StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                 });
             }

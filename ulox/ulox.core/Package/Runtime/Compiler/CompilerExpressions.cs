@@ -102,24 +102,26 @@ namespace ULox
 
         public static void And(Compiler compiler, bool canAssign)
         {
-            var endJumpLabel = compiler.GotoIfUniqueChunkLabel("and");
+            var endJumpLabel = compiler.GotoIfUniqueChunkLabel("after_and");
 
             compiler.EmitPop();
             compiler.ParsePrecedence(Precedence.And);
 
+            compiler.EmitGoto(endJumpLabel);
             compiler.EmitLabel(endJumpLabel);
         }
 
         public static void Or(Compiler compiler, bool canAssign)
         {
-            var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("else_or");
-            var endJump = compiler.GotoUniqueChunkLabel("or");
+            var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("short_or");
+            var endJump = compiler.GotoUniqueChunkLabel("afte_or");
 
             compiler.EmitLabel(elseJumpLabel);
             compiler.EmitPop();
 
             compiler.ParsePrecedence(Precedence.Or);
 
+            compiler.EmitGoto(endJump);
             compiler.EmitLabel(endJump);
         }
 

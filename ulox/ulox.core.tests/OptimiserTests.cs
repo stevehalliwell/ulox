@@ -14,7 +14,6 @@ namespace ULox.Core.Tests
             base.Setup();
             _opt = testEngine.MyEngine.Context.Program.Optimiser;
             _opt.Enabled = true;
-            _opt.EnableRemoveUnreachableLabels = true;
             _opt.EnableLocalizing = true;
             _opt.OptimisationReporter = new OptimisationReporter();
         }
@@ -261,6 +260,94 @@ print(f.a);
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
             StringAssert.Contains("Instructions: 9 -> 7", _opt.OptimisationReporter.GetReport());
+        }
+
+        [Test]
+        public void Optimiser_Loop_WhenBreakAt5_ShouldPrintUpTo6()
+        {
+            testEngine.Run(@"
+var i = 0;
+loop
+{
+    print (i);
+    i = i + 1;
+    if(i > 5)
+        break;
+    print (i);
+}");
+
+            Assert.AreEqual("01122334455", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 39 -> 29", _opt.OptimisationReporter.GetReport());
+        }
+
+
+        [Test]
+        public void Optimiser_InitWithManyArgsAndNoLocals_WhenCalled_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    init(a,b,c,d,e,f,g)
+    {
+        print(d);
+    }
+}
+
+var t = T(1,2,3,4,5,6,7);
+");
+
+            Assert.AreEqual("4", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 5 -> 2", _opt.OptimisationReporter.GetReport());
+        }
+
+        [Test]
+        public void Optimiser_Engine_Cycle_While_Nested_Locals()
+        {
+            testEngine.Run(@"
+fun DoIt(){
+var i = 0;
+var j = 0;
+while(i < 5)
+{
+    j= 0;
+    while(j < 5)
+    {
+        j = j + 1;
+        print (j);
+        print (i);
+    }
+    i = i + 1;
+    print (i);
+}}
+
+DoIt();");
+
+            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
+            StringAssert.Contains("GOTO: 10 -> 6", _opt.OptimisationReporter.GetReport());
+        }
+
+
+        [Test]
+        public void Optimiser_Engine_Compile_Func_Inner_Logic()
+        {
+            testEngine.Run(@"
+fun A(v)
+{
+    retval = 2;
+    
+    if(v > 5)
+        return;
+    retval = -1;
+}
+fun B(){retval = 3;}
+fun C(){retval = 10;}
+
+print( A(1)+B()*C());
+
+print (A(10)+B()*C());");
+
+            Assert.AreEqual("2932", testEngine.InterpreterResult);
+            StringAssert.Contains("GOTO: 2 -> 1", _opt.OptimisationReporter.GetReport());
         }
     }
 }

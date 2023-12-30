@@ -581,6 +581,7 @@ namespace ULox
         public byte LabelUniqueChunkLabel(string v)
         {
             byte labelNameID = UniqueChunkLabelStringConstant(v);
+            EmitGoto(labelNameID);
             EmitLabel(labelNameID);
             return labelNameID;
         }

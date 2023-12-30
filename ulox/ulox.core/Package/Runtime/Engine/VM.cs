@@ -484,10 +484,6 @@ namespace ULox
                         _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
                     break;
 
-                case OpCode.LABEL:
-                    ThrowRuntimeException($"Unexpected OpCode '{opCode}'");
-                    break;
-
                 case OpCode.ENUM_VALUE:
                 {
                     var (enumObject, val, key) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);

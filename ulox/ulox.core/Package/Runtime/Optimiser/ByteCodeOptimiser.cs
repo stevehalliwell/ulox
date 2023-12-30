@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace ULox
 {
+    //todo mark dead all lines after a return with no label after it
     public sealed class ByteCodeOptimiser : CompiledScriptIterator
     {
         public const byte NOT_LOCAL_BYTE = byte.MaxValue;
@@ -20,12 +21,14 @@ namespace ULox
         public bool EnableLocalizing { get; set; } = true;
         public bool EnableDeadCodeRemoval { get; set; } = true;
         public bool EnableZeroJumpGotoRemoval{ get; set; } = true;
+        public bool EnablePopCollapse { get; set; } = true;
 
         public OptimisationReporter OptimisationReporter { get; set; }
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
         private List<(Chunk chunk, int inst, RegisteriseType regType)> _potentialRegisterise = new List<(Chunk, int, RegisteriseType)>();
         private readonly List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
         private List<(Chunk chunk, int inst)> _gotos = new List<(Chunk chunk, int inst)>();
+        private List<(Chunk chunk, int inst)> _pops = new List<(Chunk chunk, int inst)>();
         private OpCode _prevOoCode;
         private int _deadCodeStart = -1;
 
@@ -38,6 +41,7 @@ namespace ULox
             Iterate(compiledScript);
             if (EnableLocalizing) AttemptRegisterise();
             if (EnableZeroJumpGotoRemoval) MarkZeroJumpGotoForRemoval();
+            if (EnablePopCollapse) AdjustAndMarkCollapsePops();
             RemoveMarkedInstructions();
             OptimisationReporter?.PostOptimise(compiledScript);
         }
@@ -90,12 +94,48 @@ namespace ULox
             }
         }
 
+        private void AdjustAndMarkCollapsePops()
+        {
+            for (int i = _pops.Count - 1; i >= 0; i--)
+            {
+                var (chunk, inst) = _pops[i];
+
+                //if already skipped
+                if (_toRemove.Any(x => x.chunk == chunk && x.inst == inst))
+                    continue;
+
+                //read back until not skipped
+                var back = 1;
+                while (_toRemove.Any(x => x.chunk == chunk && x.inst == inst - back))
+                {
+                    back++;
+                }
+
+                var locToCheck = inst - back;
+                if (locToCheck < 0)
+                    continue;
+                var instructionAtLoc = chunk.Instructions[locToCheck];
+                //if it's a pop, remove us and adjust it to include us
+                if (instructionAtLoc.OpCode == OpCode.POP)
+                {
+                    //if there's a label between us we can't
+                    if(chunk.Labels.Values.Any(x => x >= locToCheck && x < inst))
+                        continue;
+
+                    var ourInstruction = chunk.Instructions[inst];
+                    _toRemove.Add((chunk, inst));
+                    chunk.Instructions[locToCheck] = new ByteCodePacket(OpCode.POP, (byte)(instructionAtLoc.b1 + ourInstruction.b1));
+                }
+            }
+        }
+
         public void Reset()
         {
             _toRemove.Clear();
             _potentialRegisterise.Clear();
             _labelUsage.Clear();
             _gotos.Clear();
+            _pops.Clear();
             _deadCodeStart = -1;
         }
 
@@ -165,6 +205,9 @@ namespace ULox
                 break;
             case OpCode.LABEL:
                 _toRemove.Add((CurrentChunk, CurrentInstructionIndex));
+                break;
+            case OpCode.POP:
+                _pops.Add((CurrentChunk, CurrentInstructionIndex));
                 break;
             }
         }

@@ -628,7 +628,16 @@ namespace ULox
 
         internal void EmitPop(byte popCount = 1)
         {
-            EmitPacket(new ByteCodePacket(OpCode.POP, popCount));
+            //optimiser does this too but more elaborate, we can just do the simple
+            var lastInstruction = CurrentChunk.Instructions.Last();
+            if (lastInstruction.OpCode == OpCode.POP)
+            {
+                CurrentChunk.Instructions[CurrentChunk.Instructions.Count - 1] = new ByteCodePacket(OpCode.POP, (byte)(lastInstruction.b1 + popCount));
+            }
+            else
+            {
+                EmitPacket(new ByteCodePacket(OpCode.POP, popCount));
+            }
         }
 
         internal string IdentifierOrChunkUnique(string prefix)

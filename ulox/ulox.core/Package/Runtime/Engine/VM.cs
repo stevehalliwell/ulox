@@ -20,7 +20,7 @@ namespace ULox
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         public Table Globals { get; private set; } = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
-        public VmStatistics Statistics { get; set; }
+        public VmStatisticsReporter Statistics { get; set; }
 
         public Vm()
         {

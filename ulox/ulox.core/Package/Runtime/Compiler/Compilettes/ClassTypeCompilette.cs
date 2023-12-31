@@ -17,6 +17,8 @@ namespace ULox
         public override UserType UserType => UserType.Class;
 
         private bool _needsEndClosure = false;
+        private byte _initFragmentJump = byte.MaxValue;
+
         public override bool EmitClosureCallAtEnd => _needsEndClosure;
 
         public ClassTypeCompilette()
@@ -43,6 +45,7 @@ namespace ULox
         protected override void Start()
         {
             _needsEndClosure = false;
+            _initFragmentJump = byte.MaxValue;
         }
 
         protected override void InnerBodyElement(Compiler compiler)
@@ -132,8 +135,10 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
+        //todo we know that these all happen together now, we don't need to jump and weave them all over the place
         private void Property(Compiler compiler)
         {
+            another_property:
             do
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
@@ -141,12 +146,12 @@ namespace ULox
 
                 CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Lexeme);
 
-                //emit jump // to skip this during imperative
-                var initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
-                //patch jump previous init fragment if it exists
-                compiler.EmitLabel(PreviousInitFragLabelId != -1
-                    ? (byte)PreviousInitFragLabelId
-                    : InitChainLabelId);
+                if (_initFragmentJump == byte.MaxValue)
+                {
+                    //emit jump // to skip this during imperative
+                    _initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
+                    compiler.EmitLabel(InitChainLabelId);
+                }
 
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, (byte)0));//get class or inst this on the stack
 
@@ -160,17 +165,20 @@ namespace ULox
                 //emit set prop
                 compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant));
                 compiler.EmitPop();
-                //emit jump // to move to next prop init fragment, defaults to jump nowhere return
-                PreviousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitFragmentJump");
-
-                //patch jump from skip imperative
-                compiler.EmitLabel(initFragmentJump);
 
                 //if trailing comma, eat it
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (compiler.TokenIterator.Check(TokenType.IDENTIFIER));
 
+            //todo should this be consume?
             compiler.TokenIterator.Match(TokenType.END_STATEMENT);
+
+            if (compiler.TokenIterator.Match(TokenType.VAR))
+                goto another_property;
+
+            PreviousInitFragLabelId = compiler.GotoUniqueChunkLabel("InitChainEnd");
+            //patch jump from skip imperative
+            compiler.EmitLabel(_initFragmentJump);
         }
 
         private void Mixin(Compiler compiler)

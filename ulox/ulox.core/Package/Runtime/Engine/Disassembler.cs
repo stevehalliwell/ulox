@@ -22,7 +22,7 @@ namespace ULox
 
                 foreach (var label in chunk.Labels)
                 {
-                    stringBuilder.AppendLine($"{chunk.ReadConstant(label.Key)} = {label.Value}");
+                    stringBuilder.AppendLine($"{chunk.ReadConstant(label.Key)} = {chunk.GetLabelPosition(label.Key)}");
                 }
             }
         }
@@ -122,7 +122,7 @@ namespace ULox
 
         private void PrintLabel(byte labelID)
         {
-            stringBuilder.Append($"({labelID}){CurrentChunk.Constants[labelID]}@{CurrentChunk.Labels[labelID]}");
+            stringBuilder.Append($"({labelID}){CurrentChunk.Constants[labelID]}@{CurrentChunk.GetLabelPosition(labelID)}");
         }
 
         protected override void ProcessPacket(ByteCodePacket packet)

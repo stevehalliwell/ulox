@@ -21,8 +21,9 @@ namespace ULox
         public bool Enabled { get; set; } = true;
         public bool EnableLocalizing { get; set; } = true;
         public bool EnableDeadCodeRemoval { get; set; } = true;
-        public bool EnableZeroJumpGotoRemoval{ get; set; } = true;
+        public bool EnableZeroJumpGotoRemoval { get; set; } = true;
         public bool EnablePopCollapse { get; set; } = true;
+        public bool EnableByteCodeReordering { get; set; } = true;
 
         public OptimisationReporter OptimisationReporter { get; set; }
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
@@ -40,11 +41,22 @@ namespace ULox
 
             OptimisationReporter?.PreOptimise(compiledScript);
             Iterate(compiledScript);
-            if (EnableLocalizing) AttemptRegisterise();
+            if (EnableLocalizing) ProcessRegisterise();
             if (EnableZeroJumpGotoRemoval) MarkZeroJumpGotoForRemoval();
             if (EnablePopCollapse) AdjustAndMarkCollapsePops();
+            if (EnableByteCodeReordering) ProcessReordering();
             RemoveMarkedInstructions();
             OptimisationReporter?.PostOptimise(compiledScript);
+        }
+
+        public void Reset()
+        {
+            _toRemove.Clear();
+            _potentialRegisterise.Clear();
+            _labelUsage.Clear();
+            _gotos.Clear();
+            _pops.Clear();
+            _deadCodeStart = -1;
         }
 
         private void RemoveMarkedInstructions()
@@ -95,6 +107,113 @@ namespace ULox
             }
         }
 
+        private void ProcessReordering()
+        {
+            //find labels with a single use
+            var singleUseLabelsFromGotos = _labelUsage
+                .GroupBy(x => x.label)
+                .Where(x => x.Count() == 1)
+                .SelectMany(x => x)
+                .Where(x => x.chunk.Instructions[x.from].OpCode == OpCode.GOTO);
+
+            var descAttempts = singleUseLabelsFromGotos.OrderByDescending(x => x.from).ToArray();
+
+            for (var descI = 0; descI < descAttempts.Length; descI++)
+            {
+                var (chunk, from, label) = descAttempts[descI];
+
+                if (_toRemove.Any(x => x.chunk == chunk && x.inst == from))
+                    continue;
+
+                //find end of this section
+                var startLoc = chunk.GetLabelPosition(label);
+                var canMove = true;
+                int endLoc = startLoc;
+                for (; endLoc < chunk.Instructions.Count && canMove; endLoc++)
+                {
+                    var op = chunk.Instructions[endLoc].OpCode;
+
+                    //have we found the end
+                    if (op == OpCode.GOTO
+                        || op == OpCode.RETURN)
+                        break;
+
+                    //have we found something we cannot move
+                    if (op == OpCode.GOTO_IF_FALSE
+                        || op == OpCode.LABEL
+                        || op == OpCode.TEST)
+                        canMove = false;
+                }
+
+                if (!canMove)
+                    continue;
+
+                if (startLoc >= endLoc)
+                    continue;
+
+                var moveSpan = endLoc - startLoc + 1;
+
+                var toMove = GetGotoReorgSpan(chunk, startLoc, startLoc + moveSpan).ToArray();    //todo temp
+                _toRemove.Add((chunk, from));
+                for (var i = 0; i < moveSpan; i++)
+                {
+                    _toRemove.Add((chunk, startLoc + i));
+                }
+                chunk.InsertInstructionsAt(from + 1, toMove);
+                var insertedCount = toMove.Length;
+                FixUpToRemoves(chunk, from + 1, insertedCount);
+                FixUpSingleUseLables(descAttempts, from + 1, startLoc, insertedCount);
+            }
+        }
+
+        private void FixUpSingleUseLables(
+            (Chunk chunk, int from, byte label)[] descAttempts,
+            int at,
+            ushort startLoc,
+            int count)
+        {
+            var movedDist = startLoc - at;
+            for (int i = 0; i < descAttempts.Length; i++)
+            {
+                var (chunk, from, label) = descAttempts[i];
+                if (chunk == CurrentChunk)
+                {
+                    if (from < at) //unaffected
+                        continue;
+                    else if (from >= startLoc && from < startLoc + count)   //just moved them
+                        descAttempts[i] = (chunk, (ushort)(from - movedDist), label);
+                    else //pushed them back
+                        descAttempts[i] = (chunk, from + count, label);
+                }
+            }
+        }
+
+        private void FixUpToRemoves(Chunk chunk, int from, int numberMoved)
+        {
+            for (int i = _toRemove.Count - 1; i >= 0; i--)
+            {
+                var (c, inst) = _toRemove[i];
+                if (c == chunk && inst >= from)
+                {
+                    _toRemove[i] = (c, inst + numberMoved);
+                }
+            }
+        }
+
+        private IEnumerable<ByteCodePacket> GetGotoReorgSpan(Chunk chunk, int startLoc, int endLoc)
+        {
+            for (int i = startLoc; i < endLoc; i++)
+            {
+                var bytePacket = chunk.Instructions[i];
+                if (bytePacket.OpCode == OpCode.GOTO)
+                    yield return bytePacket;
+                else if (_toRemove.Any(x => x.chunk == chunk && x.inst == i))
+                    continue;
+                else
+                    yield return chunk.Instructions[i];
+            }
+        }
+
         private void AdjustAndMarkCollapsePops()
         {
             for (int i = _pops.Count - 1; i >= 0; i--)
@@ -115,12 +234,13 @@ namespace ULox
                 var locToCheck = inst - back;
                 if (locToCheck < 0)
                     continue;
+
                 var instructionAtLoc = chunk.Instructions[locToCheck];
                 //if it's a pop, remove us and adjust it to include us
                 if (instructionAtLoc.OpCode == OpCode.POP)
                 {
                     //if there's a label between us we can't
-                    if(chunk.Labels.Values.Any(x => x >= locToCheck && x < inst))
+                    if (chunk.Labels.Values.Any(x => x >= locToCheck && x < inst))
                         continue;
 
                     var ourInstruction = chunk.Instructions[inst];
@@ -128,16 +248,6 @@ namespace ULox
                     chunk.Instructions[locToCheck] = new ByteCodePacket(OpCode.POP, (byte)(instructionAtLoc.b1 + ourInstruction.b1));
                 }
             }
-        }
-
-        public void Reset()
-        {
-            _toRemove.Clear();
-            _potentialRegisterise.Clear();
-            _labelUsage.Clear();
-            _gotos.Clear();
-            _pops.Clear();
-            _deadCodeStart = -1;
         }
 
         protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
@@ -227,7 +337,7 @@ namespace ULox
             _gotos.Add(value);
         }
 
-        private void AttemptRegisterise()
+        private void ProcessRegisterise()
         {
             foreach (var (chunk, inst, regType) in _potentialRegisterise)
             {

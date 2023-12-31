@@ -12,8 +12,6 @@ namespace ULox.Core.Tests
         {
             base.Setup();
             _opt = testEngine.MyEngine.Context.Program.Optimiser;
-            _opt.Enabled = true;
-            _opt.EnableLocalizing = true;
             _opt.OptimisationReporter = new OptimisationReporter();
         }
         
@@ -299,32 +297,6 @@ var t = T(1,2,3,4,5,6,7);
             StringAssert.Contains("Instructions: 6 -> 3", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
-        [Test]
-        public void Optimiser_Engine_Cycle_While_Nested_Locals()
-        {
-            testEngine.Run(@"
-fun DoIt(){
-var i = 0;
-var j = 0;
-while(i < 5)
-{
-    j= 0;
-    while(j < 5)
-    {
-        j = j + 1;
-        print (j);
-        print (i);
-    }
-    i = i + 1;
-    print (i);
-}}
-
-DoIt();");
-
-            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
-            StringAssert.Contains("GOTO: 10 -> 6", _opt.OptimisationReporter.GetReport().GenerateStringReport());
-        }
-
 
         [Test]
         public void Optimiser_Engine_Compile_Func_Inner_Logic()
@@ -347,6 +319,107 @@ print (A(10)+B()*C());");
 
             Assert.AreEqual("2932", testEngine.InterpreterResult);
             StringAssert.Contains("GOTO: 2 -> 1", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+        }
+
+        [Test]
+        public void Optimiser_Reorder_AutoInit_WhenSubSetMatchVarAndInitArgNames_ShouldAssignThroughAndLeaveOthersDefault()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a= 10, b = 20, c = 30;
+    init(a,b)
+    {
+        print(this.a);
+        print(this.b);
+        print(this.c);
+    }
+}
+
+var t = T(1,2);");
+
+            Assert.AreEqual("1230", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 25 -> 18", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+        }
+
+        [Test]
+        public void Optimiser_Reorder_AutoInit_WhenTwoMatchingVarAndInitArgNames_ShouldAssignThrough()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a,b;
+    init(a,b)
+    {
+        print(this.a + this.b);
+    }
+}
+
+var t = T(1,2);");
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 18 -> 12", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+        }
+
+        [Test]
+        public void Optimiser_WeavedGoto_ShouldReorg()
+        {
+            testEngine.Run(@"
+goto start;
+label mid;
+print(a);
+return;
+label start;
+var a = 1;
+goto mid;
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 13 -> 9", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+        }
+
+        [Test]
+        public void Optimiser_Reorder_Loop_WhenGivenNumberArrayAndItemName_ShouldPrintItems()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3,];
+
+loop arr,jtem
+{
+    print(jtem);
+}
+");
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 66 -> 46", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+        }
+
+        [Test]
+        public void Optimiser_Reorder_Engine_Cycle_While_Nested_Locals()
+        {
+            testEngine.Run(@"
+fun DoIt()
+{
+    var i = 0;
+    var j = 0;
+    while(i < 5)
+    {
+        j= 0;
+        while(j < 5)
+        {
+            j = j + 1;
+            print (j);
+            print (i);
+        }
+        i = i + 1;
+        print (i);
+    }
+}
+
+DoIt();");
+
+            Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 59 -> 46", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
     }
 }

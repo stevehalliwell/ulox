@@ -9,7 +9,7 @@ namespace ULox
         public const int InstructionStartingCapacity = 50;
         public const int ConstantStartingCapacity = 15;
         public const string DefaultChunkName = "unnamed_chunk";
-        
+
         internal struct RunLengthLineNumber
         {
             public int startingInstruction;
@@ -28,7 +28,7 @@ namespace ULox
         public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
         public string ChunkName { get; set; }
         public string SourceName { get; }
-        public string ContainingChunkChainName { get;}
+        public string ContainingChunkChainName { get; }
         public string FullName => $"{SourceName}:{ContainingChunkChainName}.{ChunkName}";
         public byte Arity => (byte)ArgumentConstantIds.Count;
         public byte ReturnCount => (byte)ReturnConstantIds.Count;
@@ -63,7 +63,7 @@ namespace ULox
             WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
             return at;
         }
-        
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WritePacket(ByteCodePacket packet, int line)
         {
@@ -94,7 +94,7 @@ namespace ULox
             {
             case ValueType.Double:
                 return _constants.FindIndex(x => x.type == val.type && val.val.asDouble == x.val.asDouble);
-                
+
             case ValueType.String:
                 return _constants.FindIndex(x => x.type == val.type && val.val.asString == x.val.asString);
             // none of those are going to be duplicated by the compiler anyway
@@ -163,28 +163,35 @@ namespace ULox
             _labelIdToInstruction[id] = currentChunkInstructinCount;
         }
 
-        internal void RemoveInstructionAt(int b)
+        public void RemoveInstructionAt(int b)
         {
             Instructions.RemoveAt(b);
             AdjustLabelIndicies(b, -1);
             AdjustLineNumbers(b, -1);
         }
 
-        internal void AdjustLabelIndicies(int byteChangedThresholde, int delta)
+        public void InsertInstructionsAt(int at, IReadOnlyList<ByteCodePacket> toMove)
+        {
+            Instructions.InsertRange(at, toMove);
+            AdjustLabelIndicies(at, toMove.Count);
+            AdjustLineNumbers(at, toMove.Count);
+        }
+
+        internal void AdjustLabelIndicies(int byteChangedThreshold, int delta)
         {
             foreach (var item in _labelIdToInstruction.ToList())
             {
-                if (item.Value < byteChangedThresholde) continue;
+                if (item.Value < byteChangedThreshold) continue;
                 _labelIdToInstruction[item.Key] = item.Value + delta;
             }
         }
 
-        private void AdjustLineNumbers(int byteChangedThresholde, int delta)
+        private void AdjustLineNumbers(int byteChangedThreshold, int delta)
         {
             for (var i = 0; i < _runLengthLineNumbers.Count; i++)
             {
                 var item = _runLengthLineNumbers[i];
-                if (item.startingInstruction < byteChangedThresholde) continue;
+                if (item.startingInstruction < byteChangedThreshold) continue;
                 _runLengthLineNumbers[i] = new RunLengthLineNumber()
                 {
                     line = item.line,

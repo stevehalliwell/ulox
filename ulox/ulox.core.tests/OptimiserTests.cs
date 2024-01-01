@@ -5,7 +5,7 @@ namespace ULox.Core.Tests
     [TestFixture]
     public class OptimiserTests : EngineTestBase
     {
-        private ByteCodeOptimiser _opt;
+        private Optimiser _opt;
 
         [SetUp]
         public override void Setup()
@@ -375,7 +375,7 @@ goto mid;
 ");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 13 -> 9", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 13 -> 9", _opt.OptimisationReporter.GetReport().GenerateStringReport());   //todo we want to instead confirm that x instructions are gone
         }
 
         [Test]

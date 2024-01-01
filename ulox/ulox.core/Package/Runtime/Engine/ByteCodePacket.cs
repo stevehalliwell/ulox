@@ -112,9 +112,9 @@ namespace ULox
         public ByteCodePacket(OpCode opCode)
             : this(
                   opCode,
-                  ByteCodeOptimiser.NOT_LOCAL_BYTE,
-                  ByteCodeOptimiser.NOT_LOCAL_BYTE,
-                  ByteCodeOptimiser.NOT_LOCAL_BYTE)
+                  Optimiser.NOT_LOCAL_BYTE,
+                  Optimiser.NOT_LOCAL_BYTE,
+                  Optimiser.NOT_LOCAL_BYTE)
         {
         }
 
@@ -122,8 +122,8 @@ namespace ULox
             : this(
                   opCode,
                   b1,
-                  ByteCodeOptimiser.NOT_LOCAL_BYTE,
-                  ByteCodeOptimiser.NOT_LOCAL_BYTE)
+                  Optimiser.NOT_LOCAL_BYTE,
+                  Optimiser.NOT_LOCAL_BYTE)
         {
         }
         
@@ -132,7 +132,7 @@ namespace ULox
                   opCode,
                   b1,
                   b2,
-                  ByteCodeOptimiser.NOT_LOCAL_BYTE)
+                  Optimiser.NOT_LOCAL_BYTE)
         {
         }
 

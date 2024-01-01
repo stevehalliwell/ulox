@@ -3,11 +3,8 @@ using System.Linq;
 
 namespace ULox
 {
-    //todo mark dead all lines after a return with no label after it
-    //todo labels used by only a single goto, remove the goto and put the instruction in its place
-    public sealed class ByteCodeOptimiser : CompiledScriptIterator
+    public sealed class OptimiserPass : CompiledScriptIterator
     {
-        public const byte NOT_LOCAL_BYTE = byte.MaxValue;
         private enum RegisteriseType
         {
             Unknown,
@@ -18,57 +15,28 @@ namespace ULox
             SetProp,
         }
 
-        public bool Enabled { get; set; } = true;
-        public bool EnableLocalizing { get; set; } = true;
-        public bool EnableDeadCodeRemoval { get; set; } = true;
-        public bool EnableZeroJumpGotoRemoval { get; set; } = true;
-        public bool EnablePopCollapse { get; set; } = true;
-        public bool EnableByteCodeReordering { get; set; } = true;
-
-        public OptimisationReporter OptimisationReporter { get; set; }
-        private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
         private List<(Chunk chunk, int inst, RegisteriseType regType)> _potentialRegisterise = new List<(Chunk, int, RegisteriseType)>();
         private readonly List<(Chunk chunk, int from, byte label)> _labelUsage = new List<(Chunk, int, byte)>();
         private List<(Chunk chunk, int inst)> _gotos = new List<(Chunk chunk, int inst)>();
         private List<(Chunk chunk, int inst)> _pops = new List<(Chunk chunk, int inst)>();
         private OpCode _prevOoCode;
         private int _deadCodeStart = -1;
+        private Optimiser _optimiser;
 
-        public void Optimise(CompiledScript compiledScript, TypeInfo typeInfo)
+        public bool EnableLocalizing { get; set; } = true;
+        public bool EnableDeadCodeRemoval { get; set; } = true;
+        public bool EnableZeroJumpGotoRemoval { get; set; } = true;
+        public bool EnablePopCollapse { get; set; } = true;
+        public bool EnableByteCodeReordering { get; set; } = true;
+
+        public void Run(Optimiser optimiser, CompiledScript compiledScript, TypeInfo typeInfo)
         {
-            if (!Enabled)
-                return;
-
-            OptimisationReporter?.PreOptimise(compiledScript);
+            _optimiser = optimiser;
             Iterate(compiledScript);
             if (EnableLocalizing) ProcessRegisterise();
             if (EnableZeroJumpGotoRemoval) MarkZeroJumpGotoForRemoval();
             if (EnablePopCollapse) AdjustAndMarkCollapsePops();
             if (EnableByteCodeReordering) ProcessReordering();
-            RemoveMarkedInstructions();
-            OptimisationReporter?.PostOptimise(compiledScript);
-        }
-
-        public void Reset()
-        {
-            _toRemove.Clear();
-            _potentialRegisterise.Clear();
-            _labelUsage.Clear();
-            _gotos.Clear();
-            _pops.Clear();
-            _deadCodeStart = -1;
-        }
-
-        private void RemoveMarkedInstructions()
-        {
-            _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
-            _toRemove = _toRemove.Distinct().ToList();
-
-            for (int i = _toRemove.Count - 1; i >= 0; i--)
-            {
-                var (chunk, b) = _toRemove[i];
-                chunk.RemoveInstructionAt(b);
-            }
         }
 
         private void MarkZeroJumpGotoForRemoval()
@@ -86,14 +54,14 @@ namespace ULox
                     continue;
 
                 //if already skipped
-                if (_toRemove.Any(x => x.chunk == chunk && x.inst == inst))
+                if (_optimiser.IsMarkedForRemoval(chunk, inst))
                     continue;
 
                 //are all ops between us and the label marked as toremove?
                 var found = false;
                 for (int i = inst + 1; i < labelLoc; i++)
                 {
-                    if (!_toRemove.Any(d => d.chunk == chunk && d.inst == i))
+                    if (!_optimiser.IsMarkedForRemoval(chunk, i))
                     {
                         found = true;
                         break;
@@ -102,7 +70,7 @@ namespace ULox
 
                 if (!found)
                 {
-                    _toRemove.Add((chunk, inst));
+                    _optimiser.AddToRemove(chunk, inst);
                 }
             }
         }
@@ -122,7 +90,7 @@ namespace ULox
             {
                 var (chunk, from, label) = descAttempts[descI];
 
-                if (_toRemove.Any(x => x.chunk == chunk && x.inst == from))
+                if (_optimiser.IsMarkedForRemoval(chunk, from))
                     continue;
 
                 //find end of this section
@@ -154,14 +122,14 @@ namespace ULox
                 var moveSpan = endLoc - startLoc + 1;
 
                 var toMove = GetGotoReorgSpan(chunk, startLoc, startLoc + moveSpan).ToArray();    //todo temp
-                _toRemove.Add((chunk, from));
+                _optimiser.AddToRemove(chunk, from);
                 for (var i = 0; i < moveSpan; i++)
                 {
-                    _toRemove.Add((chunk, startLoc + i));
+                    _optimiser.AddToRemove(chunk, startLoc + i);
                 }
                 chunk.InsertInstructionsAt(from + 1, toMove);
                 var insertedCount = toMove.Length;
-                FixUpToRemoves(chunk, from + 1, insertedCount);
+                _optimiser.FixUpToRemoves(chunk, from + 1, insertedCount);
                 FixUpSingleUseLables(descAttempts, from + 1, startLoc, insertedCount);
             }
         }
@@ -188,18 +156,6 @@ namespace ULox
             }
         }
 
-        private void FixUpToRemoves(Chunk chunk, int from, int numberMoved)
-        {
-            for (int i = _toRemove.Count - 1; i >= 0; i--)
-            {
-                var (c, inst) = _toRemove[i];
-                if (c == chunk && inst >= from)
-                {
-                    _toRemove[i] = (c, inst + numberMoved);
-                }
-            }
-        }
-
         private IEnumerable<ByteCodePacket> GetGotoReorgSpan(Chunk chunk, int startLoc, int endLoc)
         {
             for (int i = startLoc; i < endLoc; i++)
@@ -207,7 +163,7 @@ namespace ULox
                 var bytePacket = chunk.Instructions[i];
                 if (bytePacket.OpCode == OpCode.GOTO)
                     yield return bytePacket;
-                else if (_toRemove.Any(x => x.chunk == chunk && x.inst == i))
+                else if (_optimiser.IsMarkedForRemoval(chunk, i))
                     continue;
                 else
                     yield return chunk.Instructions[i];
@@ -221,12 +177,12 @@ namespace ULox
                 var (chunk, inst) = _pops[i];
 
                 //if already skipped
-                if (_toRemove.Any(x => x.chunk == chunk && x.inst == inst))
+                if (_optimiser.IsMarkedForRemoval(chunk, inst))
                     continue;
 
                 //read back until not skipped
                 var back = 1;
-                while (_toRemove.Any(x => x.chunk == chunk && x.inst == inst - back))
+                while (_optimiser.IsMarkedForRemoval(chunk, inst - back))
                 {
                     back++;
                 }
@@ -244,7 +200,7 @@ namespace ULox
                         continue;
 
                     var ourInstruction = chunk.Instructions[inst];
-                    _toRemove.Add((chunk, inst));
+                    _optimiser.AddToRemove(chunk, inst);
                     chunk.Instructions[locToCheck] = new ByteCodePacket(OpCode.POP, (byte)(instructionAtLoc.b1 + ourInstruction.b1));
                 }
             }
@@ -269,7 +225,10 @@ namespace ULox
                 if (opCode == OpCode.LABEL
                     && _deadCodeStart != -1)
                 {
-                    _toRemove.AddRange(Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart).Select(b => (CurrentChunk, b)));
+                    foreach (var i in Enumerable.Range(_deadCodeStart, CurrentInstructionIndex - _deadCodeStart))
+                    {
+                        _optimiser.AddToRemove(CurrentChunk, i);
+                    }
                     _deadCodeStart = -1;
                 }
             }
@@ -315,7 +274,7 @@ namespace ULox
                 _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.SetProp));
                 break;
             case OpCode.LABEL:
-                _toRemove.Add((CurrentChunk, CurrentInstructionIndex));
+                _optimiser.AddToRemove(CurrentChunk, CurrentInstructionIndex);
                 break;
             case OpCode.POP:
                 _pops.Add((CurrentChunk, CurrentInstructionIndex));
@@ -368,13 +327,13 @@ namespace ULox
                     //  and mark it as for removal
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _toRemove.Add((chunk, inst - 1));
+                        _optimiser.AddToRemove(chunk, inst - 1);
                         nb2 = prev.b1;
                         var prevprev = chunk.Instructions[inst - 2];
                         // if the previous previous is getlocal take its byte and make first byte, mark for removal
                         if (prevprev.OpCode == OpCode.GET_LOCAL)
                         {
-                            _toRemove.Add((chunk, inst - 2));
+                            _optimiser.AddToRemove(chunk, inst - 2);
                             nb1 = prevprev.b1;
                         }
                     }
@@ -383,19 +342,19 @@ namespace ULox
                 {
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _toRemove.Add((chunk, inst - 1));
+                        _optimiser.AddToRemove(chunk, inst - 1);
                         nb3 = prev.b1;  //newval
 
                         var prevprev = chunk.Instructions[inst - 2];
                         if (prevprev.OpCode == OpCode.GET_LOCAL)
                         {
-                            _toRemove.Add((chunk, inst - 2));
+                            _optimiser.AddToRemove(chunk, inst - 2);
                             nb2 = prevprev.b1; // index
 
                             var prevprevprev = chunk.Instructions[inst - 3];
                             if (prevprevprev.OpCode == OpCode.GET_LOCAL)
                             {
-                                _toRemove.Add((chunk, inst - 3));
+                                _optimiser.AddToRemove(chunk, inst - 3);
                                 nb1 = prevprevprev.b1;  // target
                             }
                         }
@@ -406,7 +365,7 @@ namespace ULox
                 {
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _toRemove.Add((chunk, inst - 1));
+                        _optimiser.AddToRemove(chunk, inst - 1);
                         nb1 = prev.b1;
                     }
                 }
@@ -414,20 +373,20 @@ namespace ULox
                 case RegisteriseType.GetProp:
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _toRemove.Add((chunk, inst - 1));
+                        _optimiser.AddToRemove(chunk, inst - 1);
                         nb3 = prev.b1;
                     }
                     break;
                 case RegisteriseType.SetProp:
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _toRemove.Add((chunk, inst - 1));
+                        _optimiser.AddToRemove(chunk, inst - 1);
                         nb3 = prev.b1;  //target
 
                         var prevprev = chunk.Instructions[inst - 2];
                         if (prevprev.OpCode == OpCode.GET_LOCAL)
                         {
-                            _toRemove.Add((chunk, inst - 2));
+                            _optimiser.AddToRemove(chunk, inst - 2);
                             nb2 = prevprev.b1; // newval
                         }
                     }
@@ -439,6 +398,16 @@ namespace ULox
 
                 chunk.Instructions[inst] = new ByteCodePacket(original.OpCode, nb1, nb2, nb3);
             }
+        }
+
+        public void Clear()
+        {
+            _potentialRegisterise.Clear();
+            _labelUsage.Clear();
+            _gotos.Clear();
+            _pops.Clear();
+            _prevOoCode = OpCode.NONE;
+            _deadCodeStart = -1;
         }
     }
 }

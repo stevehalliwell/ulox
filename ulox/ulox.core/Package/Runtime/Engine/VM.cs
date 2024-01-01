@@ -518,7 +518,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Value PopOrLocal(byte b1)
         {
-            return b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE 
+            return b1 == Optimiser.NOT_LOCAL_BYTE 
                 ? _valueStack.Pop() 
                 : _valueStack[_currentCallFrame.StackStart + b1];
         }
@@ -526,17 +526,17 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (Value rhs, Value lhs) Pop2OrLocals(byte b1, byte b2)
         {
-            var rhs = b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
-            var lhs = b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            var rhs = b2 == Optimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
+            var lhs = b1 == Optimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
             return (rhs, lhs);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private (Value newValue, Value index, Value listValue) Pop3OrLocals(byte b1, byte b2, byte b3)
         {
-            var newValue = b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b3];
-            var index = b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
-            var listValue = b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
+            var newValue = b3 == Optimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b3];
+            var index = b2 == Optimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
+            var listValue = b1 == Optimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
             return (newValue, index, listValue);
         }
 

@@ -282,24 +282,24 @@ namespace ULox
 
         private void AppendSingleLocalByte(byte b)
         {
-            if (b != ByteCodeOptimiser.NOT_LOCAL_BYTE)
+            if (b != Optimiser.NOT_LOCAL_BYTE)
                 stringBuilder.Append($" ({b})");
         }
 
         private void AppendOptionalTwoLocals(byte b1, byte b2)
         {
-            if (b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE)
+            if (b1 == Optimiser.NOT_LOCAL_BYTE && b2 == Optimiser.NOT_LOCAL_BYTE)
                 return;
             
-            stringBuilder.Append($" ({((b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})");
+            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})");
         }
 
         private void AppendOptionalRegistersSetIndex(byte b1, byte b2, byte b3)
         {
-            if (b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE)
+            if (b1 == Optimiser.NOT_LOCAL_BYTE && b2 == Optimiser.NOT_LOCAL_BYTE && b3 == Optimiser.NOT_LOCAL_BYTE)
                 return;
 
-            stringBuilder.Append($" ({((b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())}, {((b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b3.ToString())})");
+            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())}, {((b3 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b3.ToString())})");
         }
 
         private void DoConstant(ByteCodePacket packet)

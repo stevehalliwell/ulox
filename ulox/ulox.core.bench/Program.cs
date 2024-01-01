@@ -126,14 +126,14 @@ namespace ULox.Core.Bench
         public void Optimise_Script()
         {
             var opt = new Optimiser();
-            opt.Optimise(Engine.CreateDefault().Context.CompileScript(CompileVsExecute.Script), null);
+            opt.Optimise(Engine.CreateDefault().Context.CompileScript(CompileVsExecute.Script));
         }
 
         [Benchmark]
         public void Optimise_While()
         {
             var opt = new Optimiser();
-            opt.Optimise(Engine.CreateDefault().Context.CompileScript(BenchmarkScripts.While), null);
+            opt.Optimise(Engine.CreateDefault().Context.CompileScript(BenchmarkScripts.While));
         }
 
         [Benchmark]

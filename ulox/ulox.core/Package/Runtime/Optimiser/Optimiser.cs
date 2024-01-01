@@ -3,33 +3,44 @@ using System.Linq;
 
 namespace ULox
 {
-    //todo mark dead all lines after a return with no label after it
-    //todo should be doing this in loops so the processes are simplier and we can easily catch newly dead code etc.
     public sealed class Optimiser
     {
         public const byte NOT_LOCAL_BYTE = byte.MaxValue;
 
         public bool Enabled { get; set; } = true;
-
-        public OptimiserPass OptimiserPass { get; set; } = new OptimiserPass();
+        public List<IOptimiserPass> OptimiserPasses { get; } = new List<IOptimiserPass>() 
+        {
+            new OptimiserUnreachableCodeRemovalPass(),
+            new OptimiserRegisterisePass(),
+            new OptimiserSingleLabelReorderPass(),
+            new OptimiserUnreachableCodeRemovalPass(),
+            new OptimiserZeroJumpRemovalPass(),
+            new OptimiserCollapsePopsPass(),
+            new OptimiserRemoveLabelsPass(),
+        };
         public OptimisationReporter OptimisationReporter { get; set; }
+
         private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
 
-        public void Optimise(CompiledScript compiledScript, TypeInfo typeInfo)
+        public void Optimise(CompiledScript compiledScript)
         {
             if (!Enabled)
                 return;
 
             OptimisationReporter?.PreOptimise(compiledScript);
-            OptimiserPass.Run(this, compiledScript, typeInfo);
-            RemoveMarkedInstructions();
+            foreach (var pass in OptimiserPasses)
+            {
+                pass.Run(this, compiledScript);
+                RemoveMarkedInstructions();
+            }
             OptimisationReporter?.PostOptimise(compiledScript);
         }
 
         public void Reset()
         {
             _toRemove.Clear();
-            OptimiserPass.Clear();
+            foreach (var pass in OptimiserPasses)
+                pass.Reset();
         }
 
         public void AddToRemove(Chunk chunk, int inst)
@@ -64,6 +75,7 @@ namespace ULox
                 var (chunk, b) = _toRemove[i];
                 chunk.RemoveInstructionAt(b);
             }
+            _toRemove.Clear();
         }
     }
 }

@@ -232,6 +232,8 @@ namespace ULox
                 break;
             case OpCode.GOTO:
             case OpCode.GOTO_IF_FALSE:
+                PrintLabel(packet.b1);
+                break;
             case OpCode.LABEL:
                 PrintLabel(packet.b1);
                 break;
@@ -277,7 +279,23 @@ namespace ULox
             }
 
             stringBuilder.AppendLine();
+
+            AppendAnyLabels();
+            
             _currentInstructionCount++;
+        }
+
+        private void AppendAnyLabels()
+        {
+            var labelIds = CurrentChunk.Labels
+                .Where(x => x.Value == CurrentInstructionIndex)
+                .Select(x => x.Key);
+
+            if(labelIds.Any())
+            {
+                stringBuilder.Append(" <-- Label: ");
+                stringBuilder.AppendLine(string.Join(", ", labelIds.Select(x => CurrentChunk.Constants[x])));
+            }
         }
 
         private void AppendSingleLocalByte(byte b)
@@ -290,7 +308,7 @@ namespace ULox
         {
             if (b1 == Optimiser.NOT_LOCAL_BYTE && b2 == Optimiser.NOT_LOCAL_BYTE)
                 return;
-            
+
             stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})");
         }
 

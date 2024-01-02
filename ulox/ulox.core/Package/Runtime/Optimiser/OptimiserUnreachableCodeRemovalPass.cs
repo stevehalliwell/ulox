@@ -5,8 +5,7 @@ namespace ULox
 {
     public sealed class OptimiserUnreachableCodeRemovalPass : CompiledScriptIterator, IOptimiserPass
     {
-        private readonly List<(Chunk chunk, int inst)> _unreachableFollowingGoto = new List<(Chunk, int)>();
-        private readonly List<(Chunk chunk, int inst)> _unreachableFollowingReturns = new List<(Chunk, int)>();
+        private readonly List<(Chunk chunk, int inst)> _unreachablePoint = new List<(Chunk, int)>();
         private Optimiser _optimiser;
 
         public void Run(Optimiser optimiser, CompiledScript compiledScript)
@@ -24,13 +23,10 @@ namespace ULox
         {
             switch (packet.OpCode)
             {
-            case OpCode.GOTO://todo if this was smarter it could go after labels are removed
-                if (CurrentChunk.Instructions[CurrentInstructionIndex+1].OpCode != OpCode.LABEL)
-                    _unreachableFollowingGoto.Add((CurrentChunk, CurrentInstructionIndex));
-                break;
+            case OpCode.GOTO:
             case OpCode.RETURN:
-                if(!CurrentChunk.Labels.Any(x => x.Value > CurrentInstructionIndex))
-                    _unreachableFollowingReturns.Add((CurrentChunk, CurrentInstructionIndex));
+                if (!CurrentChunk.Labels.Any(x => x.Value == CurrentInstructionIndex))
+                    _unreachablePoint.Add((CurrentChunk, CurrentInstructionIndex + 1));
                 break;
             }
         }
@@ -41,30 +37,19 @@ namespace ULox
 
         public void Reset()
         {
-            _unreachableFollowingGoto.Clear();
-            _unreachableFollowingReturns.Clear();
+            _unreachablePoint.Clear();
         }
 
         private void ProcessUnreachable()
         {
-            foreach (var (chunk, inst) in _unreachableFollowingGoto)
+            foreach (var (chunk, inst) in _unreachablePoint.OrderByDescending(x => x.inst))
             {
-                for(var next = inst + 1; next < chunk.Instructions.Count; next++)
-                {
-                    if (chunk.Instructions[next].OpCode == OpCode.LABEL)
-                    {
-                        break;
-                    }
-                    _optimiser.AddToRemove(chunk, next);
-                }
-            }
+                var nextLabelLocOrEnd = chunk.Labels.Values.Where(x => x >= inst)
+                    .DefaultIfEmpty(chunk.Instructions.Count-1)
+                    .Min();
 
-            foreach (var (chunk, inst) in _unreachableFollowingReturns)
-            {
-                for (var next = inst + 1; next < chunk.Instructions.Count; next++)
-                {
-                    _optimiser.AddToRemove(chunk, next);
-                }
+                for (int i = inst; i <= nextLabelLocOrEnd; i++)
+                    _optimiser.AddToRemove(chunk, i);
             }
         }
     }

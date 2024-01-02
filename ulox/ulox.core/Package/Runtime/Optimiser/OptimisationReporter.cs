@@ -9,22 +9,24 @@ namespace ULox
         {
             public sealed class ChunkStatistics
             {
-                public int InstructionCount { get; set; }
+                public int LabelCount;
+                public int InstructionCount;
                 public int[] OpCodeOccurances = new int[OpCodeUtil.NumberOfOpCodes];
             }
 
             public Dictionary<Chunk, ChunkStatistics> ChunkLookUp = new Dictionary<Chunk, ChunkStatistics>();
             private ChunkStatistics _current;
 
-            protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
-            {
-                _current.InstructionCount = chunk.Instructions.Count;
-            }
-
             protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
             {
                 _current = new ChunkStatistics();
                 ChunkLookUp.Add(chunk, _current);
+            }
+
+            protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
+            {
+                _current.InstructionCount = chunk.Instructions.Count;
+                _current.LabelCount = chunk.Labels.Count;
             }
 
             protected override void ProcessPacket(ByteCodePacket packet)
@@ -59,6 +61,8 @@ namespace ULox
             public string Name;
             public int InstructionCountBefore;
             public int InstructionCountAfter;
+            public int LabelCountBefore;
+            public int LabelCountAfter;
             public int[] OpCodeOccurancesBefore = new int[OpCodeUtil.NumberOfOpCodes];
             public int[] OpCodeOccurancesAfter = new int[OpCodeUtil.NumberOfOpCodes];
         }
@@ -74,6 +78,7 @@ namespace ULox
             {
                 sb.AppendLine($"Chunk: {item.Name}");
                 sb.AppendLine($"  Instructions: {item.InstructionCountBefore} -> {item.InstructionCountAfter}");
+                sb.AppendLine($"  Labels: {item.LabelCountBefore} -> {item.LabelCountAfter}");
                 var hasHeader = false;
                 for (int i = 0; i < item.OpCodeOccurancesBefore.Length; i++)
                 {
@@ -103,6 +108,8 @@ namespace ULox
                     Name = item.Key.FullName,
                     InstructionCountBefore = preChunk.InstructionCount,
                     InstructionCountAfter = item.Value.InstructionCount,
+                    LabelCountBefore = preChunk.LabelCount,
+                    LabelCountAfter = item.Value.LabelCount,
                 };
                 for (int i = 0; i < preChunk.OpCodeOccurances.Length; i++)
                 {

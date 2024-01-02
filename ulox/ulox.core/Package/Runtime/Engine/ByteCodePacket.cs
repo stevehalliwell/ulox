@@ -173,5 +173,10 @@ namespace ULox
         {
             this.closureDetails = closureDetails;
         }
+
+        public override string ToString()
+        {
+            return $"{OpCode} {b1} {b2} {b3}";
+        }
     }
 }

@@ -1,6 +1,8 @@
-﻿namespace ULox
+﻿using System;
+
+namespace ULox
 {
-    public sealed class OptimiserRemoveLabelsPass : CompiledScriptIterator, IOptimiserPass
+    public sealed class OptimiserRemoveLabelOpCodesPass : CompiledScriptIterator, IOptimiserPass
     {
         private Optimiser _optimiser;
 

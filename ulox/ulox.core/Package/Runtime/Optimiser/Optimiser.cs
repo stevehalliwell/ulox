@@ -10,13 +10,15 @@ namespace ULox
         public bool Enabled { get; set; } = true;
         public List<IOptimiserPass> OptimiserPasses { get; } = new List<IOptimiserPass>() 
         {
-            new OptimiserUnreachableCodeRemovalPass(),
             new OptimiserRegisterisePass(),
-            new OptimiserSingleLabelReorderPass(),
+            new OptimiserRemoveLabelOpCodesPass(),
+            new OptimiserCollapseDuplicateLabelsPass(),
             new OptimiserUnreachableCodeRemovalPass(),
-            new OptimiserZeroJumpRemovalPass(),
+            new OptimiserGotoLabelReorderPass(),
+            new OptimiserUnreachableCodeRemovalPass(),
+            new OptimiserCollapseDuplicateLabelsPass(),
             new OptimiserCollapsePopsPass(),
-            new OptimiserRemoveLabelsPass(),
+            new OptimiserRemoveUnusedLabelOpCodesPass(),
         };
         public OptimisationReporter OptimisationReporter { get; set; }
 
@@ -53,19 +55,7 @@ namespace ULox
             return _toRemove.Any(x => x.chunk == chunk && x.inst == inst);
         }
 
-        public void FixUpToRemoves(Chunk chunk, int from, int numberMoved)
-        {
-            for (int i = _toRemove.Count - 1; i >= 0; i--)
-            {
-                var (c, inst) = _toRemove[i];
-                if (c == chunk && inst >= from)
-                {
-                    _toRemove[i] = (c, inst + numberMoved);
-                }
-            }
-        }
-
-        private void RemoveMarkedInstructions()
+        public void RemoveMarkedInstructions()
         {
             _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
             _toRemove = _toRemove.Distinct().ToList();

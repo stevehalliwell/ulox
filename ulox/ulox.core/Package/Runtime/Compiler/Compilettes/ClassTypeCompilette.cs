@@ -135,7 +135,6 @@ namespace ULox
             compiler.ConsumeEndStatement();
         }
 
-        //todo we know that these all happen together now, we don't need to jump and weave them all over the place
         private void Property(Compiler compiler)
         {
             another_property:

@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ULox
 {
+    //todo this is mostly future proofing, we don't have any pops to collapse yet
     public sealed class OptimiserCollapsePopsPass : CompiledScriptIterator, IOptimiserPass
     {
-        private List<(Chunk chunk, int inst)> _pops = new List<(Chunk chunk, int inst)>();
+        private readonly List<(Chunk chunk, int inst)> _popsToInspect = new List<(Chunk chunk, int inst)>();
         private Optimiser _optimiser;
 
         public void Run(Optimiser optimiser, CompiledScript compiledScript)
@@ -16,22 +18,16 @@ namespace ULox
 
         private void AdjustAndMarkCollapsePops()
         {
-            var pairEnd = _pops.Count - 1;
-            for (var i = 0; i < pairEnd; i++)
+            foreach (var (chunk, inst) in _popsToInspect)
             {
-                var (chunkCur, instCur) = _pops[i];
-                var (chunkNext, instNext) = _pops[i+1];
-
-                if (chunkCur != chunkNext)
+                //doing this incase labels are already removed
+                if (chunk.Labels.Any(x => x.Value == inst))
                     continue;
 
-                if (instCur != instNext - 1)
-                    continue;
-
-                _optimiser.AddToRemove(chunkCur, instCur);
-                var packCur = chunkCur.Instructions[instCur];
-                var packNext = chunkNext.Instructions[instNext];
-                chunkNext.Instructions[instNext] = new ByteCodePacket(OpCode.POP, (byte)(packCur.b1 + packNext.b1));
+                _optimiser.AddToRemove(chunk, inst);
+                var packCur = chunk.Instructions[inst];
+                var packNext = chunk.Instructions[inst+1];
+                chunk.Instructions[inst+1] = new ByteCodePacket(OpCode.POP, (byte)(packCur.b1 + packNext.b1));
             }
         }
 
@@ -44,7 +40,9 @@ namespace ULox
             switch (packet.OpCode)
             {
             case OpCode.POP:
-                _pops.Add((CurrentChunk, CurrentInstructionIndex));
+                if (CurrentInstructionIndex < CurrentChunk.Instructions.Count - 1 
+                    && CurrentChunk.Instructions[CurrentInstructionIndex+1].OpCode == OpCode.POP)
+                    _popsToInspect.Add((CurrentChunk, CurrentInstructionIndex));
                 break;
             }
         }
@@ -55,7 +53,7 @@ namespace ULox
 
         public void Reset()
         {
-            _pops.Clear();
+            _popsToInspect.Clear();
         }
     }
 }

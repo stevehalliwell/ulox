@@ -207,6 +207,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
             var labelName = compiler.TokenIterator.PreviousToken.Lexeme;
             var id = compiler.AddCustomStringConstant(labelName);
+            compiler.EmitGoto(id);  //we require that you cannot stumble into a label so if you request one you need to go to it immediately
             compiler.EmitLabel(id);
 
             compiler.ConsumeEndStatement();

@@ -158,9 +158,17 @@ namespace ULox
             return (ushort)(_labelIdToInstruction[labelID] + 1);
         }
 
-        internal void AddLabel(byte id, int currentChunkInstructinCount)
+        public void AddLabel(byte id, int currentChunkInstructinCount)
         {
             _labelIdToInstruction[id] = currentChunkInstructinCount;
+        }
+
+        public void RemoveLabel(byte labelID)
+        {
+            if (_constants[labelID].val.asString.String.StartsWith("INTERNAL_"))
+                return;
+
+            _labelIdToInstruction.Remove(labelID);
         }
 
         public void RemoveInstructionAt(int b)
@@ -197,6 +205,20 @@ namespace ULox
                     line = item.line,
                     startingInstruction = item.startingInstruction + delta
                 };
+            }
+        }
+
+        public override string ToString()
+        {
+            return $"{FullName} ({Instructions.Count} instructions)";
+        }
+
+        public void Sanitise()
+        {
+            foreach (var item in _labelIdToInstruction.ToList())
+            {
+                if (item.Value < 0)
+                    _labelIdToInstruction.Remove(item.Key);
             }
         }
     }

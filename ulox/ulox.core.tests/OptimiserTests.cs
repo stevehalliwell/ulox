@@ -522,7 +522,6 @@ var t = T(1,2);");
 
             Assert.AreEqual("MixMe", testEngine.InterpreterResult);
             StringAssert.Contains("Instructions: 6 -> 2", _opt.OptimisationReporter.GetReport().GenerateStringReport());
-            StringAssert.Contains("Labels: 1 -> 0", _opt.OptimisationReporter.GetReport().GenerateStringReport());
             StringAssert.Contains("Instructions: 15 -> 9", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 

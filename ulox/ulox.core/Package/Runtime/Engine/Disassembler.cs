@@ -170,8 +170,6 @@ namespace ULox
                 case ClosureType.UpValueInfo:
                     stringBuilder.Append($"{(packet.closureDetails.b1 == 1 ? "local" : "upvalue")} {packet.closureDetails.b2}");
                     break;
-                default:
-                    break;
                 }
             }
             break;
@@ -222,8 +220,6 @@ namespace ULox
                 break;
                 case TestOpType.TestSetEnd:
                     break;
-                default:
-                    break;
                 }
             }
             break;
@@ -232,9 +228,6 @@ namespace ULox
                 break;
             case OpCode.GOTO:
             case OpCode.GOTO_IF_FALSE:
-                PrintLabel(packet.b1);
-                break;
-            case OpCode.LABEL:
                 PrintLabel(packet.b1);
                 break;
             case OpCode.ADD:

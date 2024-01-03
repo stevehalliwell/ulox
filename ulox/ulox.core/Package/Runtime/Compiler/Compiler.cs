@@ -413,7 +413,6 @@ namespace ULox
             EndScope();
             var returnChunk = compilerStates.Pop().chunk;
             _allChunks.Add(returnChunk);
-            returnChunk.Sanitise();
             return returnChunk;
         }
 

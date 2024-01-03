@@ -223,15 +223,6 @@ namespace ULox
             return $"{FullName} ({Instructions.Count} instructions)";
         }
 
-        public void Sanitise()
-        {
-            foreach (var item in _labelIdToInstruction.ToList())
-            {
-                if (item.Value < 0)
-                    _labelIdToInstruction.Remove(item.Key);
-            }
-        }
-
         public bool IsInternalLabel(byte key)
         {
             return Constants[key].val.asString.String.StartsWith(InternalLabelPrefix);

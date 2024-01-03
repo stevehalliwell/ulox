@@ -1,56 +1,44 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using static ULox.Optimiser;
 
 namespace ULox
 {
-    public sealed class OptimiserUnreachableCodeRemovalPass : CompiledScriptIterator, IOptimiserPass
+    public sealed class OptimiserUnreachableCodeRemovalPass : IOptimiserPass
     {
-        private readonly List<(Chunk chunk, int inst)> _unreachablePoint = new List<(Chunk, int)>();
-        private Optimiser _optimiser;
+        private readonly List<int> _unreachablePoint = new List<int>();
 
-        public void Run(Optimiser optimiser, CompiledScript compiledScript)
+        public void Prepare(Optimiser optimiser, Chunk chunk)
         {
-            _optimiser = optimiser;
-            Iterate(compiledScript);
-            ProcessUnreachable();
+            _unreachablePoint.Clear();
         }
 
-        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
-        protected override void ProcessPacket(ByteCodePacket packet)
+        public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
         {
             switch (packet.OpCode)
             {
             case OpCode.GOTO:
             case OpCode.RETURN:
-                if (!CurrentChunk.Labels.Any(x => x.Value == CurrentInstructionIndex))
-                    _unreachablePoint.Add((CurrentChunk, CurrentInstructionIndex + 1));
+                if (!chunk.Labels.Any(x => x.Value == inst))
+                    _unreachablePoint.Add(inst + 1);
                 break;
             }
         }
 
-        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
+        public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-        }
-
-        public void Reset()
-        {
-            _unreachablePoint.Clear();
-        }
-
-        private void ProcessUnreachable()
-        {
-            foreach (var (chunk, inst) in _unreachablePoint.OrderByDescending(x => x.inst))
+            for (int i = _unreachablePoint.Count - 1; i >= 0; i--)
             {
+                var inst = _unreachablePoint[i];
                 var nextLabelLocOrEnd = chunk.Labels.Values.Where(x => x >= inst)
-                    .DefaultIfEmpty(chunk.Instructions.Count-1)
+                    .DefaultIfEmpty(chunk.Instructions.Count - 1)
                     .Min();
 
-                for (int i = inst; i <= nextLabelLocOrEnd; i++)
-                    _optimiser.AddToRemove(chunk, i);
+                for (int j = inst; j <= nextLabelLocOrEnd; j++)
+                    optimiser.AddToRemove(chunk, j);
             }
+
+            return PassCompleteRequest.None;
         }
     }
 }

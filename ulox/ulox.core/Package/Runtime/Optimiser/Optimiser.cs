@@ -5,6 +5,12 @@ namespace ULox
 {
     public sealed class Optimiser
     {
+        public enum PassCompleteRequest
+        {
+            None,
+            Repeat,
+        }
+
         public const byte NOT_LOCAL_BYTE = byte.MaxValue;
 
         public bool Enabled { get; set; } = true;
@@ -30,10 +36,24 @@ namespace ULox
                 return;
 
             OptimisationReporter?.PreOptimise(compiledScript);
-            foreach (var pass in OptimiserPasses)
+            foreach (var chunk in compiledScript.AllChunks)
             {
-                pass.Run(this, compiledScript);
-                RemoveMarkedInstructions();
+                for (int passIndex = 0; passIndex < OptimiserPasses.Count; passIndex++)
+                {
+                    var pass = OptimiserPasses[passIndex];
+                    var len = chunk.Instructions.Count;
+                    pass.Prepare(this, chunk);
+                    for (int i = 0; i < len; i++)
+                    {
+                        pass.ProcessPacket(this, chunk, i, chunk.Instructions[i]);
+                    }
+                    var request = pass.Complete(this, chunk);
+                    RemoveMarkedInstructions();
+                    if(request == PassCompleteRequest.Repeat)
+                    {
+                        passIndex--;
+                    }
+                }
             }
             OptimisationReporter?.PostOptimise(compiledScript);
         }
@@ -41,8 +61,6 @@ namespace ULox
         public void Reset()
         {
             _toRemove.Clear();
-            foreach (var pass in OptimiserPasses)
-                pass.Reset();
         }
 
         public void AddToRemove(Chunk chunk, int inst)

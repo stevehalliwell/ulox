@@ -1,80 +1,65 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using static ULox.Optimiser;
 
 namespace ULox
 {
-    public sealed class OptimiserCollapseDuplicateLabelsPass : CompiledScriptIterator, IOptimiserPass
+    public sealed class OptimiserCollapseDuplicateLabelsPass : IOptimiserPass
     {
-        private Optimiser _optimiser;
         private readonly OptimiserLabelUsageAccumulator _optimiserLabelUsageAccumulator = new OptimiserLabelUsageAccumulator();
 
-        public void Run(Optimiser optimiser, CompiledScript compiledScript)
+        public void Prepare(Optimiser optimiser, Chunk chunk)
         {
-            _optimiser = optimiser;
-            Iterate(compiledScript);
-            CollapseDuplicates(compiledScript);
+            _optimiserLabelUsageAccumulator.Clear();
         }
 
-        private void CollapseDuplicates(CompiledScript compiledScript)
+        public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
         {
-            foreach(var chunk in compiledScript.AllChunks)
+            _optimiserLabelUsageAccumulator.ProcessPacket(inst, packet);
+        }
+
+        public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
+        {
+            var allLabelLocs = chunk.Labels.Select(x => x.Value).OrderBy(x => x).ToArray();
+
+            foreach (var label in chunk.Labels.ToArray())
             {
-                var allLabelLocs = chunk.Labels.Select(x => x.Value).OrderBy(x => x).ToArray();
+                var labelsAtLoc = chunk.Labels.Where(x => x.Value == label.Value).ToArray();
 
-                foreach (var label in chunk.Labels.ToArray())
+                if (labelsAtLoc.Length > 1)
                 {
-                    var labelsAtLoc = chunk.Labels.Where(x => x.Value == label.Value).ToArray();
+                    //add a new label that is the combined name of all the labels at this location
+                    var newLabelName = string.Join("_", labelsAtLoc
+                        .Select(x => chunk.Constants[x.Key].val.asString.String));
 
-                    if(labelsAtLoc.Length > 1)
+                    var newLabelId = chunk.AddConstant(Value.New(newLabelName));
+                    chunk.AddLabel(newLabelId, label.Value);
+
+                    //remove all the old labels
+                    foreach (var labelToRemove in labelsAtLoc)
                     {
-                        //add a new label that is the combined name of all the labels at this location
-                        var newLabelName = string.Join("_", labelsAtLoc
-                            .Select(x => chunk.Constants[x.Key].val.asString.String));
-
-                        var newLabelId = chunk.AddConstant(Value.New(newLabelName));
-                        chunk.AddLabel(newLabelId, label.Value);
-
-                        //remove all the old labels
-                        foreach (var labelToRemove in labelsAtLoc)
-                        {
-                            chunk.RemoveLabel(labelToRemove.Key);
-                            //redirect all the jumps to the new label
-                            RedirectLabels(
-                                _optimiserLabelUsageAccumulator.LabelUsage,
-                                chunk,
-                                labelToRemove.Key,
-                                newLabelId);
-                        }
+                        chunk.RemoveLabel(labelToRemove.Key);
+                        //redirect all the jumps to the new label
+                        RedirectLabels(
+                            _optimiserLabelUsageAccumulator.LabelUsage,
+                            chunk,
+                            labelToRemove.Key,
+                            newLabelId);
                     }
                 }
             }
-        }
 
-        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
-        protected override void ProcessPacket(ByteCodePacket packet)
-        {
-            _optimiserLabelUsageAccumulator.ProcessPacket(CurrentChunk, CurrentInstructionIndex, packet);
-        }
-
-        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
-        public void Reset()
-        {
+            return PassCompleteRequest.None;
         }
 
         public static void RedirectLabels(
-            IReadOnlyList<(Chunk chunk, int from, byte label)> labelUsage,
-            Chunk chunkOfConcern,
+            IReadOnlyList<(int from, byte label)> labelUsage,
+            Chunk chunk,
             byte from,
             byte to)
         {
-            var labelUsageToRedirect = labelUsage.Where(x => x.chunk == chunkOfConcern && x.label == from);
-            foreach (var (chunk, fromInst, label) in labelUsageToRedirect)
+            var labelUsageToRedirect = labelUsage.Where(x => x.label == from);
+            foreach (var (fromInst, label) in labelUsageToRedirect)
             {
                 var packet = chunk.Instructions[fromInst];
                 switch (packet.OpCode)

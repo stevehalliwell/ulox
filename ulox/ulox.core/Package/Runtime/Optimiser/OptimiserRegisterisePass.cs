@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using static ULox.Optimiser;
 
 namespace ULox
 {
-    public sealed class OptimiserRegisterisePass : CompiledScriptIterator, IOptimiserPass
+    public sealed class OptimiserRegisterisePass : IOptimiserPass
     {
         private enum RegisteriseType
         {
@@ -14,21 +15,14 @@ namespace ULox
             SetProp,
         }
 
-        private Optimiser _optimiser;
-        private List<(Chunk chunk, int inst, RegisteriseType regType)> _potentialRegisterise = new List<(Chunk, int, RegisteriseType)>();
+        private List<(int inst, RegisteriseType regType)> _potentialRegisterise = new List<(int, RegisteriseType)>();
 
-        public void Run(Optimiser optimiser, CompiledScript compiledScript)
+        public void Prepare(Optimiser optimiser, Chunk chunk)
         {
-            _optimiser = optimiser;
-            Iterate(compiledScript);
-            ProcessRegisterise();
+            _potentialRegisterise.Clear();
         }
 
-        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
-        protected override void ProcessPacket(ByteCodePacket packet)
+        public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
         {
             switch (packet.OpCode)
             {
@@ -41,33 +35,29 @@ namespace ULox
             case OpCode.LESS:
             case OpCode.GREATER:
             case OpCode.GET_INDEX:
-                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.Binary));
+                _potentialRegisterise.Add((inst, RegisteriseType.Binary));
                 break;
             case OpCode.SET_INDEX:
-                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.SetIndex));
+                _potentialRegisterise.Add((inst, RegisteriseType.SetIndex));
                 break;
             case OpCode.NEGATE:
             case OpCode.NOT:
             case OpCode.COUNT_OF:
             case OpCode.DUPLICATE:
-                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.Uniary));
+                _potentialRegisterise.Add((inst, RegisteriseType.Uniary));
                 break;
             case OpCode.GET_PROPERTY:
-                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.GetProp));
+                _potentialRegisterise.Add((inst, RegisteriseType.GetProp));
                 break;
             case OpCode.SET_PROPERTY:
-                _potentialRegisterise.Add((CurrentChunk, CurrentInstructionIndex, RegisteriseType.SetProp));
+                _potentialRegisterise.Add((inst, RegisteriseType.SetProp));
                 break;
             }
         }
 
-        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
+        public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-        }
-
-        private void ProcessRegisterise()
-        {
-            foreach (var (chunk, inst, regType) in _potentialRegisterise)
+            foreach (var (inst, regType) in _potentialRegisterise)
             {
                 var original = chunk.Instructions[inst];
                 var nb1 = original.b1;
@@ -96,13 +86,13 @@ namespace ULox
                     //  and mark it as for removal
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _optimiser.AddToRemove(chunk, inst - 1);
+                        optimiser.AddToRemove(chunk, inst - 1);
                         nb2 = prev.b1;
                         var prevprev = chunk.Instructions[inst - 2];
                         // if the previous previous is getlocal take its byte and make first byte, mark for removal
                         if (prevprev.OpCode == OpCode.GET_LOCAL)
                         {
-                            _optimiser.AddToRemove(chunk, inst - 2);
+                            optimiser.AddToRemove(chunk, inst - 2);
                             nb1 = prevprev.b1;
                         }
                     }
@@ -111,19 +101,19 @@ namespace ULox
                 {
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _optimiser.AddToRemove(chunk, inst - 1);
+                        optimiser.AddToRemove(chunk, inst - 1);
                         nb3 = prev.b1;  //newval
 
                         var prevprev = chunk.Instructions[inst - 2];
                         if (prevprev.OpCode == OpCode.GET_LOCAL)
                         {
-                            _optimiser.AddToRemove(chunk, inst - 2);
+                            optimiser.AddToRemove(chunk, inst - 2);
                             nb2 = prevprev.b1; // index
 
                             var prevprevprev = chunk.Instructions[inst - 3];
                             if (prevprevprev.OpCode == OpCode.GET_LOCAL)
                             {
-                                _optimiser.AddToRemove(chunk, inst - 3);
+                                optimiser.AddToRemove(chunk, inst - 3);
                                 nb1 = prevprevprev.b1;  // target
                             }
                         }
@@ -134,7 +124,7 @@ namespace ULox
                 {
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _optimiser.AddToRemove(chunk, inst - 1);
+                        optimiser.AddToRemove(chunk, inst - 1);
                         nb1 = prev.b1;
                     }
                 }
@@ -142,20 +132,20 @@ namespace ULox
                 case RegisteriseType.GetProp:
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _optimiser.AddToRemove(chunk, inst - 1);
+                        optimiser.AddToRemove(chunk, inst - 1);
                         nb3 = prev.b1;
                     }
                     break;
                 case RegisteriseType.SetProp:
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {
-                        _optimiser.AddToRemove(chunk, inst - 1);
+                        optimiser.AddToRemove(chunk, inst - 1);
                         nb3 = prev.b1;  //target
 
                         var prevprev = chunk.Instructions[inst - 2];
                         if (prevprev.OpCode == OpCode.GET_LOCAL)
                         {
-                            _optimiser.AddToRemove(chunk, inst - 2);
+                            optimiser.AddToRemove(chunk, inst - 2);
                             nb2 = prevprev.b1; // newval
                         }
                     }
@@ -167,11 +157,8 @@ namespace ULox
 
                 chunk.Instructions[inst] = new ByteCodePacket(original.OpCode, nb1, nb2, nb3);
             }
-        }
 
-        public void Reset()
-        {
-            _potentialRegisterise.Clear();
+            return PassCompleteRequest.None;
         }
     }
 }

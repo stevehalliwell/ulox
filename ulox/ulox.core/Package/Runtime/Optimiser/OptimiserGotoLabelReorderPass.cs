@@ -1,43 +1,47 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using static ULox.Optimiser;
 
 namespace ULox
 {
-    public sealed class OptimiserGotoLabelReorderPass : CompiledScriptIterator, IOptimiserPass
+    public sealed class OptimiserGotoLabelReorderPass : IOptimiserPass
     {
-        private Optimiser _optimiser;
         private readonly OptimiserLabelUsageAccumulator _optimiserLabelUsageAccumulator = new OptimiserLabelUsageAccumulator();
-        private readonly List<(Chunk chunk, int loc)> _gotos = new List<(Chunk chunk, int loc)>();
-        private bool _madeChanges = false;
+        private readonly List<int> _gotos = new List<int>();
 
-        public void Run(Optimiser optimiser, CompiledScript compiledScript)
+        public void Prepare(Optimiser optimiser, Chunk chunk)
         {
-            _optimiser = optimiser;
-            do
-            {
-                _madeChanges = false;
-                Iterate(compiledScript);
-                ProcessZeroJumps();
-                //if (!_madeChanges) ProcessSingleUsageLabels();
-                _optimiser.RemoveMarkedInstructions();
-                _optimiserLabelUsageAccumulator.Clear();
-                _gotos.Clear();
-            } while (_madeChanges);
+            _optimiserLabelUsageAccumulator.Clear();
+            _gotos.Clear();
         }
 
-        private void ProcessZeroJumps()
+        public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
         {
+            _optimiserLabelUsageAccumulator.ProcessPacket(inst, packet);
+            switch (packet.OpCode)
+            {
+            case OpCode.GOTO:
+                _gotos.Add(inst);
+                break;
+            }
+        }
+
+        public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
+        {
+            var retval = PassCompleteRequest.None;
             var labelUsage = _optimiserLabelUsageAccumulator.LabelUsage;
             //any zero jumps just nuke them all and go next
             var zeroJumps = labelUsage
-                .Where(x => x.chunk.Labels[x.label] == x.from)
+                .Where(x => chunk.Labels[x.label] == x.from)
                 .ToArray();
 
-            foreach (var (chunk, from, labelId) in zeroJumps)
+            foreach (var (from, labelId) in zeroJumps)
             {
-                _optimiser.AddToRemove(chunk, from);
-                _madeChanges = true;
+                optimiser.AddToRemove(chunk, from);
+                retval = PassCompleteRequest.Repeat;
             }
+
+            return retval;
         }
 
         //todo we would like to do this but it's not playing nice
@@ -103,30 +107,5 @@ namespace ULox
         //        return;
         //    }
         //}
-
-        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
-        protected override void ProcessPacket(ByteCodePacket packet)
-        {
-            _optimiserLabelUsageAccumulator.ProcessPacket(CurrentChunk, CurrentInstructionIndex, packet);
-            switch (packet.OpCode)
-            {
-            case OpCode.GOTO:
-                _gotos.Add((CurrentChunk, CurrentInstructionIndex));
-                break;
-            }
-        }
-
-        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
-        {
-        }
-
-        public void Reset()
-        {
-            _optimiserLabelUsageAccumulator.Clear();
-            _gotos.Clear();
-        }
     }
 }

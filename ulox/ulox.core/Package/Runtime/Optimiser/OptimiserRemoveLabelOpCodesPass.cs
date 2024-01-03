@@ -1,37 +1,27 @@
-﻿using System;
+﻿using static ULox.Optimiser;
 
 namespace ULox
 {
-    public sealed class OptimiserRemoveLabelOpCodesPass : CompiledScriptIterator, IOptimiserPass
+    public sealed class OptimiserRemoveLabelOpCodesPass : IOptimiserPass
     {
-        private Optimiser _optimiser;
-
-        public void Run(Optimiser optimiser, CompiledScript compiledScript)
-        {
-            _optimiser = optimiser;
-            Iterate(compiledScript);
-        }
-
-        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
+        public void Prepare(Optimiser optimiser, Chunk chunk)
         {
         }
 
-        protected override void ProcessPacket(ByteCodePacket packet)
+        public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
         {
             switch (packet.OpCode)
             {
             case OpCode.LABEL:
-                _optimiser.AddToRemove(CurrentChunk, CurrentInstructionIndex);
+                optimiser.AddToRemove(chunk, inst);
                 break;
             }
         }
 
-        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
+        public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-        }
 
-        public void Reset()
-        {
+            return PassCompleteRequest.None;
         }
     }
 }

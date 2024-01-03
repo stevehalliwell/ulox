@@ -1,8 +1,11 @@
-﻿namespace ULox
+﻿using static ULox.Optimiser;
+
+namespace ULox
 {
     public interface IOptimiserPass
     {
-        void Reset();
-        void Run(Optimiser optimiser, CompiledScript compiledScript);
+        void Prepare(Optimiser optimiser, Chunk chunk);
+        void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet);
+        PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk);
     }
 }

@@ -19,7 +19,7 @@ namespace ULox
 
         public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-            foreach (var label in chunk.Labels.ToList())
+            foreach (var label in chunk.Labels.Where(x => !chunk.IsInternalLabel(x.Key)).ToList())
             {
                 if (!_optimiserLabelUsageAccumulator.LabelUsage.Any(x => x.label == label.Key))
                     chunk.RemoveLabel(label.Key);

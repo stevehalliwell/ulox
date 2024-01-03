@@ -20,11 +20,14 @@ namespace ULox
 
         public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-            var allLabelLocs = chunk.Labels.Select(x => x.Value).OrderBy(x => x).ToArray();
+            var allOptimisableLabels = chunk.Labels
+                .Where(x => !chunk.IsInternalLabel(x.Key))
+                .OrderBy(x => x.Value)
+                .ToArray();
 
-            foreach (var label in chunk.Labels.ToArray())
+            foreach (var label in allOptimisableLabels)
             {
-                var labelsAtLoc = chunk.Labels.Where(x => x.Value == label.Value).ToArray();
+                var labelsAtLoc = allOptimisableLabels.Where(x => x.Value == label.Value).ToArray();
 
                 if (labelsAtLoc.Length > 1)
                 {

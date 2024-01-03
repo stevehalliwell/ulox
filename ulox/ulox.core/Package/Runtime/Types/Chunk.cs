@@ -9,6 +9,7 @@ namespace ULox
         public const int InstructionStartingCapacity = 50;
         public const int ConstantStartingCapacity = 15;
         public const string DefaultChunkName = "unnamed_chunk";
+        public const string InternalLabelPrefix = "INTERNAL_";
 
         internal struct RunLengthLineNumber
         {
@@ -165,9 +166,6 @@ namespace ULox
 
         public void RemoveLabel(byte labelID)
         {
-            if (_constants[labelID].val.asString.String.StartsWith("INTERNAL_"))
-                return;
-
             _labelIdToInstruction.Remove(labelID);
         }
 
@@ -220,6 +218,11 @@ namespace ULox
                 if (item.Value < 0)
                     _labelIdToInstruction.Remove(item.Key);
             }
+        }
+
+        public bool IsInternalLabel(byte key)
+        {
+            return Constants[key].val.asString.String.StartsWith(InternalLabelPrefix);
         }
     }
 }

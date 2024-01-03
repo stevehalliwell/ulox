@@ -62,7 +62,7 @@
             compiler.PushCompilerState($"{CurrentTypeName}_typedeclare", FunctionType.TypeDeclare);
             byte nameConstant = compiler.AddStringConstant();
 
-            InitChainLabelId = compiler.UniqueChunkLabelStringConstant("INTERNAL_InitChain");
+            InitChainLabelId = compiler.UniqueChunkLabelStringConstant($"{Chunk.InternalLabelPrefix}InitChain");
             compiler.EmitPacket(new ByteCodePacket(OpCode.FETCH_GLOBAL, nameConstant));
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");

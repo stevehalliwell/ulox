@@ -25,6 +25,7 @@ namespace ULox
             new OptimiserCollapseDuplicateLabelsPass(),
             new OptimiserCollapsePopsPass(),
             new OptimiserRemoveUnusedLabelOpCodesPass(),
+            //new OptimiserUnreachableCodeRemovalPass(),
         };
         public OptimisationReporter OptimisationReporter { get; set; }
 
@@ -68,11 +69,6 @@ namespace ULox
             _toRemove.Add((chunk, inst));
         }
 
-        public bool IsMarkedForRemoval(Chunk chunk, int inst)
-        {
-            return _toRemove.Any(x => x.chunk == chunk && x.inst == inst);
-        }
-
         public void RemoveMarkedInstructions()
         {
             _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
@@ -84,6 +80,15 @@ namespace ULox
                 chunk.RemoveInstructionAt(b);
             }
             _toRemove.Clear();
+        }
+
+        public static bool IsIndexWeaved(Chunk chunk, int from)
+        {
+            if(from == 0)
+                return true;
+            //ensures only way to get here was via weave not fallthrough
+            var op = chunk.Instructions[from-1].OpCode;
+            return op == OpCode.GOTO || op == OpCode.RETURN;
         }
     }
 }

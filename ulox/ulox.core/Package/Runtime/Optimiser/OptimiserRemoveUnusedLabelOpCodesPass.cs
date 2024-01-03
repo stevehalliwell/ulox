@@ -14,7 +14,7 @@ namespace ULox
 
         public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
         {
-            _optimiserLabelUsageAccumulator.ProcessPacket(inst, packet);
+            _optimiserLabelUsageAccumulator.ProcessPacket(chunk, inst, packet);
         }
 
         public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)

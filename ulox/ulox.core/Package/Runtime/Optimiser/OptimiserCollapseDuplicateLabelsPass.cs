@@ -15,7 +15,7 @@ namespace ULox
 
         public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
         {
-            _optimiserLabelUsageAccumulator.ProcessPacket(inst, packet);
+            _optimiserLabelUsageAccumulator.ProcessPacket(chunk, inst, packet);
         }
 
         public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
@@ -56,13 +56,13 @@ namespace ULox
         }
 
         public static void RedirectLabels(
-            IReadOnlyList<(int from, byte label)> labelUsage,
+            IReadOnlyList<(int from, byte label, OpCode opCode, bool isWeaved)> labelUsage,
             Chunk chunk,
             byte from,
             byte to)
         {
             var labelUsageToRedirect = labelUsage.Where(x => x.label == from);
-            foreach (var (fromInst, label) in labelUsageToRedirect)
+            foreach (var (fromInst, label, opCode, isWeaved) in labelUsageToRedirect)
             {
                 var packet = chunk.Instructions[fromInst];
                 switch (packet.OpCode)

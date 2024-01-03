@@ -15,6 +15,11 @@ namespace ULox
         {
             public int startingInstruction;
             public int line;
+
+            public override string ToString()
+            {
+                return $"line {line} at instruction {startingInstruction}";
+            }
         }
 
         private readonly List<Value> _constants = new List<Value>(ConstantStartingCapacity);
@@ -51,7 +56,11 @@ namespace ULox
             for (int i = 0; i < _runLengthLineNumbers.Count; i++)
             {
                 if (instructionNumber < _runLengthLineNumbers[i].startingInstruction)
+                {
+                    var previous = i - 1;
+                    if (previous < 0) return 0;
                     return _runLengthLineNumbers[i - 1].line;
+                }
             }
 
             return _runLengthLineNumbers[_runLengthLineNumbers.Count - 1].line;
@@ -180,7 +189,10 @@ namespace ULox
         {
             Instructions.InsertRange(at, toMove);
             AdjustLabelIndicies(at, toMove.Count);
-            AdjustLineNumbers(at, toMove.Count);
+            for (int i = 0; i < toMove.Count; i++)
+            {
+                AdjustLineNumbers(at + i, 1);
+            }
         }
 
         internal void AdjustLabelIndicies(int byteChangedThreshold, int delta)

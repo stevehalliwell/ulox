@@ -125,15 +125,15 @@ namespace ULox.Core.Bench
         [Benchmark]
         public void Optimise_Script()
         {
-            var opt = new ByteCodeOptimiser();
-            opt.Optimise(Engine.CreateDefault().Context.CompileScript(CompileVsExecute.Script), null);
+            var opt = new Optimiser();
+            opt.Optimise(Engine.CreateDefault().Context.CompileScript(CompileVsExecute.Script));
         }
 
         [Benchmark]
         public void Optimise_While()
         {
-            var opt = new ByteCodeOptimiser();
-            opt.Optimise(Engine.CreateDefault().Context.CompileScript(BenchmarkScripts.While), null);
+            var opt = new Optimiser();
+            opt.Optimise(Engine.CreateDefault().Context.CompileScript(BenchmarkScripts.While));
         }
 
         [Benchmark]

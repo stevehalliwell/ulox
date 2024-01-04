@@ -1,10 +1,26 @@
 ﻿namespace ULox
 {
-    public abstract class CompiledScriptIterator
+    public abstract class ChunkIterator
     {
-        public int CurrentInstructionIndex { get; private set; }
-        public Chunk CurrentChunk { get; private set; }
+        public int CurrentInstructionIndex { get; protected set; }
+        public Chunk CurrentChunk { get; protected set; }
 
+        protected abstract void ProcessPacket(ByteCodePacket packet);
+
+        protected void ChunkIterate(Chunk chunk)
+        {
+            CurrentChunk = chunk;
+            for (CurrentInstructionIndex = 0; CurrentInstructionIndex < chunk.Instructions.Count; CurrentInstructionIndex++)
+            {
+                var packet = chunk.Instructions[CurrentInstructionIndex];
+
+                ProcessPacket(packet);
+            }
+        }
+    }
+
+    public abstract class CompiledScriptIterator : ChunkIterator
+    {
         public void Iterate(CompiledScript compiledScript)
         {
             Iterate(compiledScript, compiledScript.TopLevelChunk);
@@ -25,19 +41,7 @@
             PostChunkIterate(compiledScript, chunk);
         }
 
-        private void ChunkIterate(Chunk chunk)
-        {
-            CurrentChunk = chunk;
-            for (CurrentInstructionIndex = 0; CurrentInstructionIndex < chunk.Instructions.Count; CurrentInstructionIndex++)
-            {
-                var packet = chunk.Instructions[CurrentInstructionIndex];
-
-                ProcessPacket(packet);
-            }
-        }
-
         protected abstract void PostChunkIterate(CompiledScript compiledScript, Chunk chunk);
         protected abstract void PreChunkInterate(CompiledScript compiledScript, Chunk chunk);
-        protected abstract void ProcessPacket(ByteCodePacket packet);
     }
 }

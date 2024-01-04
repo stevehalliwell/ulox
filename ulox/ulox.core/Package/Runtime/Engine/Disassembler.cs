@@ -22,7 +22,7 @@ namespace ULox
 
                 foreach (var label in chunk.Labels)
                 {
-                    stringBuilder.AppendLine($"{chunk.ReadConstant(label.Key)} = {label.Value}");
+                    stringBuilder.AppendLine($"{chunk.ReadConstant(label.Key)} = {chunk.GetLabelPosition(label.Key)}");
                 }
             }
         }
@@ -122,7 +122,7 @@ namespace ULox
 
         private void PrintLabel(byte labelID)
         {
-            stringBuilder.Append($"({labelID}){CurrentChunk.Constants[labelID]}@{CurrentChunk.Labels[labelID]}");
+            stringBuilder.Append($"({labelID}){CurrentChunk.Constants[labelID]}@{CurrentChunk.GetLabelPosition(labelID)}");
         }
 
         protected override void ProcessPacket(ByteCodePacket packet)
@@ -169,8 +169,6 @@ namespace ULox
                     break;
                 case ClosureType.UpValueInfo:
                     stringBuilder.Append($"{(packet.closureDetails.b1 == 1 ? "local" : "upvalue")} {packet.closureDetails.b2}");
-                    break;
-                default:
                     break;
                 }
             }
@@ -222,8 +220,6 @@ namespace ULox
                 break;
                 case TestOpType.TestSetEnd:
                     break;
-                default:
-                    break;
                 }
             }
             break;
@@ -232,7 +228,6 @@ namespace ULox
                 break;
             case OpCode.GOTO:
             case OpCode.GOTO_IF_FALSE:
-            case OpCode.LABEL:
                 PrintLabel(packet.b1);
                 break;
             case OpCode.ADD:
@@ -277,29 +272,45 @@ namespace ULox
             }
 
             stringBuilder.AppendLine();
+
+            AppendAnyLabels();
+            
             _currentInstructionCount++;
+        }
+
+        private void AppendAnyLabels()
+        {
+            var labelIds = CurrentChunk.Labels
+                .Where(x => x.Value == CurrentInstructionIndex)
+                .Select(x => x.Key);
+
+            if(labelIds.Any())
+            {
+                stringBuilder.Append(" <-- Label: ");
+                stringBuilder.AppendLine(string.Join(", ", labelIds.Select(x => CurrentChunk.Constants[x])));
+            }
         }
 
         private void AppendSingleLocalByte(byte b)
         {
-            if (b != ByteCodeOptimiser.NOT_LOCAL_BYTE)
+            if (b != Optimiser.NOT_LOCAL_BYTE)
                 stringBuilder.Append($" ({b})");
         }
 
         private void AppendOptionalTwoLocals(byte b1, byte b2)
         {
-            if (b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE)
+            if (b1 == Optimiser.NOT_LOCAL_BYTE && b2 == Optimiser.NOT_LOCAL_BYTE)
                 return;
-            
-            stringBuilder.Append($" ({((b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})");
+
+            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})");
         }
 
         private void AppendOptionalRegistersSetIndex(byte b1, byte b2, byte b3)
         {
-            if (b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE && b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE)
+            if (b1 == Optimiser.NOT_LOCAL_BYTE && b2 == Optimiser.NOT_LOCAL_BYTE && b3 == Optimiser.NOT_LOCAL_BYTE)
                 return;
 
-            stringBuilder.Append($" ({((b1 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())}, {((b3 == ByteCodeOptimiser.NOT_LOCAL_BYTE) ? "_" : b3.ToString())})");
+            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())}, {((b3 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b3.ToString())})");
         }
 
         private void DoConstant(ByteCodePacket packet)

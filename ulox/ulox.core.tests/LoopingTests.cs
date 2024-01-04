@@ -447,12 +447,9 @@ loop arr
         public void Remove_WhenWithinLoop_ShouldRemoveItem()
         {
             testEngine.Run(@"
-var arr = [];
-arr.Add(1);
-arr.Add(2);
-arr.Add(3);
+var arr = [1,2,3,];
 
-print(arr.Count());
+print(""pre"");
 
 loop arr
 {
@@ -468,10 +465,10 @@ loop arr
     }
 }
 
-print(arr.Count());
+print(""post"");
 ");
 
-            Assert.AreEqual("3132", testEngine.InterpreterResult);
+            Assert.AreEqual("pre13post", testEngine.InterpreterResult);
         }
 
         [Test]

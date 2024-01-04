@@ -7,7 +7,7 @@ namespace ULox
     {
         private readonly Scanner _scanner = new Scanner();
         private readonly Compiler _compiler = new Compiler();
-        public ByteCodeOptimiser Optimiser { get; } = new ByteCodeOptimiser();
+        public Optimiser Optimiser { get; } = new Optimiser();
         public TypeInfo TypeInfo => _compiler.TypeInfo;
 
         public List<CompiledScript> CompiledScripts { get; } = new List<CompiledScript>();
@@ -42,7 +42,7 @@ namespace ULox
             var compiled = _compiler.Compile(_scanner, script);
             
             CompiledScripts.Add(compiled);
-            Optimiser.Optimise(compiled, TypeInfo);
+            Optimiser.Optimise(compiled);
             
             return compiled;
         }

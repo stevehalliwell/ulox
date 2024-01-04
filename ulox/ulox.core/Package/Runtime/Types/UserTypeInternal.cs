@@ -74,9 +74,9 @@ namespace ULox
                 Fields.AddOrSet(new HashedString(staticField), Value.Null());
             }
 
-            foreach (var (chunk, loc) in _typeInfoEntry.InitChains)
+            foreach (var (chunk, labelId) in _typeInfoEntry.InitChains)
             {
-                AddInitChain(chunk, loc);
+                AddInitChain(chunk, labelId);
             }
 
             foreach (var method in _typeInfoEntry.Methods)

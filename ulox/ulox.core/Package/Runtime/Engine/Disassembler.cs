@@ -252,19 +252,17 @@ namespace ULox
                 break;
             case OpCode.PUSH_VALUE:
             {
-                stringBuilder.Append($"({packet.pushValueDetails.ValueType})");
-                switch (packet.pushValueDetails.ValueType)
+                var pushValueOpType = (PushValueOpType)packet.b1;
+                stringBuilder.Append($"({pushValueOpType})");
+                switch (pushValueOpType)
                 {
                 case PushValueOpType.Null:
                     break;
                 case PushValueOpType.Bool:
-                    stringBuilder.Append($"({packet.pushValueDetails._b})");
+                    stringBuilder.Append($"({packet.b2 == 1})");
                     break;
-                case PushValueOpType.Int:
-                    stringBuilder.Append($"({packet.pushValueDetails._i})");
-                    break;
-                case PushValueOpType.Float:
-                    stringBuilder.Append($"({packet.pushValueDetails._f})");
+                case PushValueOpType.Byte:
+                    stringBuilder.Append($"({packet.b2})");
                     break;
                 }
             }

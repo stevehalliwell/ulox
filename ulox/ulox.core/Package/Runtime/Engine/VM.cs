@@ -315,20 +315,17 @@ namespace ULox
 
                 case OpCode.PUSH_VALUE:
                 {
-                    switch (packet.pushValueDetails.ValueType)
+                    var pushType = (PushValueOpType)packet.b1;
+                    switch (pushType)
                     {
                     case PushValueOpType.Null:
                         Push(Value.Null());
                         break;
                     case PushValueOpType.Bool:
-                        Push(Value.New(packet.pushValueDetails._b));
+                        Push(Value.New(packet.b2 == 1));
                         break;
-                    case PushValueOpType.Int:
-                        Push(Value.New(packet.pushValueDetails._i));
-                        break;
-                    case PushValueOpType.Float:
-                        //trick to prevent 1.2 turning into 1.2000000000046
-                        Push(Value.New((double)(decimal)packet.pushValueDetails._f));
+                    case PushValueOpType.Byte:
+                        Push(Value.New(packet.b2));
                         break;
                     default:
                         break;

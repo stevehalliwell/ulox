@@ -169,7 +169,13 @@ namespace ULox
             => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
 
         public void EmitNULL()
-            => EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(PushValueOpType.Null)));
+            => EmitPacket(new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Null));
+
+        public void EmitPushValue(byte b)
+            => EmitPacket(new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Byte, b));
+
+        public void EmitPushValue(bool b)
+            => EmitPacket(new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Bool, (byte)(b ? 1 : 0)));
 
         public byte AddStringConstant()
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);

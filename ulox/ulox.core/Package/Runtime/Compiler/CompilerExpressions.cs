@@ -49,9 +49,8 @@ namespace ULox
         public static void Literal(Compiler compiler, bool canAssign)
         {
             switch (compiler.TokenIterator.PreviousToken.TokenType)
-            {
-            case TokenType.TRUE: compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(true))); break;
-            case TokenType.FALSE: compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(false))); break;
+            {case TokenType.TRUE: compiler.EmitPushValue(true); break;
+            case TokenType.FALSE: compiler.EmitPushValue(false); break;
             case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
             {
@@ -59,25 +58,9 @@ namespace ULox
 
                 var isInt = number == Math.Truncate(number);
 
-                if (isInt && number < int.MaxValue && number >= int.MinValue)
+                if (isInt && number < byte.MaxValue && number >= byte.MinValue)
                 {
-                    compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails((int)number)));
-                    return;
-                }
-
-                var tooLongForFloat = compiler.TokenIterator.PreviousToken.Lexeme.Length > 6;
-                var asFloat = (float)number;
-                var asDoubleAgain = (double)asFloat;
-                var convertedDif = Math.Abs(number - asDoubleAgain);
-                var relativeDif = convertedDif / number;
-                var isFloat = !float.IsNaN(asFloat)
-                    && !double.IsNaN(convertedDif)
-                    && !tooLongForFloat
-                    && relativeDif < 0.00001;
-
-                if (isFloat)
-                {
-                    compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(asFloat)));
+                    compiler.EmitPushValue((byte)number);
                     return;
                 }
 

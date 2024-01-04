@@ -53,7 +53,7 @@ namespace ULox
 
             compiler.EmitPacket(new ByteCodePacket(OpCode.MULTI_VAR, false));
 
-            compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(varNames.Count)));
+            compiler.EmitPushValue((byte)varNames.Count);
             compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.MultiReturnMatches));
 
             if (compiler.CurrentCompilerState.scopeDepth == 0)

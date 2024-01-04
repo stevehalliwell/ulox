@@ -353,11 +353,11 @@ namespace ULox
                     var b3 = packet.b3;
                     var b2 = packet.b2;
                     var b1 = packet.b1;
-                    if(b3 != Optimiser.NOT_LOCAL_BYTE)
-                        Push(_valueStack[_currentCallFrame.StackStart + b3]);
+                    _valueStack.Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
                     if(b2 != Optimiser.NOT_LOCAL_BYTE)
                         Push(_valueStack[_currentCallFrame.StackStart + b2]);
-                    _valueStack.Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
+                    if(b3 != Optimiser.NOT_LOCAL_BYTE)
+                        Push(_valueStack[_currentCallFrame.StackStart + b3]);
                     break;
 
                 case OpCode.SET_LOCAL:

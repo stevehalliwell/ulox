@@ -6,10 +6,12 @@ namespace ULox
     public sealed class OptimiserCollapseOpsPass : IOptimiserPass
     {
         private readonly List<int> _byteToProcess = new List<int>();
+        private readonly List<int> _getLocals = new List<int>();
 
         public void Prepare(Optimiser optimiser, Chunk chunk)
         {
             _byteToProcess.Clear();
+            _getLocals.Clear();
         }
 
         public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
@@ -20,12 +22,16 @@ namespace ULox
                 if (packet.b1 == (byte)PushValueOpType.Byte)
                     _byteToProcess.Add(inst);
                 break;
+            case OpCode.GET_LOCAL:
+                if (packet.b2 == Optimiser.NOT_LOCAL_BYTE)   //for now only optimise single byte locals
+                    _getLocals.Add(inst);
+                break;
             }
         }
 
         public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-            for (int i = 0; i < _byteToProcess.Count-1; i++)
+            for (int i = 0; i < _byteToProcess.Count - 1; i++)
             {
                 var inst1 = _byteToProcess[i];
                 var inst2 = _byteToProcess[i + 1];
@@ -43,6 +49,41 @@ namespace ULox
 
                 i++;
             }
+
+            for (int i = 0; i < _getLocals.Count - 1; i++)
+            {
+                var inst1 = _getLocals[i];
+                var inst2 = _getLocals[i + 1];
+                if (inst2 - inst1 != 1)
+                    continue;
+
+                var packet2 = chunk.Instructions[inst2];
+                if (packet2.b2 != Optimiser.NOT_LOCAL_BYTE)   //for now only optimise single byte locals
+                    continue;
+                
+                var packet1 = chunk.Instructions[inst1];
+                var b1 = packet1.b1;
+                var b2 = packet2.b1;
+                var b3 = NOT_LOCAL_BYTE;
+                optimiser.AddToRemove(chunk, inst2);
+
+                //check that 3rd too
+                if (i < _getLocals.Count - 2)
+                {
+                    var inst3 = _getLocals[i + 2];
+                    if (inst3 - inst2 == 1)
+                    {
+                        b3 = chunk.Instructions[inst3].b1;
+                        optimiser.AddToRemove(chunk, inst3);
+                        i++;
+                    }
+                }
+
+                var newPacket = new ByteCodePacket(OpCode.GET_LOCAL, b1, b2, b3);
+                chunk.Instructions[inst1] = newPacket;
+                i++;
+            }
+
             return PassCompleteRequest.None;
         }
     }

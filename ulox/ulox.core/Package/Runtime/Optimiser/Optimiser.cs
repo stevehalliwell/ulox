@@ -17,6 +17,7 @@ namespace ULox
         public List<IOptimiserPass> OptimiserPasses { get; } = new List<IOptimiserPass>() 
         {
             new OptimiserRegisterisePass(),
+            new OptimiserCollapseOpsPass(),
             new OptimiserRemoveLabelOpCodesPass(),
             new OptimiserCollapseDuplicateLabelsPass(),
             new OptimiserUnreachableCodeRemovalPass(),

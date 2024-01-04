@@ -5,5 +5,6 @@
         Null,
         Bool,
         Byte,
+        Bytes,
     }
 }

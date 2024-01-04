@@ -847,5 +847,75 @@ print(""post"");
             Assert.AreEqual("pre13post", testEngine.InterpreterResult);
             StringAssert.Contains("Instructions: 102 -> 77", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
+
+        [Test]
+        public void Optimiser_Vec2_Operations_ShouldRemoveItem()
+        {
+            testEngine.Run(@"
+class Vec2
+{
+	static Lerp(x1,y1,x2,y2,p) (xOut, yOut)
+	{
+		xOut = x1 + (x2 - x1) * p;
+		yOut = y1 + (y2 - y1) * p;
+	}
+
+	static Length(x,y)
+	{
+		retval = Math.Sqrt(x*x + y*y);
+		if(retval != retval)
+		{
+			retval = 0;
+		}
+	}
+
+	//TODO needs tests
+	static LengthAndNormalise(xIn, yIn) (len, xOut, yOut)
+	{
+		len = Vec2.Length(xIn, yIn);
+		if(len != 0)
+		{
+			xOut = xIn / len;
+			yOut = yIn / len;
+			return;
+		}
+		xOut = 0;
+		yOut = 0;
+	}
+
+	//TODO needs tests
+	static Dot(x1, y1, x2, y2)
+	{
+		retval = x1 * x2 + y1 * y2;
+	}
+
+	static Angle(x, y)
+	{
+		var rads = Math.Atan2(y, x);
+		retval = Math.Rad2Deg(rads);
+	}
+}
+
+fun DoSomeVecMath()
+{
+    var (ax, ay) = (1,2);
+    var (bx, by) = (3,4);
+    var (cx, cy) = (0,0);
+
+    var (addx, addy) = (ax + bx, ay + by);
+    var (subx, suby) = (ax - bx, ay - by);
+    var (lx, ly) = Vec2.Lerp(ax, ay, bx, by, 0.5);
+    var d = Vec2.Dot(ax,ay, bx, by);
+    var (blen, bnx, bny) = Vec2.LengthAndNormalise(bx, by);
+
+    print(""{ax},{ay},{bx},{by},{cx},{cy},{addx},{addy},{subx},{suby},{lx},{ly},{d},{blen},{bnx},{bny}"");
+}
+
+DoSomeVecMath();
+");
+
+            Assert.AreEqual("1,2,3,4,0,0,4,6,-2,-2,2,3,11,5,0.6,0.8", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 133 -> 105", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+        }
     }
 }

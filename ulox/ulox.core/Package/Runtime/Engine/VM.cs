@@ -327,6 +327,10 @@ namespace ULox
                     case PushValueOpType.Byte:
                         Push(Value.New(packet.b2));
                         break;
+                    case PushValueOpType.Bytes:
+                        Push(Value.New(packet.b2));
+                        Push(Value.New(packet.b3));
+                        break;
                     default:
                         break;
                     }
@@ -346,6 +350,13 @@ namespace ULox
                 break;
 
                 case OpCode.GET_LOCAL:
+                    var b3 = packet.b3;
+                    var b2 = packet.b2;
+                    var b1 = packet.b1;
+                    if(b3 != Optimiser.NOT_LOCAL_BYTE)
+                        Push(_valueStack[_currentCallFrame.StackStart + b3]);
+                    if(b2 != Optimiser.NOT_LOCAL_BYTE)
+                        Push(_valueStack[_currentCallFrame.StackStart + b2]);
                     _valueStack.Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
                     break;
 
@@ -515,8 +526,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Value PopOrLocal(byte b1)
         {
-            return b1 == Optimiser.NOT_LOCAL_BYTE 
-                ? _valueStack.Pop() 
+            return b1 == Optimiser.NOT_LOCAL_BYTE
+                ? _valueStack.Pop()
                 : _valueStack[_currentCallFrame.StackStart + b1];
         }
 

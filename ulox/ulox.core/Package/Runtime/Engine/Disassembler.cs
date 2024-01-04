@@ -150,7 +150,6 @@ namespace ULox
                 break;
             case OpCode.MULTI_VAR:
             case OpCode.POP:
-            case OpCode.GET_LOCAL:
             case OpCode.SET_LOCAL:
             case OpCode.GET_UPVALUE:
             case OpCode.SET_UPVALUE:
@@ -264,6 +263,29 @@ namespace ULox
                 case PushValueOpType.Byte:
                     stringBuilder.Append($"({packet.b2})");
                     break;
+                case PushValueOpType.Bytes:
+                    stringBuilder.Append($"({packet.b2},{packet.b3})");
+                    break;
+                }
+            }
+            break;
+
+            case OpCode.GET_LOCAL:
+            {
+                var b1 = packet.b1;
+                var b2 = packet.b2;
+                var b3 = packet.b3;
+                if(b3 != Optimiser.NOT_LOCAL_BYTE)
+                {
+                    stringBuilder.Append($"({b1},{b2},{b3})");
+                }
+                else if(b2 != Optimiser.NOT_LOCAL_BYTE)
+                {
+                    stringBuilder.Append($"({b1},{b2})");
+                }
+                else
+                {
+                    stringBuilder.Append($"({b1})");
                 }
             }
             break;
@@ -272,7 +294,7 @@ namespace ULox
             stringBuilder.AppendLine();
 
             AppendAnyLabels();
-            
+
             _currentInstructionCount++;
         }
 
@@ -282,7 +304,7 @@ namespace ULox
                 .Where(x => x.Value == CurrentInstructionIndex)
                 .Select(x => x.Key);
 
-            if(labelIds.Any())
+            if (labelIds.Any())
             {
                 stringBuilder.Append(" <-- Label: ");
                 stringBuilder.AppendLine(string.Join(", ", labelIds.Select(x => CurrentChunk.Constants[x])));

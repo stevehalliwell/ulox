@@ -24,7 +24,7 @@ namespace ULox
             new OptimiserGotoLabelReorderPass(),
             new OptimiserUnreachableCodeRemovalPass(),
             new OptimiserCollapseDuplicateLabelsPass(),
-            new OptimiserCollapsePopsPass(),
+            new OptimiserCollapseOpsPass(),
             new OptimiserRemoveUnusedLabelOpCodesPass(),
             //new OptimiserUnreachableCodeRemovalPass(),
         };

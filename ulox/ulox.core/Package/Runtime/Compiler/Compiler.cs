@@ -18,7 +18,7 @@ namespace ULox
         private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
         private readonly List<Chunk> _allChunks = new List<Chunk>();
-        private readonly ClassTypeCompilette _classCompiler = new ClassTypeCompilette(); 
+        private readonly ClassTypeCompilette _classCompiler = new ClassTypeCompilette();
         private readonly List<CompilerMessage> _messages = new List<CompilerMessage>();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
@@ -468,7 +468,7 @@ namespace ULox
         public void AutoDefineRetval()
         {
             var retvalId = DeclareAndDefineCustomVariable("retval");
-            CurrentCompilerState.locals[CurrentCompilerState.localCount-1].IsAccessed = true;
+            CurrentCompilerState.locals[CurrentCompilerState.localCount - 1].IsAccessed = true;
             IncreaseReturn(retvalId);
         }
 
@@ -641,16 +641,7 @@ namespace ULox
 
         internal void EmitPop(byte popCount = 1)
         {
-            //optimiser does this too but more elaborate, we can just do the simple
-            var lastInstruction = CurrentChunk.Instructions.Last();
-            if (lastInstruction.OpCode == OpCode.POP)
-            {
-                CurrentChunk.Instructions[CurrentChunk.Instructions.Count - 1] = new ByteCodePacket(OpCode.POP, (byte)(lastInstruction.b1 + popCount));
-            }
-            else
-            {
-                EmitPacket(new ByteCodePacket(OpCode.POP, popCount));
-            }
+            EmitPacket(new ByteCodePacket(OpCode.POP, popCount));
         }
 
         internal string IdentifierOrChunkUnique(string prefix)

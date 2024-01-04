@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using static ULox.Optimiser;
 
 namespace ULox
@@ -7,11 +8,13 @@ namespace ULox
     {
         private readonly List<int> _byteToProcess = new List<int>();
         private readonly List<int> _getLocals = new List<int>();
+        private readonly List<int> _popsToInspect = new List<int>();
 
         public void Prepare(Optimiser optimiser, Chunk chunk)
         {
             _byteToProcess.Clear();
             _getLocals.Clear();
+            _popsToInspect.Clear();
         }
 
         public void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet)
@@ -26,6 +29,11 @@ namespace ULox
                 if (packet.b2 == Optimiser.NOT_LOCAL_BYTE)   //for now only optimise single byte locals
                     _getLocals.Add(inst);
                 break;
+            case OpCode.POP:
+                if (inst < chunk.Instructions.Count - 1
+                    && chunk.Instructions[inst + 1].OpCode == OpCode.POP)
+                    _popsToInspect.Add(inst);
+                break;
             }
         }
 
@@ -35,7 +43,8 @@ namespace ULox
             {
                 var inst1 = _byteToProcess[i];
                 var inst2 = _byteToProcess[i + 1];
-                if (inst2 - inst1 != 1)
+                if (inst2 - inst1 != 1
+                    || chunk.Labels.Any(x => x.Value == inst1))
                     continue;
 
                 var packet1 = chunk.Instructions[inst1];
@@ -54,7 +63,8 @@ namespace ULox
             {
                 var inst1 = _getLocals[i];
                 var inst2 = _getLocals[i + 1];
-                if (inst2 - inst1 != 1)
+                if (inst2 - inst1 != 1
+                    || chunk.Labels.Any(x => x.Value == inst1))
                     continue;
 
                 var packet2 = chunk.Instructions[inst2];
@@ -71,7 +81,8 @@ namespace ULox
                 if (i < _getLocals.Count - 2)
                 {
                     var inst3 = _getLocals[i + 2];
-                    if (inst3 - inst2 == 1)
+                    if (inst3 - inst2 == 1
+                        || chunk.Labels.Any(x => x.Value == inst2))
                     {
                         b3 = chunk.Instructions[inst3].b1;
                         optimiser.AddToRemove(chunk, inst3);
@@ -82,6 +93,17 @@ namespace ULox
                 var newPacket = new ByteCodePacket(OpCode.GET_LOCAL, b1, b2, b3);
                 chunk.Instructions[inst1] = newPacket;
                 i++;
+            }
+
+            foreach (var inst in _popsToInspect)
+            {
+                if (chunk.Labels.Any(x => x.Value == inst))
+                    continue;
+
+                optimiser.AddToRemove(chunk, inst);
+                var packCur = chunk.Instructions[inst];
+                var packNext = chunk.Instructions[inst + 1];
+                chunk.Instructions[inst + 1] = new ByteCodePacket(OpCode.POP, (byte)(packCur.b1 + packNext.b1));
             }
 
             return PassCompleteRequest.None;

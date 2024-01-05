@@ -113,11 +113,6 @@ namespace ULox
             b1 = (byte)validateOp;
         }
 
-        public ByteCodePacket(OpCode opCode, bool b) : this(opCode)
-        {
-            b1 = b ? (byte)1 : (byte)0;
-        }
-
         public ByteCodePacket(OpCode opCode, TestOpDetails testOpDetails) : this(opCode)
         {
             this.testOpDetails = testOpDetails;

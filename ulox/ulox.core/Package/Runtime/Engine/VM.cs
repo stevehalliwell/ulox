@@ -172,7 +172,7 @@ namespace ULox
 
                     break;
                 case OpCode.MULTI_VAR:
-                    DoMultiVarOp(packet.BoolValue);
+                    DoMultiVarOp(packet.b1, packet.b2);
                     break;
                 case OpCode.YIELD:
                     return InterpreterResult.YIELD;
@@ -757,13 +757,6 @@ namespace ULox
         {
             switch (validateOp)
             {
-            case ValidateOp.MultiReturnMatches:
-                var requestedResultsValue = Pop();
-                var requestedResults = (int)requestedResultsValue.val.asDouble;
-                var availableResults = _returnStack.Count;
-                if (requestedResults != availableResults)
-                    ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
-                break;
             case ValidateOp.Meets:
             {
                 var (rhs, lhs) = Pop2();
@@ -898,9 +891,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMultiVarOp(bool start)
+        private void DoMultiVarOp(byte b1, byte b2)
         {
-            if (start)
+            if (b1 == 1)
                 _currentCallFrame.MultiAssignStart = (byte)_valueStack.Count;
             else
             {
@@ -912,6 +905,11 @@ namespace ULox
                 {
                     _returnStack.Push(Value.Null());
                 }
+
+                var requestedResults = b2;
+                var availableResults = _returnStack.Count;
+                if (requestedResults != availableResults)
+                    ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
             }
         }
 

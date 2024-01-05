@@ -915,7 +915,7 @@ DoSomeVecMath();
 ");
 
             Assert.AreEqual("1,2,3,4,0,0,4,6,-2,-2,2,3,11,5,0.6,0.8", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 133 -> 100", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 119 -> 86", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
     }
 }

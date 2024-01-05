@@ -148,7 +148,6 @@ namespace ULox
                 DoConstant(packet);
                 AppendSingleLocalByte(packet.b3);
                 break;
-            case OpCode.MULTI_VAR:
             case OpCode.POP:
             case OpCode.SET_LOCAL:
             case OpCode.GET_UPVALUE:
@@ -275,11 +274,11 @@ namespace ULox
                 var b1 = packet.b1;
                 var b2 = packet.b2;
                 var b3 = packet.b3;
-                if(b3 != Optimiser.NOT_LOCAL_BYTE)
+                if (b3 != Optimiser.NOT_LOCAL_BYTE)
                 {
                     stringBuilder.Append($"({b1},{b2},{b3})");
                 }
-                else if(b2 != Optimiser.NOT_LOCAL_BYTE)
+                else if (b2 != Optimiser.NOT_LOCAL_BYTE)
                 {
                     stringBuilder.Append($"({b1},{b2})");
                 }
@@ -289,7 +288,18 @@ namespace ULox
                 }
             }
             break;
+            case OpCode.MULTI_VAR:
+            {
+                var b1 = packet.b1;
+                var b2 = packet.b2;
+                if (b1 == 1)
+                    stringBuilder.Append($"start");
+                else if (b1 == 0)
+                    stringBuilder.Append($"end ({b2})");
+                break;
             }
+            }
+
 
             stringBuilder.AppendLine();
 

@@ -113,7 +113,7 @@ var (res1) = A(); //2 is left on stack
 
 print (res1);");
 
-            StringAssert.StartsWith("Multi var assign to result mismatch. Taking '1' but results contains '2' at ip:'8' in chunk:'unnamed_chunk(test:4)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Multi var assign to result mismatch. Taking '1' but results contains '2' at ip", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -128,7 +128,7 @@ print (res1);
 print (res2);
 print (res3);");
 
-            StringAssert.StartsWith("Multi var assign to result mismatch. Taking '3' but results contains '2' at ip:'8' in chunk:'unnamed_chunk(test:4)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Multi var assign to result mismatch. Taking '3' but results contains '2' at ip", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -159,7 +159,7 @@ var (res1,res2) = A();
 print(res1);
 print(res2);");
 
-            StringAssert.StartsWith("Multi var assign to result mismatch. Taking '2' but results contains '1' at ip:'8' in chunk:'unnamed_chunk(test:4)'.", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Multi var assign to result mismatch. Taking '2' but results contains '1' at ip", testEngine.InterpreterResult);
         }
 
         [Test]

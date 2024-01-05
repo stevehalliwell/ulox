@@ -16,6 +16,7 @@ namespace ULox
         public bool Enabled { get; set; } = true;
         public List<IOptimiserPass> OptimiserPasses { get; } = new List<IOptimiserPass>() 
         {
+            new OptimiserSimpleRegisterisePass(),
             new OptimiserRegisterisePass(),
             new OptimiserCollapseOpsPass(),
             new OptimiserRemoveLabelOpCodesPass(),
@@ -26,7 +27,7 @@ namespace ULox
             new OptimiserCollapseDuplicateLabelsPass(),
             new OptimiserCollapseOpsPass(),
             new OptimiserRemoveUnusedLabelOpCodesPass(),
-            //new OptimiserUnreachableCodeRemovalPass(),
+            new OptimiserUnreachableCodeRemovalPass(),
         };
         public OptimisationReporter OptimisationReporter { get; set; }
 

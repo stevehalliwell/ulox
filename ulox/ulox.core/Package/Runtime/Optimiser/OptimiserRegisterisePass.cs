@@ -4,15 +4,14 @@ using static ULox.Optimiser;
 namespace ULox
 {
     //todo if we did all get set props first we would remove all the get local 0, afterwhich we could do lhs or rhs registerise on binary ops
+    //todo if a get prop is followed by a set local we can hold the setlocal loc in the getprop
     public sealed class OptimiserRegisterisePass : IOptimiserPass
     {
         private enum RegisteriseType
         {
             Unknown,
-            Uniary,
             Binary,
             SetIndex,
-            GetProp,
             SetProp,
         }
 
@@ -40,15 +39,6 @@ namespace ULox
                 break;
             case OpCode.SET_INDEX:
                 _potentialRegisterise.Add((inst, RegisteriseType.SetIndex));
-                break;
-            case OpCode.NEGATE:
-            case OpCode.NOT:
-            case OpCode.COUNT_OF:
-            case OpCode.DUPLICATE:
-                _potentialRegisterise.Add((inst, RegisteriseType.Uniary));
-                break;
-            case OpCode.GET_PROPERTY:
-                _potentialRegisterise.Add((inst, RegisteriseType.GetProp));
                 break;
             case OpCode.SET_PROPERTY:
                 _potentialRegisterise.Add((inst, RegisteriseType.SetProp));
@@ -128,22 +118,6 @@ namespace ULox
                     }
                 }
                 break;
-                case RegisteriseType.Uniary:
-                {
-                    if (prev.OpCode == OpCode.GET_LOCAL)
-                    {
-                        optimiser.AddToRemove(chunk, inst - 1);
-                        nb1 = prev.b1;
-                    }
-                }
-                break;
-                case RegisteriseType.GetProp:
-                    if (prev.OpCode == OpCode.GET_LOCAL)
-                    {
-                        optimiser.AddToRemove(chunk, inst - 1);
-                        nb3 = prev.b1;
-                    }
-                    break;
                 case RegisteriseType.SetProp:
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {

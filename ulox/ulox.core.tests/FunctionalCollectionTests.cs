@@ -64,10 +64,9 @@ Assert.AreEqual(4, foldRes);
 fun reduce(arr, fn)
 {
     var res = arr[0];
-    var len = arr.Count();
-    for(var i = 1; i < len; i += 1)
+    loop arr
     {
-        res = fn(arr[i], res);
+        res = fn(item, res);
     }
     retval = res;
 }
@@ -75,10 +74,9 @@ fun reduce(arr, fn)
 fun fold(arr, fn, initVal)
 {
     var res = initVal;
-    var len = arr.Count();
-    for(var i = 0; i < len; i += 1)
+    loop arr
     {
-        res = fn(arr[i], res);
+        res = fn(item, res);
     }
     retval = res;
 }
@@ -88,9 +86,9 @@ fun map(arr, fn)
     var res = [];
     var len = arr.Count();
     res.Resize(len, null);
-    for(var i = 0; i < len; i += 1)
+    loop arr
     {
-        res[i] = fn(arr[i]);
+        res[i] = fn(item);
     }
     retval = res;
 }
@@ -99,11 +97,10 @@ fun filter(arr, fn)
 {
     var res = [];
     var len = arr.Count();
-    for(var i = 0; i < len; i += 1)
+    loop arr
     {
-        var val = arr[i];
-        if(fn(val))
-            res.Add(val);
+        if(fn(item))
+            res.Add(item);
     }
     retval = res;
 }

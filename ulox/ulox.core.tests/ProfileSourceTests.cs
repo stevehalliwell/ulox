@@ -7,35 +7,20 @@ namespace ULox.Core.Tests
     public class ProfileSourceTests : EngineTestBase
     {
         [Test]
-        public void Run_BouncingBallProfileScript()
+        [TestCaseSource(nameof(DivideCases))]
+        public void Run_BouncingBallProfileScript(Script script)
         {
-            testEngine.Run(BouncingBallProfileScript.Script);
-
-            try
-            {
-                testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("SetupGame"), out var setup);
-                testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(setup, 0);
-                testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("Update"), out var update);
-                testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(update, 0);
-            }
-            catch (System.Exception)
-            {
-            }
-
-            Assert.AreEqual("Setting Up Game200Updated", testEngine.InterpreterResult);
+            testEngine.Run(script);
+            Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
-        [Test]
-        public void Run_WaterLineProfileScript()
+        public static Script[] DivideCases = new Script[]
         {
-            testEngine.Run(WaterLineProfileScript.Script);
-
-            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("SetupGame"), out var setup);
-            testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(setup, 0);
-            testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("Update"), out var update);
-            testEngine.MyEngine.Context.Vm.PushCallFrameAndRun(update, 0);
-
-            Assert.AreEqual("Setting Up GameUpdated", testEngine.InterpreterResult);
-        }
+            BenchmarkScripts.Loop,
+            BenchmarkScripts.If,
+            CompileVsExecute.Script,
+            Vec2Variants.Type,
+            Vec2Variants.Tuple,
+        };
     }
 }

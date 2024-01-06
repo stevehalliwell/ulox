@@ -4,7 +4,7 @@
     {
         Null,
         Bool,
-        Int,
-        Float,
+        Byte,
+        Bytes,
     }
 }

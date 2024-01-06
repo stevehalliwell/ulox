@@ -1,6 +1,4 @@
-﻿using ULox;
-
-namespace ULox.Core.Bench
+﻿namespace ULox.Core.Bench
 {
     public static class CompileVsExecute
     {

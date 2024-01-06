@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace ULox.Core.Tests
@@ -36,6 +37,12 @@ namespace ULox.Core.Tests
             testEngine.Run("print (1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void ByteCodePacket_Size_4()
+        {
+            Assert.AreEqual(4, Marshal.SizeOf<ByteCodePacket>());
         }
 
         [Test]
@@ -152,15 +159,6 @@ print (myOtherVar);";
             testEngine.Run(@"{print (1+2);}");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Compile_Float_Constant_Value()
-        {
-            testEngine.Run(@"{print (1.2);}");
-
-            Assert.AreEqual("1.2", testEngine.InterpreterResult);
-            Assert.AreEqual(0,testEngine.MyEngine.Context.Program.CompiledScripts.First().TopLevelChunk.Instructions.Count(x => x.OpCode == OpCode.PUSH_CONSTANT));
         }
 
         [Test]

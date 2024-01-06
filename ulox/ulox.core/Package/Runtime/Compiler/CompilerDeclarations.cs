@@ -47,14 +47,11 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.ASSIGN, "Expect '=' after multivar declaration.");
 
             //mark stack start
-            compiler.EmitPacket(new ByteCodePacket(OpCode.MULTI_VAR, true));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.MULTI_VAR, 1));
 
             compiler.Expression();
 
-            compiler.EmitPacket(new ByteCodePacket(OpCode.MULTI_VAR, false));
-
-            compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(varNames.Count)));
-            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.MultiReturnMatches));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.MULTI_VAR, 0, (byte)varNames.Count));
 
             if (compiler.CurrentCompilerState.scopeDepth == 0)
             {

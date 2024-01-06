@@ -21,7 +21,7 @@ namespace ULox.Core.Tests
             testEngine.Run("print (1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            Assert.AreEqual(7, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
+            Assert.AreEqual(6, testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.Count);
         }
 
         [Test]
@@ -32,7 +32,7 @@ label unused;
 print (1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 10 -> 7", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 10 -> 6", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -44,7 +44,7 @@ label unused;
 print (1+2);");
 
             Assert.AreEqual("33", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 16 -> 13", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 16 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -58,7 +58,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 16 -> 7", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 16 -> 6", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -71,7 +71,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 15 -> 7", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 15 -> 6", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -83,7 +83,7 @@ label skip;
 print(1+2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 11 -> 7", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 11 -> 6", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
         
         [Test]
@@ -99,7 +99,7 @@ print (c);
 }");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 14 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 15 -> 10", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -115,7 +115,7 @@ print (c);
 }");
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 14 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 15 -> 10", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -132,7 +132,7 @@ print (d);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 17 -> 13", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 18 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -147,7 +147,7 @@ print (res);
 }");
 
             Assert.AreEqual("4", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 20 -> 18", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 21 -> 18", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -163,7 +163,7 @@ print (l[index]);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 25 -> 21", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 26 -> 20", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -177,7 +177,7 @@ print(a);
 }");
 
             Assert.AreEqual("-1", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 11 -> 9", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 12 -> 9", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -191,7 +191,7 @@ print(a);
 }");
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 11 -> 9", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 12 -> 9", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -206,7 +206,7 @@ print(a);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 13 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 14 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -221,7 +221,7 @@ print(obj.a);
 }");
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 17 -> 13", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 18 -> 13", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -236,7 +236,7 @@ print(val);
 }");
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 16 -> 14", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 17 -> 14", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -392,7 +392,7 @@ var t = T(1,2);");
         ");
 
             Assert.AreEqual("123", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 66 -> 46", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 67 -> 46", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -457,7 +457,7 @@ var t = T(1,2);");
         DoIt();");
 
             Assert.AreEqual("1020304050111213141512122232425231323334353414243444545", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 59 -> 46", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 59 -> 45", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -477,7 +477,7 @@ var t = T(1,2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
             //a b and c all go to same loc, so should be removed
-            StringAssert.Contains("Instructions: 27 -> 12", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 27 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
             StringAssert.Contains("Labels: 6 -> 2", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
@@ -498,7 +498,7 @@ var t = T(1,2);");
 
             Assert.AreEqual("3", testEngine.InterpreterResult);
             //a b and c all go to same loc, so should be removed
-            StringAssert.Contains("Instructions: 27 -> 12", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 27 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
             StringAssert.Contains("Labels: 6 -> 2", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
@@ -816,7 +816,7 @@ var t = T(1,2);");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
             Assert.IsTrue(testEngine.MyEngine.Context.Vm.TestRunner.AllPassed);
-            StringAssert.Contains("Instructions: 793 -> 555", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 812 -> 517", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -845,7 +845,77 @@ print(""post"");
 ");
 
             Assert.AreEqual("pre13post", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 102 -> 77", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 103 -> 77", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+        }
+
+        [Test]
+        public void Optimiser_Vec2_Operations_ShouldRemoveItem()
+        {
+            testEngine.Run(@"
+class Vec2
+{
+	static Lerp(x1,y1,x2,y2,p) (xOut, yOut)
+	{
+		xOut = x1 + (x2 - x1) * p;
+		yOut = y1 + (y2 - y1) * p;
+	}
+
+	static Length(x,y)
+	{
+		retval = Math.Sqrt(x*x + y*y);
+		if(retval != retval)
+		{
+			retval = 0;
+		}
+	}
+
+	//TODO needs tests
+	static LengthAndNormalise(xIn, yIn) (len, xOut, yOut)
+	{
+		len = Vec2.Length(xIn, yIn);
+		if(len != 0)
+		{
+			xOut = xIn / len;
+			yOut = yIn / len;
+			return;
+		}
+		xOut = 0;
+		yOut = 0;
+	}
+
+	//TODO needs tests
+	static Dot(x1, y1, x2, y2)
+	{
+		retval = x1 * x2 + y1 * y2;
+	}
+
+	static Angle(x, y)
+	{
+		var rads = Math.Atan2(y, x);
+		retval = Math.Rad2Deg(rads);
+	}
+}
+
+fun DoSomeVecMath()
+{
+    var (ax, ay) = (1,2);
+    var (bx, by) = (3,4);
+    var (cx, cy) = (0,0);
+
+    var (addx, addy) = (ax + bx, ay + by);
+    var (subx, suby) = (ax - bx, ay - by);
+    var (lx, ly) = Vec2.Lerp(ax, ay, bx, by, 0.5);
+    var d = Vec2.Dot(ax,ay, bx, by);
+    var (blen, bnx, bny) = Vec2.LengthAndNormalise(bx, by);
+
+    print(""{ax},{ay},{bx},{by},{cx},{cy},{addx},{addy},{subx},{suby},{lx},{ly},{d},{blen},{bnx},{bny}"");
+}
+
+DoSomeVecMath();
+");
+
+            Assert.AreEqual("1,2,3,4,0,0,4,6,-2,-2,2,3,11,5,0.6,0.8", testEngine.InterpreterResult);
+            StringAssert.Contains("Instructions: 119 -> 86", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
     }
 }

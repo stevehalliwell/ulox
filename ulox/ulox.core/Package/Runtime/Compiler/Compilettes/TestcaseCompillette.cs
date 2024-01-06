@@ -40,7 +40,7 @@
                 compiler.DeclareAndDefineCustomVariable(TestDataRowVarName);
                 compiler.EmitNULL();
                 compiler.DeclareAndDefineCustomVariable(TestDataIndexVarName);
-                compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(0)));
+                compiler.EmitPushValue((byte)0);
                 compiler.Expression();
                 var res = compiler.ResolveLocal(TestDataSourceVarName);
                 testDataSourceLocalId = (byte)res;
@@ -147,7 +147,7 @@
         public static void IncrementLocalByOne(Compiler compiler, byte indexArgID)
         {
             compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, indexArgID));
-            compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.PushValueDetails(1)));
+            compiler.EmitPushValue(1);
             compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
             compiler.EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, indexArgID));
             compiler.EmitPop();

@@ -3,15 +3,15 @@ using static ULox.Optimiser;
 
 namespace ULox
 {
+    //todo if we did all get set props first we would remove all the get local 0, afterwhich we could do lhs or rhs registerise on binary ops
+    //todo if a get prop is followed by a set local we can hold the setlocal loc in the getprop
     public sealed class OptimiserRegisterisePass : IOptimiserPass
     {
         private enum RegisteriseType
         {
             Unknown,
-            Uniary,
             Binary,
             SetIndex,
-            GetProp,
             SetProp,
         }
 
@@ -40,15 +40,6 @@ namespace ULox
             case OpCode.SET_INDEX:
                 _potentialRegisterise.Add((inst, RegisteriseType.SetIndex));
                 break;
-            case OpCode.NEGATE:
-            case OpCode.NOT:
-            case OpCode.COUNT_OF:
-            case OpCode.DUPLICATE:
-                _potentialRegisterise.Add((inst, RegisteriseType.Uniary));
-                break;
-            case OpCode.GET_PROPERTY:
-                _potentialRegisterise.Add((inst, RegisteriseType.GetProp));
-                break;
             case OpCode.SET_PROPERTY:
                 _potentialRegisterise.Add((inst, RegisteriseType.SetProp));
                 break;
@@ -63,6 +54,9 @@ namespace ULox
                 var nb1 = original.b1;
                 var nb2 = original.b2;
                 var nb3 = original.b3;
+
+                if (inst == 0)
+                    continue;
 
                 var prev = chunk.Instructions[inst - 1];
 
@@ -88,14 +82,18 @@ namespace ULox
                     {
                         optimiser.AddToRemove(chunk, inst - 1);
                         nb2 = prev.b1;
-                        var prevprev = chunk.Instructions[inst - 2];
-                        // if the previous previous is getlocal take its byte and make first byte, mark for removal
-                        if (prevprev.OpCode == OpCode.GET_LOCAL)
+                        if (inst > 1)
                         {
-                            optimiser.AddToRemove(chunk, inst - 2);
-                            nb1 = prevprev.b1;
+                            var prevprev = chunk.Instructions[inst - 2];
+                            // if the previous previous is getlocal take its byte and make first byte, mark for removal
+                            if (prevprev.OpCode == OpCode.GET_LOCAL)
+                            {
+                                optimiser.AddToRemove(chunk, inst - 2);
+                                nb1 = prevprev.b1;
+                            }
                         }
                     }
+
                     break;
                 case RegisteriseType.SetIndex:
                 {
@@ -120,22 +118,6 @@ namespace ULox
                     }
                 }
                 break;
-                case RegisteriseType.Uniary:
-                {
-                    if (prev.OpCode == OpCode.GET_LOCAL)
-                    {
-                        optimiser.AddToRemove(chunk, inst - 1);
-                        nb1 = prev.b1;
-                    }
-                }
-                break;
-                case RegisteriseType.GetProp:
-                    if (prev.OpCode == OpCode.GET_LOCAL)
-                    {
-                        optimiser.AddToRemove(chunk, inst - 1);
-                        nb3 = prev.b1;
-                    }
-                    break;
                 case RegisteriseType.SetProp:
                     if (prev.OpCode == OpCode.GET_LOCAL)
                     {

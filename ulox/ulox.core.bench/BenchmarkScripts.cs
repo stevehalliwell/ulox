@@ -2,26 +2,6 @@
 {
     public static class BenchmarkScripts
     {
-        public static readonly Script While = new Script(nameof(While), @"
-var i = 0;
-var arr = [];
-arr.Resize(100,0);
-
-while(i < 100)
-{
-    arr[i] = i;
-    i+=1;
-}");
-
-        public static readonly Script For = new Script(nameof(For), @"
-var arr = [];
-arr.Resize(100,0);
-
-for(var i = 0; i < 100; i+=1)
-{
-    arr[i] = i;
-}");
-
         public static readonly Script Loop = new Script(nameof(Loop), @"
 var arr = [];
 arr.Resize(100,0);
@@ -47,183 +27,11 @@ else
     i = 3;
 }
 ");
-
-        public static readonly Script Match = new Script(nameof(Match), @"
-var i = 0;
-match i 
-{
-1: i = 1;
-2: i = 2;
-0: i = 3;
-}");
     }
 
-    public static class BouncingBallProfileScript
+    public static class Vec2Variants
     {
-        public static readonly Script Script = new Script(nameof(BouncingBallProfileScript), @"
-var dt = 0;
-var limit = 5;
-var numBallsToSpawn = 200;
-
-var balls = [];
-
-fun RandVec2() (x,y)
-{
-	x=-3;
-	y=3;
-}
-
-class Ball
-{
-	var posx = 0;
-    var posy = 0;
-    var velx = 0;
-    var vely = 0;
-
-	init(posx, posy, velx, vely)
-	{
-	}
-}
-
-fun SetupGame()
-{
-	print (""Setting Up Game"");
-
-	for(var i = 0; i < numBallsToSpawn; i += 1)
-	{
-		var (x,y) = RandVec2();
-		var (vx,vy) = RandVec2();
-		balls.Add(Ball(x,y,vx,vy));
-	}
-	print(balls.Count());
-}
-
-fun Update()
-{
-	var lim = limit;
-
-	var iter = 0;
-
-	loop balls
-	{
-  		item.posx = item.posx + item.velx * dt;
-  		item.posy = item.posy + item.vely * dt;
-
-		var x = item.posx;
-		var y = item.posy;
-		var vx = item.velx;
-		var vy = item.vely;
-
-		if((x < -lim and vx < 0) or 
-		  (x > lim  and vx > 0) )
-		{
-			vx *= -1;
-			item.velx = vx;
-		}
-
-		if((y < -lim and vy < 0) or
-		  (y > lim  and vy > 0) )
-		{
-			vy *= -1;
-			item.vely = vy;
-		}
-	}
-	print (""Updated"");
-}
-");
-    }
-
-    public static class WaterLineProfileScript
-    {
-        public static readonly Script Script = new Script(nameof(WaterLineProfileScript), @"
-var dt = 0;
-var points = [];
-
-class Circle
-{
-var
-	x = 0,
-	y = 0, 
-	py = 0,
-	anchorY = 0,
-	pullY = 0,
-}
-
-fun SetupGame()
-{
-	print (""Setting Up Game"");
-
-	var numToSpawn = 50;
-	var startX = -12.5;
-	var stepX = 0.5;
-
-	for(var i = 0; i < numToSpawn; i += 1)
-	{
-		var circ = Circle();
-		circ.x = startX + i * stepX;
-		points.Add(circ);
-	}
-}
-
-fun Update()
-{
-	var pullFactor = 2;
-	var firstNeighScale = 0.75;
-	var secondNeighScale = 0.65;
-	var thirdNeighScale = 0.35;
-	var pDevScale = 0.5;
-	var dragSharpness = 3;
-	var dragFac = Math.Exp(-dragSharpness * dt) * dt;
-
-	var circCount = points.Count();
-	for(var i = 0; i < circCount; i += 1)
-	{
-		var item = points[i];
-		var px = 0;
-		var py = 0;
-		var y = item.y;
-		var neigh;
-
-		neigh = points[(i-3 + circCount) % circCount];
-		py += (neigh.y - y) * thirdNeighScale;
-		neigh = points[(i-2 + circCount) % circCount];
-		py += (neigh.y - y) * secondNeighScale;
-		neigh = points[(i-1 + circCount) % circCount];
-		py += (neigh.y - y) * firstNeighScale;
-		neigh = points[(i+1) % circCount];
-		py += (neigh.y - y) * firstNeighScale;
-		neigh = points[(i+2)% circCount];
-		py += (neigh.y - y) * secondNeighScale;
-		neigh = points[(i+3)% circCount];
-		py += (neigh.y - y) * thirdNeighScale;
-
-		item.pullY = py;
-	}
-
-	loop points
-	{
-		var dy = item.y - item.py;
-		item.py = item.y;
-		var pull = item.pullY;
-		item.pullY = 0;
-		var y = item.y;
-		var pDev = y - item.anchorY;
-		
-		pull += -pDev * pDevScale;
-		pull *= pullFactor;
-		pull *= dt;
-		y += dy + pull;
-		var vel = (y - item.py) / dt;
-		y = item.py + vel * dragFac;
-		item.y = y;
-	}
-	print (""Updated"");
-}");
-    }
-
-	public static class Vec2Variants
-	{
-		public static readonly Script Type = new Script(nameof(Vec2Variants), @"
+        public static readonly Script Type = new Script(nameof(Vec2Variants), @"
 class Vec2
 {
 	static Create(x,y)
@@ -453,7 +261,7 @@ fun Bench()
 	var n = Vec2.Normalise(d);
 }
 ");
-		public static readonly Script Tuple = new Script(nameof(Vec2Variants), @"
+        public static readonly Script Tuple = new Script(nameof(Vec2Variants), @"
 
 class Vec2
 {
@@ -491,5 +299,5 @@ fun Bench()
 	var len = Vec2.Length(x3,y3);
 	var (x4,y4) = (x3/len, y3/len);
 }");
-	}
+    }
 }

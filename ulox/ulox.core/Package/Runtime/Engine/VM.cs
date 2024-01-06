@@ -172,7 +172,7 @@ namespace ULox
 
                     break;
                 case OpCode.MULTI_VAR:
-                    DoMultiVarOp(packet.BoolValue);
+                    DoMultiVarOp(packet.b1, packet.b2);
                     break;
                 case OpCode.YIELD:
                     return InterpreterResult.YIELD;
@@ -315,20 +315,21 @@ namespace ULox
 
                 case OpCode.PUSH_VALUE:
                 {
-                    switch (packet.pushValueDetails.ValueType)
+                    var pushType = (PushValueOpType)packet.b1;
+                    switch (pushType)
                     {
                     case PushValueOpType.Null:
                         Push(Value.Null());
                         break;
                     case PushValueOpType.Bool:
-                        Push(Value.New(packet.pushValueDetails._b));
+                        Push(Value.New(packet.b2 == 1));
                         break;
-                    case PushValueOpType.Int:
-                        Push(Value.New(packet.pushValueDetails._i));
+                    case PushValueOpType.Byte:
+                        Push(Value.New(packet.b2));
                         break;
-                    case PushValueOpType.Float:
-                        //trick to prevent 1.2 turning into 1.2000000000046
-                        Push(Value.New((double)(decimal)packet.pushValueDetails._f));
+                    case PushValueOpType.Bytes:
+                        Push(Value.New(packet.b2));
+                        Push(Value.New(packet.b3));
                         break;
                     default:
                         break;
@@ -349,7 +350,14 @@ namespace ULox
                 break;
 
                 case OpCode.GET_LOCAL:
+                    var b3 = packet.b3;
+                    var b2 = packet.b2;
+                    var b1 = packet.b1;
                     _valueStack.Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
+                    if(b2 != Optimiser.NOT_LOCAL_BYTE)
+                        Push(_valueStack[_currentCallFrame.StackStart + b2]);
+                    if(b3 != Optimiser.NOT_LOCAL_BYTE)
+                        Push(_valueStack[_currentCallFrame.StackStart + b3]);
                     break;
 
                 case OpCode.SET_LOCAL:
@@ -518,8 +526,8 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Value PopOrLocal(byte b1)
         {
-            return b1 == Optimiser.NOT_LOCAL_BYTE 
-                ? _valueStack.Pop() 
+            return b1 == Optimiser.NOT_LOCAL_BYTE
+                ? _valueStack.Pop()
                 : _valueStack[_currentCallFrame.StackStart + b1];
         }
 
@@ -749,13 +757,6 @@ namespace ULox
         {
             switch (validateOp)
             {
-            case ValidateOp.MultiReturnMatches:
-                var requestedResultsValue = Pop();
-                var requestedResults = (int)requestedResultsValue.val.asDouble;
-                var availableResults = _returnStack.Count;
-                if (requestedResults != availableResults)
-                    ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
-                break;
             case ValidateOp.Meets:
             {
                 var (rhs, lhs) = Pop2();
@@ -890,9 +891,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoMultiVarOp(bool start)
+        private void DoMultiVarOp(byte b1, byte b2)
         {
-            if (start)
+            if (b1 == 1)
                 _currentCallFrame.MultiAssignStart = (byte)_valueStack.Count;
             else
             {
@@ -904,6 +905,11 @@ namespace ULox
                 {
                     _returnStack.Push(Value.Null());
                 }
+
+                var requestedResults = b2;
+                var availableResults = _returnStack.Count;
+                if (requestedResults != availableResults)
+                    ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
             }
         }
 

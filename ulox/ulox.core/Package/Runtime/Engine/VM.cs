@@ -10,8 +10,6 @@ namespace ULox
 
         private readonly FastStack<Value> _valueStack = new FastStack<Value>();
         internal FastStack<Value> ValueStack => _valueStack;
-        private readonly FastStack<Value> _returnStack = new FastStack<Value>();
-        internal FastStack<Value> ReturnStack => _returnStack;
         private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
         internal FastStack<CallFrame> CallFrames => _callFrames;
         private CallFrame _currentCallFrame;
@@ -118,7 +116,7 @@ namespace ULox
             _currentCallFrame = callFrame;
             _currentChunk = _currentCallFrame.Closure.chunk;
             _callFrames.Push(callFrame);
-            for (int i = 0; i < _currentChunk.ReturnCount; i++)
+            for (int i = 0; i < callFrame.ReturnCount; i++)
             {
                 ValueStack.Push(Value.Null());
             }
@@ -354,9 +352,9 @@ namespace ULox
                     var b2 = packet.b2;
                     var b1 = packet.b1;
                     _valueStack.Push(_valueStack[_currentCallFrame.StackStart + packet.b1]);
-                    if(b2 != Optimiser.NOT_LOCAL_BYTE)
+                    if (b2 != Optimiser.NOT_LOCAL_BYTE)
                         Push(_valueStack[_currentCallFrame.StackStart + b2]);
-                    if(b3 != Optimiser.NOT_LOCAL_BYTE)
+                    if (b3 != Optimiser.NOT_LOCAL_BYTE)
                         Push(_valueStack[_currentCallFrame.StackStart + b3]);
                     break;
 
@@ -865,28 +863,40 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void ProcessReturns()
         {
-            _returnStack.Reset();
-            if (_currentCallFrame.ReturnCount != 0)
+            var returnStart = _currentCallFrame.StackStart + _currentCallFrame.ArgCount + 1;
+            var returnCount = _currentCallFrame.ReturnCount;
+            if (_currentCallFrame.ReturnCount == 0)
             {
-                var returnStart = _currentCallFrame.StackStart + _currentCallFrame.ArgCount + 1;
-                for (int i = 0; i < _currentCallFrame.ReturnCount; i++)
-                {
-                    _returnStack.Push(_valueStack[returnStart + i]);
-                }
-            }
-            else
-            {
-                _returnStack.Push(ValueStack[_currentCallFrame.StackStart]);
+                returnStart = _currentCallFrame.StackStart;
+                returnCount = 1;
             }
 
             CloseUpvalues(_currentCallFrame.StackStart);
 
-            PopFrameAndDiscard();
-
-            //transform from return stack to value stack
-            for (int i = 0; i < _returnStack.Count; i++)
             {
-                Push(_returnStack[i]);
+                var poppedStackStart = _currentCallFrame.StackStart;
+                //remove top
+                _callFrames.Pop();
+
+                //update cache
+                if (_callFrames.Count > 0)
+                {
+                    _currentCallFrame = _callFrames.Peek();
+                    _currentChunk = _currentCallFrame.Closure.chunk;
+                }
+                else
+                {
+                    _currentCallFrame = default;
+                    _currentChunk = default;
+                }
+
+
+                //transform from return stack to value stack
+                _valueStack.Shift(returnStart, returnCount, poppedStackStart);
+
+                var toRemove = System.Math.Max(0, _valueStack.Count - poppedStackStart - returnCount);
+
+                _valueStack.DiscardPop(toRemove);
             }
         }
 
@@ -899,43 +909,12 @@ namespace ULox
             {
                 //this is only so the multi return validate mechanism can continue to function,
                 //it's not actually contributing to how multi return works.
-                _returnStack.Reset();
                 var returnCount = _valueStack.Count - _currentCallFrame.MultiAssignStart;
-                for (int i = 0; i < returnCount; i++)
-                {
-                    _returnStack.Push(Value.Null());
-                }
-
                 var requestedResults = b2;
-                var availableResults = _returnStack.Count;
+                var availableResults = returnCount;
                 if (requestedResults != availableResults)
                     ThrowRuntimeException($"Multi var assign to result mismatch. Taking '{requestedResults}' but results contains '{availableResults}'");
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PopFrameAndDiscard()
-        {
-            var poppedStackStart = _currentCallFrame.StackStart;
-            //remove top
-            _callFrames.Pop();
-
-            //update cache
-            if (_callFrames.Count > 0)
-            {
-                _currentCallFrame = _callFrames.Peek();
-                _currentChunk = _currentCallFrame.Closure.chunk;
-            }
-            else
-            {
-                _currentCallFrame = default;
-                _currentChunk = default;
-            }
-
-            var prevStackStart = poppedStackStart;
-            var toRemove = System.Math.Max(0, _valueStack.Count - prevStackStart);
-
-            _valueStack.DiscardPop(toRemove);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

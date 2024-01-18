@@ -15,7 +15,7 @@
         COMMA,
         DOT,
         END_STATEMENT,
-     
+
         MINUS,
         PLUS,
         SLASH,

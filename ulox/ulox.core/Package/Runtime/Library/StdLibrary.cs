@@ -29,8 +29,7 @@ namespace ULox
                 (nameof(IsFrozen), Value.New(IsFrozen, 1, 1)),
                 (nameof(Unfreeze), Value.New(Unfreeze, 1, 1)),
                 (nameof(GenerateStackDump), Value.New(GenerateStackDump, 1, 0)),
-                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump, 1, 0)),
-                (nameof(GenerateReturnDump), Value.New(GenerateReturnDump, 1, 0))
+                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump, 1, 0))
                                             );
         }
 
@@ -198,11 +197,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        public static NativeCallResult GenerateReturnDump(Vm vm)
-        {
-            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateReturnDump(vm)));
-            return NativeCallResult.SuccessfulExpression;
-        }
 
         public static NativeCallResult IsFrozen(Vm vm)
         {

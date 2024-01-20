@@ -31,8 +31,6 @@ namespace ULox
         }
         
         public static string GenerateValueStackDump(Vm vm) => DumpStack(vm.ValueStack);
-
-        public static string GenerateReturnDump(Vm vm) => DumpStack(vm.ReturnStack);
         
         private static string DumpStack(FastStack<Value> valueStack)
         {

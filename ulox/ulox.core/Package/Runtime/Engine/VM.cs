@@ -890,12 +890,11 @@ namespace ULox
                     _currentChunk = default;
                 }
 
-
-                //transform from return stack to value stack
-                _valueStack.Shift(returnStart, returnCount, poppedStackStart);
+                //transfer returns back down the stack
+                for (var i = 0; i < returnCount; i++)
+                    _valueStack[poppedStackStart + i] = _valueStack[returnStart + i];
 
                 var toRemove = System.Math.Max(0, _valueStack.Count - poppedStackStart - returnCount);
-
                 _valueStack.DiscardPop(toRemove);
             }
         }

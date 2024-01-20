@@ -38,25 +38,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Push(FastStack<T> vals)
-        {
-            var addCount = vals.Count;
-            while (_back >= _array.Length - addCount - 1)
-                System.Array.Resize(ref _array, _array.Length * GrowFactor);
-
-            for(var i = 0; i < addCount; i++)
-                _array[++_back] = vals[i];
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Pop() => _array[_back--];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Shift(int sourceIndex, int count, int destIndex)
-        {
-            for (var i = 0; i < count; i++)
-                _array[destIndex + i] = _array[sourceIndex + i];
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DiscardPop(int amount = 1)

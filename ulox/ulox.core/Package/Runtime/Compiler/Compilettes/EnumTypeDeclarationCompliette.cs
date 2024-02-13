@@ -2,6 +2,7 @@
 
 namespace ULox
 {
+    //todo can enums also be made entirely at compile time? or become sugar on a readonly dynamic?
     public sealed class EnumTypeDeclarationCompliette : TypeCompilette
     {
         private enum Mode

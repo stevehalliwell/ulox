@@ -25,6 +25,7 @@ namespace ULox
                 (nameof(Pow), Value.New(Pow, 1, 2)),
                 (nameof(Rad2Deg), Value.New(Rad2Deg, 1, 1)),
                 (nameof(Rand), Value.New(Rand, 1, 0)),
+                (nameof(RandUnitCircle), Value.New(RandUnitCircle, 2, 0)),
                 (nameof(Round), Value.New(Round, 1, 1)),
                 (nameof(Floor), Value.New(Floor, 1, 1)),
                 (nameof(Ceil), Value.New(Ceil, 1, 1)),
@@ -34,7 +35,8 @@ namespace ULox
                 (nameof(Tan), Value.New(Tan, 1, 1)),
                 (nameof(Max), Value.New(Max, 1, 2)),
                 (nameof(Min), Value.New(Min, 1, 2)),
-                (nameof(Clamp), Value.New(Clamp, 1, 3))
+                (nameof(Clamp), Value.New(Clamp, 1, 3)),
+                (nameof(MoveTowards), Value.New(MoveTowards, 1, 3))
                 );
 
             diLibInst.Freeze();
@@ -45,6 +47,17 @@ namespace ULox
         {
             var result = _random.NextDouble();
             vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult RandUnitCircle(Vm vm)
+        {
+            var a = _random.NextDouble() * 2 * Math.PI;
+            var r = Math.Sqrt(_random.NextDouble());
+            var x = r * Math.Cos(a);
+            var y = r * Math.Sin(a);
+            vm.SetNativeReturn(0, Value.New(x));
+            vm.SetNativeReturn(1, Value.New(y));
             return NativeCallResult.SuccessfulExpression;
         }
 
@@ -238,6 +251,21 @@ namespace ULox
             var arg2 = vm.GetArg(2);
             var arg3 = vm.GetArg(3);
             var result = Math.Min(Math.Max(arg1.val.asDouble, arg2.val.asDouble), arg3.val.asDouble);
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult MoveTowards(Vm vm)
+        {
+            var arg1 = vm.GetArg(1).val.asDouble;
+            var arg2 = vm.GetArg(2).val.asDouble;
+            var arg3 = vm.GetArg(3).val.asDouble;
+            var delta = arg2 - arg1;
+            var result = arg2;
+            if (Math.Abs(delta) > arg3)
+            {
+                result = arg1 + Math.Sign(delta) * arg3;
+            }
             vm.SetNativeReturn(0, Value.New(result));
             return NativeCallResult.SuccessfulExpression;
         }

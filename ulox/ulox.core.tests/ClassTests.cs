@@ -1739,5 +1739,48 @@ maker.brew();");
 
             Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void InstanceFromClass_WhenFrozenAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
+        {
+            testEngine.Run(@"
+class Foo
+{
+}
+
+var inst = Foo();
+inst.a = 10;");
+
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void InstanceFromClass_WhenHasInitAndInitChainAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var b = 2;
+    init(){this.c = 3;}
+}
+
+var inst = Foo();
+inst.a = 10;");
+
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Class_WhenFrozenAndNonExistingFieldWritten_ShouldPreventChangeAndLog()
+        {
+            testEngine.Run(@"
+class Foo
+{
+}
+
+Foo.a = 10;");
+
+            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
+        }
     }
 }

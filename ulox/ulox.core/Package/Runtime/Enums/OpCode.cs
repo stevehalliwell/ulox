@@ -51,8 +51,6 @@
         SET_FIELD,
         INVOKE,
 
-        FREEZE, //could collapse with READ_ONLY
-
         TEST,
 
         BUILD,

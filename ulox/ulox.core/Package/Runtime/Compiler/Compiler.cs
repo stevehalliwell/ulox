@@ -56,7 +56,6 @@ namespace ULox
                 (TokenType.OPEN_BRACE, CompilerStatements.BlockStatement),
                 (TokenType.THROW, CompilerStatements.ThrowStatement),
                 (TokenType.END_STATEMENT, CompilerStatements.NoOpStatement),
-                (TokenType.FREEZE, CompilerStatements.FreezeStatement),
                 (TokenType.EXPECT, CompilerStatements.ExpectStatement),
                 (TokenType.MATCH, CompilerStatements.MatchStatement),
                 (TokenType.LABEL, CompilerStatements.LabelStatement),

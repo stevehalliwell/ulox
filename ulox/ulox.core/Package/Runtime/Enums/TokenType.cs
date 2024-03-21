@@ -69,8 +69,6 @@
         STATIC,
         INIT,
 
-        FREEZE,
-
         MIXIN,
 
         TEST_SET,

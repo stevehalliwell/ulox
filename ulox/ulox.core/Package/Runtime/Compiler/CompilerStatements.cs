@@ -108,13 +108,6 @@ namespace ULox
         {
         }
 
-        public static void FreezeStatement(Compiler compiler)
-        {
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.FREEZE));
-            compiler.ConsumeEndStatement();
-        }
-
         //todo expects be desugar
         //could be come if (!(exp)) throw "Expects failed, '{msg}'"
         //problem is we don't know what an exp or statement is yet, tokens would need to either be ast or know similar for

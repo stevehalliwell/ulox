@@ -15,7 +15,7 @@ print(IsFrozen(dynInst));
 
 dynInst.a = 10;
 
-freeze dynInst;
+Freeze(dynInst);
 print(IsFrozen(dynInst));
 
 

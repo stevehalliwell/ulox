@@ -38,4 +38,13 @@ testset FreezeTests
 
         Assert.AreEqual(expected, result);
     }
+
+    test FreezeDynamic
+    {
+        var inst = {=};
+
+        Freeze(inst);
+
+        expect IsFrozen(inst);
+    }
 }

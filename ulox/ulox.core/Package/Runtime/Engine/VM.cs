@@ -447,10 +447,6 @@ namespace ULox
                     TestRunner.DoTestOpCode(this, chunk, packet.testOpDetails);
                     break;
 
-                case OpCode.FREEZE:
-                    DoFreezeOp();
-                    break;
-
                 case OpCode.NATIVE_TYPE:
                     DoNativeTypeOp(chunk, packet.NativeType);
                     break;
@@ -1042,26 +1038,6 @@ namespace ULox
             for (int i = 0; i <= count; i++)
             {
                 Push(_valueStack[startAt + i]);
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoFreezeOp()
-        {
-            var instVal = Pop();
-            switch (instVal.type)
-            {
-            case ValueType.Instance:
-                instVal.val.asInstance.Freeze();
-                break;
-
-            case ValueType.UserType:
-                instVal.val.asClass.Freeze();
-                break;
-
-            default:
-                ThrowRuntimeException($"Freeze attempted on unsupported type '{instVal.type}'");
-                break;
             }
         }
 

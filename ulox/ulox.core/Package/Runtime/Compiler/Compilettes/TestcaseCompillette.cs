@@ -24,37 +24,40 @@
             var testDataSourceLocalId = byte.MaxValue;
             var exitDataLoopJumpLoc = -1;
             var preRowCountCheck = -1;
-                
+
             compiler.BeginScope();
-            
+
             if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
             {
-                //jump
-                var dataExpJumpID = compiler.GotoUniqueChunkLabel($"DataExpJump_{_testDeclarationCompilette.CurrentTestSetName}");
-                //note location
-                dataExpExecuteLocation = compiler.LabelUniqueChunkLabel("DataExpExecuteLocation");
+                if (!compiler.TokenIterator.Match(TokenType.CLOSE_PAREN))
+                {
+                    //jump
+                    var dataExpJumpID = compiler.GotoUniqueChunkLabel($"DataExpJump_{_testDeclarationCompilette.CurrentTestSetName}");
+                    //note location
+                    dataExpExecuteLocation = compiler.LabelUniqueChunkLabel("DataExpExecuteLocation");
 
-                //expression
-                compiler.DeclareAndDefineCustomVariable(TestDataSourceVarName);
-                compiler.EmitNULL();
-                compiler.DeclareAndDefineCustomVariable(TestDataRowVarName);
-                compiler.EmitNULL();
-                compiler.DeclareAndDefineCustomVariable(TestDataIndexVarName);
-                compiler.EmitPushValue((byte)0);
-                compiler.Expression();
-                var res = compiler.ResolveLocal(TestDataSourceVarName);
-                testDataSourceLocalId = (byte)res;
-                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, testDataSourceLocalId));
-                compiler.EmitPop();
+                    //expression
+                    compiler.DeclareAndDefineCustomVariable(TestDataSourceVarName);
+                    compiler.EmitNULL();
+                    compiler.DeclareAndDefineCustomVariable(TestDataRowVarName);
+                    compiler.EmitNULL();
+                    compiler.DeclareAndDefineCustomVariable(TestDataIndexVarName);
+                    compiler.EmitPushValue((byte)0);
+                    compiler.Expression();
+                    var res = compiler.ResolveLocal(TestDataSourceVarName);
+                    testDataSourceLocalId = (byte)res;
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.SET_LOCAL, testDataSourceLocalId));
+                    compiler.EmitPop();
 
-                //jump for moving back to start
-                dataExpJumpBackToStart = compiler.GotoUniqueChunkLabel($"DataExpJumpBackToStart_{_testDeclarationCompilette.CurrentTestSetName}");
+                    //jump for moving back to start
+                    dataExpJumpBackToStart = compiler.GotoUniqueChunkLabel($"DataExpJumpBackToStart_{_testDeclarationCompilette.CurrentTestSetName}");
 
-                //patch data jump
-                compiler.EmitLabel(dataExpJumpID);
+                    //patch data jump
+                    compiler.EmitLabel(dataExpJumpID);
 
-                //temp
-                compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "");
+                    //temp
+                    compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "");
+                }
             }
 
             var testcaseName = compiler.IdentifierOrChunkUnique(AnonTestPrefix);
@@ -124,7 +127,7 @@
             compiler.EmitReturn();
 
             compiler.EndScope();
-            
+
             //emit jump to step to next and save it
             compiler.EmitLabel(testFragmentJump);
             TestCaseName = null;
@@ -135,7 +138,7 @@
             var tcname = TestCaseName;
             compiler.AddConstantAndWriteOp(Value.New(tcname));
         }
-        
+
         public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)
         {
             compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, indexArgID));

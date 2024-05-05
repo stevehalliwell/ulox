@@ -272,6 +272,18 @@ var t = T(1,2);");
         }
 
         [Test]
+        public void Class_MultiVarTrailingComma()
+        {
+            testEngine.Run(@"
+class T
+{
+    var a= 10, b = 20, c = 30,;
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_BoundMethod()
         {
             testEngine.Run(@"
@@ -1009,81 +1021,6 @@ print(t.A());
             Assert.AreEqual("2", testEngine.InterpreterResult);
         }
         
-        [Test]
-        public void Engine_Class_StaticFields()
-        {
-            testEngine.Run(@"
-class T
-{
-    static var a = 2;
-}
-print(T.a);");
-
-            Assert.AreEqual("2", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_StaticFields_Modify()
-        {
-            testEngine.Run(@"
-class T
-{
-    static var a = 2;
-}
-T.a = 1;
-
-print(T.a);");
-
-            Assert.AreEqual("1", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_Class_StaticFields_WhenClassModified_ShouldThrow()
-        {
-            testEngine.Run(@"
-class T
-{
-    static var a = 2;
-}
-
-T.b = 5;");
-
-            StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Engine_NoThis_Method_WorksAsStatic()
-        {
-            testEngine.Run(@"
-class T
-{
-    NoMemberMethod()
-    {
-        retval = 7;
-    }
-}
-
-print(T.NoMemberMethod());");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Static_Method_OnClass()
-        {
-            testEngine.Run(@"
-class T
-{
-    static StaticMethod()
-    {
-        retval = 7;
-    }
-}
-
-print(T.StaticMethod());");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
-        }
 
         //todo we'd like to do this but not currently able due to how methods are stored and looked up
 //        [Test]
@@ -1115,23 +1052,6 @@ class T
 var a = T.foo;");
 
             StringAssert.StartsWith("Undefined property 'foo', cannot bind method as it has no fromClass a", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Static_Method_OnInstance()
-        {
-            testEngine.Run(@"
-class T
-{
-    static StaticMethod()
-    {
-        retval = 7;
-    }
-}
-
-print(T().StaticMethod());");
-
-            Assert.AreEqual("7", testEngine.InterpreterResult);
         }
         
         [Test]

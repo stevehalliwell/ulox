@@ -232,6 +232,48 @@ match a
         }
 
         [Test]
+        public void Match_WhenEnum_ShouldPass()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz
+}
+
+var f = Foo.Bar;
+
+match f
+{
+    Foo.Bar: print(1);
+    Foo.Baz: print(2);
+}");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Match_WhenEnumAndEmptyCase_ShouldPass()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz
+}
+
+var f = Foo.Bar;
+
+match f
+{
+    Foo.Bar: ;
+    Foo.Baz: print(2);
+}");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Match_WhenIntWithBody_ShouldPass()
         {
             testEngine.Run(@"

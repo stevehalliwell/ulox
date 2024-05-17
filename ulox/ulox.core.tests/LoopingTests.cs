@@ -235,7 +235,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop arr, jtem, j
+loop arr, j
 {
     print(j);
 }
@@ -253,7 +253,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop arr,jtem
+loop arr,j
 {
     print(jtem);
 }
@@ -271,7 +271,7 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop arr,jtem, j, jount
+loop arr, j
 {
     print(jtem);
     loop arr
@@ -457,7 +457,7 @@ loop arr
     {
         arr.Remove(item);
         i -= 1;
-        count -= 1;
+        icount -= 1;
     }
     else
     {
@@ -572,7 +572,7 @@ var arr = [];
 arr.Add(1);
 var j = 7;
 
-loop arr, jtem, j
+loop arr, j
 {
 }
 }");
@@ -612,9 +612,9 @@ var arr = [];
 arr.Add(1);
 var jtem = 7;
 
-loop arrays,ytem,y
+loop arrays,y
 {
-    loop ytem, xtem, x, xount
+    loop ytem, x
     {
         print(xtem);
     }
@@ -634,7 +634,7 @@ var arr = [""a"",""b"",""c"",];
 loop arr
 {
     print(item);
-    print(count);
+    print(icount);
 }
 ");
 
@@ -650,10 +650,10 @@ arr.Add(""a"");
 arr.Add(""b"");
 arr.Add(""c"");
 
-loop arr,jtem,j,jount
+loop arr,j
 {
     print(jtem);
-    print(jount);
+    print(jcount);
 }
 ");
 
@@ -669,8 +669,8 @@ var arr = [""a"",""b"",""c"",];
 loop arr
 {
     print(item);
-    count -= 1;
-    print(count);
+    icount -= 1;
+    print(icount);
 }
 ");
 
@@ -688,7 +688,7 @@ var someObj = {a=1,c=10,d={a=1,},};
 
 loop arr
 {
-    loop arr, jtem, j, jount
+    loop arr, j
     {
         print(i+jtem);
     }
@@ -703,7 +703,7 @@ loop arr
             testEngine.Run(@"
 fun FromRowCol(outer)
 {
-    loop outer, it, index, c
+    loop outer
     {
         var inner = ""hi"";
         print(inner);
@@ -740,9 +740,9 @@ loop thing.arr
 var thing = {=};
 thing.arr = [""a"",""b"",""c"",];
 
-loop thing.arr, jtem, j, jnt
+loop thing.arr, j
 {
-    print(""{jtem}_{j}_{jnt} - "");
+    print(""{jtem}_{j}_{jcount} - "");
 }"
 );
 
@@ -1010,8 +1010,9 @@ class EnemyShipAIBasic
 {
     Tick(enemyShips, targetShips, dt)
     {
-        loop enemyShips, ship
+        loop enemyShips
         {
+            var ship = item;
             var pos = ship.pos;
             var bestTarget = EnemyTargetSelection.Select(ship, targetShips);
 

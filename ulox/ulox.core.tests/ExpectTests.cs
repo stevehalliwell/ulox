@@ -86,6 +86,20 @@ expect true and 1 == 2;"
         }
 
         [Test]
+        public void Expect_MultiPartExpressionWithTrailingComma_Passes()
+        {
+            testEngine.Run(@"
+expect 
+    1 == 1,
+    2 == 2,
+    !null,
+    ;"
+            );
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Expect_FalsyMultiPartExpressionWithMessage_AbortsWithMessage()
         {
             testEngine.Run(@"

@@ -130,7 +130,10 @@ namespace ULox
                 compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameConstant));
                 compiler.EmitPop();
                 _needsEndClosure = true;
-            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+                //if trailing comma, eat it
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            } while (compiler.TokenIterator.Check(TokenType.IDENTIFIER));
 
             compiler.ConsumeEndStatement();
         }

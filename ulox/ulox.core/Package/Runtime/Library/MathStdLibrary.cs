@@ -36,7 +36,10 @@ namespace ULox
                 (nameof(Max), Value.New(Max, 1, 2)),
                 (nameof(Min), Value.New(Min, 1, 2)),
                 (nameof(Clamp), Value.New(Clamp, 1, 3)),
-                (nameof(MoveTowards), Value.New(MoveTowards, 1, 3))
+                (nameof(MoveTowards), Value.New(MoveTowards, 1, 3)),
+                (nameof(Lerp), Value.New(Lerp, 1, 3)),
+                (nameof(Dampen), Value.New(Dampen, 1, 4)),
+                (nameof(CalcDampenHalflife), Value.New(CalcDampenHalflife, 1, 2))
                 );
 
             diLibInst.Freeze();
@@ -266,6 +269,39 @@ namespace ULox
             {
                 result = arg1 + Math.Sign(delta) * arg3;
             }
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult Lerp(Vm vm)
+        {
+            var arg1 = vm.GetArg(1).val.asDouble;
+            var arg2 = vm.GetArg(2).val.asDouble;
+            var arg3 = vm.GetArg(3).val.asDouble;
+            var result = arg1 + (arg2 - arg1) * arg3;
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public static NativeCallResult Dampen(Vm vm)
+        {
+            var curr = vm.GetArg(1).val.asDouble;
+            var target = vm.GetArg(2).val.asDouble;
+            var h = vm.GetArg(3).val.asDouble;
+            var dt = vm.GetArg(4).val.asDouble;
+            var t = 1 - Math.Exp(-dt / h);
+
+            var result = curr + (target - curr) * t;
+
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public static NativeCallResult CalcDampenHalflife(Vm vm)
+        {
+            var timeSpan = vm.GetArg(1).val.asDouble;
+            var precision = vm.GetArg(2).val.asDouble;
+            var result = -timeSpan / Math.Log(precision, 2);
             vm.SetNativeReturn(0, Value.New(result));
             return NativeCallResult.SuccessfulExpression;
         }

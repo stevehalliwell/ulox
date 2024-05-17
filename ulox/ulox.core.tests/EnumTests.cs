@@ -467,5 +467,21 @@ loop all
 
             Assert.AreEqual("Unknown0Bar1Baz2", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void EnumAll_WhenCount_ShouldBe2()
+        {
+            testEngine.Run(@"
+enum Foo
+{
+    Bar,
+    Baz,
+}
+
+print(Foo.All.Count());
+");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
     }
 }

@@ -144,8 +144,10 @@ namespace ULox
                 compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
                 compiler.EmitLabel(thenjumpLabel);
                 compiler.EmitPop();
-            }
-            while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+                //if trailing comma, eat it
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            } while (!compiler.TokenIterator.Check(TokenType.END_STATEMENT));
 
             compiler.ConsumeEndStatement();
         }

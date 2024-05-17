@@ -385,7 +385,7 @@ var t = T(1,2);");
             testEngine.Run(@"
         var arr = [1,2,3,];
 
-        loop arr,jtem
+        loop arr,j
         {
             print(jtem);
         }
@@ -833,7 +833,7 @@ loop arr
     {
         arr.Remove(item);
         i -= 1;
-        count -= 1;
+        icount -= 1;
     }
     else
     {

@@ -182,8 +182,8 @@ loop
 //loop with following info is for iterating over collections
 var myArr = [1,2,3,4,5,];
 loop myArr    
-// the above auto defines, item, i, count. In that order, 
-//  you can provide custom names if desired or if nested
+// the above auto defines, i, item, icount. You can optionally
+//  provide a name for i, e.g."j" gives, jtem, jcount.   
 {
     print("Val " + item + " @ " + i " of " + count);
 }
@@ -339,8 +339,10 @@ testset FooTests
         //  It will desugar to a throw with a message
         //  You can specify the message as a string
         //  after the expression with : "literal did not match"
-        expect 1 == 1,
-            2 == 2;
+        expect 
+            1 == 1,
+            2 == 2, //trailing commas are allowed
+            ;
     }
     
     // test cases can also have data provided, 

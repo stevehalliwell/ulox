@@ -15,8 +15,8 @@ namespace ULox
             }
 
             //we expect
-            //  `loop arr,i,item,count { print(item);}`
-            //  and we are going to replace with
+            //  `loop arr,i { print(item);}`
+            //  and we are going, create 'i'tem, 'i'count and replace with
             //  ` if(arr)
             //    {
             //        var count = arr.Count();
@@ -24,7 +24,7 @@ namespace ULox
             //        {
             //            var i = 0;
             //            var item = arr[i];
-            //            for (; i < count; i += 1)
+            //            for (; i < icount; i += 1)
             //            {
             //                item = arr[i];
             //                print(item);
@@ -33,9 +33,7 @@ namespace ULox
             //    }
             var currentToken = tokens[currentTokenIndex];
 
-            var itemIdent = "item";
             var iIdent = "i";
-            var countIdent = "count";
             var toRemove = 2;
             var origIdentTok = tokens[currentTokenIndex + 1];
             var uniqueArrName = context.UniqueLocalName("arr");
@@ -54,19 +52,11 @@ namespace ULox
 
             if (tokens[currentTokenIndex + toRemove].TokenType == TokenType.COMMA)
             {
-                itemIdent = tokens[currentTokenIndex + toRemove + 1].Lexeme;
+                iIdent = tokens[currentTokenIndex + toRemove + 1].Lexeme;
                 toRemove += 2;
-                if (tokens[currentTokenIndex + toRemove].TokenType == TokenType.COMMA)
-                {
-                    iIdent = tokens[currentTokenIndex + toRemove + 1].Lexeme;
-                    toRemove += 2;
-                    if (tokens[currentTokenIndex + toRemove].TokenType == TokenType.COMMA)
-                    {
-                        countIdent = tokens[currentTokenIndex + toRemove + 1].Lexeme;
-                        toRemove += 2;
-                    }
-                }
             }
+            var itemIdent = iIdent + "tem";
+            var countIdent = iIdent + "count";
 
             var expToPreserve = tokens.GetRange(currentTokenIndex + 1, endArrExpAt - currentTokenIndex - 1);
 

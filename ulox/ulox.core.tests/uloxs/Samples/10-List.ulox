@@ -19,19 +19,19 @@ var length = list.Count();
 print("Length is " + length);
 
 // There's support for loop with native arrays, that can optionally declare names for item and index
-loop list, item, index
+loop list
 {
-    print("Item @" + index + ", is " + item);
+    print("Item @" + i + ", is " + item);
 }
 
 // You can even remove items during the loop and adjust the index to match
-loop list, val, j
+loop list, j
 {
-    if(val % 2 == 0)
+    if(jtem % 2 == 0)
     {
-        list.Remove(val);
+        list.Remove(jtem);
         j -= 1;
-        count -= 1;
+        jcount -= 1;
     }
 }
 

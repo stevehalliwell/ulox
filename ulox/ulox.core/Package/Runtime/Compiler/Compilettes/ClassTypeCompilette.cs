@@ -191,7 +191,8 @@ namespace ULox
                 var targetname = compiler.TokenIterator.PreviousToken.Literal as string;
                 var targetTypeInfoEntry = compiler.TypeInfo.GetUserType(targetname);
                 CurrentTypeInfoEntry.AddMixin(targetTypeInfoEntry);
-            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            } while (!compiler.TokenIterator.Check(TokenType.END_STATEMENT));
 
             compiler.ConsumeEndStatement("mixin declaration");
         }
@@ -203,7 +204,8 @@ namespace ULox
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after signs into class.");
                 contractNames.Add(compiler.TokenIterator.PreviousToken.Literal as string);
-            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            } while (!compiler.TokenIterator.Check(TokenType.END_STATEMENT));
 
             compiler.ConsumeEndStatement("signs declaration");
 

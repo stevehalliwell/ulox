@@ -84,7 +84,9 @@ namespace ULox
 
                 ("readonly", TokenType.READ_ONLY),
 
-                ("update", TokenType.UPDATE));
+                ("update", TokenType.UPDATE),
+
+                ("soa", TokenType.SOA));
         }
 
         public void AddGenerator(IScannerTokenGenerator gen)

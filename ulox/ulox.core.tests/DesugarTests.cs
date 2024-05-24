@@ -282,6 +282,33 @@ class Foo
             Assert.Greater(res.Count, startingCount);
         }
 
+        [Test]
+        public void Soa_FooAB_ClassWith2Arrays()
+        {
+            var scriptContent = @"
+soa FooSoa
+{
+    Foo,
+}
+";
+            var (tokens, tokenIterator, context) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+            var fooType = new TypeInfoEntry("Foo", UserType.Class);
+            fooType.AddField("a");
+            fooType.AddField("b");
+            context.TypeInfo.AddType(fooType);
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.Greater(res.Count, startingCount);
+            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.CLASS));
+            Assert.IsTrue(res.Any(x => x.Lexeme == "FooSoa"));
+            Assert.IsTrue(res.Any(x => x.Lexeme == "a"));
+            Assert.IsTrue(res.Any(x => x.Lexeme == "b"));
+            Assert.IsTrue(res.Any(x => x.Lexeme == "Count"));
+        }
+
         private static (List<Token> tokens, TokenIterator tokenIterator, DummyContext context) Prepare(string scriptContent)
         {
             var scanner = new Scanner();
@@ -311,9 +338,12 @@ class Foo
         {
             public bool IsInClassValue { get; set; }
             public HashSet<string> ClassFieldNames { get; set; } = new HashSet<string>();
+
+            public TypeInfo TypeInfo { get; set; } = new ();
+
             private int _uniqueNameCount = 0;
 
-            public bool DoesClassHaveMatchingField(string x)
+            public bool DoesCurrentClassHaveMatchingField(string x)
             {
                 return ClassFieldNames.Contains(x);
             }

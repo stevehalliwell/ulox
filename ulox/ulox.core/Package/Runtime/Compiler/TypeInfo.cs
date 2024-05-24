@@ -18,6 +18,7 @@ namespace ULox
 
         public TypeInfoEntry GetUserType(string v)
         {
+            //todo move out of here so we get better context in the exception
             if (_userTypes.TryGetValue(v, out var res))
                 return res;
 

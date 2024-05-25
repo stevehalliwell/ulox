@@ -173,5 +173,55 @@ print(count);
 ");
             Assert.AreEqual("0", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Soa_RealData_Count0()
+        {
+            testEngine.Run(@"
+
+class PositionArchetype
+{
+var
+    posX = 0,
+    posY = 0,
+    ;
+}
+
+class MovingArchetype
+{
+mixin
+    PositionArchetype,
+    ;
+
+var
+    velX = 0,
+    velY = 0,
+    ;
+}
+
+class BulletArchetype
+{
+mixin
+    MovingArchetype,
+    ;
+
+var
+    life = 0,
+    go,
+    ownerId = 0,
+    ;
+}
+
+soa BulletDataSet
+{
+    BulletArchetype
+}
+
+var bulletDataSet = BulletDataSet();
+var count = bulletDataSet.Count();
+print(count);
+");
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
     }
 }

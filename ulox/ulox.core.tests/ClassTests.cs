@@ -1022,6 +1022,25 @@ print(t.A());
 //        }
 
         [Test]
+        public void StaticMethod_WhenBound_ShouldSucceed()
+        {
+            testEngine.Run(@"
+class T
+{
+    static Method()
+    {
+        retval = 7;
+    }
+}
+
+var ret = T.Method;
+
+print(ret());");
+
+            Assert.AreEqual("7", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Prop_WhenCalledOnClass_ShouldFail()
         {
             testEngine.Run(@"
@@ -1032,7 +1051,7 @@ class T
 
 var a = T.foo;");
 
-            StringAssert.StartsWith("Undefined property 'foo', cannot bind method as it has no fromClass a", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Undefined method 'foo', no method found on usertype'<Class T>' at", testEngine.InterpreterResult);
         }
         
         [Test]

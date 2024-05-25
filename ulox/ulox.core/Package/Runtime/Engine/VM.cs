@@ -1054,7 +1054,22 @@ namespace ULox
             var fromClass = instance.FromUserType;
 
             if (fromClass == null)
-                ThrowRuntimeException($"Undefined property '{name}', cannot bind method as it has no fromClass");
+            {
+                //try to find a static method
+                if (instance is UserTypeInternal userTypeInstance)
+                {
+                    if (userTypeInstance.Methods.Get(name, out var userTypeMethod))
+                    {
+                        Push(userTypeMethod);
+                        return;
+                    }
+                    ThrowRuntimeException($"Undefined method '{name}', no method found on usertype'{userTypeInstance}'");
+                }
+                else
+                {
+                    ThrowRuntimeException($"Undefined property '{name}', cannot bind method as it has no fromClass");
+                }
+            }
 
             if (!fromClass.Methods.Get(name, out var method))
                 ThrowRuntimeException($"Undefined method '{name}'");

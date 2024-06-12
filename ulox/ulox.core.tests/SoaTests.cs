@@ -223,5 +223,94 @@ print(count);
 ");
             Assert.AreEqual("0", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void OnAdd_WhenAdded_Inokes()
+        {
+            testEngine.Run(@"
+class Foo 
+{
+var 
+    a = 1,
+    b = 2
+    ;
+}
+
+soa FooSoa
+{
+    Foo,
+}
+
+var fooSoa = FooSoa();
+
+fooSoa.OnAdd = fun (set, index)
+{
+    print(index);
+};
+
+fooSoa.Add(Foo());
+");
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void OnRemove_WhenRemoveAt_Inokes()
+        {
+            testEngine.Run(@"
+class Foo 
+{
+var 
+    a = 1,
+    b = 2
+    ;
+}
+
+soa FooSoa
+{
+    Foo,
+}
+
+var fooSoa = FooSoa();
+
+fooSoa.OnRemove = fun (set, index)
+{
+    print(index);
+};
+
+fooSoa.Add(Foo());
+fooSoa.RemoveAt(0);
+");
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Clear_WhenRemoveAt_Inokes()
+        {
+            testEngine.Run(@"
+class Foo 
+{
+var 
+    a = 1,
+    b = 2
+    ;
+}
+
+soa FooSoa
+{
+    Foo,
+}
+
+var fooSoa = FooSoa();
+
+fooSoa.OnRemove = fun (set, index)
+{
+    print(index);
+};
+
+fooSoa.Add(Foo());
+fooSoa.Clear();
+");
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
     }
 }

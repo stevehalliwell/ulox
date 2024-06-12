@@ -40,7 +40,7 @@
 				},
 				{
 					"name": "keyword.operator.binary.ulox",
-					"match": "\\b(update|expect)\\b"
+					"match": "\\b(update)\\b"
 				},
 				{
 					"name": "keyword.language.null.ulox",
@@ -89,7 +89,7 @@
 					}
 				},
 				{
-					"match": "\\b(class|enum)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(<)\\s*([A-Za-z_][A-Za-z0-9_]*))?\\b",
+					"match": "\\b(class|enum|soa)\\s+([A-Za-z_][A-Za-z0-9_]*)(?:\\s*(<)\\s*([A-Za-z_][A-Za-z0-9_]*))?\\b",
 					"captures": {
 						"1": {
 							"name": "storage.type.class.ulox"
@@ -119,11 +119,11 @@
 				},
 				{
 					"name": "keyword.contextname.ulox",
-					"match": "\\b(fname|cname|tcname|tsname)\\b"
+					"match": "\\b(fname|cname|tname|tsname)\\b"
 				},
 				{
 					"name": "keyword.bultin.ulox",
-					"match": "\\b(typeof|countof|mixin|static|build|init|var)\\b"
+					"match": "\\b(typeof|countof|mixin|static|build|init|var|expect)\\b"
 				}
 			]
 		},

@@ -5,6 +5,9 @@ namespace ULox
 {
     public class SoaClassDesugar : IDesugarStep
     {
+        private const string OnRemoveDelegateName = "OnRemove";
+        private const string OnAddDelegateName = "OnAdd";
+
         public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator, ICompilerDesugarContext context)
         {
             if (tokenIterator.CurrentToken.TokenType == TokenType.SOA
@@ -50,6 +53,16 @@ namespace ULox
             })));
             toInsert.AddRange(new[]
             {
+                prototypeToken.Mutate(TokenType.IDENTIFIER, OnAddDelegateName, OnAddDelegateName),
+                prototypeToken.MutateType(TokenType.COMMA),
+            });
+            toInsert.AddRange(new[]
+            {
+                prototypeToken.Mutate(TokenType.IDENTIFIER, OnRemoveDelegateName, OnRemoveDelegateName),
+                prototypeToken.MutateType(TokenType.COMMA),
+            });
+            toInsert.AddRange(new[]
+            {
                 soaTokens.Last().MutateType(TokenType.END_STATEMENT),
             });
 
@@ -80,6 +93,8 @@ namespace ULox
                 prototypeToken.MutateType(TokenType.OPEN_BRACE),
             });
 
+            InsertDelegateIfNotNullCall(prototypeToken, toInsert, indexToken, OnRemoveDelegateName);
+
             toInsert.AddRange(soaTypes
                 .SelectMany(x => x.Fields.SelectMany(field => new[]
                 {
@@ -95,6 +110,26 @@ namespace ULox
             toInsert.AddRange(new[]
             {
                 prototypeToken.MutateType(TokenType.CLOSE_BRACE),
+            });
+        }
+
+        private static void InsertDelegateIfNotNullCall(Token prototypeToken, List<Token> toInsert, Token indexToken, string identName)
+        {
+            toInsert.AddRange(new[]
+            {
+                prototypeToken.MutateType(TokenType.IF),
+                prototypeToken.MutateType(TokenType.OPEN_PAREN),
+                prototypeToken.Mutate(TokenType.IDENTIFIER, OnRemoveDelegateName, identName),
+                prototypeToken.MutateType(TokenType.BANG_EQUAL),
+                prototypeToken.MutateType(TokenType.NULL),
+                prototypeToken.MutateType(TokenType.CLOSE_PAREN),
+                prototypeToken.Mutate(TokenType.IDENTIFIER, OnRemoveDelegateName, identName),
+                prototypeToken.MutateType(TokenType.OPEN_PAREN),
+                prototypeToken.MutateType(TokenType.THIS),
+                prototypeToken.MutateType(TokenType.COMMA),
+                indexToken,
+                prototypeToken.MutateType(TokenType.CLOSE_PAREN),
+                prototypeToken.MutateType(TokenType.END_STATEMENT),
             });
         }
 
@@ -121,6 +156,20 @@ namespace ULox
                 prototypeToken.MutateType(TokenType.OPEN_BRACE),
             });
 
+            var indexToken = prototypeToken.Mutate(TokenType.IDENTIFIER, "index", "index");
+            toInsert.AddRange(new[]
+            {
+                prototypeToken.MutateType(TokenType.VAR),
+                indexToken,
+                prototypeToken.MutateType(TokenType.ASSIGN),
+                prototypeToken.MutateType(TokenType.THIS),
+                prototypeToken.MutateType(TokenType.DOT),
+                prototypeToken.Mutate(TokenType.IDENTIFIER, "Count", "Count"),
+                prototypeToken.MutateType(TokenType.OPEN_PAREN),
+                prototypeToken.MutateType(TokenType.CLOSE_PAREN),
+                prototypeToken.MutateType(TokenType.END_STATEMENT),
+            });
+
             toInsert.AddRange(soaTypesNames
                 .SelectMany(x => x.x.Fields.SelectMany(field => new[]
                 {
@@ -134,6 +183,8 @@ namespace ULox
                     prototypeToken.MutateType(TokenType.CLOSE_PAREN),
                     prototypeToken.MutateType(TokenType.END_STATEMENT),
                 })));
+
+            InsertDelegateIfNotNullCall(prototypeToken, toInsert, indexToken, OnAddDelegateName);
 
             toInsert.AddRange(new[]
             {
@@ -150,6 +201,43 @@ namespace ULox
                 prototypeToken.MutateType(TokenType.CLOSE_PAREN),
                 prototypeToken.MutateType(TokenType.OPEN_BRACE),
             });
+
+            var firstField = soaTypes.First().Fields.First();
+
+            //loop for count and call remove at
+            toInsert.AddRange(new[]
+            {   
+                prototypeToken.MutateType(TokenType.IF),
+                prototypeToken.MutateType(TokenType.OPEN_PAREN),
+                prototypeToken.Mutate(TokenType.IDENTIFIER, OnRemoveDelegateName, OnRemoveDelegateName),
+                prototypeToken.MutateType(TokenType.BANG_EQUAL),
+                prototypeToken.MutateType(TokenType.NULL),
+                prototypeToken.MutateType(TokenType.CLOSE_PAREN),
+                prototypeToken.MutateType(TokenType.OPEN_BRACE),
+
+                    prototypeToken.MutateType(TokenType.VAR),
+                    prototypeToken.Mutate(TokenType.IDENTIFIER, "toIterateOn","toIterateOn"),
+                    prototypeToken.MutateType(TokenType.ASSIGN),
+                    prototypeToken.Mutate(TokenType.IDENTIFIER, firstField, firstField),
+                    prototypeToken.MutateType(TokenType.END_STATEMENT),
+
+                    prototypeToken.MutateType(TokenType.LOOP),
+                    prototypeToken.Mutate(TokenType.IDENTIFIER, "toIterateOn","toIterateOn"),
+                    prototypeToken.MutateType(TokenType.OPEN_BRACE),
+                    prototypeToken.MutateType(TokenType.THIS),
+                    prototypeToken.MutateType(TokenType.DOT),
+                    prototypeToken.Mutate(TokenType.IDENTIFIER, OnRemoveDelegateName, OnRemoveDelegateName),
+                    prototypeToken.MutateType(TokenType.OPEN_PAREN),
+                    prototypeToken.MutateType(TokenType.THIS),
+                    prototypeToken.MutateType(TokenType.COMMA),prototypeToken.Mutate(TokenType.IDENTIFIER, "i", "i"),
+                    prototypeToken.MutateType(TokenType.CLOSE_PAREN),
+                    prototypeToken.MutateType(TokenType.END_STATEMENT),
+                    prototypeToken.MutateType(TokenType.CLOSE_BRACE),
+
+                prototypeToken.MutateType(TokenType.CLOSE_BRACE),
+            });
+
+
 
             toInsert.AddRange(soaTypes
                 .SelectMany(x => x.Fields.SelectMany(field => new[]

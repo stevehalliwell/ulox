@@ -107,34 +107,10 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddMethod(HashedString key, Value method, Vm vm)
         {
-            // This is used internally by the vm only does not need to check for frozen
+            // This is used internally during type construction so does not need to check for frozen
             if (Methods.Get(key, out var existing))
             {
-                //combine
-                if (existing.type == ValueType.Closure)
-                {
-                    var existingArity = existing.val.asClosure.chunk.Arity;
-                    var newArity = method.val.asClosure.chunk.Arity;
-                    if (existingArity != newArity)
-                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
-
-                    //make a combine
-                    var temp = Value.Combined();
-                    temp.val.asCombined.Add(method.val.asClosure);
-                    temp.val.asCombined.Add(existing.val.asClosure);
-                    existing = temp;
-                }
-                else
-                {
-                    var existingArity = existing.val.asCombined[0].chunk.Arity;
-                    var newArity = method.val.asClosure.chunk.Arity;
-                    if (existingArity != newArity)
-                        vm.ThrowRuntimeException($"Cannot mixin method '{key}' as it has a different arity '{newArity}' to the existing method '{existingArity}'.");
-
-                    existing.val.asCombined.Insert(0, method.val.asClosure);
-                }
-
-                method = existing;
+                vm.ThrowRuntimeException($"Cannot {nameof(AddMethod)} on {this}, already contains method '{existing}'.");
             }
 
             Methods.AddOrSet(key, method);

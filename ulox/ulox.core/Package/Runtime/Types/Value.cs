@@ -88,7 +88,6 @@ namespace ULox
                     return typenameClass.ToString();
                 return $"<object {val.asObject}>";
 
-            case ValueType.CombinedClosures:
             default:
                 throw new System.NotImplementedException();
             }
@@ -104,7 +103,6 @@ namespace ULox
                 var newInst = new InstanceInternal();
                 newInst.CopyFrom(inst);
                 return Value.New(newInst);
-            case ValueType.CombinedClosures:
             case ValueType.Null:
             case ValueType.Double:
             case ValueType.Bool:
@@ -188,10 +186,6 @@ namespace ULox
             => New(ValueType.Object, new ValueTypeDataUnion() { asObject = obj });
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Value Combined()
-            => New(ValueType.CombinedClosures, new ValueTypeDataUnion() { asObject = new List<ClosureInternal>() });
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override bool Equals(object obj)
         {
             var asValue = (Value)obj;
@@ -238,7 +232,6 @@ namespace ULox
                     return lhs.val.asClosure == rhs.val.asClosure;
 
                 case ValueType.NativeFunction:
-                case ValueType.CombinedClosures:
                 case ValueType.Upvalue:
                 case ValueType.BoundMethod:
                 case ValueType.Chunk:
@@ -261,7 +254,6 @@ namespace ULox
 
             case ValueType.String:
                 return val.asString.Hash;
-            case ValueType.CombinedClosures:
             case ValueType.Null:
             case ValueType.Chunk:
             case ValueType.NativeFunction:
@@ -292,7 +284,6 @@ namespace ULox
             case ValueType.Chunk:
             case ValueType.NativeFunction:
             case ValueType.Closure:
-            case ValueType.CombinedClosures:
             case ValueType.BoundMethod:
             case ValueType.Upvalue:
                 break;
@@ -321,7 +312,6 @@ namespace ULox
             case ValueType.BoundMethod:
             case ValueType.UserType:
             case ValueType.Upvalue:
-            case ValueType.CombinedClosures:
             case ValueType.Closure:
             case ValueType.NativeFunction:
             case ValueType.Chunk:

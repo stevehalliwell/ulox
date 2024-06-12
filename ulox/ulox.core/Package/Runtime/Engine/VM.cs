@@ -976,27 +976,9 @@ namespace ULox
                 CallMethod(callee.val.asBoundMethod, argCount);
                 break;
 
-            case ValueType.CombinedClosures:
-                CallCombinedClosures(callee, argCount);
-                break;
-
             default:
                 ThrowRuntimeException($"Invalid Call, value type {callee.type} is not handled");
                 break;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallCombinedClosures(Value callee, byte argCount)
-        {
-            var combinedClosures = callee.val.asCombined;
-            var stackCopyStartIndex = _valueStack.Count - argCount - 1;
-            for (int i = 0; i < combinedClosures.Count; i++)
-            {
-                DuplicateStackValuesNew(stackCopyStartIndex, argCount);
-
-                var closure = combinedClosures[i];
-                Call(closure, argCount);
             }
         }
 
@@ -1030,15 +1012,6 @@ namespace ULox
                 ArgCount = argCount,
                 ReturnCount = returnCount,
             });
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DuplicateStackValuesNew(int startAt, int count)
-        {
-            for (int i = 0; i <= count; i++)
-            {
-                Push(_valueStack[startAt + i]);
-            }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

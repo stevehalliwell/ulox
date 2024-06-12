@@ -10,13 +10,6 @@ class MixedSingleMeth
     var bar = 2;
 }
 
-class MixedCombined
-{
-    mixin MixMe;
-
-    Modify(obj){obj.text = obj.text + cname;}
-}
-
 class StringContainer
 {
     var text = "";
@@ -31,19 +24,6 @@ testset MixinsMethods
         var obj = MixedSingleMeth();
 
         result = obj.Speak();
-
-        Assert.AreEqual(expected, result);
-    }
-
-    test CombinedMethodsUsed
-    {
-        var expected = "MixMeMixedCombined";
-        var result;
-        var obj = StringContainer();
-        var underTest = MixedCombined();
-
-        underTest.Modify(obj);
-        result = obj.text;
 
         Assert.AreEqual(expected, result);
     }

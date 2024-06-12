@@ -285,7 +285,6 @@ namespace ULox
                 case ValueType.Chunk:
                 case ValueType.NativeFunction:
                 case ValueType.Closure:
-                case ValueType.CombinedClosures:
                 case ValueType.Upvalue:
                 case ValueType.UserType:
                 case ValueType.Instance:

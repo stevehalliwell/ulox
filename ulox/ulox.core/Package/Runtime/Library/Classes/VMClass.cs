@@ -11,8 +11,8 @@ namespace ULox
         public VMClass(Func<Vm> createVM) : base(new HashedString("VM"), UserType.Native)
         {
             CreateVM = createVM;
-            AddMethod(ClassTypeCompilette.InitMethodName, Value.New(InitInstance, 1, 0), null);
             this.AddMethodsToClass(
+                (ClassTypeCompilette.InitMethodName.String, Value.New(InitInstance, 1, 0)),
                 (nameof(AddGlobal), Value.New(AddGlobal, 1, 2)),
                 (nameof(GetGlobal), Value.New(GetGlobal, 1, 1)),
                 (nameof(Start), Value.New(Start, 1, 1)),

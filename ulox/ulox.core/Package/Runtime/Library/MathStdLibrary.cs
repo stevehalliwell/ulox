@@ -39,7 +39,8 @@ namespace ULox
                 (nameof(MoveTowards), Value.New(MoveTowards, 1, 3)),
                 (nameof(Lerp), Value.New(Lerp, 1, 3)),
                 (nameof(Dampen), Value.New(Dampen, 1, 4)),
-                (nameof(CalcDampenHalflife), Value.New(CalcDampenHalflife, 1, 2))
+                (nameof(CalcDampenHalflife), Value.New(CalcDampenHalflife, 1, 2)),
+                (nameof(Remap), Value.New(Remap, 1, 5))
                 );
 
             diLibInst.Freeze();
@@ -302,6 +303,19 @@ namespace ULox
             var timeSpan = vm.GetArg(1).val.asDouble;
             var precision = vm.GetArg(2).val.asDouble;
             var result = -timeSpan / Math.Log(precision, 2);
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public static NativeCallResult Remap(Vm vm)
+        {
+            var value = vm.GetArg(1).val.asDouble;
+            var from1 = vm.GetArg(2).val.asDouble;
+            var to1 = vm.GetArg(3).val.asDouble;
+            var from2 = vm.GetArg(4).val.asDouble;
+            var to2 = vm.GetArg(5).val.asDouble;
+
+            var result = from2 + (value - from1) * (to2 - from2) / (to1 - from1);
             vm.SetNativeReturn(0, Value.New(result));
             return NativeCallResult.SuccessfulExpression;
         }

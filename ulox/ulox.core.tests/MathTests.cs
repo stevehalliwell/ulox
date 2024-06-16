@@ -274,5 +274,27 @@ expect res == 1;
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Remap_WhenExpected_ShouldBe2()
+        {
+            testEngine.Run(@"
+var res = Math.Remap(0.5, 0, 1, 1, 3);
+expect res == 2;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Remap_When0And1And2_ShouldBe1()
+        {
+            testEngine.Run(@"
+var res = Math.Remap(0.5, 0, 1, 1, 3);
+expect res == 2;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
     }
 }

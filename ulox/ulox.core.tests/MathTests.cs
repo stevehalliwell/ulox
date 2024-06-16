@@ -274,5 +274,77 @@ expect res == 1;
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Remap_WhenExpected_ShouldBe2()
+        {
+            testEngine.Run(@"
+var res = Math.Remap(0.5, 0, 1, 1, 3);
+expect res == 2;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Remap_When0And1And2_ShouldBe1()
+        {
+            testEngine.Run(@"
+var res = Math.Remap(0.5, 0, 1, 1, 3);
+expect res == 2;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void RandUnitCircle_WhenCalled_ShouldBeLessThan1Radius()
+        {
+            testEngine.Run(@"
+var (x,y) = Math.RandUnitCircle();
+var res = Math.Sqrt(x*x + y*y);
+expect res < 2;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void MoveTowards_When1to2and3_ShouldBe2()
+        {
+            testEngine.Run(@"
+var res = Math.MoveTowards(1,2,3);
+expect res == 2;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Lerp_When1to2andQuarter_ShouldBe1andQuarter()
+        {
+            testEngine.Run(@"
+var res = Math.Lerp(1,2,0.25);
+expect res == 1.25;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Dampen_When1and2_ShouldBeCloser()
+        {
+            testEngine.Run(@"
+var a = 1;
+var b = 2;
+var decay = Math.CalcDampenHalflife(1,0.1);
+var c = Math.Dampen(a,b,decay,0.1);
+expect 
+    c > a,
+    c < b;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
     }
 }

@@ -197,7 +197,7 @@ namespace ULox
                         break;
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                 }
                 break;
                 case OpCode.SUBTRACT:
@@ -210,8 +210,8 @@ namespace ULox
                         Push(Value.New(lhs.val.asDouble - rhs.val.asDouble));
                         break;
                     }
+                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
 
-                    DoInstanceOverload(opCode, rhs, lhs);
                 }
                 break;
                 case OpCode.MULTIPLY:
@@ -225,7 +225,7 @@ namespace ULox
                         break;
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                 }
                 break;
                 case OpCode.DIVIDE:
@@ -239,7 +239,7 @@ namespace ULox
                         break;
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                 }
                 break;
                 case OpCode.MODULUS:
@@ -255,22 +255,14 @@ namespace ULox
                         break;
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                 }
                 break;
 
                 case OpCode.EQUAL:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
-
-                    if (lhs.type != ValueType.Instance)
-                    {
-                        Push(Value.New(Value.Compare(ref lhs, ref rhs)));
-                        break;
-                    }
-
-                    if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                        Push(Value.New(Value.Compare(ref lhs, ref rhs)));
+                    Push(Value.New(Value.Compare(ref lhs, ref rhs)));
                 }
                 break;
 
@@ -287,7 +279,7 @@ namespace ULox
                         break;
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
                 }
                 break;
                 case OpCode.GREATER:
@@ -303,7 +295,7 @@ namespace ULox
                         break;
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
                 }
                 break;
 
@@ -542,19 +534,6 @@ namespace ULox
             return (newValue, index, listValue);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInstanceOverload(OpCode opCode, Value rhs, Value lhs)
-        {
-            if (lhs.type != rhs.type)
-                ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
-
-            if (lhs.type != ValueType.Instance)
-                ThrowRuntimeException($"Cannot perform op on non math types '{lhs.type}' and '{rhs.type}'");
-
-            if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
-        }
-
         public void ThrowRuntimeException(string msg)
         {
             var frame = _currentCallFrame;
@@ -586,13 +565,6 @@ namespace ULox
                 {
                     Push(col.Count());
                     return;
-                }
-                else
-                {
-                    if (DoCustomOverloadOp(OpCode.COUNT_OF, target, Value.Null(), Value.Null()))
-                    {
-                        return;
-                    }
                 }
             }
 
@@ -654,11 +626,6 @@ namespace ULox
                 return;
             }
 
-            //attempt overload method call
-            if (listValue.type == ValueType.Instance
-                && DoCustomOverloadOp(opCode, listValue, index, newValue))
-                return;
-
             ThrowRuntimeException($"Cannot perform set index on type '{listValue.type}'");
         }
 
@@ -688,13 +655,6 @@ namespace ULox
             {
                 Push(nativeCol.Get(index));
                 return;
-            }
-
-            //attempt overload method call
-            if (listValue.type == ValueType.Instance)
-            {
-                if (DoCustomOverloadOp(opCode, listValue, index, Value.Null()))
-                    return;
             }
 
             ThrowRuntimeException($"Cannot perform get index on type '{listValue.type}'");
@@ -1212,70 +1172,6 @@ namespace ULox
                     StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                 });
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoCustomOverloadOp(OpCode opCode, Value self, Value arg1, Value arg2)
-        {
-            var lhsInst = self.val.asInstance;
-            var opClosure = lhsInst.FromUserType.GetOverloadClosure(opCode);
-            //identify if lhs has a matching method or field
-            if (!opClosure.IsNull())
-            {
-                CallOperatorOverloadedbyFunction(opClosure.val.asClosure, self, arg1, arg2);
-                return true;
-            }
-
-            if (lhsInst.FromUserType.Name == DynamicClass.DynamicClassName)
-            {
-                var targetName = UserTypeInternal.OverloadableMethodNames[UserTypeInternal.OpCodeToOverloadIndex[opCode]];
-                if (self.val.asInstance.Fields.Get(targetName, out var matchingValue))
-                {
-                    if (matchingValue.type == ValueType.Closure)
-                    {
-                        CallOperatorOverloadedbyFunction(matchingValue.val.asClosure, self, arg1, arg2);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallOperatorOverloadedbyFunction(ClosureInternal opClosure, Value self, Value arg1, Value arg2)
-        {
-            //presently we support multiple forms of overloads
-            //  math and comparison, taking self and other
-            //  get index, taking self and index
-            //  set index taking self, index, value
-            // the arg count tells us which one
-            Push(self);
-
-            var arity = opClosure.chunk.Arity;
-
-            switch (opClosure.chunk.Arity)
-            {
-            case 1:
-                Push(self);
-                break;
-            case 2:
-                Push(self);
-                Push(arg1);
-                break;
-            case 3:
-                Push(self);
-                Push(arg1);
-                Push(arg2);
-                break;
-            }
-
-            PushNewCallframe(new CallFrame()
-            {
-                Closure = opClosure,
-                StackStart = (byte)(_valueStack.Count - 1 - arity),
-                ArgCount = arity,
-                ReturnCount = 1,
-            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

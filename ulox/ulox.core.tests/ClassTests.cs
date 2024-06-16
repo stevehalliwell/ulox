@@ -704,25 +704,6 @@ class A{MethA(){print (1);}}");
         }
 
         [Test]
-        public void Engine_OperatorOverload_ClassAdd()
-        {
-            testEngine.Run(@"
-class V
-{
-    var a;
-    init(a){}
-    _add(lhs,rhs){retval = V(lhs.a + rhs.a);}
-}
-
-var v1 = V(1);
-var v2 = V(2);
-var res = v1 + v2;
-print(res.a);");
-
-            Assert.AreEqual("3", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Init_AttempCreateField_ShouldFail()
         {
             testEngine.Run(@"

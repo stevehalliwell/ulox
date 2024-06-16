@@ -6,38 +6,7 @@ namespace ULox
 {
     public class UserTypeInternal : InstanceInternal
     {
-        public static readonly HashedString[] OverloadableMethodNames = new HashedString[]
-        {
-            new HashedString("_add"),
-            new HashedString("_sub"),
-            new HashedString("_mul"),
-            new HashedString("_div"),
-            new HashedString("_mod"),
-            new HashedString("_eq"),
-            new HashedString("_ls"),
-            new HashedString("_gr"),
-            new HashedString("_gi"),
-            new HashedString("_si"),
-            new HashedString("_co"),
-        };
-
-        public static readonly IReadOnlyDictionary<OpCode, int> OpCodeToOverloadIndex = new Dictionary<OpCode, int>()
-        {
-            {OpCode.ADD,        0 },
-            {OpCode.SUBTRACT,   1 },
-            {OpCode.MULTIPLY,   2 },
-            {OpCode.DIVIDE,     3 },
-            {OpCode.MODULUS,    4 },
-            {OpCode.EQUAL,      5 },
-            {OpCode.LESS,       6 },
-            {OpCode.GREATER,    7 },
-            {OpCode.GET_INDEX,  8 },
-            {OpCode.SET_INDEX,  9 },
-            {OpCode.COUNT_OF,   10 },
-        };
-
         public Table Methods { get; private set; } = new Table();
-        private readonly Value[] overloadableOperators = new Value[OverloadableMethodNames.Length];
 
         public HashedString Name { get; protected set; }
 
@@ -119,11 +88,6 @@ namespace ULox
             {
                 Initialiser = method;
             }
-            var opIndex = System.Array.FindIndex(OverloadableMethodNames, x => key.Hash == x.Hash);
-            if (opIndex != -1)
-            {
-                overloadableOperators[opIndex] = method;
-            }
         }
 
         public void AddInitChain(Chunk chunk, byte labelID)
@@ -132,12 +96,6 @@ namespace ULox
             if (InitChains.Any(x => x.chunk == chunk)) return;
 
             InitChains.Add((chunk, labelID));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value GetOverloadClosure(OpCode opCode)
-        {
-            return overloadableOperators[OpCodeToOverloadIndex[opCode]];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

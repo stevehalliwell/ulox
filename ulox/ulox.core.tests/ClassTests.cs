@@ -1296,70 +1296,7 @@ foo.Speaketh();");
         }
 
         [Test]
-        public void Mixin_WhenMultipleCombined_ShouldHaveAll()
-        {
-            testEngine.Run(@"
-class MixMe
-{
-    Speak(){print(cname);}
-}
-
-class MixMe2
-{
-    Speak(){print(cname);}
-}
-
-class Foo 
-{
-    mixin 
-        MixMe,
-        MixMe2;
-
-    Speaketh(){print(cname);}
-}
-
-var foo = Foo();
-foo.Speaketh();");
-
-            Assert.AreEqual("Foo", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Mixin_WhenCombinedAndNamesClash_ShouldHaveAllPrint()
-        {
-            testEngine.Run(@"
-
-class MixMe
-{
-    Speak(){print(cname);}
-}
-
-class MixMe2
-{
-    Speak(){print(cname);}
-}
-
-
-class MixMe3
-{
-    Speak(){print(cname);}
-}
-
-class Foo 
-{
-    mixin MixMe, MixMe2, MixMe3;
-
-    Speak(){print(cname);}
-}
-
-var foo = Foo();
-foo.Speak();");
-
-            Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
-        }
-
-        [Test]
-        public void Mixin_WhenInstanceMethodsCombinedAndNamesClash_ShouldHaveAllPrint()
+        public void Mixin_WhenInstanceMethodsCombinedAndNamesClash_ShouldError()
         {
             testEngine.Run(@"
 class MixMe
@@ -1392,7 +1329,7 @@ class Foo
 var foo = Foo();
 foo.Speak();");
 
-            Assert.AreEqual("MixMeMixMe2MixMe3Foo", testEngine.InterpreterResult);
+            StringAssert.StartsWith("Cannot AddMethod on <Class Foo>, already contains method '<closure", testEngine.InterpreterResult);
         }
 
         [Test]

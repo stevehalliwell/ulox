@@ -9,7 +9,6 @@
         Chunk,
         NativeFunction,
         Closure,
-        CombinedClosures,
         Upvalue,
         UserType,
         Instance,

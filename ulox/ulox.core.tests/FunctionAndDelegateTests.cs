@@ -239,5 +239,17 @@ print(mod);
 
             Assert.AreEqual("3-120.51", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Delegate_WhenNoArgsAndCalledWith1_ShouldError()
+        {
+            testEngine.Run(@"
+fun Del() {print(""Hello"");}
+var del = Del;
+del(5);
+");
+
+            StringAssert.StartsWith("Wrong number of params given to", testEngine.InterpreterResult);
+        }
     }
 }

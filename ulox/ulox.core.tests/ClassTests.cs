@@ -704,25 +704,6 @@ class A{MethA(){print (1);}}");
         }
 
         [Test]
-        public void Engine_OperatorOverload_ClassAdd()
-        {
-            testEngine.Run(@"
-class V
-{
-    var a;
-    init(a){}
-    _add(lhs,rhs){retval = V(lhs.a + rhs.a);}
-}
-
-var v1 = V(1);
-var v2 = V(2);
-var res = v1 + v2;
-print(res.a);");
-
-            Assert.AreEqual("3", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Init_AttempCreateField_ShouldFail()
         {
             testEngine.Run(@"
@@ -1638,6 +1619,55 @@ class Foo
 Foo.a = 10;");
 
             StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void CreateClosure_MethodDoesNotExist_Error()
+        {
+            testEngine.Run(@"
+class A{MethA(){print (1);}}
+
+var a = A();
+var closure = a.Meth;");
+            StringAssert.StartsWith("Undefined method 'Meth' at", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invoke_MethodDoesNotExist_Error()
+        {
+            testEngine.Run(@"
+class A{MethA(){print (1);}}
+
+var a = A();
+a.Meth();");
+            StringAssert.StartsWith("No method of name", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invoke_Dynamic_Error()
+        {
+            testEngine.Run(@"
+var a = {=};
+a.Meth();");
+            StringAssert.StartsWith("No method of name", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invoke_Lib_Error()
+        {
+            testEngine.Run(@"
+var a = Math;
+a.Meth();");
+            StringAssert.StartsWith("Cannot invoke 'Meth' on '<inst >' with no class", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invoke_WrongType_Error()
+        {
+            testEngine.Run(@"
+var a = 7;
+var closure = a.Meth();");
+            StringAssert.StartsWith("Cannot invoke 'Meth' on '7' at ", testEngine.InterpreterResult);
         }
     }
 }

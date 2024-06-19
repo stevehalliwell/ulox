@@ -237,7 +237,7 @@ namespace ULox
             case OpCode.LESS:
             case OpCode.GREATER:
             case OpCode.GET_INDEX:
-                AppendOptionalTwoLocals(packet.b1, packet.b2);
+                AppendOptionalTwoLocalsAndOptionalLocalSet(packet.b1, packet.b2, packet.b3);
                 break;
             case OpCode.SET_INDEX:
                 AppendOptionalRegistersSetIndex(packet.b1, packet.b2, packet.b3);
@@ -332,7 +332,18 @@ namespace ULox
             if (b1 == Optimiser.NOT_LOCAL_BYTE && b2 == Optimiser.NOT_LOCAL_BYTE)
                 return;
 
-            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})");
+            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, " +
+                $"{((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})");
+        }
+
+        private void AppendOptionalTwoLocalsAndOptionalLocalSet(byte b1, byte b2, byte b3)
+        {
+            if (b1 == Optimiser.NOT_LOCAL_BYTE && b2 == Optimiser.NOT_LOCAL_BYTE)
+                return;
+
+            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, " +
+                $"{((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())})" +
+                $"{((b3 != Optimiser.NOT_LOCAL_BYTE) ? $" -> {b3}" : "")}");
         }
 
         private void AppendOptionalRegistersSetIndex(byte b1, byte b2, byte b3)
@@ -340,7 +351,9 @@ namespace ULox
             if (b1 == Optimiser.NOT_LOCAL_BYTE && b2 == Optimiser.NOT_LOCAL_BYTE && b3 == Optimiser.NOT_LOCAL_BYTE)
                 return;
 
-            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, {((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())}, {((b3 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b3.ToString())})");
+            stringBuilder.Append($" ({((b1 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b1.ToString())}, " +
+                $"{((b2 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b2.ToString())}, " +
+                $"{((b3 == Optimiser.NOT_LOCAL_BYTE) ? "_" : b3.ToString())})");
         }
 
         private void DoConstant(ByteCodePacket packet)

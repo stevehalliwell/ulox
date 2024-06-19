@@ -182,128 +182,155 @@ namespace ULox
                 case OpCode.ADD:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble + rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble + rhs.val.asDouble);
                     }
-
-                    if (lhs.type == ValueType.String
+                    else if (lhs.type == ValueType.String
                          || rhs.type == ValueType.String)
                     {
-                        Push(Value.New(lhs.str() + rhs.str()));
-                        break;
+                        res = Value.New(lhs.str() + rhs.str());
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.SUBTRACT:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble - rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble - rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.MULTIPLY:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble * rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble * rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.DIVIDE:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble / rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble / rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.MODULUS:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
                         var lhsd = lhs.val.asDouble;
                         var rhsd = rhs.val.asDouble;
-                        Push(Value.New(((lhsd % rhsd) + rhsd) % rhsd));
-                        break;
+                        res = Value.New(((lhsd % rhsd) + rhsd) % rhsd);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
 
                 case OpCode.EQUAL:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
-
-                    if (lhs.type != ValueType.Instance)
-                    {
-                        Push(Value.New(Value.Compare(ref lhs, ref rhs)));
-                        break;
-                    }
-
-                    if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                        Push(Value.New(Value.Compare(ref lhs, ref rhs)));
+                    var res = Value.New(Value.Compare(ref lhs, ref rhs));
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
 
                 case OpCode.LESS:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type != ValueType.Instance)
                     {
                         if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                            ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
+                            ThrowRuntimeException($"Cannot perform op '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
 
-                        Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble < rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.GREATER:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type != ValueType.Instance)
                     {
                         if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                            ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
+                            ThrowRuntimeException($"Cannot perform op '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
 
-                        Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble > rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
                     }
 
-                    DoInstanceOverload(opCode, rhs, lhs);
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
 
@@ -454,7 +481,18 @@ namespace ULox
                 case OpCode.GET_INDEX:
                 {
                     var (index, listValue) = Pop2OrLocals(packet.b1, packet.b2);
-                    DoGetIndexOp(opCode, index, listValue);
+                    var res = Value.Null();
+                    if (listValue.val.asInstance is INativeCollection nativeCol)
+                    {
+                        res = nativeCol.Get(index);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform get index on type '{listValue.type}'");
+                    }
+
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
 
@@ -518,6 +556,15 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SetLocalFromB3(byte localSetLocation, Value res)
+        {
+            if (localSetLocation != Optimiser.NOT_LOCAL_BYTE)
+            {
+                _valueStack[_currentCallFrame.StackStart + localSetLocation] = res;
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Value PopOrLocal(byte b1)
         {
             return b1 == Optimiser.NOT_LOCAL_BYTE
@@ -540,19 +587,6 @@ namespace ULox
             var index = b2 == Optimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b2];
             var listValue = b1 == Optimiser.NOT_LOCAL_BYTE ? Pop() : _valueStack[_currentCallFrame.StackStart + b1];
             return (newValue, index, listValue);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInstanceOverload(OpCode opCode, Value rhs, Value lhs)
-        {
-            if (lhs.type != rhs.type)
-                ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
-
-            if (lhs.type != ValueType.Instance)
-                ThrowRuntimeException($"Cannot perform op on non math types '{lhs.type}' and '{rhs.type}'");
-
-            if (!DoCustomOverloadOp(opCode, lhs, rhs, Value.Null()))
-                ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
         }
 
         public void ThrowRuntimeException(string msg)
@@ -587,13 +621,6 @@ namespace ULox
                     Push(col.Count());
                     return;
                 }
-                else
-                {
-                    if (DoCustomOverloadOp(OpCode.COUNT_OF, target, Value.Null(), Value.Null()))
-                    {
-                        return;
-                    }
-                }
             }
 
             ThrowRuntimeException($"Cannot perform countof on '{target}'");
@@ -626,11 +653,7 @@ namespace ULox
 
                 case ValueType.Instance:
                     return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
-                default:
-                    break;
                 }
-                break;
-            default:
                 break;
             }
             ThrowRuntimeException($"Unsupported meets operation, got left hand side of type '{lhs.type}' and right hand side of type '{rhs.type}'");
@@ -654,11 +677,6 @@ namespace ULox
                 return;
             }
 
-            //attempt overload method call
-            if (listValue.type == ValueType.Instance
-                && DoCustomOverloadOp(opCode, listValue, index, newValue))
-                return;
-
             ThrowRuntimeException($"Cannot perform set index on type '{listValue.type}'");
         }
 
@@ -679,25 +697,6 @@ namespace ULox
             {
                 Push(v);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetIndexOp(OpCode opCode, Value index, Value listValue)
-        {
-            if (listValue.val.asInstance is INativeCollection nativeCol)
-            {
-                Push(nativeCol.Get(index));
-                return;
-            }
-
-            //attempt overload method call
-            if (listValue.type == ValueType.Instance)
-            {
-                if (DoCustomOverloadOp(opCode, listValue, index, Value.Null()))
-                    return;
-            }
-
-            ThrowRuntimeException($"Cannot perform get index on type '{listValue.type}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1096,6 +1095,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetFieldOp(Chunk chunk, byte b1)
         {
+            //Error checking is for comleteness, presenly this op is only emitted after validation that the property exists
             var argID = chunk.ReadConstant(b1);
             var target = _valueStack[_currentCallFrame.StackStart];
             if (target.type != ValueType.Instance)
@@ -1111,6 +1111,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSetFieldOp(Chunk chunk, byte b1)
         {
+            //Error checking is for comleteness, presenly this op is only emitted after validation that the property exists
             var argID = chunk.ReadConstant(b1);
             var target = _valueStack[_currentCallFrame.StackStart];
             if (target.type != ValueType.Instance)
@@ -1212,70 +1213,6 @@ namespace ULox
                     StackStart = (byte)(_valueStack.Count - 1), //last thing checked
                 });
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private bool DoCustomOverloadOp(OpCode opCode, Value self, Value arg1, Value arg2)
-        {
-            var lhsInst = self.val.asInstance;
-            var opClosure = lhsInst.FromUserType.GetOverloadClosure(opCode);
-            //identify if lhs has a matching method or field
-            if (!opClosure.IsNull())
-            {
-                CallOperatorOverloadedbyFunction(opClosure.val.asClosure, self, arg1, arg2);
-                return true;
-            }
-
-            if (lhsInst.FromUserType.Name == DynamicClass.DynamicClassName)
-            {
-                var targetName = UserTypeInternal.OverloadableMethodNames[UserTypeInternal.OpCodeToOverloadIndex[opCode]];
-                if (self.val.asInstance.Fields.Get(targetName, out var matchingValue))
-                {
-                    if (matchingValue.type == ValueType.Closure)
-                    {
-                        CallOperatorOverloadedbyFunction(matchingValue.val.asClosure, self, arg1, arg2);
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void CallOperatorOverloadedbyFunction(ClosureInternal opClosure, Value self, Value arg1, Value arg2)
-        {
-            //presently we support multiple forms of overloads
-            //  math and comparison, taking self and other
-            //  get index, taking self and index
-            //  set index taking self, index, value
-            // the arg count tells us which one
-            Push(self);
-
-            var arity = opClosure.chunk.Arity;
-
-            switch (opClosure.chunk.Arity)
-            {
-            case 1:
-                Push(self);
-                break;
-            case 2:
-                Push(self);
-                Push(arg1);
-                break;
-            case 3:
-                Push(self);
-                Push(arg1);
-                Push(arg2);
-                break;
-            }
-
-            PushNewCallframe(new CallFrame()
-            {
-                Closure = opClosure,
-                StackStart = (byte)(_valueStack.Count - 1 - arity),
-                ArgCount = arity,
-                ReturnCount = 1,
-            });
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

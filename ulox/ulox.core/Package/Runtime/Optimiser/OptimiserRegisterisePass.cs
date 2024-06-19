@@ -66,15 +66,15 @@ namespace ULox
                     //TODO: would like to but it conflicts with add overload internals at the moment
                     // either way we would need to have all the binary ops check the set byte for local or stack
                     //if the following is a set local we can just do that
-                    //if (chunk.Instructions.Count > inst)
-                    //{
-                    //    var next = chunk.Instructions[inst + 1];
-                    //    if (next.OpCode == OpCode.SET_LOCAL)
-                    //    {
-                    //        _toRemove.Add((chunk, inst + 1));
-                    //        nb3 = next.b1;
-                    //    }
-                    //}
+                    if (chunk.Instructions.Count > inst)
+                    {
+                        var next = chunk.Instructions[inst + 1];
+                        if (next.OpCode == OpCode.SET_LOCAL && next.b1 != Optimiser.NOT_LOCAL_BYTE)
+                        {
+                            optimiser.AddToRemove(chunk, inst + 1);
+                            nb3 = next.b1;
+                        }
+                    }
 
                     //if the prevous is a getlocal take it's byte and put it as the second byte in the add
                     //  and mark it as for removal

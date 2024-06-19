@@ -182,120 +182,155 @@ namespace ULox
                 case OpCode.ADD:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble + rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble + rhs.val.asDouble);
                     }
-
-                    if (lhs.type == ValueType.String
+                    else if (lhs.type == ValueType.String
                          || rhs.type == ValueType.String)
                     {
-                        Push(Value.New(lhs.str() + rhs.str()));
-                        break;
+                        res = Value.New(lhs.str() + rhs.str());
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.SUBTRACT:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble - rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble - rhs.val.asDouble);
                     }
-                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
+                    }
 
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.MULTIPLY:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble * rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble * rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.DIVIDE:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
-                        Push(Value.New(lhs.val.asDouble / rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble / rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.MODULUS:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type == ValueType.Double
                         && rhs.type == ValueType.Double)
                     {
                         var lhsd = lhs.val.asDouble;
                         var rhsd = rhs.val.asDouble;
-                        Push(Value.New(((lhsd % rhsd) + rhsd) % rhsd));
-                        break;
+                        res = Value.New(((lhsd % rhsd) + rhsd) % rhsd);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
 
                 case OpCode.EQUAL:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
-                    Push(Value.New(Value.Compare(ref lhs, ref rhs)));
+                    var res = Value.New(Value.Compare(ref lhs, ref rhs));
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
 
                 case OpCode.LESS:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type != ValueType.Instance)
                     {
                         if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                             ThrowRuntimeException($"Cannot perform op '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
 
-                        Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble < rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
                     }
 
-                    ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
                 case OpCode.GREATER:
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
+                    var res = Value.Null();
 
                     if (lhs.type != ValueType.Instance)
                     {
                         if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
                             ThrowRuntimeException($"Cannot perform op '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
 
-                        Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
-                        break;
+                        res = Value.New(lhs.val.asDouble > rhs.val.asDouble);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
                     }
 
-                    ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
 
@@ -446,7 +481,18 @@ namespace ULox
                 case OpCode.GET_INDEX:
                 {
                     var (index, listValue) = Pop2OrLocals(packet.b1, packet.b2);
-                    DoGetIndexOp(opCode, index, listValue);
+                    var res = Value.Null();
+                    if (listValue.val.asInstance is INativeCollection nativeCol)
+                    {
+                        res = nativeCol.Get(index);
+                    }
+                    else
+                    {
+                        ThrowRuntimeException($"Cannot perform get index on type '{listValue.type}'");
+                    }
+
+                    SetLocalFromB3(packet.b3, res);
+                    Push(res);
                 }
                 break;
 
@@ -506,6 +552,15 @@ namespace ULox
                     ThrowRuntimeException($"Unhandled OpCode '{opCode}'.");
                     break;
                 }
+            }
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void SetLocalFromB3(byte localSetLocation, Value res)
+        {
+            if (localSetLocation != Optimiser.NOT_LOCAL_BYTE)
+            {
+                _valueStack[_currentCallFrame.StackStart + localSetLocation] = res;
             }
         }
 
@@ -642,18 +697,6 @@ namespace ULox
             {
                 Push(v);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetIndexOp(OpCode opCode, Value index, Value listValue)
-        {
-            if (listValue.val.asInstance is INativeCollection nativeCol)
-            {
-                Push(nativeCol.Get(index));
-                return;
-            }
-
-            ThrowRuntimeException($"Cannot perform get index on type '{listValue.type}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

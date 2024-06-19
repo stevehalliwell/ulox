@@ -1620,5 +1620,54 @@ Foo.a = 10;");
 
             StringAssert.StartsWith("Attempted to create a new ", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void CreateClosure_MethodDoesNotExist_Error()
+        {
+            testEngine.Run(@"
+class A{MethA(){print (1);}}
+
+var a = A();
+var closure = a.Meth;");
+            StringAssert.StartsWith("Undefined method 'Meth' at", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invoke_MethodDoesNotExist_Error()
+        {
+            testEngine.Run(@"
+class A{MethA(){print (1);}}
+
+var a = A();
+a.Meth();");
+            StringAssert.StartsWith("No method of name", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invoke_Dynamic_Error()
+        {
+            testEngine.Run(@"
+var a = {=};
+a.Meth();");
+            StringAssert.StartsWith("No method of name", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invoke_Lib_Error()
+        {
+            testEngine.Run(@"
+var a = Math;
+a.Meth();");
+            StringAssert.StartsWith("Cannot invoke 'Meth' on '<inst >' with no class", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Invoke_WrongType_Error()
+        {
+            testEngine.Run(@"
+var a = 7;
+var closure = a.Meth();");
+            StringAssert.StartsWith("Cannot invoke 'Meth' on '7' at ", testEngine.InterpreterResult);
+        }
     }
 }

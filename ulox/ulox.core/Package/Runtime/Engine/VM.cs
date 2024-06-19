@@ -273,7 +273,7 @@ namespace ULox
                     if (lhs.type != ValueType.Instance)
                     {
                         if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                            ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
+                            ThrowRuntimeException($"Cannot perform op '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
 
                         Push(Value.New(lhs.val.asDouble < rhs.val.asDouble));
                         break;
@@ -289,7 +289,7 @@ namespace ULox
                     if (lhs.type != ValueType.Instance)
                     {
                         if (lhs.type != ValueType.Double || rhs.type != ValueType.Double)
-                            ThrowRuntimeException($"Cannot '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
+                            ThrowRuntimeException($"Cannot perform op '{opCode}' compare on different types '{lhs.type}' and '{rhs.type}'");
 
                         Push(Value.New(lhs.val.asDouble > rhs.val.asDouble));
                         break;
@@ -598,11 +598,7 @@ namespace ULox
 
                 case ValueType.Instance:
                     return MeetValidator.ValidateInstanceMeetsInstance(lhs.val.asInstance, rhs.val.asInstance);
-                default:
-                    break;
                 }
-                break;
-            default:
                 break;
             }
             ThrowRuntimeException($"Unsupported meets operation, got left hand side of type '{lhs.type}' and right hand side of type '{rhs.type}'");
@@ -1056,6 +1052,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoGetFieldOp(Chunk chunk, byte b1)
         {
+            //Error checking is for comleteness, presenly this op is only emitted after validation that the property exists
             var argID = chunk.ReadConstant(b1);
             var target = _valueStack[_currentCallFrame.StackStart];
             if (target.type != ValueType.Instance)
@@ -1071,6 +1068,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSetFieldOp(Chunk chunk, byte b1)
         {
+            //Error checking is for comleteness, presenly this op is only emitted after validation that the property exists
             var argID = chunk.ReadConstant(b1);
             var target = _valueStack[_currentCallFrame.StackStart];
             if (target.type != ValueType.Instance)

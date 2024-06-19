@@ -100,5 +100,19 @@ print(3%2);");
 print(-2%3);");
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
+
+        [Test]
+        [TestCase("+")]
+        [TestCase("-")]
+        [TestCase("*")]
+        [TestCase("/")]
+        [TestCase("%")]
+        [TestCase(">")]
+        [TestCase("<")]
+        public void Op_WhenIncompatTypes_ShouldError(string op)
+        {
+            testEngine.Run($"var res = 1 {op} [];");
+            StringAssert.StartsWith("Cannot perform op", testEngine.InterpreterResult);
+        }
     }
 }

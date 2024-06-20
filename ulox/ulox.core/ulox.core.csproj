@@ -3,6 +3,7 @@
 		<RootNamespace>ulox</RootNamespace>
 		<AssemblyName>ulox</AssemblyName>
 		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>9.0</LangVersion>
 		<AssemblyTitle>ulox</AssemblyTitle>
 		<Product>ulox</Product>
 		<Copyright>Copyright ©  2021</Copyright>

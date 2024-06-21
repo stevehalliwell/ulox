@@ -274,6 +274,40 @@ match f
         }
 
         [Test]
+        public void Match_WhenFunRetval_ShouldPass()
+        {
+            testEngine.Run(@"
+class ShipWeaponCreate
+{
+    GetCreator(name)
+    {
+        var localName = name;
+        match localName
+        {
+            ""PlayerBullet"" : { retval = ShipWeaponCreate.CreatePlayerBullet; }
+            ""EnemyBullet"" : { retval = ShipWeaponCreate.CreateEnemyBullet; }
+        }
+    }
+
+    CreatePlayerBullet(ship)
+    {
+        BulletSystem.AddBulletFromShip(playerBulletSystemData, ship);
+    }
+
+    CreateEnemyBullet(ship)
+    {
+        BulletSystem.AddBulletFromShip(enemyBulletSystemData, ship);
+    }
+}
+
+var retval = ShipWeaponCreate.GetCreator(""PlayerBullet"");
+print(retval);
+");
+
+            StringAssert.StartsWith("<closure CreatePlayerBullet", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Match_WhenIntWithBody_ShouldPass()
         {
             testEngine.Run(@"

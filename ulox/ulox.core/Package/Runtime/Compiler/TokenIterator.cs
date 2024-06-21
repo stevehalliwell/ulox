@@ -10,9 +10,10 @@ namespace ULox
 
     public interface ICompilerDesugarContext
     {
-        bool DoesClassHaveMatchingField(string x);
+        bool DoesCurrentClassHaveMatchingField(string x);
         bool IsInClass();
         string UniqueLocalName(string prefix);
+        TypeInfo TypeInfo { get; }
     }
 
     public interface IDesugarStep
@@ -51,6 +52,7 @@ namespace ULox
             _desugarSteps.Add(new MapDesugar());
             _desugarSteps.Add(new DynamicDesugar());
             _desugarSteps.Add(new ClassInitArgMatchDesugar());
+            _desugarSteps.Add(new SoaClassDesugar());
         }
 
         public string GetSourceSection(int start, int len)

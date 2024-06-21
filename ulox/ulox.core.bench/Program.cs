@@ -24,19 +24,33 @@ namespace ULox.Core.Bench
             BenchmarkRunner.Run<Program>(args: args);
         }
 
+        //[Benchmark]
+        //public void ScriptVsNativeFunctional_UloxMethods()
+        //{
+        //    var engine = Engine.CreateDefault();
+        //    //todo need to look at the byteocode for this, see if we can speed it up
+        //    engine.RunScript(new Script("", ScriptVsNativeFunctional.FunctionalUlox));
+        //}
+
+        //[Benchmark]
+        //public void ScriptVsNativeFunctional_NativeMethods()
+        //{
+        //    var engine = Engine.CreateDefault();
+        //    engine.RunScript(new Script("", ScriptVsNativeFunctional.FunctionalNative));
+        //}
+
         [Benchmark]
-        public void ScriptVsNativeFunctional_UloxMethods()
+        public void Object_PosVelUpdate()
         {
             var engine = Engine.CreateDefault();
-            //todo need to look at the byteocode for this, see if we can speed it up
-            engine.RunScript(new Script("", ScriptVsNativeFunctional.FunctionalUlox));
+            engine.RunScript(new Script("", ObjectVsSoa.ObjectBasedScript));
         }
 
         [Benchmark]
-        public void ScriptVsNativeFunctional_NativeMethods()
+        public void Soa_PosVelUpdate()
         {
             var engine = Engine.CreateDefault();
-            engine.RunScript(new Script("", ScriptVsNativeFunctional.FunctionalNative));
+            engine.RunScript(new Script("", ObjectVsSoa.SoaBasedScript));
         }
 
         [Benchmark]

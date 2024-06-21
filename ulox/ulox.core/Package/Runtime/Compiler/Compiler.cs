@@ -667,7 +667,7 @@ namespace ULox
             return _classCompiler.CurrentTypeInfoEntry != null;
         }
 
-        public bool DoesClassHaveMatchingField(string x)
+        public bool DoesCurrentClassHaveMatchingField(string x)
         {
             return _classCompiler.CurrentTypeInfoEntry.Fields.Contains(x);
         }

@@ -44,8 +44,7 @@
 
             DoInitChainEnd(compiler);
             DoEndType(compiler);
-            compiler.TypeInfo.AddType(_currentTypeInfo);
-
+            
             OnPostBody?.Invoke(compiler);
             OnPostBody = null;
 
@@ -58,7 +57,9 @@
         {
             Stage = TypeCompiletteStage.Begin;
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect type name.");
-            _currentTypeInfo = new TypeInfoEntry((string)compiler.TokenIterator.PreviousToken.Literal, UserType);
+            _currentTypeInfo = new TypeInfoEntry((string)compiler.TokenIterator.PreviousToken.Literal, UserType); 
+            compiler.TypeInfo.AddType(_currentTypeInfo);
+
             compiler.PushCompilerState($"{CurrentTypeName}_typedeclare", FunctionType.TypeDeclare);
             byte nameConstant = compiler.AddStringConstant();
 

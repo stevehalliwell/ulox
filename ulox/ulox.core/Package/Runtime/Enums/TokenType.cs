@@ -100,5 +100,7 @@
         READ_ONLY,
 
         UPDATE,
+
+        SOA,
     }
 }

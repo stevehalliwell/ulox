@@ -230,7 +230,7 @@ class A
             testEngine.Run(@"
 var a = this.a;");
 
-            Assert.AreEqual("Cannot use the 'this' keyword outside of a class in chunk 'unnamed_chunk(test)' at 2:13 'this'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot use the 'this' keyword outside of a class in chunk 'root(test)' at 2:13 'this'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -499,7 +499,7 @@ class T
 
 var t = T();");
 
-            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Method' has encountered a late 'Init' stage element in chunk 'T_typedeclare(test)' at 5:9 'init'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Method' has encountered a late 'Init' stage element in chunk 'T(test)' at 5:9 'init'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -547,7 +547,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element in chunk 'T_typedeclare(test)' at 5:8 'var'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element in chunk 'T(test)' at 5:8 'var'.", testEngine.InterpreterResult);
         }
 
         [Test]

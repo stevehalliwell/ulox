@@ -18,7 +18,7 @@ namespace ULox
         private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
         public Table Globals { get; private set; } = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
-        public VmStatisticsReporter Statistics { get; set; }
+        public VmTracingReporter Tracing { get; set; }
 
         public Vm()
         {
@@ -105,7 +105,7 @@ namespace ULox
             => chunk.Instructions[_currentCallFrame.InstructionPointer++];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void PushNewCallframe(CallFrame callFrame)
+        private void PushNewCallFrame(CallFrame callFrame)
         {
             if (_callFrames.Count > 0)
             {
@@ -115,6 +115,9 @@ namespace ULox
 
             _currentCallFrame = callFrame;
             _currentChunk = _currentCallFrame.Closure.chunk;
+#if VM_STATS
+            Tracing?.ProcessPushCallFrame(callFrame);
+#endif
             _callFrames.Push(callFrame);
             for (int i = 0; i < callFrame.ReturnCount; i++)
             {
@@ -155,7 +158,7 @@ namespace ULox
                 var opCode = packet.OpCode;
 
 #if VM_STATS
-                Statistics?.ProcessingOpCode(chunk, opCode);
+                Tracing?.ProcessingOpCode(chunk, opCode);
 #endif
 
                 switch (opCode)
@@ -871,7 +874,10 @@ namespace ULox
             {
                 var poppedStackStart = _currentCallFrame.StackStart;
                 //remove top
-                _callFrames.Pop();
+                var popped = _callFrames.Pop();
+#if VM_STATS
+                Tracing?.ProcessPopCallFrame(popped);
+#endif
 
                 //update cache
                 if (_callFrames.Count > 0)
@@ -990,7 +996,7 @@ namespace ULox
 
 
             var stackStart = (byte)System.Math.Max(0, _valueStack.Count - argCount - 1);
-            PushNewCallframe(new CallFrame()
+            PushNewCallFrame(new CallFrame()
             {
                 StackStart = stackStart,
                 Closure = closureInternal,
@@ -1002,7 +1008,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void PushFrameCallNative(CallFrame.NativeCallDelegate nativeCallDel, byte argCount, byte returnCount)
         {
-            PushNewCallframe(new CallFrame()
+            PushNewCallFrame(new CallFrame()
             {
                 StackStart = (byte)(_valueStack.Count - argCount - 1),
                 Closure = NativeCallClosure,
@@ -1221,7 +1227,7 @@ namespace ULox
                 if (!asClass.Initialiser.IsNull())
                     Push(inst);
 
-                PushNewCallframe(new CallFrame()
+                PushNewCallFrame(new CallFrame()
                 {
                     Closure = new ClosureInternal { chunk = chunk },
                     InstructionPointer = chunk.GetLabelPosition(labelID),

@@ -60,7 +60,7 @@
             _currentTypeInfo = new TypeInfoEntry((string)compiler.TokenIterator.PreviousToken.Literal, UserType); 
             compiler.TypeInfo.AddType(_currentTypeInfo);
 
-            compiler.PushCompilerState($"{CurrentTypeName}_typedeclare", FunctionType.TypeDeclare);
+            compiler.PushCompilerState($"{CurrentTypeName}", FunctionType.TypeDeclare);
             byte nameConstant = compiler.AddStringConstant();
 
             InitChainLabelId = compiler.UniqueChunkLabelStringConstant($"{Chunk.InternalLabelPrefix}InitChain");

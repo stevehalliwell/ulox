@@ -74,9 +74,9 @@ namespace ULox
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
 
             var _ = compiler.AddStringConstant();
-            var name = compiler.TokenIterator.PreviousToken.Lexeme;
+            var methodName = compiler.TokenIterator.PreviousToken.Lexeme;
 
-            compiler.PushCompilerState(name, functionType);
+            compiler.PushCompilerState(methodName, functionType);
 
             if (functionType == FunctionType.Method
                || functionType == FunctionType.Init)

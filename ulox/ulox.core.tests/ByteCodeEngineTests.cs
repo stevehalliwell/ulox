@@ -829,12 +829,12 @@ var a = null;
 var b = 1;
 var c = b + a;");
 
-            Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'7' in chunk:'unnamed_chunk(test:4)'.
+            Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'7' in chunk:'root(test:4)'.
 ===Stack===
-<closure unnamed_chunk upvals:0>
+<closure root upvals:0>
 
 ===CallStack===
-chunk:'unnamed_chunk(test)'
+chunk:'root(test)'
 
 ", testEngine.InterpreterResult);
         }

@@ -95,7 +95,7 @@ var map = [3,4,""a"":2,];
 print(map[""a""]);
 ");
 
-            Assert.AreEqual("Expected to compile Expression, but encountered error in chunk 'unnamed_chunk(test)' at 2:20.", testEngine.InterpreterResult);
+            Assert.AreEqual("Expected to compile Expression, but encountered error in chunk 'root(test)' at 2:20.", testEngine.InterpreterResult);
         }
 
         [Test]

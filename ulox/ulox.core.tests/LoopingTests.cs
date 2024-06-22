@@ -50,7 +50,7 @@ loop
     i = i + 1;
 }");
 
-            Assert.AreEqual("Loops must contain a termination in chunk 'unnamed_chunk(test)' at 7:2.", testEngine.InterpreterResult);
+            Assert.AreEqual("Loops must contain a termination in chunk 'root(test)' at 7:2.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -64,7 +64,7 @@ for(;;)
     i = i + 1;
 }");
 
-            Assert.AreEqual("Loops must contain a termination in chunk 'unnamed_chunk(test)' at 7:2.", testEngine.InterpreterResult);
+            Assert.AreEqual("Loops must contain a termination in chunk 'root(test)' at 7:2.", testEngine.InterpreterResult);
         }
 
         [Test]

@@ -254,7 +254,7 @@ namespace ULox
             TokenIterator = new TokenIterator(script, tokens, this);
             TokenIterator.Advance();
 
-            PushCompilerState(string.Empty, FunctionType.Script);
+            PushCompilerState("root", FunctionType.Script);
 
             while (TokenIterator.CurrentToken.TokenType != TokenType.EOF)
             {
@@ -471,9 +471,9 @@ namespace ULox
             IncreaseReturn(retvalId);
         }
 
-        public Chunk Function(string name, FunctionType functionType)
+        public Chunk Function(string functionName, FunctionType functionType)
         {
-            PushCompilerState(name, functionType);
+            PushCompilerState(functionName, functionType);
 
             var returnCount = FuncArgsAndReturns();
 

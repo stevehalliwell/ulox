@@ -14,7 +14,7 @@ namespace ULox.Core.Tests
         {
             _logger = logger;
             MyEngine = Engine.CreateDefault();
-            MyEngine.Context.Vm.Statistics = new VmStatisticsReporter();
+            MyEngine.Context.Vm.Tracing = new VmTracingReporter();
             MyEngine.Context.OnLog += logger;
             MyEngine.Context.OnLog += AppendResult;
         }
@@ -55,7 +55,7 @@ namespace ULox.Core.Tests
                 _logger(JoinedCompilerMessages);
                 _logger(VmUtil.GenerateGlobalsDump(MyEngine.Context.Vm));
                 _logger(VmUtil.GenerateValueStackDump(MyEngine.Context.Vm));
-                _logger(MyEngine.Context.Vm.Statistics?.GetReport().GenerateStringReport() ?? string.Empty);
+                _logger(VmStatisticsReport.Create(MyEngine.Context.Vm.Tracing.PerChunkStats).GenerateStringReport());
                 _logger(MyEngine.Context.Program.Optimiser.OptimisationReporter?.GetReport().GenerateStringReport() ?? string.Empty);
             }
         }

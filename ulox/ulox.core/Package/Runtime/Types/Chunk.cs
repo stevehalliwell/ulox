@@ -8,7 +8,6 @@ namespace ULox
     {
         public const int InstructionStartingCapacity = 50;
         public const int ConstantStartingCapacity = 15;
-        public const string DefaultChunkName = "unnamed_chunk";
         public const string InternalLabelPrefix = "INTERNAL_";
 
         internal struct RunLengthLineNumber
@@ -43,7 +42,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Chunk(string chunkName, string sourceName, string containingChunkChainName)
         {
-            ChunkName = string.IsNullOrEmpty(chunkName) ? DefaultChunkName : chunkName;
+            ChunkName = chunkName;
             SourceName = sourceName;
             ContainingChunkChainName = containingChunkChainName;
         }

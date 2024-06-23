@@ -517,7 +517,7 @@ namespace ULox
                 case OpCode.SET_INDEX:
                 {
                     var (newValue, index, listValue) = Pop3OrLocals(packet.b1, packet.b2, packet.b3);
-                    DoSetIndexOp(opCode, newValue, index, listValue);
+                    DoSetIndexOp(newValue, index, listValue);
                 }
                 break;
 
@@ -686,16 +686,25 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetIndexOp(OpCode opCode, Value newValue, Value index, Value listValue)
+        private void DoSetIndexOp(Value newValue, Value indexOrName, Value target)
         {
-            if (listValue.val.asInstance is INativeCollection nativeCol)
+            if (target.type == ValueType.Instance)
             {
-                nativeCol.Set(index, newValue);
+                if (target.val.asInstance is INativeCollection nativeCol)
+                {
+                    nativeCol.Set(indexOrName, newValue);
+                }
+                else
+                {
+                    var inst = target.val.asInstance;
+                    inst.Fields.Set(indexOrName.val.asString, newValue);
+                }
+
                 Push(newValue);
                 return;
             }
 
-            ThrowRuntimeException($"Cannot perform set index on type '{listValue.type}'");
+            ThrowRuntimeException($"Cannot perform set index on type '{target.type}'");
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

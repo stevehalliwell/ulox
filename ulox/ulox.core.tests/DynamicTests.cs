@@ -101,5 +101,19 @@ obj.RemoveField(obj, ""a"");");
 
             StringAssert.StartsWith("Cannot remove field from read only", testEngine.InterpreterResult);
         }
+
+        //todo add more tests for dynamic_property
+        [Test]
+        public void DyanicProperty_Exists_ShouldMatch()
+        {
+            testEngine.Run(@"
+var foo = { a = 1 };
+var res = foo[""a""];
+print(res);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        //todo rather than dynprop, what if we just allowed foo["a"] to resolve via get_index on a non-list?
     }
 }

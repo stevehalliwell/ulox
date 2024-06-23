@@ -222,5 +222,83 @@ var res = Serialise.FromJson(jsonString);
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void SerialiseToJson_WhenComplextDataStore_ShouldBeSuccess()
+        {
+            testEngine.Run(@"
+class ShipCharacter
+{
+var
+    accel = 20,
+    throttleAccel = 2,
+    maxSpeed = 12,
+    turnPerSecondThrust = 190,
+    turnPerSecondFreeSpin = 290,
+    gravity = 10,
+    dragSharpness = 0.5,
+    sidewaysDragSharpness = 3,
+    backwardDragSharpness = 1.5,
+    mass = 1,
+    fireRate = 0.5,
+    kickback = 1,
+    projectileSpeed = 10,
+    projectileTtl = 1,
+    projectileSpeedInher = 0.5,
+    maxHealth = 5,
+    invulnTime = -1, 
+    timeTilRegen = 0,
+    healthRegenRate = -1,
+    healthRegenFreeSpinRate = -1,
+    shotName = ""PlayerSmallShot"",
+    weaponType = ""PlayerBullet"",
+    weaponCreator = fun(fromShip){},
+    pipLifetime = 20,
+    pipPickupRange = 1,
+    pipAttractRange = 15,
+    pipAttractForce = 20,
+    pipsWhenDestroyed = 0,
+    sizeRadius = 1,
+    waterDisplacement = 20,
+    rudderAccel = 2,
+}
+
+var enemyShipData = 
+{
+    EnemyA = ShipCharacter() update 
+    {
+        fireRate = 1,
+        accel = 25,
+        maxSpeed = 14,
+        turnPerSecondThrust = 290,
+        turnPerSecondNoThrust = 380,
+        shotName = ""EnemySmallShot"",
+        weaponType = ""EnemyBullet"",
+        pipsWhenDestroyed = 1,
+        sizeRadius = 0.25,
+        waterDisplacement = 5,
+        rudderAccel = 3,
+    },
+    EnemyB = ShipCharacter() update 
+    {
+        fireRate = 0.2,
+        accel = 15,
+        maxSpeed = 9,
+        shotName = ""EnemySmallShot"",
+        weaponType = ""EnemyBullet"",
+        projectileSpeed = 15,
+        projectileSpeedInher = 1,
+        pipsWhenDestroyed = 2,
+        sizeRadius = 1.5,
+        waterDisplacement = 10,
+        rudderAccel = 1,
+    },
+};
+
+print(Serialise.ToJson(enemyShipData));
+");
+
+            StringAssert.StartsWith("{\r\n  \"EnemyA\": {\r\n    \"accel\": 25.0,", testEngine.InterpreterResult);
+        }
     }
 }

@@ -483,15 +483,30 @@ namespace ULox
 
                 case OpCode.GET_INDEX:
                 {
-                    var (index, listValue) = Pop2OrLocals(packet.b1, packet.b2);
+                    var (indexOrName, targetValue) = Pop2OrLocals(packet.b1, packet.b2);
                     var res = Value.Null();
-                    if (listValue.val.asInstance is INativeCollection nativeCol)
+                    if (targetValue.type == ValueType.Instance)
                     {
-                        res = nativeCol.Get(index);
+                        if (targetValue.val.asInstance is INativeCollection nativeCol)
+                        {
+                            res = nativeCol.Get(indexOrName);
+                        }
+                        else
+                        {
+                            var instance = targetValue.val.asInstance;
+                            if (instance.Fields.Get(indexOrName.val.asString, out res))
+                            {
+                                Push(res);
+                            }
+                            else
+                            {
+                                ThrowRuntimeException($"No field of name '{indexOrName.val.asString}' could be found on instance '{instance}'");
+                            }
+                        }
                     }
                     else
                     {
-                        ThrowRuntimeException($"Cannot perform get index on type '{listValue.type}'");
+                        ThrowRuntimeException($"Cannot perform get index on type '{targetValue.type}'");
                     }
 
                     SetLocalFromB3(packet.b3, res);

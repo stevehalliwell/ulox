@@ -52,12 +52,17 @@ namespace ULox
 
                 break;
 
-            default:
+            case ValueType.Double:
+            case ValueType.Bool:
+            case ValueType.String:
+            case ValueType.Null:
                 if (name != null)
                     _writer.WriteNameAndValue(name.String, v);
                 else
                     _writer.WriteValue(v);
 
+                break;
+            default:
                 break;
             }
         }

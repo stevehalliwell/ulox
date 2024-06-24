@@ -101,5 +101,71 @@ obj.RemoveField(obj, ""a"");");
 
             StringAssert.StartsWith("Cannot remove field from read only", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void DyanicProperty_GetExists_ShouldMatch()
+        {
+            testEngine.Run(@"
+var foo = { a = 1 };
+var res = foo[""a""];
+print(res);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void DyanicProperty_GetDoesNotExists_ShouldError()
+        {
+            testEngine.Run(@"
+var foo = { a = 1 };
+var res = foo[""b""];
+print(res);");
+
+            StringAssert.StartsWith("No field of name 'b' could be found on instance", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void DyanicProperty_GetInvalidType_ShouldError()
+        {
+            testEngine.Run(@"
+var foo = 7;
+var res = foo[""b""];
+print(res);");
+
+            StringAssert.StartsWith("Cannot perform get index on type 'Double'", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void DyanicProperty_SetExists_ShouldMatch()
+        {
+            testEngine.Run(@"
+var foo = { a = 1 };
+foo[""a""] = 2;
+print(foo.a);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void DyanicProperty_SetDoesNotExists_ShouldError()
+        {
+            testEngine.Run(@"
+var foo = { a = 1 };
+foo[""b""] = 2;
+print(foo.a);");
+
+            StringAssert.StartsWith("Attempted to create a new entry 'b' via Set.", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void DyanicProperty_SetInvalidType_ShouldError()
+        {
+            testEngine.Run(@"
+var foo = 7;
+foo[""b""] = 2;
+print(foo.a);");
+
+            StringAssert.StartsWith("Cannot perform set index on type 'Double'", testEngine.InterpreterResult);
+        }
     }
 }

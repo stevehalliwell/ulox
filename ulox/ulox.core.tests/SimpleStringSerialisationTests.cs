@@ -1,6 +1,5 @@
 ﻿using NUnit.Framework;
 using System.Text.RegularExpressions;
-using ULox;
 
 namespace ULox.Core.Tests
 {

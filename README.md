@@ -309,6 +309,12 @@ class MyFooAndThenSome
 var matchingShape1 = anAddress meets Address(); //will be true
 var matchingShape2 = anAddress meets myFoo(); //will be false
 
+//ulox also supports the use of fields via subscript syntax.
+//  This allows for code that does not know the identifier ahead
+//  of time to be written.
+var someFieldNameWeDidntKnow = "a";
+myFoo[someFieldNameWeDidntKnow] = 7; 
+
 //testing is built into the language, 
 //  they are setup like test fixtures with test cases.
 //  They are auto run by the vm, in an isolated inner vm. 

@@ -494,11 +494,7 @@ namespace ULox
                         else
                         {
                             var instance = targetValue.val.asInstance;
-                            if (instance.Fields.Get(indexOrName.val.asString, out res))
-                            {
-                                Push(res);
-                            }
-                            else
+                            if (!instance.Fields.Get(indexOrName.val.asString, out res))
                             {
                                 ThrowRuntimeException($"No field of name '{indexOrName.val.asString}' could be found on instance '{instance}'");
                             }

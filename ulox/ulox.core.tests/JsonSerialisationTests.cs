@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -298,7 +299,9 @@ var enemyShipData =
 print(Serialise.ToJson(enemyShipData));
 ");
 
-            StringAssert.StartsWith("{\r\n  \"EnemyA\": {\r\n    \"accel\": 25.0,", testEngine.InterpreterResult);
+            StringAssert.StartsWith("{" + Environment.NewLine 
+            + "  \"EnemyA\": {"+ Environment.NewLine
+            + "    \"accel\": 25.0,", testEngine.InterpreterResult);
         }
     }
 }

@@ -32,7 +32,7 @@ namespace ULox
         };
         public OptimisationReporter OptimisationReporter { get; set; }
 
-        private List<(Chunk chunk, int inst)> _toRemove = new List<(Chunk, int)>();
+        private List<(Chunk chunk, int inst)> _toRemove = new();
 
         public void Optimise(CompiledScript compiledScript)
         {

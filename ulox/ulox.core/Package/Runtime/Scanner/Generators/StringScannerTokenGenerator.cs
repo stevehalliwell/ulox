@@ -4,7 +4,7 @@ namespace ULox
 {
     public sealed class StringScannerTokenGenerator : IScannerTokenGenerator
     {
-        private readonly StringBuilder workingSpaceStringBuilder = new StringBuilder();
+        private readonly StringBuilder workingSpaceStringBuilder = new();
 
         public bool DoesMatchChar(char ch) => ch == '"';
 

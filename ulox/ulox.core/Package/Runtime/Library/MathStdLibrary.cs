@@ -4,7 +4,7 @@ namespace ULox
 {
     internal static class MathStdLibrary
     {
-        private static readonly Random _random = new Random();
+        private static readonly Random _random = new();
 
         internal static InstanceInternal MakeMathInstance()
         {

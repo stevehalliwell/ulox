@@ -92,7 +92,7 @@ namespace ULox
             public int[] OpCodeOccurances = new int[OpCodeUtil.NumberOfOpCodes];
         }
 
-        private readonly List<ChunkStatistics> _chunkStatistics = new List<ChunkStatistics>();
+        private readonly List<ChunkStatistics> _chunkStatistics = new();
 
         public IReadOnlyList<ChunkStatistics> ChunksStats => _chunkStatistics;
 

@@ -5,7 +5,7 @@ namespace ULox
 {
     public sealed class NumberScannerTokenGenerator : IScannerTokenGenerator
     {
-        private readonly StringBuilder workingSpaceStringBuilder = new StringBuilder();
+        private readonly StringBuilder workingSpaceStringBuilder = new();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDigit(int ch) => ch >= '0' && ch <= '9';

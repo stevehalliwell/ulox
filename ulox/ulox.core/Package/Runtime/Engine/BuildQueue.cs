@@ -4,7 +4,7 @@ namespace ULox
 {
     public sealed class BuildQueue
     {
-        public readonly List<Script> _buildQueue = new List<Script>();
+        public readonly List<Script> _buildQueue = new();
         private int _cursor;
 
         public bool HasItems => _buildQueue.Count > 0;

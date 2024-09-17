@@ -5,8 +5,8 @@ namespace ULox
 {
     public sealed class ClassTypeCompilette : TypeCompilette
     {
-        public static readonly HashedString InitMethodName = new HashedString("init");
-        public static readonly HashedString ThisName = new HashedString("this");
+        public static readonly HashedString InitMethodName = new("init");
+        public static readonly HashedString ThisName = new("this");
 
         private readonly Dictionary<TokenType, (TypeCompiletteStage Stage, Action<Compiler> process)> _innerDeclarationCompilettes;
         private (TypeCompiletteStage Stage, Action<Compiler> process) _bodyCompiletteFallback;

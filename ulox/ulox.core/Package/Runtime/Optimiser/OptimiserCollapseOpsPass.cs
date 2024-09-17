@@ -6,9 +6,9 @@ namespace ULox
 {
     public sealed class OptimiserCollapseOpsPass : IOptimiserPass
     {
-        private readonly List<int> _byteToProcess = new List<int>();
-        private readonly List<int> _getLocals = new List<int>();
-        private readonly List<int> _popsToInspect = new List<int>();
+        private readonly List<int> _byteToProcess = new();
+        private readonly List<int> _getLocals = new();
+        private readonly List<int> _popsToInspect = new();
 
         public void Prepare(Optimiser optimiser, Chunk chunk)
         {

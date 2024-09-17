@@ -9,7 +9,7 @@ namespace ULox
         private readonly ObjectType _objectType;
 
         private Value _value;
-        private readonly List<(string name, ValueObjectBuilder builder)> _children = new List<(string, ValueObjectBuilder)>();
+        private readonly List<(string name, ValueObjectBuilder builder)> _children = new();
 
         public ValueObjectBuilder(ObjectType ot)
         {

@@ -6,7 +6,7 @@ namespace ULox
 {
     public sealed class Disassembler : CompiledScriptIterator
     {
-        private readonly StringBuilder stringBuilder = new StringBuilder();
+        private readonly StringBuilder stringBuilder = new();
         private int _currentInstructionCount;
         private int _prevLine;
 

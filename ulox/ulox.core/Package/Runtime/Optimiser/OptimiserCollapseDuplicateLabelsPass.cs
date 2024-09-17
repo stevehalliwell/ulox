@@ -6,7 +6,7 @@ namespace ULox
 {
     public sealed class OptimiserCollapseDuplicateLabelsPass : IOptimiserPass
     {
-        private readonly OptimiserLabelUsageAccumulator _optimiserLabelUsageAccumulator = new OptimiserLabelUsageAccumulator();
+        private readonly OptimiserLabelUsageAccumulator _optimiserLabelUsageAccumulator = new();
 
         public void Prepare(Optimiser optimiser, Chunk chunk)
         {

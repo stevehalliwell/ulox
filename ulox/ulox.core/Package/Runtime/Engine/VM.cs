@@ -8,14 +8,14 @@ namespace ULox
     {
         private readonly ClosureInternal NativeCallClosure;
 
-        private readonly FastStack<Value> _valueStack = new FastStack<Value>();
+        private readonly FastStack<Value> _valueStack = new();
         internal FastStack<Value> ValueStack => _valueStack;
-        private readonly FastStack<CallFrame> _callFrames = new FastStack<CallFrame>();
+        private readonly FastStack<CallFrame> _callFrames = new();
         internal FastStack<CallFrame> CallFrames => _callFrames;
         private CallFrame _currentCallFrame;
         private Chunk _currentChunk;
         public Engine Engine { get; internal set; }
-        private readonly LinkedList<Value> openUpvalues = new LinkedList<Value>();
+        private readonly LinkedList<Value> openUpvalues = new();
         public Table Globals { get; private set; } = new Table();
         public TestRunner TestRunner { get; private set; } = new TestRunner(() => new Vm());
         public VmTracingReporter Tracing { get; set; }

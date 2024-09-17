@@ -7,19 +7,19 @@ namespace ULox
 {
     public sealed class Compiler : ICompilerDesugarContext
     {
-        private readonly IndexableStack<CompilerState> compilerStates = new IndexableStack<CompilerState>();
+        private readonly IndexableStack<CompilerState> compilerStates = new();
         //temp
-        public readonly PrattParserRuleSet _prattParser = new PrattParserRuleSet();
-        private readonly TypeInfo _typeInfo = new TypeInfo();
+        public readonly PrattParserRuleSet _prattParser = new();
+        private readonly TypeInfo _typeInfo = new();
 
         public TypeInfo TypeInfo => _typeInfo;
         public TokenIterator TokenIterator { get; private set; }
 
-        private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new Dictionary<TokenType, ICompilette>();
-        private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new Dictionary<TokenType, ICompilette>();
-        private readonly List<Chunk> _allChunks = new List<Chunk>();
-        private readonly ClassTypeCompilette _classCompiler = new ClassTypeCompilette();
-        private readonly List<CompilerMessage> _messages = new List<CompilerMessage>();
+        private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new();
+        private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new();
+        private readonly List<Chunk> _allChunks = new();
+        private readonly ClassTypeCompilette _classCompiler = new();
+        private readonly List<CompilerMessage> _messages = new();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;

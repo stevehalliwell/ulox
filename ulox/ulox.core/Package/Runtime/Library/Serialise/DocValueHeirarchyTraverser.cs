@@ -5,7 +5,7 @@ namespace ULox
     public abstract class DocValueHeirarchyTraverser : IDocValueHeirarchyTraverser
     {
         private readonly IValueObjectBuilder _valBuilderRoot;
-        protected Stack<IValueObjectBuilder> _builderStack = new Stack<IValueObjectBuilder>();
+        protected Stack<IValueObjectBuilder> _builderStack = new();
 
         protected DocValueHeirarchyTraverser(IValueObjectBuilder valBuilder)
         {

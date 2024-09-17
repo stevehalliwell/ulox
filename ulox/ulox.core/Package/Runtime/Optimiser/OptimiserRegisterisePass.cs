@@ -15,7 +15,7 @@ namespace ULox
             SetProp,
         }
 
-        private List<(int inst, RegisteriseType regType)> _potentialRegisterise = new List<(int, RegisteriseType)>();
+        private List<(int inst, RegisteriseType regType)> _potentialRegisterise = new();
 
         public void Prepare(Optimiser optimiser, Chunk chunk)
         {

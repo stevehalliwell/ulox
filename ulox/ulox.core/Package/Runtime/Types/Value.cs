@@ -125,7 +125,7 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(ValueType valueType, ValueTypeDataUnion dataUnion)
-            => new Value() { type = valueType, val = dataUnion };
+            => new() { type = valueType, val = dataUnion };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value New(double val)
@@ -179,7 +179,7 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value Null()
-            => new Value() { type = ValueType.Null };
+            => new() { type = ValueType.Null };
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Value Object(object obj)

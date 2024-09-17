@@ -14,7 +14,7 @@ namespace ULox
                 public int[] OpCodeOccurances = new int[OpCodeUtil.NumberOfOpCodes];
             }
 
-            public Dictionary<Chunk, ChunkStatistics> ChunkLookUp = new Dictionary<Chunk, ChunkStatistics>();
+            public Dictionary<Chunk, ChunkStatistics> ChunkLookUp = new();
             private ChunkStatistics _current;
 
             protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
@@ -35,8 +35,8 @@ namespace ULox
             }
         }
 
-        private CompiledScriptStatistics _pre = new CompiledScriptStatistics();
-        private CompiledScriptStatistics _post = new CompiledScriptStatistics();
+        private CompiledScriptStatistics _pre = new();
+        private CompiledScriptStatistics _post = new();
         
         public void PreOptimise(CompiledScript compiledScript)
         {
@@ -67,7 +67,7 @@ namespace ULox
             public int[] OpCodeOccurancesAfter = new int[OpCodeUtil.NumberOfOpCodes];
         }
 
-        private readonly List<ChunkOptimisationReport> _chunkOptimisationReports = new List<ChunkOptimisationReport>();
+        private readonly List<ChunkOptimisationReport> _chunkOptimisationReports = new();
 
         public IReadOnlyList<ChunkOptimisationReport> ChunkOptimisationReports => _chunkOptimisationReports;
 

@@ -5,6 +5,21 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    public enum PushValueOpType : byte
+    {
+        Null,
+        Bool,
+        Byte,
+        Bytes,
+    }
+
+    public interface ICompilette
+    {
+        TokenType MatchingToken { get; }
+
+        void Process(Compiler compiler);
+    }
+    
     public sealed class Compiler : ICompilerDesugarContext
     {
         private readonly IndexableStack<CompilerState> compilerStates = new();

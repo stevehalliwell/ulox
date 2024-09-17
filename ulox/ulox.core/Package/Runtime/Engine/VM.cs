@@ -4,6 +4,13 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    //this could maybe move as nested inside vm
+    public enum InterpreterResult
+    {
+        OK,
+        YIELD,
+    }
+
     public sealed class Vm
     {
         private readonly ClosureInternal NativeCallClosure;

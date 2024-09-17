@@ -3,6 +3,13 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    public interface IScannerTokenGenerator
+    {
+        bool DoesMatchChar(char ch);
+
+        void Consume(Scanner scanner);
+    }
+    
     public sealed class Scanner
     {
         public const int TokenStartingCapacity = 500;
@@ -23,14 +30,6 @@ namespace ULox
         private void Setup()
         {
             var identScannerGen = new IdentifierScannerTokenGenerator();
-
-            this.AddGenerators(
-                new StringScannerTokenGenerator(),  //needs the chance to steel } from direct symbol
-                new DirectSymbolScannerMatchTokenGenerator(),
-                new NumberScannerTokenGenerator(),
-                identScannerGen
-                );
-
             identScannerGen.Add(
                 ("var", TokenType.VAR),
                 ("and", TokenType.AND),
@@ -87,6 +86,13 @@ namespace ULox
                 ("update", TokenType.UPDATE),
 
                 ("soa", TokenType.SOA));
+
+            this.AddGenerators(
+                new StringScannerTokenGenerator(),  //needs the chance to steel } from direct symbol
+                new DirectSymbolScannerMatchTokenGenerator(),
+                new NumberScannerTokenGenerator(),
+                identScannerGen
+                );
         }
 
         public void AddGenerator(IScannerTokenGenerator gen)
@@ -106,8 +112,8 @@ namespace ULox
             while (!IsAtEnd())
             {
                 Advance();
-                var matchinGen = GetMatchingGenerator(CurrentChar);
-                matchinGen.Consume(this);
+                var matchingGen = GetMatchingGenerator(CurrentChar);
+                matchingGen.Consume(this);
             }
 
             EmitTokenSingle(TokenType.EOF);
@@ -151,6 +157,8 @@ namespace ULox
             => _stringIterator.ReadLine();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //this auto creating a string from char seems like a waste, what actually needs it other than deasmbler and errors
+        //  which could calc it when needed if it was null
         public void EmitTokenSingle(TokenType token)
             => EmitToken(token, CurrentChar.ToString(), null);
 

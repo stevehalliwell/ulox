@@ -34,7 +34,7 @@ fun ByTwo(x){retval = x*2;}
 fun ByThree(x){retval = x*3;}
 ";
 
-        public const string FunctionalNative = CommonScript + @"
+        public static readonly Script FunctionalNative = new(nameof(FunctionalNative),CommonScript + @"
 var arr = MakeTestArray();
 var reducedResult = arr.Reduce(accum);
 Assert.AreEqual(10, reducedResult);
@@ -65,9 +65,9 @@ var forkOn = 3;
 var forkRes = forkMethods.Fork(forkOn);
 var forkReduceRes = forkRes.Reduce(accum);
 Assert.AreEqual(3+6+9, forkReduceRes);
-";
+");
 
-        public const string FunctionalUlox = CommonScript + @"
+        public static readonly Script FunctionalUlox = new(nameof(FunctionalUlox),CommonScript + @"
 fun reduce(arr, fn)
 {
     var res = arr[0];
@@ -179,7 +179,6 @@ var forkOn = 3;
 var forkRes = fork(forkMethods, forkOn);
 var forkReduceRes = reduce(forkRes, accum);
 Assert.AreEqual(3+6+9, forkReduceRes);
-";
-
+");
     }
 }

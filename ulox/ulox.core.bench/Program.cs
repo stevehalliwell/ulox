@@ -1,5 +1,8 @@
-﻿using BenchmarkDotNet.Attributes;
+﻿using System.Collections.Generic;
+using System.Linq;
+using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
+using Newtonsoft.Json.Linq;
 
 namespace ULox.Core.Bench
 {
@@ -8,7 +11,10 @@ namespace ULox.Core.Bench
     {
         private CompiledScript _loopCompiled;
         private CompiledScript _ifCompiled;
-        private CompiledScript _scriptCompiled;
+        private CompiledScript _scriptCompiledAndOpt;
+        private CompiledScript _scriptCompiledNotOpt;
+        private List<Token> _compiledTokens;
+        private Engine _engine;
 
         [GlobalSetup]
         public void Setup()
@@ -16,7 +22,12 @@ namespace ULox.Core.Bench
             var engine = Engine.CreateDefault();
             _loopCompiled = engine.Context.CompileScript(BenchmarkScripts.Loop);
             _ifCompiled = engine.Context.CompileScript(BenchmarkScripts.If);
-            _scriptCompiled = engine.Context.CompileScript(CompileVsExecute.Script);
+            _scriptCompiledAndOpt = engine.Context.CompileScript(CompileVsExecute.Script);
+
+            engine = Engine.CreateDefault();
+            var scanner = engine.Context.Program.Scanner;
+            _compiledTokens = scanner.Scan(CompileVsExecute.Script);
+            _scriptCompiledNotOpt = engine.Context.Program.Compiler.Compile(_compiledTokens.Select(x=>x).ToList(), CompileVsExecute.Script);
         }
 
         static void Main(string[] args)
@@ -39,54 +50,94 @@ namespace ULox.Core.Bench
         //    engine.RunScript(new Script("", ScriptVsNativeFunctional.FunctionalNative));
         //}
 
+        //[Benchmark]
+        //public void Object_PosVelUpdate()
+        //{
+        //    var engine = Engine.CreateDefault();
+        //    engine.RunScript(new Script("", ObjectVsSoa.ObjectBasedScript));
+        //}
+
+        //[Benchmark]
+        //public void Soa_PosVelUpdate()
+        //{
+        //    var engine = Engine.CreateDefault();
+        //    engine.RunScript(new Script("", ObjectVsSoa.SoaBasedScript));
+        //}
+
         [Benchmark]
-        public void Object_PosVelUpdate()
+        public Engine CompileVsExecute_NewEngineOnly()
         {
-            var engine = Engine.CreateDefault();
-            engine.RunScript(new Script("", ObjectVsSoa.ObjectBasedScript));
+            _engine = Engine.CreateDefault();
+            return _engine;
         }
 
         [Benchmark]
-        public void Soa_PosVelUpdate()
+        public List<Token> CompileVsExecute_TokeniseOnly()
         {
-            var engine = Engine.CreateDefault();
-            engine.RunScript(new Script("", ObjectVsSoa.SoaBasedScript));
+            _engine = Engine.CreateDefault();
+            return _engine.Context.Program.Scanner.Scan(CompileVsExecute.Script);
+        }
+
+        [Benchmark]
+        public List<Token> CompileVsExecute_DupTokensOnly()
+        {
+            _engine = Engine.CreateDefault();
+            var tokens = _compiledTokens.Select(x => x).ToList();
+            return tokens;
+        }
+
+        [Benchmark]
+        public CompiledScript CompileVsExecute_CompileOnly()
+        {
+            _engine = Engine.CreateDefault();
+            var tokens = _compiledTokens.Select(x => x).ToList();
+            return _engine.Context.Program.Compiler.Compile(tokens, CompileVsExecute.Script);
+        }
+
+        [Benchmark]
+        public CompiledScript CompileVsExecute_DeepCloneOnly()
+        {
+            _engine = Engine.CreateDefault();
+            var compiled = _scriptCompiledNotOpt.DeepClone();
+            return compiled;
+        }
+
+        [Benchmark]
+        public CompiledScript CompileVsExecute_OptimiseOnly()
+        {
+            _engine = Engine.CreateDefault();
+            var compiled = _scriptCompiledNotOpt.DeepClone();
+            _engine.Context.Program.Optimiser.Optimise(compiled);
+            return compiled;
         }
 
         [Benchmark]
         public void CompileVsExecute_All()
         {
-            var engine = Engine.CreateDefault();
-            engine.RunScript(CompileVsExecute.Script);
+            _engine = Engine.CreateDefault();
+            _engine.RunScript(CompileVsExecute.Script);
         }
 
-        [Benchmark]
-        public void CompileVsExecute_CompileOnly()
-        {
-            var engine = Engine.CreateDefault();
-            engine.Context.CompileScript(CompileVsExecute.Script);
-        }
+        //[Benchmark]
+        //public void Looping_Loop()
+        //{
+        //    var engine = Engine.CreateDefault();
+        //    engine.Context.Vm.Interpret(_loopCompiled.TopLevelChunk);
+        //}
 
-        [Benchmark]
-        public void Looping_Loop()
-        {
-            var engine = Engine.CreateDefault();
-            engine.Context.Vm.Interpret(_loopCompiled.TopLevelChunk);
-        }
+        //[Benchmark]
+        //public void Conditional_If()
+        //{
+        //    var engine = Engine.CreateDefault();
+        //    engine.Context.Vm.Interpret(_ifCompiled.TopLevelChunk);
+        //}
 
-        [Benchmark]
-        public void Conditional_If()
-        {
-            var engine = Engine.CreateDefault();
-            engine.Context.Vm.Interpret(_ifCompiled.TopLevelChunk);
-        }
-
-        [Benchmark]
-        public string Dissasm_Script()
-        {
-            var dis = new Disassembler();
-            dis.Iterate(_scriptCompiled);
-            return dis.GetString();
-        }
+        //[Benchmark]
+        //public string Dissasm_Script()
+        //{
+        //    var dis = new Disassembler();
+        //    dis.Iterate(_scriptCompiled);
+        //    return dis.GetString();
+        //}
     }
 }

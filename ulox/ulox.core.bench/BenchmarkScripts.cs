@@ -2,7 +2,7 @@
 {
     public static class BenchmarkScripts
     {
-        public static readonly Script Loop = new Script(nameof(Loop), @"
+        public static readonly Script Loop = new(nameof(Loop), @"
 var arr = [];
 arr.Resize(100,0);
 
@@ -11,7 +11,7 @@ loop arr
     item = i;
 }");
 
-        public static readonly Script If = new Script(nameof(If), @"
+        public static readonly Script If = new(nameof(If), @"
 var i = 0;
 
 if(i == 1)
@@ -31,7 +31,7 @@ else
 
     public static class Vec2Variants
     {
-        public static readonly Script Type = new Script(nameof(Vec2Variants), @"
+        public static readonly Script Type = new(nameof(Vec2Variants), @"
 class Vec2
 {
 	static Create(x,y)
@@ -261,7 +261,7 @@ fun Bench()
 	var n = Vec2.Normalise(d);
 }
 ");
-        public static readonly Script Tuple = new Script(nameof(Vec2Variants), @"
+        public static readonly Script Tuple = new(nameof(Vec2Variants), @"
 
 class Vec2
 {

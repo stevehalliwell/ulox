@@ -3,7 +3,6 @@
 namespace ULox.Core.Tests
 {
     [TestFixture]
-
     public class ByteCodeIteratorTests : EngineTestBase
     {
         private CompiledScript CompileByteCode(string str)

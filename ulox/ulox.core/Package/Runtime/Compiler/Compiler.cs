@@ -248,9 +248,8 @@ namespace ULox
                 EmitPop(popCount);
         }
 
-        public CompiledScript Compile(Scanner scanner, Script script)
+        public CompiledScript Compile(List<Token> tokens, Script script)
         {
-            var tokens = scanner.Scan(script);
             TokenIterator = new TokenIterator(script, tokens, this);
             TokenIterator.Advance();
 

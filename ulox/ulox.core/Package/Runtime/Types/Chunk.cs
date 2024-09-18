@@ -226,5 +226,42 @@ namespace ULox
         {
             return Constants[key].val.asString.String.StartsWith(InternalLabelPrefix);
         }
+
+        internal Chunk DeepClone()
+        {
+            var newChunk = new Chunk(ChunkName, SourceName, ContainingChunkChainName);
+
+            foreach (var constant in _constants)
+            {
+                newChunk._constants.Add(constant);
+            }
+
+            foreach (var instruction in Instructions)
+            {
+                newChunk.Instructions.Add(instruction);
+            }
+
+            foreach (var label in _labelIdToInstruction)
+            {
+                newChunk._labelIdToInstruction.Add(label.Key, label.Value);
+            }
+
+            foreach (var line in _runLengthLineNumbers)
+            {
+                newChunk._runLengthLineNumbers.Add(line);
+            }
+
+            foreach (var arg in ArgumentConstantIds)
+            {
+                newChunk.ArgumentConstantIds.Add(arg);
+            }
+
+            foreach (var ret in ReturnConstantIds)
+            {
+                newChunk.ReturnConstantIds.Add(ret);
+            }
+
+            return newChunk;
+        }
     }
 }

@@ -107,7 +107,6 @@
     public readonly struct Token
     {
         public readonly TokenType TokenType;
-        public readonly string Lexeme;
         public readonly object Literal;
         public readonly int Line;
         public readonly int Character;
@@ -115,14 +114,12 @@
 
         public Token(
             TokenType tokenType,
-            string lexeme,
             object literal,
             int line,
             int character,
             int stringSourceIndex)
         {
             TokenType = tokenType;
-            Lexeme = lexeme;
             Literal = literal;
             Line = line;
             Character = character;
@@ -133,18 +130,16 @@
         {
             return new Token(
                 newType,
-                Lexeme,
                 Literal,
                 Line,
                 Character,
                 StringSourceIndex);
         }
 
-        public Token Mutate(TokenType tokenType, string lexeme, object literal)
+        public Token Mutate(TokenType tokenType, object literal)
         {
             return new Token(
                 tokenType,
-                lexeme,
                 literal,
                 Line,
                 Character,

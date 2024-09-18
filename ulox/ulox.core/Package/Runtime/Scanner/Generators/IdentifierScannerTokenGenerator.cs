@@ -48,7 +48,7 @@ namespace ULox
             if (keywords.TryGetValue(identString, out var keywordTokenType))
                 token = keywordTokenType;
 
-            scanner.EmitToken(token, identString, identString);
+            scanner.EmitToken(token, identString);
         }
     }
 }

@@ -34,11 +34,11 @@ namespace ULox
                 interpTokens.AddRange(new[] {
                    currentToken.MutateType(TokenType.CLOSE_PAREN),
                    currentToken.MutateType(TokenType.PLUS),
-                   currentToken.Mutate(TokenType.STRING,postInterpStr,postInterpStr),});
+                   currentToken.Mutate(TokenType.STRING, postInterpStr),});
             }
 
             newStr = System.Text.RegularExpressions.Regex.Unescape(newStr);
-            tokens[currentTokenIndex] = currentToken.Mutate(TokenType.STRING, newStr, newStr);
+            tokens[currentTokenIndex] = currentToken.Mutate(TokenType.STRING, newStr);
 
             if (interpTokens != null)
             {

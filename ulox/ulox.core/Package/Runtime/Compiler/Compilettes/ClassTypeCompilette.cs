@@ -74,7 +74,7 @@ namespace ULox
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
 
             var _ = compiler.AddStringConstant();
-            var methodName = compiler.TokenIterator.PreviousToken.Lexeme;
+            var methodName = compiler.TokenIterator.PreviousToken.Literal as string;
 
             compiler.PushCompilerState(methodName, functionType);
 
@@ -110,7 +110,7 @@ namespace ULox
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                 byte nameConstant = compiler.AddStringConstant();
-                CurrentTypeInfoEntry.AddStaticField(compiler.TokenIterator.PreviousToken.Lexeme);
+                CurrentTypeInfoEntry.AddStaticField(compiler.TokenIterator.PreviousToken.Literal as string);
 
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, 1));//get class or inst this on the stack
 
@@ -145,7 +145,7 @@ namespace ULox
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                 byte nameConstant = compiler.AddStringConstant();
 
-                CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Lexeme);
+                CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Literal as string);
 
                 if (_initFragmentJump == byte.MaxValue)
                 {

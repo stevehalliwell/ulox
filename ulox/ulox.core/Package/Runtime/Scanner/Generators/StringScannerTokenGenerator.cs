@@ -38,7 +38,7 @@ namespace ULox
         private void EndString(Scanner scanner)
         {
             var str = workingSpaceStringBuilder.ToString();
-            scanner.EmitToken(TokenType.STRING, str, str);
+            scanner.EmitToken(TokenType.STRING, str);
         }
     }
 }

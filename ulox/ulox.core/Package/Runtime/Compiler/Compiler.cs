@@ -660,7 +660,7 @@ namespace ULox
         internal string IdentifierOrChunkUnique(string prefix)
         {
             if (TokenIterator.Match(TokenType.IDENTIFIER))
-                return TokenIterator.PreviousToken.Lexeme;
+                return TokenIterator.PreviousToken.Literal as string;
 
             return ChunkUniqueName(prefix);
         }

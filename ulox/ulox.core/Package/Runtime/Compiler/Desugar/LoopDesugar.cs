@@ -37,7 +37,7 @@ namespace ULox
             var toRemove = 2;
             var origIdentTok = tokens[currentTokenIndex + 1];
             var uniqueArrName = context.UniqueLocalName("arr");
-            var arrIdent = origIdentTok.Mutate(TokenType.IDENTIFIER, uniqueArrName, uniqueArrName);
+            var arrIdent = origIdentTok.Mutate(TokenType.IDENTIFIER, uniqueArrName);
 
             var openBlockLoc = tokens.FindIndex(currentTokenIndex, x => x.TokenType == TokenType.OPEN_BRACE);
             var nextCommaLoc = tokens.FindIndex(currentTokenIndex, x => x.TokenType == TokenType.COMMA);
@@ -52,7 +52,7 @@ namespace ULox
 
             if (tokens[currentTokenIndex + toRemove].TokenType == TokenType.COMMA)
             {
-                iIdent = tokens[currentTokenIndex + toRemove + 1].Lexeme;
+                iIdent = tokens[currentTokenIndex + toRemove + 1].Literal as string;
                 toRemove += 2;
             }
             var itemIdent = iIdent + "tem";
@@ -90,7 +90,7 @@ namespace ULox
 
                 //get count
                 currentToken.MutateType(TokenType.VAR),
-                currentToken.Mutate(TokenType.IDENTIFIER, countIdent, countIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, countIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
                 currentToken.MutateType(TokenType.COUNT_OF),
                 arrIdent,
@@ -99,26 +99,26 @@ namespace ULox
                 //if count >0
                 currentToken.MutateType(TokenType.IF),
                 currentToken.MutateType(TokenType.OPEN_PAREN),
-                currentToken.Mutate(TokenType.IDENTIFIER, countIdent, countIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, countIdent),
                 currentToken.MutateType(TokenType.GREATER),
-                currentToken.Mutate(TokenType.NUMBER, string.Empty, 0.0),
+                currentToken.Mutate(TokenType.NUMBER, 0.0),
                 currentToken.MutateType(TokenType.CLOSE_PAREN),
                 currentToken.MutateType(TokenType.OPEN_BRACE),
 
                 //make i = 0
                 currentToken.MutateType(TokenType.VAR),
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent, iIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
-                currentToken.Mutate(TokenType.NUMBER, string.Empty,0.0),
+                currentToken.Mutate(TokenType.NUMBER, 0.0),
                 currentToken.MutateType(TokenType.END_STATEMENT),
 
                 //make item = arr[0]
                 currentToken.MutateType(TokenType.VAR),
-                currentToken.Mutate(TokenType.IDENTIFIER, string.Empty, itemIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, itemIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
                 arrIdent,
                 currentToken.MutateType(TokenType.OPEN_BRACKET),
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent, iIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
                 currentToken.MutateType(TokenType.CLOSE_BRACKET),
                 currentToken.MutateType(TokenType.END_STATEMENT),
 
@@ -128,26 +128,26 @@ namespace ULox
                 //empty init, we did it already
                 currentToken.MutateType(TokenType.END_STATEMENT),
 
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent, iIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
                 currentToken.MutateType(TokenType.LESS),
-                currentToken.Mutate(TokenType.IDENTIFIER, countIdent, countIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, countIdent),
                 currentToken.MutateType(TokenType.END_STATEMENT),
 
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent, iIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent, iIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
                 currentToken.MutateType(TokenType.PLUS),
-                currentToken.Mutate(TokenType.NUMBER, string.Empty, 1.0),
+                currentToken.Mutate(TokenType.NUMBER, 1.0),
                 currentToken.MutateType(TokenType.CLOSE_PAREN),
 
                 currentToken.MutateType(TokenType.OPEN_BRACE),
                 
                 //make item = arr[i]
-                currentToken.Mutate(TokenType.IDENTIFIER, itemIdent, itemIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, itemIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
                 arrIdent,
                 currentToken.MutateType(TokenType.OPEN_BRACKET),
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent, iIdent),
+                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
                 currentToken.MutateType(TokenType.CLOSE_BRACKET),
                 currentToken.MutateType(TokenType.END_STATEMENT),
                 }));

@@ -21,7 +21,7 @@ namespace ULox
         public void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context)
         {
             var currentToken = tokens[currentTokenIndex];
-            var returnToken = currentToken.Mutate(TokenType.IDENTIFIER, _nativeTypeName, _nativeTypeName);
+            var returnToken = currentToken.Mutate(TokenType.IDENTIFIER, _nativeTypeName);
 
             tokens.RemoveRange(currentTokenIndex + 1, _tokenRemoveCount);
 

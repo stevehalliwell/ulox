@@ -157,17 +157,16 @@ namespace ULox
             => _stringIterator.ReadLine();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //this auto creating a string from char seems like a waste, what actually needs it other than deasmbler and errors
+        //this auto creating a string from char seems like a waste, what actually needs it other than dissembler and errors
         //  which could calc it when needed if it was null
         public void EmitTokenSingle(TokenType token)
-            => EmitToken(token, CurrentChar.ToString(), null);
+            => EmitToken(token, null);//making this null, null doesn't even break anything
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitToken(TokenType simpleToken, string str, object literal)
+        public void EmitToken(TokenType simpleToken, object literal)
         {
             _tokens.Add(new Token(
                 simpleToken,
-                str,
                 literal,
                 _stringIterator.Line,
                 _stringIterator.CharacterNumber,

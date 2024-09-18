@@ -160,7 +160,7 @@ namespace ULox
             compiler.BeginScope();
 
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after match statement.");
-            var matchArgName = compiler.TokenIterator.PreviousToken.Lexeme;
+            var matchArgName = compiler.TokenIterator.PreviousToken.Literal as string;
             var resolveRes = compiler.ResolveNameLookupOpCode(matchArgName);
 
             var lastElseLabel = -1;
@@ -200,7 +200,7 @@ namespace ULox
         public static void LabelStatement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
-            var labelName = compiler.TokenIterator.PreviousToken.Lexeme;
+            var labelName = compiler.TokenIterator.PreviousToken.Literal as string;
             var id = compiler.AddCustomStringConstant(labelName);
             compiler.EmitGoto(id);  //we require that you cannot stumble into a label so if you request one you need to go to it immediately
             compiler.EmitLabel(id);

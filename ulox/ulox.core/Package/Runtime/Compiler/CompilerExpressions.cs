@@ -130,7 +130,7 @@ namespace ULox
 
             compiler.Function(
                 globalName != -1
-                ? compiler.TokenIterator.PreviousToken.Lexeme
+                ? compiler.TokenIterator.PreviousToken.Literal as string
                 : "anonymous",
                  FunctionType.Function);
 

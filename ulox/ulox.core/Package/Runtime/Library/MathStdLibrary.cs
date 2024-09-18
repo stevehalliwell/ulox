@@ -40,7 +40,8 @@ namespace ULox
                 (nameof(Lerp), Value.New(Lerp, 1, 3)),
                 (nameof(Dampen), Value.New(Dampen, 1, 4)),
                 (nameof(CalcDampenHalflife), Value.New(CalcDampenHalflife, 1, 2)),
-                (nameof(Remap), Value.New(Remap, 1, 5))
+                (nameof(Remap), Value.New(Remap, 1, 5)),
+                (nameof(SinCos), Value.New(SinCos, 2, 1))
                 );
 
             diLibInst.Freeze();
@@ -91,6 +92,15 @@ namespace ULox
             var arg = vm.GetArg(1);
             var result = Math.Sin(arg.val.asDouble);
             vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult SinCos(Vm vm)
+        {
+            var arg = vm.GetArg(1);
+            var r = arg.val.asDouble;
+            vm.SetNativeReturn(0, Value.New(Math.Sin(r)));
+            vm.SetNativeReturn(1, Value.New(Math.Cos(r)));
             return NativeCallResult.SuccessfulExpression;
         }
 

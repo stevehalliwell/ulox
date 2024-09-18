@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -15,6 +16,7 @@ namespace ULox
         public const int TokenStartingCapacity = 500;
         private StringIterator _stringIterator = new("");
         public char CurrentChar => _stringIterator.CurrentChar;
+        public int CurrentIndex => _stringIterator.CurrentIndex;
 
         private readonly List<IScannerTokenGenerator> _scannerGenerators = new();
 
@@ -116,6 +118,7 @@ namespace ULox
                 matchingGen.Consume(this);
             }
 
+            _stringIterator.FinishLineLengths();
             EmitTokenSingle(TokenType.EOF);
 
             return _tokens;
@@ -168,9 +171,13 @@ namespace ULox
             _tokens.Add(new Token(
                 simpleToken,
                 literal,
-                _stringIterator.Line,
-                _stringIterator.CharacterNumber,
                 _stringIterator.CurrentIndex));
+        }
+
+        public string SubStrFrom(int startingIndex)
+        {
+            var length = _stringIterator.CurrentIndex - startingIndex;
+            return _script.Source.Substring(startingIndex, length+1);
         }
 
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)
@@ -196,6 +203,11 @@ namespace ULox
                 ThrowScannerException($"Unexpected character '{ch}'");
 
             return matchingGen;
+        }
+
+        public int[] GetLineLengths()
+        {
+            return _stringIterator.LineLengths.ToArray();
         }
     }
 }

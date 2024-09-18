@@ -113,7 +113,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void ConsumeSlash(Scanner scanner)
+        private static void ConsumeSlash(Scanner scanner)
         {
             if (scanner.Match('/'))
             {

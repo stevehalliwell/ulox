@@ -1,11 +1,10 @@
 ﻿using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace ULox
 {
     public sealed class NumberScannerTokenGenerator : IScannerTokenGenerator
     {
-        private readonly StringBuilder workingSpaceStringBuilder = new();
+        private int _startingIndex;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsDigit(int ch) => ch >= '0' && ch <= '9';
@@ -14,28 +13,23 @@ namespace ULox
 
         public void Consume(Scanner scanner)
         {
-            workingSpaceStringBuilder.Clear();
-
-            workingSpaceStringBuilder.Append(scanner.CurrentChar);
+            _startingIndex = scanner.CurrentIndex;
 
             while (IsDigit(scanner.Peek()))
             {
                 scanner.Advance();
-                workingSpaceStringBuilder.Append(scanner.CurrentChar);
             }
 
             if (scanner.Peek() == '.')
             {
                 scanner.Advance();
-                workingSpaceStringBuilder.Append(scanner.CurrentChar);
                 while (IsDigit(scanner.Peek()))
                 {
                     scanner.Advance();
-                    workingSpaceStringBuilder.Append(scanner.CurrentChar);
                 }
             }
 
-            var numStr = workingSpaceStringBuilder.ToString();
+            var numStr = scanner.SubStrFrom(_startingIndex);
 
             scanner.EmitToken(
                 TokenType.NUMBER,

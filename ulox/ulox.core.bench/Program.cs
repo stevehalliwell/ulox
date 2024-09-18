@@ -14,6 +14,7 @@ namespace ULox.Core.Bench
         private CompiledScript _scriptCompiledAndOpt;
         private CompiledScript _scriptCompiledNotOpt;
         private List<Token> _compiledTokens;
+        private int[] _lineLengths;
         private Engine _engine;
 
         [GlobalSetup]
@@ -27,7 +28,8 @@ namespace ULox.Core.Bench
             engine = Engine.CreateDefault();
             var scanner = engine.Context.Program.Scanner;
             _compiledTokens = scanner.Scan(CompileVsExecute.Script);
-            _scriptCompiledNotOpt = engine.Context.Program.Compiler.Compile(_compiledTokens.Select(x=>x).ToList(), CompileVsExecute.Script);
+            _lineLengths = scanner.GetLineLengths();
+            _scriptCompiledNotOpt = engine.Context.Program.Compiler.Compile(_compiledTokens.Select(x=>x).ToList(), _lineLengths, CompileVsExecute.Script);
         }
 
         static void Main(string[] args)
@@ -91,7 +93,7 @@ namespace ULox.Core.Bench
         {
             _engine = Engine.CreateDefault();
             var tokens = _compiledTokens.Select(x => x).ToList();
-            return _engine.Context.Program.Compiler.Compile(tokens, CompileVsExecute.Script);
+            return _engine.Context.Program.Compiler.Compile(tokens, _lineLengths, CompileVsExecute.Script);
         }
 
         [Benchmark]

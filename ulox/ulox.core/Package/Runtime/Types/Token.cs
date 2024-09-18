@@ -107,22 +107,16 @@
     public readonly struct Token
     {
         public readonly TokenType TokenType;
-        public readonly object Literal;
-        public readonly int Line;
-        public readonly int Character;
         public readonly int StringSourceIndex;
+        public readonly object Literal;
 
         public Token(
             TokenType tokenType,
             object literal,
-            int line,
-            int character,
             int stringSourceIndex)
         {
             TokenType = tokenType;
             Literal = literal;
-            Line = line;
-            Character = character;
             StringSourceIndex = stringSourceIndex;
         }
 
@@ -131,8 +125,6 @@
             return new Token(
                 newType,
                 Literal,
-                Line,
-                Character,
                 StringSourceIndex);
         }
 
@@ -141,8 +133,6 @@
             return new Token(
                 tokenType,
                 literal,
-                Line,
-                Character,
                 StringSourceIndex);
         }
     }

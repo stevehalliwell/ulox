@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -19,6 +20,12 @@ namespace ULox
         public int CharacterNumber { get; set; }
         public char CurrentChar { get; private set; }
         public int CurrentIndex => _index;
+        public List<int> LineLengths { get; } = new();
+
+        public void FinishLineLengths()
+        {
+            LineLengths.Add(CharacterNumber);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int Peek() => SafeRead(_index + 1);
@@ -34,9 +41,6 @@ namespace ULox
         {
             while (Peek() != -1 && CurrentChar != '\n')
                 Advance();
-            
-            Line++;
-            CharacterNumber = 1;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -44,8 +48,9 @@ namespace ULox
         {
             _index++; 
             CurrentChar = (char)SafeRead(_index);
-            if (CurrentChar == '\n')
+            if (CurrentChar == '\n' || CurrentChar == '\0')
             {
+                LineLengths.Add(CharacterNumber);
                 Line++;
                 CharacterNumber = 0;
             }

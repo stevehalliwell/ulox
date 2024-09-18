@@ -60,10 +60,14 @@ var foos = FooSet();
 fun TickAllFoos(foos, dt)
 {
     var count = foos.Count();
+    var x = foos.x;
+    var y = foos.y;
+    var vx = foos.vx;
+    var vy = foos.vy;
     for(var i = 0; i < count; i +=1)
     {
-        foos.x[i] = foos.x[i] + foos.vx[i] * dt;
-        foos.y[i] = foos.y[i] + foos.vy[i] * dt;
+        x[i] = x[i] + vx[i] * dt;
+        y[i] = y[i] + vy[i] * dt;
     }
 }
 

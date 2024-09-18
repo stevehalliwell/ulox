@@ -167,5 +167,108 @@ print(foo.a);");
 
             StringAssert.StartsWith("Cannot perform set index on type 'Double'", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void DyanicProperty_MultipleGets_ShouldMatch()
+        {
+            testEngine.Run(@"
+class ShipPartAdjust
+{
+var
+    name = ""standard"",
+}
+
+class ShipBodyPart
+{
+mixin
+    ShipPartAdjust;
+    
+var
+    dragSharpness = 0.2,
+}
+
+class ShipWingPart
+{
+mixin
+    ShipPartAdjust;
+
+var
+    gravity = 5,
+}
+
+class ShipEnginePart
+{
+    mixin
+        ShipPartAdjust;
+var
+    accel = 20,
+}
+
+class ShipTailPart
+{
+mixin
+    ShipPartAdjust;
+
+var
+    turnPerSecondThrust = 190,
+}
+
+class ShipWeaponPart
+{
+mixin
+    ShipPartAdjust;
+
+var
+    fireRate = 0.05,
+}
+
+var shipData = 
+{
+    bodies = 
+    {
+        standard = ShipBodyPart(),
+        slim = ShipBodyPart() update {name = ""slim""},
+    },
+    wings = 
+    {
+        standard = ShipWingPart(),
+        slim = ShipWingPart() update {name = ""slim""},
+    },
+    engines = 
+    {
+        standard = ShipEnginePart(),
+        slim = ShipEnginePart() update {name = ""slim""},
+    },
+    tails = 
+    {
+        standard = ShipTailPart(),
+        slim = ShipTailPart() update {name = ""slim""},
+    },
+    weapons = 
+    {
+        standard = ShipWeaponPart(),
+        slim = ShipWeaponPart() update {name = ""slim""},
+    },
+};
+
+fun Lookup(bodyName, wingName, engineName, tailName, weaponName)
+{
+    var body = shipData.bodies[bodyName];
+    var wing = shipData.wings[wingName];
+    var engine = shipData.engines[engineName];
+    var tail = shipData.tails[tailName];
+    var weapon = shipData.weapons[weaponName];
+    print(body);
+    print(wing);
+    print(engine);
+    print(tail);
+    print(weapon);
+}
+
+Lookup(""standard"", ""standard"", ""standard"", ""standard"", ""standard"");
+");
+
+            Assert.AreEqual("<inst ShipBodyPart><inst ShipWingPart><inst ShipEnginePart><inst ShipTailPart><inst ShipWeaponPart>", testEngine.InterpreterResult);
+        }
     }
 }

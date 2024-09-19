@@ -75,12 +75,21 @@ namespace ULox
         public void RemoveMarkedInstructions()
         {
             _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
-            _toRemove = _toRemove.Distinct().ToList();
+            var prevItem = default((Chunk chunk,int inst));
 
+            //PERF: doing this at instruction at a time is slow
+            //  ordering by chunk and marching from front to back 
+            //  with a running count would be faster
             for (int i = _toRemove.Count - 1; i >= 0; i--)
             {
-                var (chunk, b) = _toRemove[i];
-                chunk.RemoveInstructionAt(b);
+                var item = _toRemove[i];
+                if (prevItem.chunk == item.chunk && prevItem.inst == item.inst)
+                    continue;
+                var (chunk, b) = item;
+                chunk.Instructions.RemoveAt(b);
+                chunk.AdjustLabelIndicies(b, -1);
+                chunk.AdjustLineNumbers(b, -1); ;
+                prevItem = item;
             }
             _toRemove.Clear();
         }

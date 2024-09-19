@@ -5,7 +5,7 @@ namespace ULox
 {
     public class StringBuilderValueHeirarchyWriter : IValueHeirarchyWriter
     {
-        private readonly StringBuilder _sb = new StringBuilder();
+        private readonly StringBuilder _sb = new();
         private int _indent = -1;
 
         public string GetString() => _sb.ToString();

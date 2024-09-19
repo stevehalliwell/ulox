@@ -13,7 +13,7 @@ namespace ULox
         public override InstanceInternal MakeInstance() => CreateInstance();
 
         public static NativeListInstance CreateInstance()
-            => new NativeListInstance(SharedNativeListClassValue.val.asClass);
+            => new(SharedNativeListClassValue.val.asClass);
 
         public NativeListClass()
             : base(new HashedString("NativeList"), UserType.Native)
@@ -268,7 +268,7 @@ namespace ULox
         
         public class ValueComparer : IComparer<Value>
         {
-            public readonly static ValueComparer Instance = new ValueComparer();
+            public readonly static ValueComparer Instance = new();
 
             public int Compare(Value x, Value y)
             {

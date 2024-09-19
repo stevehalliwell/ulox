@@ -31,7 +31,7 @@ namespace ULox
         private readonly Script _script;
         private readonly List<Token> _tokens;
         private readonly ICompilerDesugarContext _compilerDesugarContext;
-        private readonly List<IDesugarStep> _desugarSteps = new List<IDesugarStep>();
+        private readonly List<IDesugarStep> _desugarSteps = new();
 
         private int _currentTokenIndex = -1;
 

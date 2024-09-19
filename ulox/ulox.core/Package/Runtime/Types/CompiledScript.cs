@@ -7,7 +7,7 @@ namespace ULox
         public Chunk TopLevelChunk { get; }
         public int ScriptHash { get; }
         public List<Chunk> AllChunks { get; }
-        public List<CompilerMessage> CompilerMessages = new List<CompilerMessage>();
+        public List<CompilerMessage> CompilerMessages = new();
 
         public CompiledScript(
             Chunk topLevelChunk,

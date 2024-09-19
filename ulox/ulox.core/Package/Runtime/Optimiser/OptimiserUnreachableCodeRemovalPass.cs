@@ -6,7 +6,7 @@ namespace ULox
 {
     public sealed class OptimiserUnreachableCodeRemovalPass : IOptimiserPass
     {
-        private readonly List<int> _unreachablePoint = new List<int>();
+        private readonly List<int> _unreachablePoint = new();
 
         public void Prepare(Optimiser optimiser, Chunk chunk)
         {

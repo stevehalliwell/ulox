@@ -5,7 +5,7 @@ namespace ULox
     public class TestSetDeclarationCompilette : ICompilette
     {
         private const string AnonTestSetPrefix = "Anon_TestSet_";
-        private readonly List<byte> _currentTestcaseLabels = new List<byte>();
+        private readonly List<byte> _currentTestcaseLabels = new();
 
         public TokenType MatchingToken
             => TokenType.TEST_SET;

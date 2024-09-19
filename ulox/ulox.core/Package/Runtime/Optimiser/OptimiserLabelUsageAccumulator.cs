@@ -4,7 +4,7 @@ namespace ULox
 {
     public sealed class OptimiserLabelUsageAccumulator
     {
-        private readonly List<(int from, byte label, OpCode opCode, bool isWeaved)> _labelUsage = new List<(int, byte, OpCode, bool)>();
+        private readonly List<(int from, byte label, OpCode opCode, bool isWeaved)> _labelUsage = new();
         public IReadOnlyList<(int from, byte label, OpCode opCode, bool isWeaved)> LabelUsage => _labelUsage;
 
         public void Clear()

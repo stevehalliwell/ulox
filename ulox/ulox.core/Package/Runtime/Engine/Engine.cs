@@ -5,7 +5,7 @@ namespace ULox
     public sealed class Engine
     {
         public Context Context { get; }
-        private readonly BuildQueue _buildQueue = new BuildQueue();
+        private readonly BuildQueue _buildQueue = new();
 
         public Engine(Context executionContext)
         {

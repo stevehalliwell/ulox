@@ -12,7 +12,7 @@ namespace ULox
             Auto,
         }
 
-        private readonly List<string> _enumKeys = new List<string>();
+        private readonly List<string> _enumKeys = new();
         private double _previousNumber = -1;
         private Mode _mode = Mode.Unknown;
 

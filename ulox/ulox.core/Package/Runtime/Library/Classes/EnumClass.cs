@@ -4,7 +4,7 @@ namespace ULox
 {
     public sealed class EnumClass : UserTypeInternal
     {
-        private readonly static HashedString AllEnumHash = new HashedString("All");
+        private readonly static HashedString AllEnumHash = new("All");
 
         public EnumClass(HashedString name) 
             : base(name, UserType.Enum)

@@ -5,7 +5,7 @@ namespace ULox
 {
     public sealed class TypeInfo
     {
-        private Dictionary<string, TypeInfoEntry> _userTypes = new Dictionary<string, TypeInfoEntry>();
+        private Dictionary<string, TypeInfoEntry> _userTypes = new();
 
         public int UserTypeCount => _userTypes.Count;
 
@@ -29,12 +29,12 @@ namespace ULox
     public sealed class TypeInfoEntry
     {
         private string _name;
-        private List<Chunk> _methods = new List<Chunk>();
-        private List<string> _fields = new List<string>();
-        private List<string> _staticFields = new List<string>();
-        private List<string> _contracts = new List<string>();
-        private List<TypeInfoEntry> _mixins = new List<TypeInfoEntry>();
-        private List<(Chunk chunk, byte labelID)> _initChains = new List<(Chunk, byte)>();
+        private List<Chunk> _methods = new();
+        private List<string> _fields = new();
+        private List<string> _staticFields = new();
+        private List<string> _contracts = new();
+        private List<TypeInfoEntry> _mixins = new();
+        private List<(Chunk chunk, byte labelID)> _initChains = new();
         public string Name => _name;
         public IReadOnlyList<Chunk> Methods => _methods;
         public IReadOnlyList<string> Fields => _fields;

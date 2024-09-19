@@ -2,7 +2,7 @@
 {
     public sealed class DynamicClass : UserTypeInternal
     {
-        public static readonly HashedString DynamicClassName = new HashedString("Dynamic");
+        public static readonly HashedString DynamicClassName = new("Dynamic");
         public static readonly Value SharedDynamicClassValue = Value.New(new DynamicClass());
 
         public DynamicClass() : base(DynamicClassName, UserType.Native)

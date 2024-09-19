@@ -7,8 +7,8 @@ namespace ULox
 
     public class TableDict : IEnumerable<KeyValuePair<HashedString, Value>>
     {
-        private readonly Dictionary<HashedString, Value> _values = new Dictionary<HashedString, Value>(TableKeyComparer);
-        private static readonly HashedStringComparer TableKeyComparer = new HashedStringComparer();
+        private readonly Dictionary<HashedString, Value> _values = new(TableKeyComparer);
+        private static readonly HashedStringComparer TableKeyComparer = new();
 
         public IEnumerator<KeyValuePair<HashedString, Value>> GetEnumerator()
         {

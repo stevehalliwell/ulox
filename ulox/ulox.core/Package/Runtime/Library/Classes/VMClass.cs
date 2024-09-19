@@ -4,7 +4,7 @@ namespace ULox
 {
     public sealed class VMClass : UserTypeInternal
     {
-        private static readonly HashedString VMFieldName = new HashedString("vm");
+        private static readonly HashedString VMFieldName = new("vm");
 
         public Func<Vm> CreateVM { get; }
 

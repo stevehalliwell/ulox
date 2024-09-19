@@ -8,7 +8,7 @@ namespace ULox
 {
     public sealed class TestRunner
     {
-        private readonly Dictionary<string, bool> _testStatus = new Dictionary<string, bool>();
+        private readonly Dictionary<string, bool> _testStatus = new();
         private string _lastId;
         private ushort _fixtureLoc;
 

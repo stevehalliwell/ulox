@@ -6,8 +6,8 @@ namespace ULox
 {
     public sealed class IdentifierScannerTokenGenerator : IScannerTokenGenerator
     {
-        private readonly StringBuilder workingSpaceStringBuilder = new StringBuilder();
-        private readonly Dictionary<string, TokenType> keywords = new Dictionary<string, TokenType>();
+        private readonly StringBuilder workingSpaceStringBuilder = new();
+        private readonly Dictionary<string, TokenType> keywords = new();
 
         public void Add(string name, TokenType tt) 
             => keywords[name] = tt;

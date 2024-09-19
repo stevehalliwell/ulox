@@ -6,7 +6,7 @@ namespace ULox
 {
     public sealed class Context
     {
-        private readonly List<CompiledScript> _compiledChunks = new List<CompiledScript>();
+        private readonly List<CompiledScript> _compiledChunks = new();
 
         public Context(
             IScriptLocator scriptLocator,

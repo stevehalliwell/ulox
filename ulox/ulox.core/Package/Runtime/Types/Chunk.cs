@@ -21,9 +21,9 @@ namespace ULox
             }
         }
 
-        private readonly List<Value> _constants = new List<Value>(ConstantStartingCapacity);
-        private readonly List<RunLengthLineNumber> _runLengthLineNumbers = new List<RunLengthLineNumber>();
-        private readonly Dictionary<byte, int> _labelIdToInstruction = new Dictionary<byte, int>();
+        private readonly List<Value> _constants = new(ConstantStartingCapacity);
+        private readonly List<RunLengthLineNumber> _runLengthLineNumbers = new();
+        private readonly Dictionary<byte, int> _labelIdToInstruction = new();
         private int instructionCount = -1;
 
         public List<ByteCodePacket> Instructions { get; } = new List<ByteCodePacket>(InstructionStartingCapacity);

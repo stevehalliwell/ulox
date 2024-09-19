@@ -6,10 +6,10 @@ namespace ULox
     public sealed class Scanner
     {
         public const int TokenStartingCapacity = 500;
-        private StringIterator _stringIterator = new StringIterator("");
+        private StringIterator _stringIterator = new("");
         public char CurrentChar => _stringIterator.CurrentChar;
 
-        private readonly List<IScannerTokenGenerator> _scannerGenerators = new List<IScannerTokenGenerator>();
+        private readonly List<IScannerTokenGenerator> _scannerGenerators = new();
 
         private Script _script;
         private List<Token> _tokens;

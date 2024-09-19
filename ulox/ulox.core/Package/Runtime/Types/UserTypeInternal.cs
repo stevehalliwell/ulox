@@ -14,7 +14,7 @@ namespace ULox
         public Value Initialiser { get; protected set; } = Value.Null();
         public List<(Chunk chunk, byte labelID)> InitChains { get; protected set; } = new List<(Chunk, byte)>();
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
-        private readonly List<HashedString> _fieldsNames = new List<HashedString>();
+        private readonly List<HashedString> _fieldsNames = new();
         protected TypeInfoEntry _typeInfoEntry;
 
         public UserTypeInternal(HashedString name, UserType userType)

@@ -5,8 +5,8 @@ namespace ULox
 {
     public sealed class Program
     {
-        private readonly Scanner _scanner = new Scanner();
-        private readonly Compiler _compiler = new Compiler();
+        private readonly Scanner _scanner = new();
+        private readonly Compiler _compiler = new();
         public Optimiser Optimiser { get; } = new Optimiser();
         public TypeInfo TypeInfo => _compiler.TypeInfo;
 

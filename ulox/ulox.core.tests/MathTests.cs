@@ -50,6 +50,19 @@ print(Math.Cos(rads));");
         }
 
         [Test]
+        public void SinCos_When25_ShouldReturn()
+        {
+            testEngine.Run(@"
+var rads = Math.Deg2Rad(25);
+var (s,c) = Math.SinCos(rads);
+print(s);
+print(c);
+");
+
+            Assert.AreEqual("0.422618261740699440.9063077870366499", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Tan_When25_ShouldReturn()
         {
             testEngine.Run(@"

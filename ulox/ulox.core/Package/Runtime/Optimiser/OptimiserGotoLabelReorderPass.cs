@@ -33,20 +33,14 @@ namespace ULox
         private PassCompleteRequest ProcessZeroJumpSquash(Optimiser optimiser, Chunk chunk, PassCompleteRequest retval)
         {
             var labelUsage = _optimiserLabelUsageAccumulator.LabelUsage;
-            //any zero jumps just nuke them all and go next
-            var zeroJumps = labelUsage
-                .Where(x => x.opCode == OpCode.GOTO)
-                .Where(x => chunk.Labels[x.label] == x.from)
-                .ToArray();
 
-            foreach (var (from, labelId, opCode, isWeaved) in zeroJumps)
+            foreach (var (from, label, opCode, isWeaved) in labelUsage)
             {
-                optimiser.AddToRemove(chunk, from);
-                if (labelUsage.Count(x => x.label == labelId) <= 1)
+                if (opCode == OpCode.GOTO && chunk.Labels[label] == from)
                 {
-                    chunk.RemoveLabel(labelId);
+                    optimiser.AddToRemove(chunk, from);
+                    retval = PassCompleteRequest.Repeat;
                 }
-                retval = PassCompleteRequest.Repeat;
             }
 
             return retval;
@@ -55,28 +49,33 @@ namespace ULox
         private PassCompleteRequest ProcessSingleUsageLabels(Optimiser optimiser, Chunk chunk, PassCompleteRequest retval)
         {
             var labelUsage = _optimiserLabelUsageAccumulator.LabelUsage;
-            //find labels with a single use
-            var singleUsageLabels = labelUsage
-                .Where(x => x.opCode == OpCode.GOTO && x.isWeaved)
-                .Where(x => labelUsage.Count(y => x.label == y.label) <= 1)
-                .Select(x => (loc: x.from, labelId: x.label, indicies: IsolatedLabelBound(chunk, x.label)))
-                .Where(x => x.indicies.startAt != -1)
-                .ToArray();
 
-            foreach (var (loc, labelId, indicies) in singleUsageLabels)
+            foreach (var (from, label, opCode, isWeaved) in labelUsage)
             {
-                var spanLen = indicies.end - indicies.startAt + 1;
-                var spanPackets = chunk.Instructions.GetRange(indicies.startAt, spanLen);
-                chunk.InsertInstructionsAt(loc, spanPackets);
-                optimiser.AddToRemove(chunk, loc + spanLen);
-                var removedShift = indicies.startAt < loc ? 0 : spanLen;
-                for (int i = 0; i < spanLen; i++)
+                if (opCode == OpCode.GOTO
+                    && isWeaved)
                 {
-                    optimiser.AddToRemove(chunk, indicies.startAt + i + removedShift);
+                    if (labelUsage.Count(x => x.label == label) != 1)
+                        continue;
+
+                    var (startAt, end) = IsolatedLabelBound(chunk, label);
+                    if (startAt != -1)
+                    {
+                        var spanLen = end - startAt + 1;
+                        var spanPackets = chunk.Instructions.GetRange(startAt, spanLen);
+                        chunk.InsertInstructionsAt(from, spanPackets);
+                        optimiser.AddToRemove(chunk, from + spanLen);
+                        var removedShift = startAt < from ? 0 : spanLen;
+                        for (int i = 0; i < spanLen; i++)
+                        {
+                            optimiser.AddToRemove(chunk, startAt + i + removedShift);
+                        }
+                        //that label ws the only way to get here and we are gone now
+                        chunk.RemoveLabel(label);
+                        return PassCompleteRequest.Repeat;
+                    }
+
                 }
-                //that label ws the only way to get here and we are gone now
-                chunk.RemoveLabel(labelId);
-                return PassCompleteRequest.Repeat;
             }
 
             return retval;
@@ -85,9 +84,6 @@ namespace ULox
         private static (int startAt, int end) IsolatedLabelBound(Chunk chunk, byte labelId)
         {
             var startAt = chunk.GetLabelPosition(labelId);
-            if(!IsIndexWeaved(chunk, startAt))
-                return (-1, -1);
-
             var endAt = -1;
             for (int i = startAt; i < chunk.Instructions.Count; i++)
             {

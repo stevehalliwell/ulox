@@ -10,7 +10,7 @@ namespace ULox
 
         void Consume(Scanner scanner);
     }
-    
+
     public sealed class Scanner
     {
         public const int TokenStartingCapacity = 500;
@@ -22,6 +22,7 @@ namespace ULox
 
         private Script _script;
         private List<Token> _tokens;
+        private int _scannerGeneratorsCount;
 
         public Scanner()
         {
@@ -95,6 +96,8 @@ namespace ULox
                 new NumberScannerTokenGenerator(),
                 identScannerGen
                 );
+
+            _scannerGeneratorsCount = _scannerGenerators.Count;
         }
 
         public void AddGenerator(IScannerTokenGenerator gen)
@@ -132,7 +135,8 @@ namespace ULox
 
         public void ThrowScannerException(string msg)
         {
-            throw new ScannerException(msg, TokenType.IDENTIFIER, _stringIterator.Line, _stringIterator.CharacterNumber, _script.Name);
+            var (line, characterNumber) = _stringIterator.GetLineAndCharacterNumber();
+            throw new ScannerException(msg, TokenType.IDENTIFIER, line, characterNumber, _script.Name);
         }
 
         public bool Match(char matchingCharToConsume)
@@ -160,10 +164,8 @@ namespace ULox
             => _stringIterator.ReadLine();
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        //this auto creating a string from char seems like a waste, what actually needs it other than dissembler and errors
-        //  which could calc it when needed if it was null
         public void EmitTokenSingle(TokenType token)
-            => EmitToken(token, null);//making this null, null doesn't even break anything
+            => EmitToken(token, null);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitToken(TokenType simpleToken, object literal)
@@ -177,7 +179,7 @@ namespace ULox
         public string SubStrFrom(int startingIndex)
         {
             var length = _stringIterator.CurrentIndex - startingIndex;
-            return _script.Source.Substring(startingIndex, length+1);
+            return _script.Source.Substring(startingIndex, length + 1);
         }
 
         private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)
@@ -188,21 +190,17 @@ namespace ULox
 
         private IScannerTokenGenerator GetMatchingGenerator(char ch)
         {
-            var matchingGen = default(IScannerTokenGenerator);
-            for (int i = 0; i < _scannerGenerators.Count; i++)
+            for (int i = 0; i < _scannerGeneratorsCount; i++)
             {
                 var gen = _scannerGenerators[i];
                 if (gen.DoesMatchChar(ch))
                 {
-                    matchingGen = gen;
-                    break;
+                    return gen;
                 }
             }
 
-            if (matchingGen == null)
-                ThrowScannerException($"Unexpected character '{ch}'");
-
-            return matchingGen;
+            ThrowScannerException($"Unexpected character '{ch}'");
+            return null;
         }
 
         public int[] GetLineLengths()

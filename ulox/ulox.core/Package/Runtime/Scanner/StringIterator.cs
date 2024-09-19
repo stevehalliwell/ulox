@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -7,29 +8,26 @@ namespace ULox
     {
         private readonly string _source;
         private int _index;
+        private int _previousRunningCount;
 
         public StringIterator(string source)
         {
             _source = source;
             _index = -1;
-            Line = 1;
-            CharacterNumber = 0;
         }
 
-        public int Line { get; set; }
-        public int CharacterNumber { get; set; }
         public char CurrentChar { get; private set; }
         public int CurrentIndex => _index;
         public List<int> LineLengths { get; } = new();
 
         public void FinishLineLengths()
         {
-            LineLengths.Add(CharacterNumber);
+            LineLengths.Add(_index - _previousRunningCount);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal int Peek() => SafeRead(_index + 1);
-                
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int SafeRead(int index)
         {
@@ -46,15 +44,18 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal void Advance()
         {
-            _index++; 
+            _index++;
             CurrentChar = (char)SafeRead(_index);
             if (CurrentChar == '\n' || CurrentChar == '\0')
             {
-                LineLengths.Add(CharacterNumber);
-                Line++;
-                CharacterNumber = 0;
+                LineLengths.Add(_index - _previousRunningCount);
+                _previousRunningCount = _index;
             }
-            CharacterNumber++;
+        }
+
+        public (int line, int characterNumber) GetLineAndCharacterNumber()
+        {
+            return (LineLengths.Count + 1, _index - _previousRunningCount + 1);
         }
     }
 }

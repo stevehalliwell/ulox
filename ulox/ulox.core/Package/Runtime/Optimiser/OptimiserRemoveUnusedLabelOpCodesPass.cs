@@ -19,7 +19,7 @@ namespace ULox
 
         public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-            var labelsToCheck = chunk.Labels.Keys.Where(x => !chunk.IsInternalLabel(x));
+            var labelsToCheck = chunk.Labels.Keys.Where(x => !chunk.IsInternalLabel(x)).ToArray();
 
             foreach (var label in labelsToCheck)
             {

@@ -139,7 +139,7 @@ namespace ULox
             for (int i = 0; i < len; i++)
             {
                 stringSourceIndex -= _lineLengths[i];
-                if (stringSourceIndex < 0)
+                if (stringSourceIndex <= 0)
                     return (i + 1, _lineLengths[i] + stringSourceIndex + 1);
             }
             return (len+1, _lineLengths[len-1]+1);

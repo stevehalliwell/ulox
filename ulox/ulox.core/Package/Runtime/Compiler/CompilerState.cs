@@ -2,6 +2,15 @@
 
 namespace ULox
 {
+    public enum FunctionType
+    {
+        Script,
+        Function,
+        Method,
+        Init,
+        TypeDeclare,
+    }
+    
     public sealed class CompilerState
     {
         internal sealed class Local

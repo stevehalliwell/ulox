@@ -4,6 +4,32 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    public enum ValueType : byte
+    {
+        Null,
+        Double,
+        Bool,
+        String,
+        Chunk,
+        NativeFunction,
+        Closure,
+        Upvalue,
+        UserType,
+        Instance,
+        BoundMethod,
+        Object,
+    }
+
+    public interface INativeCollection
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        Value Get(Value ind);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void Set(Value ind, Value val);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        Value Count();
+    }
+
     public struct Value
     {
         public sealed class TypeNameClass : System.IEquatable<TypeNameClass>
@@ -35,8 +61,8 @@ namespace ULox
         }
 
 
-        public ValueType type;
         public ValueTypeDataUnion val;
+        public ValueType type;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsFalsey() => type == ValueType.Null || (type == ValueType.Bool && !val.asBool);

@@ -2,6 +2,28 @@
 
 namespace ULox
 {
+    public enum Precedence
+    {
+        None,
+        Assignment,
+        Or,
+        And,
+        Equality,
+        Comparison,
+        Term,
+        Factor,
+        Unary,
+        Call,
+        Primary,
+    }
+
+    public interface IParseRule
+    {
+        Precedence Precedence { get; }
+        void Prefix(Compiler compiler, bool canAssign);
+        void Infix(Compiler compiler, bool canAssign);
+    }
+    
     public sealed class PrattParserRuleSet
     {
         private readonly IParseRule[] rules;

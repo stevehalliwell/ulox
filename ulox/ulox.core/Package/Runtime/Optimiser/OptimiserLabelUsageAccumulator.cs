@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace ULox
 {
@@ -12,6 +13,7 @@ namespace ULox
             _labelUsage.Clear();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddLabelUsage(Chunk chunk, int inst, byte labelId)
         {
             _labelUsage.Add((inst, labelId, chunk.Instructions[inst].OpCode, Optimiser.IsIndexWeaved(chunk, inst)));

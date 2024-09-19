@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
@@ -30,6 +31,7 @@ namespace ULox
 
         private readonly Script _script;
         private readonly List<Token> _tokens;
+        private readonly int[] _lineLengths;
         private readonly ICompilerDesugarContext _compilerDesugarContext;
         private readonly List<IDesugarStep> _desugarSteps = new();
 
@@ -38,10 +40,12 @@ namespace ULox
         public TokenIterator(
             Script script,
             List<Token> tokens,
+            int[] lineLengths,
             ICompilerDesugarContext compilerDesugarContext)
         {
             _script = script;
             _tokens = tokens;
+            _lineLengths = lineLengths;
             _compilerDesugarContext = compilerDesugarContext;
 
             _desugarSteps.Add(new StringInterpDesugar());
@@ -86,8 +90,6 @@ namespace ULox
         {
             if (CurrentToken.TokenType == tokenType)
                 Advance();
-            else
-                throw new CompilerException(msg, PreviousToken, $"source '{_script.Name}'");
         }
 
         public bool Check(TokenType type)
@@ -129,6 +131,18 @@ namespace ULox
             if (index < 0 || index >= _tokens.Count)
                 return TokenType.EOF;
             return _tokens[index].TokenType;
+        }
+
+        public (int line, int chararacter) GetLineAndCharacter(int stringSourceIndex)
+        {
+            var len = _lineLengths.Length;
+            for (int i = 0; i < len; i++)
+            {
+                stringSourceIndex -= _lineLengths[i];
+                if (stringSourceIndex <= 0)
+                    return (i + 1, _lineLengths[i] + stringSourceIndex + 1);
+            }
+            return (len+1, _lineLengths[len-1]+1);
         }
     }
 }

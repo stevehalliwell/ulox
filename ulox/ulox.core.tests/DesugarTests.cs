@@ -226,7 +226,7 @@ var a = [];
             AdvanceGather(tokenIterator, res);
 
             Assert.Greater(res.Count, startingCount);
-            Assert.IsTrue(res.Any(x => x.Lexeme == "List"));
+            Assert.IsTrue(res.Any(x => x.Literal as string == "List"));
         }
 
         [Test]
@@ -241,7 +241,7 @@ var a = [:];
 
             AdvanceGather(tokenIterator, res);
 
-            Assert.IsTrue(res.Any(x => x.Lexeme == "Map"));
+            Assert.IsTrue(res.Any(x => x.Literal as string == "Map"));
         }
 
         [Test]
@@ -256,7 +256,7 @@ var a = {=};
 
             AdvanceGather(tokenIterator, res);
 
-            Assert.IsTrue(res.Any(x => x.Lexeme == "Dynamic"));
+            Assert.IsTrue(res.Any(x => x.Literal as string == "Dynamic"));
         }
 
         [Test]
@@ -303,10 +303,10 @@ soa FooSoa
 
             Assert.Greater(res.Count, startingCount);
             Assert.IsTrue(res.Any(x => x.TokenType == TokenType.CLASS));
-            Assert.IsTrue(res.Any(x => x.Lexeme == "FooSoa"));
-            Assert.IsTrue(res.Any(x => x.Lexeme == "a"));
-            Assert.IsTrue(res.Any(x => x.Lexeme == "b"));
-            Assert.IsTrue(res.Any(x => x.Lexeme == "Count"));
+            Assert.IsTrue(res.Any(x => x.Literal as string == "FooSoa"));
+            Assert.IsTrue(res.Any(x => x.Literal as string == "a"));
+            Assert.IsTrue(res.Any(x => x.Literal as string == "b"));
+            Assert.IsTrue(res.Any(x => x.Literal as string == "Count"));
         }
 
         private static (List<Token> tokens, TokenIterator tokenIterator, DummyContext context) Prepare(string scriptContent)
@@ -315,7 +315,7 @@ soa FooSoa
             var script = new Script("test", scriptContent);
             var tokens = scanner.Scan(script);
             var context = new DummyContext();
-            var tokenIterator = new TokenIterator(script, tokens, context);
+            var tokenIterator = new TokenIterator(script, tokens, null, context);
             return (tokens, tokenIterator, context);
         }
 
@@ -331,7 +331,7 @@ soa FooSoa
 
             list.Add(tokenIterator.CurrentToken);
 
-            TestContext.Write(string.Join(Environment.NewLine, list.Select(x => $"{x.TokenType}-{x.Lexeme}-{x.Literal}")));
+            TestContext.Write(string.Join(Environment.NewLine, list.Select(x => $"{x.TokenType}-{x.Literal as string}-{x.Literal}")));
         }
 
         public class DummyContext : ICompilerDesugarContext

@@ -14,9 +14,9 @@ namespace ULox
             FromUserType = from;
         }
 
+        public Table Fields { get; protected set; } = new Table();
         public UserTypeInternal FromUserType { get; protected set; }
         public bool IsFrozen { get; private set; } = false;
-        public Table Fields { get; protected set; } = new Table();
         public bool IsReadOnly { get; protected set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -2,7 +2,7 @@
 {
     public class ObjectVsSoa
     {
-        public const string ObjectBasedScript = @"
+        public static readonly Script ObjectBasedScript = new(nameof(ObjectBasedScript),@"
 class Foo
 {
 var
@@ -36,10 +36,10 @@ for(var i = 0; i < 1000; i+=1)
 {
     TickAllFoos(foos, 0.01);
 }
-";
+");
 
 
-        public const string SoaBasedScript = @"
+        public static readonly Script SoaBasedScript = new(nameof(SoaBasedScript),@"
 class Foo
 {
 var
@@ -81,6 +81,6 @@ for(var i = 0; i < 1000; i+=1)
 {
     TickAllFoos(foos, 0.01);
 }
-";
+");
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ULox
 {
@@ -19,6 +20,18 @@ namespace ULox
             ScriptHash = scriptHash;
             AllChunks = allChunks;
             CompilerMessages = compilerMessages;
+        }
+
+        public CompiledScript DeepClone()
+        {
+            var newTopLevel = TopLevelChunk.DeepClone();
+            var newAllChunks = new List<Chunk>();
+            foreach (var chunk in AllChunks)
+            {
+                newAllChunks.Add(chunk.DeepClone());
+            }
+
+            return new CompiledScript(newTopLevel, ScriptHash, newAllChunks, CompilerMessages);
         }
     }
 }

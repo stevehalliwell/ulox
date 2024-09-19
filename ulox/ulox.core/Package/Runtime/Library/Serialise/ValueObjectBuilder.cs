@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ULox
 {
-    public class ValueObjectBuilder : IValueObjectBuilder
+    public sealed class ValueObjectBuilder
     {
         public enum ObjectType { Object, Array }
         private readonly ObjectType _objectType;
@@ -55,14 +55,14 @@ namespace ULox
             }
         }
 
-        public IValueObjectBuilder CreateChild(string name)
+        public ValueObjectBuilder CreateChild(string name)
         {
             var child = new ValueObjectBuilder(ObjectType.Object);
             _children.Add((name, child));
             return child;
         }
 
-        public IValueObjectBuilder CreateArray(string name)
+        public ValueObjectBuilder CreateArray(string name)
         {
             var child = new ValueObjectBuilder(ObjectType.Array);
             _children.Add((name, child));

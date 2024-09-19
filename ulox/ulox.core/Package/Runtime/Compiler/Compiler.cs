@@ -5,6 +5,29 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    public class CompilerException : UloxException
+    {
+        public CompilerException(string msg)
+            : base(msg)
+        {
+        }
+    }
+
+    public enum PushValueOpType : byte
+    {
+        Null,
+        Bool,
+        Byte,
+        Bytes,
+    }
+
+    public interface ICompilette
+    {
+        TokenType MatchingToken { get; }
+
+        void Process(Compiler compiler);
+    }
+
     public sealed class Compiler : ICompilerDesugarContext
     {
         private readonly IndexableStack<CompilerState> compilerStates = new();
@@ -115,12 +138,21 @@ namespace ULox
 
         public void ThrowCompilerException(string msg)
         {
-            throw new CompilerException(msg, TokenIterator.PreviousToken, CurrentChunk);
+            throw new CompilerException(MessageFromContext(msg));
+        }
+
+        private string MessageFromContext(string msg)
+        {
+            var location = ChunkToLocationStr(CurrentChunk);
+            var previousToken = TokenIterator.PreviousToken;
+            var (line, character) = TokenIterator.GetLineAndCharacter(previousToken.StringSourceIndex);
+            msg = msg + $" in {location} at {line}:{character}{LiteralStringPartial(previousToken.Literal)}.";
+            return msg;
         }
 
         public void CompilerMessage(string msg)
         {
-            _messages.Add(new CompilerMessage(CompilerMessageUtil.MessageFromContext(msg, TokenIterator.PreviousToken, CurrentChunk)));
+            _messages.Add(new CompilerMessage(MessageFromContext(msg)));
         }
 
         public void AddDeclarationCompilette(params (TokenType match, Action<Compiler> action)[] compilettes)
@@ -165,8 +197,11 @@ namespace ULox
             => _prattParser.SetPrattRule(tt, rule);
 
         public void EmitPacket(ByteCodePacket packet)
-            => CurrentChunk.WritePacket(packet, TokenIterator.PreviousToken.Line);
-
+        {
+            //NOTE: this is slow but changing it doesn't change profiler times much.
+            var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
+            CurrentChunk.WritePacket(packet, line);
+        }
         public void EmitNULL()
             => EmitPacket(new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Null));
 
@@ -180,7 +215,12 @@ namespace ULox
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
         public void AddConstantAndWriteOp(Value value)
-            => CurrentChunk.AddConstantAndWriteInstruction(value, TokenIterator.PreviousToken.Line);
+        {
+            var at = CurrentChunk.AddConstant(value);
+            //NOTE: this is slow but changing it doesn't change profiler times much.
+            var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
+            CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
+        }
 
         public byte AddCustomStringConstant(string str)
             => CurrentChunk.AddConstant(Value.New(str));
@@ -248,10 +288,9 @@ namespace ULox
                 EmitPop(popCount);
         }
 
-        public CompiledScript Compile(Scanner scanner, Script script)
+        public CompiledScript Compile(List<Token> tokens, int[] lineLengths, Script script)
         {
-            var tokens = scanner.Scan(script);
-            TokenIterator = new TokenIterator(script, tokens, this);
+            TokenIterator = new TokenIterator(script, tokens, lineLengths, this);
             TokenIterator.Advance();
 
             PushCompilerState("root", FunctionType.Script);
@@ -646,7 +685,7 @@ namespace ULox
         internal string IdentifierOrChunkUnique(string prefix)
         {
             if (TokenIterator.Match(TokenType.IDENTIFIER))
-                return TokenIterator.PreviousToken.Lexeme;
+                return TokenIterator.PreviousToken.Literal as string;
 
             return ChunkUniqueName(prefix);
         }
@@ -675,6 +714,21 @@ namespace ULox
         public string UniqueLocalName(string prefix)
         {
             return ChunkUniqueName(prefix);
+        }
+
+        private static string LiteralStringPartial(object literal)
+        {
+            if (literal == null) return string.Empty;
+
+            var str = literal.ToString();
+
+            if (string.IsNullOrEmpty(str)) return string.Empty;
+            return $" '{str}'";
+        }
+
+        public static string ChunkToLocationStr(Chunk chunk)
+        {
+            return $"chunk '{chunk.GetLocationString()}'";
         }
     }
 }

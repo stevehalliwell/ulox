@@ -23,32 +23,46 @@ namespace ULox
             var allOptimisableLabels = chunk.Labels
                 .Where(x => !chunk.IsInternalLabel(x.Key))
                 .OrderBy(x => x.Value)
-                .ToArray();
+                .ToArray(); //NOTE: this to array is going to show up in profiler. But it's slower without it.
 
-            foreach (var label in allOptimisableLabels)
+            var len = allOptimisableLabels.Length;
+            var outterLen = len - 1;
+            for (int i = 0; i < outterLen; i++)
             {
-                var labelsAtLoc = allOptimisableLabels.Where(x => x.Value == label.Value).ToArray();
-
-                if (labelsAtLoc.Length > 1)
+                var label = allOptimisableLabels[i];
+                var labelValue = label.Value;
+                //find the last label at this location
+                int j = i;
+                for (; j < outterLen; j++)
                 {
-                    //add a new label that is the combined name of all the labels at this location
-                    var newLabelName = string.Join("_", labelsAtLoc
-                        .Select(x => chunk.Constants[x.Key].val.asString.String));
-
-                    var newLabelId = chunk.AddConstant(Value.New(newLabelName));
-                    chunk.AddLabel(newLabelId, label.Value);
-
-                    //remove all the old labels
-                    foreach (var labelToRemove in labelsAtLoc)
+                    if (allOptimisableLabels[j + 1].Value != labelValue)
                     {
-                        chunk.RemoveLabel(labelToRemove.Key);
-                        //redirect all the jumps to the new label
-                        RedirectLabels(
-                            _optimiserLabelUsageAccumulator.LabelUsage,
-                            chunk,
-                            labelToRemove.Key,
-                            newLabelId);
+                        break;
                     }
+                }
+
+                if (j == i)
+                    continue;
+
+                //add a new label that is the combined name of all the labels at this location
+                //PERF: would love to use span, but we don't have access to it...
+                var labelsAtLoc = allOptimisableLabels.Skip(i).Take(j - i + 1).ToArray();
+                var newLabelName = string.Join("_", labelsAtLoc
+                    .Select(x => chunk.Constants[x.Key].val.asString.String));
+
+                var newLabelId = chunk.AddConstant(Value.New(newLabelName));
+                chunk.AddLabel(newLabelId, labelValue);
+
+                //remove all the old labels
+                foreach (var labelToRemove in labelsAtLoc)
+                {
+                    chunk.RemoveLabel(labelToRemove.Key);
+                    //redirect all the jumps to the new label
+                    RedirectLabels(
+                        _optimiserLabelUsageAccumulator.LabelUsage,
+                        chunk,
+                        labelToRemove.Key,
+                        newLabelId);
                 }
             }
 

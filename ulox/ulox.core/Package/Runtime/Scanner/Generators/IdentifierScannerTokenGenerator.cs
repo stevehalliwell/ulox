@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace ULox
 {
     public sealed class IdentifierScannerTokenGenerator : IScannerTokenGenerator
     {
-        private readonly StringBuilder workingSpaceStringBuilder = new();
         private readonly Dictionary<string, TokenType> keywords = new();
+        private int _startingIndex;
 
         public void Add(string name, TokenType tt) 
             => keywords[name] = tt;
@@ -32,23 +31,20 @@ namespace ULox
 
         public void Consume(Scanner scanner)
         {
-            workingSpaceStringBuilder.Clear();
-
-            workingSpaceStringBuilder.Append(scanner.CurrentChar);
+            _startingIndex = scanner.CurrentIndex;
 
             while (IsAlphaNumber(scanner.Peek()))
             {
                 scanner.Advance();
-                workingSpaceStringBuilder.Append(scanner.CurrentChar);
             }
 
-            var identString = workingSpaceStringBuilder.ToString();
+            var identString = scanner.SubStrFrom(_startingIndex);
             var token = TokenType.IDENTIFIER;
 
             if (keywords.TryGetValue(identString, out var keywordTokenType))
                 token = keywordTokenType;
 
-            scanner.EmitToken(token, identString, identString);
+            scanner.EmitToken(token, identString);
         }
     }
 }

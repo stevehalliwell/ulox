@@ -5,10 +5,10 @@ namespace ULox
 {
     public sealed class Program
     {
-        private readonly Scanner _scanner = new();
-        private readonly Compiler _compiler = new();
+        public Scanner Scanner { get; } = new();
+        public Compiler Compiler { get; } = new();
         public Optimiser Optimiser { get; } = new Optimiser();
-        public TypeInfo TypeInfo => _compiler.TypeInfo;
+        public TypeInfo TypeInfo => Compiler.TypeInfo;
 
         public List<CompiledScript> CompiledScripts { get; } = new List<CompiledScript>();
 
@@ -35,11 +35,12 @@ namespace ULox
             if (existing != null)
                 return existing;
 
-            _scanner.Reset();
-            _compiler.Reset();
+            Scanner.Reset();
+            Compiler.Reset();
             Optimiser.Reset();
             
-            var compiled = _compiler.Compile(_scanner, script);
+            var tokens = Scanner.Scan(script);
+            var compiled = Compiler.Compile(tokens, Scanner.GetLineLengths(), script);
             
             CompiledScripts.Add(compiled);
             Optimiser.Optimise(compiled);

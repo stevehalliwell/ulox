@@ -177,13 +177,6 @@ namespace ULox
             _labelIdToInstruction.Remove(labelID);
         }
 
-        public void RemoveInstructionAt(int b)
-        {
-            Instructions.RemoveAt(b);
-            AdjustLabelIndicies(b, -1);
-            AdjustLineNumbers(b, -1);
-        }
-
         public void InsertInstructionsAt(int at, IReadOnlyList<ByteCodePacket> toMove)
         {
             Instructions.InsertRange(at, toMove);
@@ -194,7 +187,7 @@ namespace ULox
             }
         }
 
-        internal void AdjustLabelIndicies(int byteChangedThreshold, int delta)
+        public void AdjustLabelIndicies(int byteChangedThreshold, int delta)
         {
             foreach (var item in _labelIdToInstruction.ToList())
             {
@@ -203,7 +196,7 @@ namespace ULox
             }
         }
 
-        private void AdjustLineNumbers(int byteChangedThreshold, int delta)
+        public void AdjustLineNumbers(int byteChangedThreshold, int delta)
         {
             for (var i = 0; i < _runLengthLineNumbers.Count; i++)
             {
@@ -225,6 +218,43 @@ namespace ULox
         public bool IsInternalLabel(byte key)
         {
             return Constants[key].val.asString.String.StartsWith(InternalLabelPrefix);
+        }
+
+        internal Chunk DeepClone()
+        {
+            var newChunk = new Chunk(ChunkName, SourceName, ContainingChunkChainName);
+
+            foreach (var constant in _constants)
+            {
+                newChunk._constants.Add(constant);
+            }
+
+            foreach (var instruction in Instructions)
+            {
+                newChunk.Instructions.Add(instruction);
+            }
+
+            foreach (var label in _labelIdToInstruction)
+            {
+                newChunk._labelIdToInstruction.Add(label.Key, label.Value);
+            }
+
+            foreach (var line in _runLengthLineNumbers)
+            {
+                newChunk._runLengthLineNumbers.Add(line);
+            }
+
+            foreach (var arg in ArgumentConstantIds)
+            {
+                newChunk.ArgumentConstantIds.Add(arg);
+            }
+
+            foreach (var ret in ReturnConstantIds)
+            {
+                newChunk.ReturnConstantIds.Add(ret);
+            }
+
+            return newChunk;
         }
     }
 }

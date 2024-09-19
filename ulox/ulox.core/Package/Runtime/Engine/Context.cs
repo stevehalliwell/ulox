@@ -4,6 +4,16 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    public interface IULoxLibrary
+    {
+        Table GetBindings();
+    }
+    
+    public interface IScriptLocator
+    {
+        Script Find(string name);
+    }
+    
     public sealed class Context
     {
         private readonly List<CompiledScript> _compiledChunks = new();

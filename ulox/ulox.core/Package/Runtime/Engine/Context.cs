@@ -45,11 +45,14 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CompiledScript CompileScript(Script script)
+        public CompiledScript CompileScript(Script script, Action<CompiledScript> compiledScriptAction = null)
         {
             var res = Program.Compile(script);
             if(!_compiledChunks.Contains(res))
+            { 
                 _compiledChunks.Add(res);
+                compiledScriptAction?.Invoke(res);
+            }
             return res;
         }
 

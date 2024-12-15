@@ -7,10 +7,10 @@ namespace ULox
     {
         public Scanner Scanner { get; } = new();
         public Compiler Compiler { get; } = new();
-        public Optimiser Optimiser { get; } = new Optimiser();
+        public Optimiser Optimiser { get; } = new();
         public TypeInfo TypeInfo => Compiler.TypeInfo;
 
-        public List<CompiledScript> CompiledScripts { get; } = new List<CompiledScript>();
+        public List<CompiledScript> CompiledScripts { get; } = new ();
 
         public string Disassembly
         {

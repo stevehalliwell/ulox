@@ -137,17 +137,20 @@ print (myOtherVar);");
         [Test]
         public void Engine_Cycle_Global_Var_DoubleRun()
         {
-            var script = @"var myVar = 10;
+            testEngine.Run(@"var myVar = 10;
 var myNull;
 print (myVar);
 print (myNull);
 
 var myOtherVar = myVar * 2;
 
-print (myOtherVar);";
-
-            testEngine.Run(script);
-            testEngine.Run(script);
+print (myOtherVar);");
+            testEngine.Run(@"var myVar = 10;
+var myNull;
+print (myVar);
+print (myNull);
+var myOtherVar = myVar * 2;
+print (myOtherVar);");
 
             Assert.AreEqual("10null2010null20", testEngine.InterpreterResult);
         }

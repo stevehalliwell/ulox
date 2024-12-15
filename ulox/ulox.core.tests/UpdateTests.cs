@@ -202,5 +202,26 @@ print(foo meets foo2);
 
             StringAssert.StartsWith("23False", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Update_WhenInInit_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+class Foo 
+{ 
+    var a;
+
+    init()
+    {
+        this update {a = 1,};
+    }
+}
+
+var foo = Foo();
+print(foo.a);
+");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
     }
 }

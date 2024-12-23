@@ -3,6 +3,8 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
+//todo add tests that store large data objects directly in ulox, how large can that get before it fails?
+
 namespace ULox.Core.Tests
 {
     [TestFixture]

@@ -1688,5 +1688,37 @@ var a = 7;
 var closure = a.Meth();");
             StringAssert.StartsWith("Cannot invoke 'Meth' on '7' at ", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void GetFieldViaIndex_WhenExists_ShouldMatchValue()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var a = 1;
+}
+
+var inst = Foo();
+var got = inst[""a""];
+print(got);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void SetFieldViaIndex_WhenExists_ShouldMatchValue()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var a = 1;
+}
+
+var inst = Foo();
+inst[""a""] = 2;
+print(inst.a);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
+        }
     }
 }

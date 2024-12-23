@@ -1,5 +1,4 @@
-﻿#define VM_STATS
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -122,9 +121,9 @@ namespace ULox
 
             _currentCallFrame = callFrame;
             _currentChunk = _currentCallFrame.Closure.chunk;
-#if VM_STATS
+
             Tracing?.ProcessPushCallFrame(callFrame);
-#endif
+
             _callFrames.Push(callFrame);
             for (int i = 0; i < callFrame.ReturnCount; i++)
             {
@@ -164,9 +163,7 @@ namespace ULox
                 var packet = ReadPacket(chunk);
                 var opCode = packet.OpCode;
 
-#if VM_STATS
                 Tracing?.ProcessingOpCode(chunk, opCode);
-#endif
 
                 switch (opCode)
                 {
@@ -902,9 +899,8 @@ namespace ULox
                 var poppedStackStart = _currentCallFrame.StackStart;
                 //remove top
                 var popped = _callFrames.Pop();
-#if VM_STATS
+
                 Tracing?.ProcessPopCallFrame(popped);
-#endif
 
                 //update cache
                 if (_callFrames.Count > 0)

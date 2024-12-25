@@ -17,8 +17,8 @@ namespace ULox
         private static NativeCallResult ToJson(Vm vm)
         {
             var obj = vm.GetArg(1);
-            var jsonWriter = new JsonValueHeirarchyWriter();
-            var walker = new ValueHeirarchyWalker(jsonWriter);
+            var jsonWriter = new JsonValueHierarchyWriter();
+            var walker = new ValueHierarchyWalker(jsonWriter);
             walker.Walk(obj);
             var result = jsonWriter.GetString();
             vm.SetNativeReturn(0, Value.New(result));
@@ -29,7 +29,7 @@ namespace ULox
         {
             var jsonString = vm.GetArg(1);
             var reader = new StringReader(jsonString.val.asString.String);
-            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
+            var creator = new JsonDocValueHierarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
             creator.Process();
             var obj = creator.Finish();
             vm.SetNativeReturn(0, obj);

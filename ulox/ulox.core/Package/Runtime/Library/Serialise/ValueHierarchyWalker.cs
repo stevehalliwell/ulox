@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public interface IValueHeirarchyWriter
+    public interface IValueHierarchyWriter
     {
         void StartNamedElement(string name);
         void StartElement();
@@ -13,11 +13,11 @@ namespace ULox
         void WriteValue(Value v);
     }
     
-    public class ValueHeirarchyWalker
+    public class ValueHierarchyWalker
     {
-        private readonly IValueHeirarchyWriter _writer;
+        private readonly IValueHierarchyWriter _writer;
 
-        public ValueHeirarchyWalker(IValueHeirarchyWriter writer)
+        public ValueHierarchyWalker(IValueHierarchyWriter writer)
         {
             _writer = writer;
         }

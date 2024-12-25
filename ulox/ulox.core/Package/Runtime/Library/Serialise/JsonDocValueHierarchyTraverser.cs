@@ -4,11 +4,12 @@ using System.IO;
 
 namespace ULox
 {
-    public class JsonDocValueHeirarchyTraverser : DocValueHeirarchyTraverser
+    public class JsonDocValueHierarchyTraverser : DocValueHierarchyTraverser
     {
         private readonly JsonTextReader _reader;
 
-        public JsonDocValueHeirarchyTraverser(
+        public JsonDocValueHierarchyTraverser
+            (
             ValueObjectBuilder valBuilder,
             TextReader reader)
             : base(valBuilder)

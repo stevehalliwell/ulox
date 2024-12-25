@@ -80,8 +80,8 @@ obj.a.a = l;";
             var result = "error";
             testEngine.Run(scriptString);
             testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj"), out var obj);
-            var jsonWriter = new JsonValueHeirarchyWriter();
-            var walker = new ValueHeirarchyWalker(jsonWriter);
+            var jsonWriter = new JsonValueHierarchyWriter();
+            var walker = new ValueHierarchyWalker(jsonWriter);
 
             walker.Walk(obj);
             result = jsonWriter.GetString();
@@ -97,8 +97,8 @@ obj.a.a = l;";
             var result = "error";
             testEngine.Run(scriptString);
             testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj"), out var obj);
-            var jsonWriter = new JsonValueHeirarchyWriter();
-            var walker = new ValueHeirarchyWalker(jsonWriter);
+            var jsonWriter = new JsonValueHierarchyWriter();
+            var walker = new ValueHierarchyWalker(jsonWriter);
 
             walker.Walk(obj);
             result = jsonWriter.GetString();
@@ -114,8 +114,8 @@ obj.a.a = l;";
             var result = "error";
             testEngine.Run(scriptString);
             testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj"), out var obj);
-            var jsonWriter = new JsonValueHeirarchyWriter();
-            var walker = new ValueHeirarchyWalker(jsonWriter);
+            var jsonWriter = new JsonValueHierarchyWriter();
+            var walker = new ValueHierarchyWalker(jsonWriter);
 
             walker.Walk(obj);
             result = jsonWriter.GetString();
@@ -131,8 +131,8 @@ obj.a.a = l;";
             var result = "error";
             testEngine.Run(scriptString);
             testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj"), out var obj);
-            var jsonWriter = new JsonValueHeirarchyWriter();
-            var walker = new ValueHeirarchyWalker(jsonWriter);
+            var jsonWriter = new JsonValueHierarchyWriter();
+            var walker = new ValueHierarchyWalker(jsonWriter);
 
             walker.Walk(obj);
             result = jsonWriter.GetString();
@@ -145,14 +145,14 @@ obj.a.a = l;";
         {
             var jsonString = UloxJsonExpectedResult;
             var reader = new StringReader(jsonString);
-            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
+            var creator = new JsonDocValueHierarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
             creator.Process();
             var obj = creator.Finish();
 
             Assert.AreEqual(ValueType.Instance, obj.type);
 
-            var testWriter = new StringBuilderValueHeirarchyWriter();
-            var testObjWalker = new ValueHeirarchyWalker(testWriter);
+            var testWriter = new StringBuilderValueHierarchyWriter();
+            var testObjWalker = new ValueHierarchyWalker(testWriter);
             testObjWalker.Walk(obj);
             var resultString = testWriter.GetString();
             var expectedWalkResult = SimpleStringSerialisationTests.UloxSBExpectedResult;
@@ -167,12 +167,12 @@ obj.a.a = l;";
         {
             var json = UloxJsonExpectedResult;
             var reader = new StringReader(json);
-            var creator = new JsonDocValueHeirarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
+            var creator = new JsonDocValueHierarchyTraverser(new ValueObjectBuilder(ValueObjectBuilder.ObjectType.Object), reader);
             creator.Process();
             var obj = creator.Finish();
 
-            var jsonWriter = new JsonValueHeirarchyWriter();
-            var walker = new ValueHeirarchyWalker(jsonWriter);
+            var jsonWriter = new JsonValueHierarchyWriter();
+            var walker = new ValueHierarchyWalker(jsonWriter);
             walker.Walk(obj);
             var result = jsonWriter.GetString();
 

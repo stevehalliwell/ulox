@@ -7,7 +7,7 @@ testset DebugLibraryTests
         var contains1 = "2";
         var contains2 = "0";
         
-        result = GenerateStackDump();
+        result = VM.GenerateStackDump();
         
         Assert.DoesContain(contains1,result);
         Assert.DoesContain(contains2,result);
@@ -17,7 +17,7 @@ testset DebugLibraryTests
     {
         var result;
         
-        result = GenerateGlobalsDump();
+        result = VM.GenerateGlobalsDump();
         
         expect result != null;
     }

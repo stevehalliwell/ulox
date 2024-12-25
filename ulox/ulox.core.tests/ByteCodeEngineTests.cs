@@ -764,7 +764,7 @@ print(a);");
         {
             testEngine.Run(@"
 var a = 1;
-var b = Duplicate(a);
+var b = Object.Duplicate(a);
 print(b);
 b = 2;
 print(b);
@@ -778,7 +778,7 @@ print(a);");
         {
             testEngine.Run(@"
 var a = ""Foo"";
-var b = Duplicate(a);
+var b = Object.Duplicate(a);
 print(b);
 b = 2;
 print(b);

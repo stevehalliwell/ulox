@@ -2,11 +2,12 @@
 {
     internal static class PlatformStdLibrary
     {
-        internal static InstanceInternal MakeMathInstance()
+        internal static InstanceInternal MakeInstance()
         {
             var platformLibInst = new InstanceInternal();
             platformLibInst.AddFieldsToInstance(
-                (nameof(FindFiles), Value.New(FindFiles, 1, 3)));
+                (nameof(FindFiles), Value.New(FindFiles, 1, 3))
+                );
 
             platformLibInst.Freeze();
             return platformLibInst;

@@ -4,7 +4,7 @@ namespace ULox
 {
     internal static class SerialiseStdLibrary
     {
-        internal static InstanceInternal MakeSerialiseInstance()
+        internal static InstanceInternal MakeInstance()
         {
             var serialiseInst = new InstanceInternal();
             serialiseInst.AddFieldsToInstance(

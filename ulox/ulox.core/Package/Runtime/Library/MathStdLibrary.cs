@@ -6,7 +6,7 @@ namespace ULox
     {
         private static readonly Random _random = new();
 
-        internal static InstanceInternal MakeMathInstance()
+        internal static InstanceInternal MakeInstance()
         {
             var diLibInst = new InstanceInternal();
             diLibInst.AddFieldsToInstance(

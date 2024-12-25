@@ -18,8 +18,10 @@ namespace ULox
                 (nameof(Start), Value.New(Start, 1, 1)),
                 (nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing, 1, 0)),
                 (nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing, 1, 0)),
-                (nameof(Resume), Value.New(Resume, 1, 0))
-                                  );
+                (nameof(Resume), Value.New(Resume, 1, 0)),
+                (nameof(GenerateStackDump), Value.New(GenerateStackDump, 1, 0)),
+                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump, 1, 0))
+                );
             AddFieldName(VMFieldName);
         }
 
@@ -87,6 +89,18 @@ namespace ULox
 
             inst.Fields.Get(VMFieldName, out var found);
             return found.val.asObject as Vm;
+        }
+
+        public static NativeCallResult GenerateStackDump(Vm vm)
+        {
+            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateValueStackDump(vm)));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public static NativeCallResult GenerateGlobalsDump(Vm vm)
+        {
+            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateGlobalsDump(vm)));
+            return NativeCallResult.SuccessfulExpression;
         }
     }
 }

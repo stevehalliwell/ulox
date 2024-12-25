@@ -3,7 +3,7 @@ testset StdLibraryTests
     test DuplicateMatches
     {
         var a = 1;
-        var b = Duplicate(a);
+        var b = Object.Duplicate(a);
         
         Assert.AreEqual(a,b);
     }
@@ -11,7 +11,7 @@ testset StdLibraryTests
     test DuplicatAfterChangeDoesNoteMatch
     {
         var a = 1;
-        var b = Duplicate(a);
+        var b = Object.Duplicate(a);
         
         b = 2;
         

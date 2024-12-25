@@ -199,7 +199,7 @@ namespace ULox
                     else if (lhs.type == ValueType.String
                          || rhs.type == ValueType.String)
                     {
-                        res = Value.New(lhs.str() + rhs.str());
+                        res = Value.New(lhs.ToString() + rhs.ToString());
                     }
                     else
                     {
@@ -802,7 +802,7 @@ namespace ULox
         private void DoBuildOp()
         {
             var givenVar = Pop();
-            var str = givenVar.str();
+            var str = givenVar.ToString();
             Engine.LocateAndQueue(str);
         }
 

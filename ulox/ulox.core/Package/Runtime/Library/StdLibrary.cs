@@ -18,20 +18,15 @@ namespace ULox
             return this.GenerateBindingTable(
                 ("VM", Value.New(new VMClass(CreateVM))),
                 ("Assert", Value.New(MakeAssertInstance())),
-                ("Serialise", Value.New(SerialiseStdLibrary.MakeSerialiseInstance())),
-                ("Math", Value.New(MathStdLibrary.MakeMathInstance())),
-                ("Platform", Value.New(PlatformStdLibrary.MakeMathInstance())),
+                ("Serialise", Value.New(SerialiseStdLibrary.MakeInstance())),
+                ("Math", Value.New(MathStdLibrary.MakeInstance())),
+                ("Platform", Value.New(PlatformStdLibrary.MakeInstance())),
                 ("List", NativeListClass.SharedNativeListClassValue),
                 ("Map", NativeMapClass.SharedNativeMapClassValue),
                 ("Dynamic", DynamicClass.SharedDynamicClassValue),
-                (nameof(Duplicate), Value.New(Duplicate, 1, 1)),
-                (nameof(str), Value.New(str, 1, 1)),
-                (nameof(IsFrozen), Value.New(IsFrozen, 1, 1)),
-                (nameof(Unfreeze), Value.New(Unfreeze, 1, 1)),
-                (nameof(Freeze), Value.New(Freeze, 1, 1)),
-                (nameof(GenerateStackDump), Value.New(GenerateStackDump, 1, 0)),
-                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump, 1, 0))
-                                            );
+                ("Object", Value.New(MakeObjectInstance())),
+                (nameof(str), Value.New(str, 1, 1))
+                );
         }
 
         internal InstanceInternal MakeAssertInstance()
@@ -50,6 +45,19 @@ namespace ULox
                 (nameof(Throws), Value.New(Throws, 1, 1)),
                 (nameof(Pass), Value.New(Pass, 1, 0)),
                 (nameof(Fail), Value.New(Fail, 1, 0)));
+            assertInst.Freeze();
+            return assertInst;
+        }
+
+        internal InstanceInternal MakeObjectInstance()
+        {
+            var assertInst = new InstanceInternal();
+            assertInst.AddFieldsToInstance(
+                (nameof(Duplicate), Value.New(Duplicate, 1, 1)),
+                (nameof(IsFrozen), Value.New(IsFrozen, 1, 1)),
+                (nameof(Unfreeze), Value.New(Unfreeze, 1, 1)),
+                (nameof(Freeze), Value.New(Freeze, 1, 1))
+                );
             assertInst.Freeze();
             return assertInst;
         }
@@ -186,19 +194,6 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        public static NativeCallResult GenerateStackDump(Vm vm)
-        {
-            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateValueStackDump(vm)));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        public static NativeCallResult GenerateGlobalsDump(Vm vm)
-        {
-            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateGlobalsDump(vm)));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-
         public static NativeCallResult IsFrozen(Vm vm)
         {
             var target = vm.GetArg(1);
@@ -245,7 +240,7 @@ namespace ULox
         public static NativeCallResult str(Vm vm)
         {
             var v = vm.GetArg(1);
-            vm.SetNativeReturn(0, Value.New(v.str()));
+            vm.SetNativeReturn(0, Value.New(v.ToString()));
             return NativeCallResult.SuccessfulExpression;
         }
 

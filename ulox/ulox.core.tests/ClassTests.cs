@@ -664,7 +664,7 @@ class Foo
 }
 
 var a = Foo();
-var b = Duplicate(a);
+var b = Object.Duplicate(a);
 print(b);
 b.Speak();
 b.Bar = ""Bye"";

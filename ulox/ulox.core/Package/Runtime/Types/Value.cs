@@ -70,10 +70,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNull() => type == ValueType.Null;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string str() => ToString();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             switch (type)

@@ -2,7 +2,7 @@
 
 namespace ULox.Core.Tests
 {
-    public class FreezeTests : EngineTestBase
+    public class ObjectLibraryTests : EngineTestBase
     {
         [Test]
         public void Instance_WhenUnfrozen_ShouldActAsDynamic()
@@ -40,6 +40,28 @@ print(Object.IsFrozen(foo));
 ");
 
             Assert.AreEqual("FalseTrue", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Duplicate_ClassInstance_Matches()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var Bar = ""Hello World!"";
+
+    Speak(){print(this.Bar);}
+}
+
+var a = Foo();
+var b = Object.Duplicate(a);
+print(b);
+b.Speak();
+b.Bar = ""Bye"";
+b.Speak();
+a.Speak();");
+
+            Assert.AreEqual("<inst Foo>Hello World!ByeHello World!", testEngine.InterpreterResult);
         }
     }
 }

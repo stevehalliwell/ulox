@@ -653,28 +653,6 @@ print(f.Method());");
         }
 
         [Test]
-        public void Engine_Duplicate_ClassInstance_Matches()
-        {
-            testEngine.Run(@"
-class Foo
-{
-    var Bar = ""Hello World!"";
-
-    Speak(){print(this.Bar);}
-}
-
-var a = Foo();
-var b = Object.Duplicate(a);
-print(b);
-b.Speak();
-b.Bar = ""Bye"";
-b.Speak();
-a.Speak();");
-
-            Assert.AreEqual("<inst Foo>Hello World!ByeHello World!", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Method_Paramless()
         {
             testEngine.Run(@"

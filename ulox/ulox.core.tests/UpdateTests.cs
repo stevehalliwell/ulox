@@ -223,5 +223,24 @@ print(foo.a);
 
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Update_WhenMixedInAndExtendedWithNulls_ShouldUpdateAll()
+        {
+            testEngine.Run(@"
+class Bar { var a,b; }
+class Foo {mixin Bar; var c;}
+
+var bar = Bar();
+bar.a = 1;
+bar.b = [];
+var foo = Foo() update bar;
+print(foo.a);
+print(foo.b);
+print(foo.c);
+");
+
+            Assert.AreEqual("1<inst NativeList>null", testEngine.InterpreterResult);
+        }
     }
 }

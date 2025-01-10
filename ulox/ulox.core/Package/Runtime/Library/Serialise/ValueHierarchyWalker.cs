@@ -67,6 +67,7 @@ namespace ULox
             case ValueType.Bool:
             case ValueType.String:
             case ValueType.Null:
+            case ValueType.Object:
                 if (name != null)
                     _writer.WriteNameAndValue(name.String, v);
                 else

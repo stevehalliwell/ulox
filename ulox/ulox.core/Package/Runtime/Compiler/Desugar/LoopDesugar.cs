@@ -101,7 +101,7 @@ namespace ULox
                 currentToken.MutateType(TokenType.OPEN_PAREN),
                 currentToken.Mutate(TokenType.IDENTIFIER, countIdent),
                 currentToken.MutateType(TokenType.GREATER),
-                currentToken.Mutate(TokenType.NUMBER, 0.0),
+                currentToken.Mutate(TokenType.NUMBER, "0.0"),
                 currentToken.MutateType(TokenType.CLOSE_PAREN),
                 currentToken.MutateType(TokenType.OPEN_BRACE),
 
@@ -109,7 +109,7 @@ namespace ULox
                 currentToken.MutateType(TokenType.VAR),
                 currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
                 currentToken.MutateType(TokenType.ASSIGN),
-                currentToken.Mutate(TokenType.NUMBER, 0.0),
+                currentToken.Mutate(TokenType.NUMBER, "0.0"),
                 currentToken.MutateType(TokenType.END_STATEMENT),
 
                 //make item = arr[0]
@@ -137,7 +137,7 @@ namespace ULox
                 currentToken.MutateType(TokenType.ASSIGN),
                 currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
                 currentToken.MutateType(TokenType.PLUS),
-                currentToken.Mutate(TokenType.NUMBER, 1.0),
+                currentToken.Mutate(TokenType.NUMBER, "1.0"),
                 currentToken.MutateType(TokenType.CLOSE_PAREN),
 
                 currentToken.MutateType(TokenType.OPEN_BRACE),

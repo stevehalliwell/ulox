@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -90,18 +89,14 @@ namespace ULox
 
                 ("soa", TokenType.SOA));
 
-            this.AddGenerators(
-                new StringScannerTokenGenerator(),  //needs the chance to steel } from direct symbol
-                new DirectSymbolScannerMatchTokenGenerator(),
-                new NumberScannerTokenGenerator(),
-                identScannerGen
-                );
+
+            _scannerGenerators.Add(new StringScannerTokenGenerator());
+            _scannerGenerators.Add(new DirectSymbolScannerMatchTokenGenerator());
+            _scannerGenerators.Add(new NumberScannerTokenGenerator());
+            _scannerGenerators.Add(identScannerGen);
 
             _scannerGeneratorsCount = _scannerGenerators.Count;
         }
-
-        public void AddGenerator(IScannerTokenGenerator gen)
-            => _scannerGenerators.Add(gen);
 
         public void Reset()
         {
@@ -127,10 +122,19 @@ namespace ULox
             return _tokens;
         }
 
-        public void SetScript(Script script)
+        private IScannerTokenGenerator GetMatchingGenerator(char ch)
         {
-            _script = script;
-            _stringIterator = new StringIterator(_script.Source);
+            for (int i = 0; i < _scannerGeneratorsCount; i++)
+            {
+                var gen = _scannerGenerators[i];
+                if (gen.DoesMatchChar(ch))
+                {
+                    return gen;
+                }
+            }
+
+            ThrowScannerException($"Unexpected character '{ch}'");
+            return null;
         }
 
         public void ThrowScannerException(string msg)
@@ -168,7 +172,7 @@ namespace ULox
             => EmitToken(token, null);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void EmitToken(TokenType simpleToken, object literal)
+        public void EmitToken(TokenType simpleToken, string literal)
         {
             _tokens.Add(new Token(
                 simpleToken,
@@ -180,27 +184,6 @@ namespace ULox
         {
             var length = _stringIterator.CurrentIndex - startingIndex;
             return _script.Source.Substring(startingIndex, length + 1);
-        }
-
-        private void AddGenerators(params IScannerTokenGenerator[] scannerTokenGenerators)
-        {
-            foreach (var item in scannerTokenGenerators)
-                AddGenerator(item);
-        }
-
-        private IScannerTokenGenerator GetMatchingGenerator(char ch)
-        {
-            for (int i = 0; i < _scannerGeneratorsCount; i++)
-            {
-                var gen = _scannerGenerators[i];
-                if (gen.DoesMatchChar(ch))
-                {
-                    return gen;
-                }
-            }
-
-            ThrowScannerException($"Unexpected character '{ch}'");
-            return null;
         }
 
         public int[] GetLineLengths()

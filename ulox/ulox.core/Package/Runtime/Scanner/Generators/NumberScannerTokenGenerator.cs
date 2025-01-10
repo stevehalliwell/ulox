@@ -33,7 +33,7 @@ namespace ULox
 
             scanner.EmitToken(
                 TokenType.NUMBER,
-                double.Parse(numStr));
+                numStr);
         }
     }
 }

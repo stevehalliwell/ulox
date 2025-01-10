@@ -54,7 +54,7 @@ namespace ULox
             case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
             {
-                var number = (double)compiler.TokenIterator.PreviousToken.Literal;
+                var number = double.Parse(compiler.TokenIterator.PreviousToken.Literal);
 
                 var isInt = number == Math.Truncate(number);
 

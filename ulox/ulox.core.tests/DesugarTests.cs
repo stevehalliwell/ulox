@@ -313,10 +313,10 @@ soa FooSoa
         {
             var scanner = new Scanner();
             var script = new Script("test", scriptContent);
-            var tokens = scanner.Scan(script);
+            var tokenisedScript = scanner.Scan(script);
             var context = new DummyContext();
-            var tokenIterator = new TokenIterator(script, tokens, null, context);
-            return (tokens, tokenIterator, context);
+            var tokenIterator = new TokenIterator(script, tokenisedScript, context);
+            return (tokenisedScript.Tokens, tokenIterator, context);
         }
 
         private static void AdvanceGather(TokenIterator tokenIterator, List<Token> list)

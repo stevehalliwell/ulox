@@ -10,6 +10,12 @@ namespace ULox
         void Consume(Scanner scanner);
     }
 
+    public sealed class TokenisedScript
+    {
+        public List<Token> Tokens;
+        public int[] LineLengths;
+    }
+
     public sealed class Scanner
     {
         public const int TokenStartingCapacity = 500;
@@ -104,9 +110,10 @@ namespace ULox
             _script = default;
         }
 
-        public List<Token> Scan(Script script)
+        public TokenisedScript Scan(Script script)
         {
-            SetScript(script);
+            _script = script;
+            _stringIterator = new StringIterator(_script.Source);
             _tokens = new List<Token>(TokenStartingCapacity);
 
             while (!IsAtEnd())
@@ -119,7 +126,7 @@ namespace ULox
             _stringIterator.FinishLineLengths();
             EmitTokenSingle(TokenType.EOF);
 
-            return _tokens;
+            return new() { Tokens = _tokens, LineLengths = _stringIterator.LineLengths.ToArray() };
         }
 
         private IScannerTokenGenerator GetMatchingGenerator(char ch)
@@ -184,11 +191,6 @@ namespace ULox
         {
             var length = _stringIterator.CurrentIndex - startingIndex;
             return _script.Source.Substring(startingIndex, length + 1);
-        }
-
-        public int[] GetLineLengths()
-        {
-            return _stringIterator.LineLengths.ToArray();
         }
     }
 }

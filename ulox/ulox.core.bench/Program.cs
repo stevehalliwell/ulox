@@ -2,7 +2,6 @@
 using System.Linq;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
-using Newtonsoft.Json.Linq;
 
 namespace ULox.Core.Bench
 {
@@ -13,8 +12,7 @@ namespace ULox.Core.Bench
         private CompiledScript _ifCompiled;
         private CompiledScript _scriptCompiledAndOpt;
         private CompiledScript _scriptCompiledNotOpt;
-        private List<Token> _compiledTokens;
-        private int[] _lineLengths;
+        private TokenisedScript _tokenisedScript;
         private Engine _engine;
 
         [GlobalSetup]
@@ -27,9 +25,8 @@ namespace ULox.Core.Bench
 
             engine = Engine.CreateDefault();
             var scanner = engine.Context.Program.Scanner;
-            _compiledTokens = scanner.Scan(CompileVsExecute.Script);
-            _lineLengths = scanner.GetLineLengths();
-            _scriptCompiledNotOpt = engine.Context.Program.Compiler.Compile(_compiledTokens.Select(x=>x).ToList(), _lineLengths, CompileVsExecute.Script);
+            _tokenisedScript = scanner.Scan(CompileVsExecute.Script);
+            _scriptCompiledNotOpt = engine.Context.Program.Compiler.Compile(_tokenisedScript, CompileVsExecute.Script);
         }
 
         static void Main(string[] args)
@@ -74,26 +71,17 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
-        public List<Token> CompileVsExecute_TokeniseOnly()
+        public TokenisedScript CompileVsExecute_TokeniseOnly()
         {
             _engine = Engine.CreateDefault();
             return _engine.Context.Program.Scanner.Scan(CompileVsExecute.Script);
         }
 
         [Benchmark]
-        public List<Token> CompileVsExecute_DupTokensOnly()
-        {
-            _engine = Engine.CreateDefault();
-            var tokens = _compiledTokens.Select(x => x).ToList();
-            return tokens;
-        }
-
-        [Benchmark]
         public CompiledScript CompileVsExecute_CompileOnly()
         {
             _engine = Engine.CreateDefault();
-            var tokens = _compiledTokens.Select(x => x).ToList();
-            return _engine.Context.Program.Compiler.Compile(tokens, _lineLengths, CompileVsExecute.Script);
+            return _engine.Context.Program.Compiler.Compile(_tokenisedScript, CompileVsExecute.Script);
         }
 
         [Benchmark]

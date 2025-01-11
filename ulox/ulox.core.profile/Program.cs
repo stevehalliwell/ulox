@@ -12,12 +12,12 @@ var targetScript = ULox.Core.Bench.Vec2Variants.Tuple;
 
 while (true)
 {
-    List<Token> tokens = null;
+    var tokenisedScript = default(TokenisedScript);
     Console.WriteLine($"Scan only {scanRepeat} times.");
     for (int i = 0; i < compileRepeat; i++)
     {
         var scanner = new Scanner();
-        tokens = scanner.Scan(targetScript);
+        tokenisedScript = scanner.Scan(targetScript);
     }
 
     //Console.WriteLine($"Compiling only {compileRepeat} times.");
@@ -46,5 +46,5 @@ while (true)
     //        engine.Context.Vm.PushCallFrameAndRun(funcUpdateValue, 0);
     //    }
     //}
-    Console.WriteLine($"{tokens.Count}");
+    Console.WriteLine($"{tokenisedScript.Tokens.Count}");
 }

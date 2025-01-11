@@ -30,7 +30,6 @@ namespace ULox
 
     public sealed class Compiler : ICompilerDesugarContext
     {
-        private readonly IndexableStack<CompilerState> compilerStates = new();
         //temp
         public readonly PrattParserRuleSet _prattParser = new();
         private readonly TypeInfo _typeInfo = new();
@@ -38,15 +37,16 @@ namespace ULox
         public TypeInfo TypeInfo => _typeInfo;
         public TokenIterator TokenIterator { get; private set; }
 
-        private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new();
-        private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new();
+        private readonly IndexableStack<CompilerState> _compilerStates = new();
+        private readonly Dictionary<TokenType, ICompilette> _declarationCompilettes = new();
+        private readonly Dictionary<TokenType, ICompilette> _statementCompilettes = new();
         private readonly List<Chunk> _allChunks = new();
         private readonly ClassTypeCompilette _classCompiler = new();
         private readonly List<CompilerMessage> _messages = new();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
-        public CompilerState CurrentCompilerState => compilerStates.Peek();
+        public CompilerState CurrentCompilerState => _compilerStates.Peek();
 
         public Compiler()
         {
@@ -130,7 +130,7 @@ namespace ULox
 
         public void Reset()
         {
-            compilerStates.Clear();
+            _compilerStates.Clear();
             TokenIterator = null;
             _allChunks.Clear();
             _messages.Clear();
@@ -188,10 +188,10 @@ namespace ULox
         }
 
         public void AddDeclarationCompilette(ICompilette compilette)
-            => declarationCompilettes[compilette.MatchingToken] = compilette;
+            => _declarationCompilettes[compilette.MatchingToken] = compilette;
 
         public void AddStatementCompilette(ICompilette compilette)
-            => statementCompilettes[compilette.MatchingToken] = compilette;
+            => _statementCompilettes[compilette.MatchingToken] = compilette;
 
         public void SetPrattRule(TokenType tt, IParseRule rule)
             => _prattParser.SetPrattRule(tt, rule);
@@ -288,9 +288,9 @@ namespace ULox
                 EmitPop(popCount);
         }
 
-        public CompiledScript Compile(List<Token> tokens, int[] lineLengths, Script script)
+        public CompiledScript Compile(TokenisedScript tokenisedScript, Script script)
         {
-            TokenIterator = new TokenIterator(script, tokens, lineLengths, this);
+            TokenIterator = new TokenIterator(script, tokenisedScript, this);
             TokenIterator.Advance();
 
             PushCompilerState("root", FunctionType.Script);
@@ -310,7 +310,7 @@ namespace ULox
 
         public void Declaration()
         {
-            if (declarationCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
+            if (_declarationCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
             {
                 TokenIterator.Advance();
                 complette.Process(this);
@@ -325,7 +325,7 @@ namespace ULox
 
         public void Statement()
         {
-            if (statementCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
+            if (_statementCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
             {
                 TokenIterator.Advance();
                 complette.Process(this);
@@ -377,7 +377,7 @@ namespace ULox
             {
                 chunk = new Chunk(name, TokenIterator?.SourceName, parentChainName),
             };
-            compilerStates.Push(newCompState);
+            _compilerStates.Push(newCompState);
             CurrentCompilerState.AddLocal(this, "", 0);
         }
 
@@ -455,7 +455,7 @@ namespace ULox
         {
             EmitReturn();
             EndScope();
-            var returnChunk = compilerStates.Pop().chunk;
+            var returnChunk = _compilerStates.Pop().chunk;
             _allChunks.Add(returnChunk);
             return returnChunk;
         }

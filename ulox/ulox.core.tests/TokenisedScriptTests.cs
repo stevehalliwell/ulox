@@ -20,6 +20,9 @@ namespace ULox.Core.Tests
         }
     }
 
+    //todo CompiledScript serialisation tests
+    //todo chunk serialisation tests, the issue there is that constants can be non-trivial. They are always either number, string, or chunk
+
 
     //todo Cache tokenised script tests
     //when you hit the scriptlocator, it should be able to check for a cached

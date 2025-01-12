@@ -52,7 +52,7 @@ namespace ULox
 
             if (tokens[currentTokenIndex + toRemove].TokenType == TokenType.COMMA)
             {
-                iIdent = tokens[currentTokenIndex + toRemove + 1].Literal as string;
+                iIdent = tokens[currentTokenIndex + toRemove + 1].Literal;
                 toRemove += 2;
             }
             var itemIdent = iIdent + "tem";

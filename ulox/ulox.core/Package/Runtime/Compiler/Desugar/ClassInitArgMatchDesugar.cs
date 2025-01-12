@@ -25,7 +25,7 @@ namespace ULox
             //filter matching name in class fields
             var argnames = initArgs
                 .Where(x => x.TokenType == TokenType.IDENTIFIER)
-                .Where(x => context.DoesCurrentClassHaveMatchingField(x.Literal as string));
+                .Where(x => context.DoesCurrentClassHaveMatchingField(x.Literal));
 
             //insert `this.` before each field name and assign through
             tokens.InsertRange(end + 2, argnames.SelectMany(x => new[]

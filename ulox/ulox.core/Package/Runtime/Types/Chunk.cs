@@ -4,13 +4,14 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    //TODO split this up into pure data and operations on it
     public sealed class Chunk
     {
         public const int InstructionStartingCapacity = 50;
         public const int ConstantStartingCapacity = 15;
         public const string InternalLabelPrefix = "INTERNAL_";
 
-        internal struct RunLengthLineNumber
+        public struct RunLengthLineNumber
         {
             public int startingInstruction;
             public int line;
@@ -39,7 +40,6 @@ namespace ULox
         public byte ReturnCount => (byte)ReturnConstantIds.Count;
         public int UpvalueCount { get; internal set; }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Chunk(string chunkName, string sourceName, string containingChunkChainName)
         {
             ChunkName = chunkName;
@@ -47,7 +47,6 @@ namespace ULox
             ContainingChunkChainName = containingChunkChainName;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetLineForInstruction(int instructionNumber)
         {
             if (_runLengthLineNumbers.Count == 0) return -1;
@@ -93,7 +92,6 @@ namespace ULox
             return (byte)(_constants.Count - 1);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Value ReadConstant(byte index) => _constants[index];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

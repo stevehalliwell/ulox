@@ -1,19 +1,34 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace ULox
 {
     public sealed class LocalFileScriptLocator : IScriptLocator
     {
-        private readonly DirectoryInfo _directory;
+        private readonly DirectoryLimitedFileLocator _locator;
 
         public LocalFileScriptLocator()
         {
-            _directory = new DirectoryInfo(Environment.CurrentDirectory);
+            _locator = new DirectoryLimitedFileLocator(new DirectoryInfo(Environment.CurrentDirectory));
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Script Find(string name)
+        {
+            return _locator.Find(name);
+        }
+    }
+
+    public sealed class DirectoryLimitedFileLocator : IScriptLocator
+    {
+        private readonly DirectoryInfo _directory;
+
+        public DirectoryInfo DirectoryInfo => _directory;
+
+        public DirectoryLimitedFileLocator(DirectoryInfo dir)
+        {
+            _directory = dir;
+        }
+
         public Script Find(string name)
         {
             var externalMatches = Directory.GetFiles(_directory.FullName, $"{name}*");

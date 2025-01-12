@@ -24,7 +24,7 @@
         public void CName(Compiler compiler, bool canAssign)
         {
             var cname = CurrentTypeName;
-            compiler.AddConstantAndWriteOp(Value.New(cname));
+            compiler.AddConstantStringAndWriteOp(cname);
         }
 
         public abstract UserType UserType { get; }

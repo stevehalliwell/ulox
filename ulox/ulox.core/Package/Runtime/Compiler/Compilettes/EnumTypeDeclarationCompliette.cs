@@ -40,14 +40,14 @@ namespace ULox
 
             do
             {
-                var enumKey = compiler.TokenIterator.PreviousToken.Literal as string;
+                var enumKey = compiler.TokenIterator.PreviousToken.Literal;
 
                 if (_enumKeys.Contains(enumKey))
                     compiler.ThrowCompilerException($"Duplicate Enum Key '{enumKey}'");
 
                 _enumKeys.Add(enumKey);
 
-                compiler.AddConstantAndWriteOp(Value.New(enumKey));
+                compiler.AddConstantStringAndWriteOp(enumKey);
 
                 if (compiler.TokenIterator.Match(TokenType.ASSIGN))
                 {

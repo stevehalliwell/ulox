@@ -50,7 +50,7 @@ namespace ULox
                 var newLabelName = string.Join("_", labelsAtLoc
                     .Select(x => chunk.Constants[x.Key].val.asString.String));
 
-                var newLabelId = chunk.AddConstant(Value.New(newLabelName));
+                var newLabelId = chunk.AddConstant(Value.New(newLabelName));    //always a string
                 chunk.AddLabel(newLabelId, labelValue);
 
                 //remove all the old labels

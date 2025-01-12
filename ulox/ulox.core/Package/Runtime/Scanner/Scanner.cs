@@ -10,12 +10,6 @@ namespace ULox
         void Consume(Scanner scanner);
     }
 
-    public sealed class TokenisedScript
-    {
-        public List<Token> Tokens;
-        public int[] LineLengths;
-    }
-
     public sealed class Scanner
     {
         public const int TokenStartingCapacity = 500;
@@ -126,7 +120,7 @@ namespace ULox
             _stringIterator.FinishLineLengths();
             EmitTokenSingle(TokenType.EOF);
 
-            return new() { Tokens = _tokens, LineLengths = _stringIterator.LineLengths.ToArray() };
+            return new TokenisedScript(_tokens, _stringIterator.LineLengths.ToArray(), script);
         }
 
         private IScannerTokenGenerator GetMatchingGenerator(char ch)

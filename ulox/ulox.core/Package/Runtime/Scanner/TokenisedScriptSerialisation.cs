@@ -11,8 +11,8 @@ namespace ULox
 
         public static byte[] Serialise(TokenisedScript tokenisedScript)
         {
-            var stream = new MemoryStream();
-            var binaryWriter = new BinaryWriter(stream);
+            using var stream = new MemoryStream();
+            using var binaryWriter = new BinaryWriter(stream);
 
             binaryWriter.Write(Version);
             binaryWriter.Write(tokenisedScript.Tokens.Count);
@@ -35,8 +35,8 @@ namespace ULox
 
         public static TokenisedScript Deserialise(byte[] data)
         {
-            var stream = new MemoryStream(data);
-            var binaryReader = new BinaryReader(stream);
+            using var stream = new MemoryStream(data);
+            using var binaryReader = new BinaryReader(stream);
 
             var version = binaryReader.ReadInt32();
             if (version != Version)
@@ -61,11 +61,7 @@ namespace ULox
                 lineLengths[i] = binaryReader.ReadInt32();
             }
 
-            return new TokenisedScript
-            {
-                Tokens = tokens,
-                LineLengths = lineLengths
-            };
+            return new TokenisedScript(tokens, lineLengths, null);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace ULox
     
     public sealed class Context
     {
-        private readonly List<CompiledScript> _compiledChunks = new();
+        private readonly List<CompiledScript> _compiledScripts = new();
 
         public Context(
             IScriptLocator scriptLocator,
@@ -48,9 +48,9 @@ namespace ULox
         public CompiledScript CompileScript(Script script, Action<CompiledScript> compiledScriptAction = null)
         {
             var res = Program.Compile(script);
-            if(!_compiledChunks.Contains(res))
+            if(!_compiledScripts.Contains(res))
             { 
-                _compiledChunks.Add(res);
+                _compiledScripts.Add(res);
                 compiledScriptAction?.Invoke(res);
             }
             return res;

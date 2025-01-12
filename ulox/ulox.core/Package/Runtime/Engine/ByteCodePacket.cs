@@ -139,9 +139,9 @@ namespace ULox
             [FieldOffset(0)]
             public readonly byte _type;
             [FieldOffset(1)]
-            public readonly byte b1;
+            public readonly byte b1;    //if we split closure and upvalue info, we can keep a bigger constant index
             [FieldOffset(2)]
-            public readonly byte b2;
+            public readonly byte b2;    //used for upvalue not closure
 
             public ClosureDetails(ClosureType testOpType, byte b1, byte b2) : this()
             {

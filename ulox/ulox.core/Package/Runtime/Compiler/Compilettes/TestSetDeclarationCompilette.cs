@@ -22,7 +22,7 @@ namespace ULox
             //grab name
             var testClassName = compiler.IdentifierOrChunkUnique(AnonTestSetPrefix);
             CurrentTestSetName = testClassName;
-            var testSetNameID = compiler.CurrentChunk.AddConstant(Value.New(testClassName));
+            var testSetNameID = compiler.AddCustomStringConstant(testClassName);
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before testset set body.");
 
@@ -64,7 +64,7 @@ namespace ULox
         public void TestSetName(Compiler compiler, bool obj)
         {
             var tsname = CurrentTestSetName;
-            compiler.AddConstantAndWriteOp(Value.New(tsname));
+            compiler.AddConstantStringAndWriteOp(tsname);
         }
     }
 }

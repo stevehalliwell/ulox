@@ -123,7 +123,7 @@ namespace ULox
                 var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if_false");
                 compiler.EmitPop();
                
-                compiler.AddConstantAndWriteOp(Value.New("Expect failed, '"));
+                compiler.AddConstantStringAndWriteOp("Expect failed, '");
 
                 if (compiler.TokenIterator.Match(TokenType.COLON))
                 {
@@ -138,7 +138,7 @@ namespace ULox
                     compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, sectionByte, 0, 0));
                 }
                
-                compiler.AddConstantAndWriteOp(Value.New("'"));
+                compiler.AddConstantStringAndWriteOp("'");
                 compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
@@ -160,7 +160,7 @@ namespace ULox
             compiler.BeginScope();
 
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after match statement.");
-            var matchArgName = compiler.TokenIterator.PreviousToken.Literal as string;
+            var matchArgName = compiler.TokenIterator.PreviousToken.Literal;
             var resolveRes = compiler.ResolveNameLookupOpCode(matchArgName);
 
             var lastElseLabel = -1;
@@ -189,7 +189,7 @@ namespace ULox
             if (lastElseLabel != -1)
                 compiler.EmitLabel((byte)lastElseLabel);
 
-            compiler.AddConstantAndWriteOp(Value.New($"Match on '{matchArgName}' did have a matching case."));
+            compiler.AddConstantStringAndWriteOp($"Match on '{matchArgName}' did have a matching case.");
             compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
 
             compiler.EmitLabel(matchEndLabelID);
@@ -200,7 +200,7 @@ namespace ULox
         public static void LabelStatement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
-            var labelName = compiler.TokenIterator.PreviousToken.Literal as string;
+            var labelName = compiler.TokenIterator.PreviousToken.Literal;
             var id = compiler.AddCustomStringConstant(labelName);
             compiler.EmitGoto(id);  //we require that you cannot stumble into a label so if you request one you need to go to it immediately
             compiler.EmitLabel(id);

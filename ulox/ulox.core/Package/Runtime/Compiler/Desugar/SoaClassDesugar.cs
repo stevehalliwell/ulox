@@ -30,7 +30,7 @@ namespace ULox
 
             var soaTypes = soaTokens
                 .Where(x => x.TokenType == TokenType.IDENTIFIER)
-                .SelectMany(x => typeInfo.Types.Where(y => y.Name == x.Literal as string))
+                .SelectMany(x => typeInfo.Types.Where(y => y.Name == x.Literal))
                 .ToList();
 
             var prototypeToken = soaTokens[2];

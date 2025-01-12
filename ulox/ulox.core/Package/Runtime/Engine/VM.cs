@@ -823,9 +823,7 @@ namespace ULox
         {
             var type = closureDetails.ClosureType;
             var b1 = closureDetails.b1;
-            var b2 = closureDetails.b2;
-            var closure = default(ClosureInternal);
-
+            //var b2 = closureDetails.b2;
             if (type != ClosureType.Closure)
                 ThrowRuntimeException($"Closure type '{type}' unexpected.");
 
@@ -834,10 +832,10 @@ namespace ULox
             var closureVal = Value.New(new ClosureInternal() { chunk = func.val.asChunk });
             Push(closureVal);
 
-            closure = closureVal.val.asClosure;
-
-            if (b2 != closure.upvalues.Length)
-                ThrowRuntimeException($"Closure upvalue count mismatch. Expected '{b2}' but got '{closure.upvalues.Length}'");
+            var closure = closureVal.val.asClosure;
+            //todo not sure these are possible to get out of sync, so why are we checking them?
+            //if (b2 != closure.upvalues.Length)
+            //    ThrowRuntimeException($"Closure upvalue count mismatch. Expected '{b2}' but got '{closure.upvalues.Length}'");
 
             for (int i = 0; i < closure.upvalues.Length; i++)
             {

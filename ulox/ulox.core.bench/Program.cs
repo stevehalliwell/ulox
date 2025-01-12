@@ -26,7 +26,7 @@ namespace ULox.Core.Bench
             engine = Engine.CreateDefault();
             var scanner = engine.Context.Program.Scanner;
             _tokenisedScript = scanner.Scan(CompileVsExecute.Script);
-            _scriptCompiledNotOpt = engine.Context.Program.Compiler.Compile(_tokenisedScript, CompileVsExecute.Script);
+            _scriptCompiledNotOpt = engine.Context.Program.Compiler.Compile(_tokenisedScript);
         }
 
         static void Main(string[] args)
@@ -77,12 +77,12 @@ namespace ULox.Core.Bench
             return _engine.Context.Program.Scanner.Scan(CompileVsExecute.Script);
         }
 
-        [Benchmark]
-        public CompiledScript CompileVsExecute_CompileOnly()
-        {
-            _engine = Engine.CreateDefault();
-            return _engine.Context.Program.Compiler.Compile(_tokenisedScript, CompileVsExecute.Script);
-        }
+        //[Benchmark]
+        //public CompiledScript CompileVsExecute_CompileOnly()
+        //{
+        //    _engine = Engine.CreateDefault();
+        //    return _engine.Context.Program.Compiler.Compile(_tokenisedScript);
+        //}
 
         [Benchmark]
         public CompiledScript CompileVsExecute_DeepCloneOnly()

@@ -66,7 +66,7 @@
             if (string.IsNullOrEmpty(testDeclName))
                 compiler.ThrowCompilerException($"Unexpected test, it can only appear within a testset, '{testcaseName}' is not contained in a testset declaration.");
 
-            var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
+            var nameConstantID = compiler.AddCustomStringConstant(testcaseName);
 
             //emit jump // to skip this during imperative
             var testFragmentJump = compiler.GotoUniqueChunkLabel("testFragmentJump");
@@ -136,7 +136,7 @@
         public void TestName(Compiler compiler, bool obj)
         {
             var tcname = TestCaseName;
-            compiler.AddConstantAndWriteOp(Value.New(tcname));
+            compiler.AddConstantStringAndWriteOp(tcname);
         }
 
         public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)

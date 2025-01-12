@@ -26,9 +26,8 @@ namespace ULox
     {
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
-        public string SourceName => _script.Name;
+        public string SourceName => _tokeisedScript.SourceScript.Name;
 
-        private readonly Script _script;
         private readonly TokenisedScript _tokeisedScript;
         private readonly ICompilerDesugarContext _compilerDesugarContext;
         private readonly List<IDesugarStep> _desugarSteps = new();
@@ -36,11 +35,9 @@ namespace ULox
         private int _currentTokenIndex = -1;
 
         public TokenIterator(
-            Script script,
             TokenisedScript tokenisedScript,
             ICompilerDesugarContext compilerDesugarContext)
         {
-            _script = script;
             _tokeisedScript = tokenisedScript;
             _compilerDesugarContext = compilerDesugarContext;
 
@@ -57,7 +54,7 @@ namespace ULox
 
         public string GetSourceSection(int start, int len)
         {
-            return _script.Source.Substring(start, len);
+            return _tokeisedScript.SourceScript.Source.Substring(start, len);
         }
 
         public void Advance()

@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    public readonly struct Script
+    public class Script
     {
         public readonly string Name;
         public readonly string Source;

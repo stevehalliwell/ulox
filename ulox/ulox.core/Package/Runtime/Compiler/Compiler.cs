@@ -214,16 +214,24 @@ namespace ULox
         public byte AddStringConstant()
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
-        public void AddConstantAndWriteOp(Value value)
+        public void AddConstantDoubleAndWriteOp(double dbl)
         {
-            var at = CurrentChunk.AddConstant(value);
+            var at = CurrentChunk.AddConstant(Value.New(dbl));  // always a double
+            //NOTE: this is slow but changing it doesn't change profiler times much.
+            var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
+            CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
+        }
+
+        public void AddConstantStringAndWriteOp(string str)
+        {
+            var at = AddCustomStringConstant(str);
             //NOTE: this is slow but changing it doesn't change profiler times much.
             var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
             CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
         }
 
         public byte AddCustomStringConstant(string str)
-            => CurrentChunk.AddConstant(Value.New(str));
+            => CurrentChunk.AddConstant(Value.New(str));    //always a string
 
         public void EndScope()
         {
@@ -288,9 +296,9 @@ namespace ULox
                 EmitPop(popCount);
         }
 
-        public CompiledScript Compile(TokenisedScript tokenisedScript, Script script)
+        public CompiledScript Compile(TokenisedScript tokenisedScript)
         {
-            TokenIterator = new TokenIterator(script, tokenisedScript, this);
+            TokenIterator = new TokenIterator(tokenisedScript, this);
             TokenIterator.Advance();
 
             PushCompilerState("root", FunctionType.Script);
@@ -303,7 +311,7 @@ namespace ULox
             var topChunk = EndCompile();
             return new CompiledScript(
                 topChunk,
-                script.GetHashCode(),
+                tokenisedScript.SourceScript.GetHashCode(),
                 _allChunks.GetRange(0, _allChunks.Count),
                 _messages.GetRange(0, _messages.Count));
         }
@@ -447,7 +455,7 @@ namespace ULox
                 return new ResolveNameLookupResult(OpCode.GET_FIELD, OpCode.SET_FIELD, AddCustomStringConstant(name));
             }
 
-            argId = CurrentChunk.AddConstant(Value.New(name));
+            argId = AddCustomStringConstant(name);
             return new ResolveNameLookupResult(OpCode.FETCH_GLOBAL, OpCode.ASSIGN_GLOBAL, (byte)argId);
         }
 
@@ -685,7 +693,7 @@ namespace ULox
         internal string IdentifierOrChunkUnique(string prefix)
         {
             if (TokenIterator.Match(TokenType.IDENTIFIER))
-                return TokenIterator.PreviousToken.Literal as string;
+                return TokenIterator.PreviousToken.Literal;
 
             return ChunkUniqueName(prefix);
         }

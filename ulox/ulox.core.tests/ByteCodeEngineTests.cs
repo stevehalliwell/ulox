@@ -10,11 +10,14 @@ namespace ULox.Core.Tests
         {
             var chunk = new Chunk("main", "native", "");
 
-            chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
-            chunk.AddConstantAndWriteInstruction(Value.New(1), 1);
+            var at = chunk.AddConstant(Value.New(0.5));
+            chunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), 1);
+            at = chunk.AddConstant(Value.New(1));
+            chunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.NEGATE), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.ADD), 1);
-            chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
+            at = chunk.AddConstant(Value.New(2));
+            chunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.MULTIPLY), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.RETURN), 2);
 
@@ -585,6 +588,7 @@ c2();");
         [Test]
         public void Engine_Closure_Counter_NoPrint()
         {
+            //This test actually hits the closure upvalue packet
             testEngine.Run(@"
 fun makeCounter()
 {

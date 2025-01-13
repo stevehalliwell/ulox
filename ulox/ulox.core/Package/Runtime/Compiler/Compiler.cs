@@ -311,7 +311,7 @@ namespace ULox
             var topChunk = EndCompile();
             return new CompiledScript(
                 topChunk,
-                tokenisedScript.SourceScript.GetHashCode(),
+                tokenisedScript.SourceScript.ScriptHash,
                 _allChunks.GetRange(0, _allChunks.Count),
                 _messages.GetRange(0, _messages.Count));
         }

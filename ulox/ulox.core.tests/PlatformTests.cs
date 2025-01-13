@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 
 namespace ULox.Core.Tests
 {    
@@ -9,7 +10,7 @@ namespace ULox.Core.Tests
         public void ctor_WhenDefault_ShouldNotThrow()
         {
             
-            void Act() { new Platform(); }
+            void Act() { new DirectoryLimitedPlatform(new(Environment.CurrentDirectory)); }
 
             Assert.DoesNotThrow(Act);
         }
@@ -17,7 +18,7 @@ namespace ULox.Core.Tests
         [Test]
         public void FindFiles_WhenRootAndAllAndFalse_ShouldReturnNonEmptyArray()
         {
-            var plat = new Platform();
+            var plat = new DirectoryLimitedPlatform(new(Environment.CurrentDirectory));
 
             var res = plat.FindFiles("./", "*", false);
 

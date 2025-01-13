@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -8,29 +9,21 @@ namespace ULox
     {
         Table GetBindings();
     }
-    
-    public interface IScriptLocator
-    {
-        Script Find(string name);
-    }
-    
+
     public sealed class Context
     {
         private readonly List<CompiledScript> _compiledScripts = new();
 
         public Context(
-            IScriptLocator scriptLocator,
             Program program,
             Vm vm,
             IPlatform platform)
         {
-            ScriptLocator = scriptLocator;
             Program = program;
             Vm = vm;
             Platform = platform;
         }
 
-        public IScriptLocator ScriptLocator { get; }
         public Program Program { get; }
         public Vm Vm { get; }
         public IPlatform Platform { get; }
@@ -47,12 +40,13 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CompiledScript CompileScript(Script script, Action<CompiledScript> compiledScriptAction = null)
         {
+            var existing = _compiledScripts.Find(x => x.ScriptHash == script.ScriptHash);
+            if (existing != null)
+                return existing;
+
             var res = Program.Compile(script);
-            if(!_compiledScripts.Contains(res))
-            { 
-                _compiledScripts.Add(res);
-                compiledScriptAction?.Invoke(res);
-            }
+            _compiledScripts.Add(res);
+            compiledScriptAction?.Invoke(res);
             return res;
         }
 

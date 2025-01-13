@@ -6,7 +6,9 @@
         {
             var platformLibInst = new InstanceInternal();
             platformLibInst.AddFieldsToInstance(
-                (nameof(FindFiles), Value.New(FindFiles, 1, 3))
+                (nameof(FindFiles), Value.New(FindFiles, 1, 3)),
+                (nameof(ReadFile), Value.New(ReadFile, 1, 1)),
+                (nameof(WriteFile), Value.New(WriteFile, 1, 2))
                 );
 
             platformLibInst.Freeze();
@@ -26,6 +28,24 @@
                 arr.List.Add(Value.New(item));
             }
             vm.SetNativeReturn(0,Value.New(arr));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public static NativeCallResult ReadFile(Vm vm)
+        {
+            var platform = vm.Engine.Context.Platform;
+            var path = vm.GetArg(1).val.asString.String;
+            var res = platform.LoadFile(path);
+            vm.SetNativeReturn(0, Value.New(res));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public static NativeCallResult WriteFile(Vm vm)
+        {
+            var platform = vm.Engine.Context.Platform;
+            var path = vm.GetArg(1).val.asString.String;
+            var data = vm.GetArg(2).val.asString.String;
+            platform.SaveFile(path, data);
             return NativeCallResult.SuccessfulExpression;
         }
     }

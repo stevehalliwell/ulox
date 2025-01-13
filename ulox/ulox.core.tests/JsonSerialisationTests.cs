@@ -225,7 +225,6 @@ var res = Serialise.FromJson(jsonString);
 
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
-
         [Test]
         public void SerialiseToJson_WhenComplextDataStore_ShouldBeSuccess()
         {

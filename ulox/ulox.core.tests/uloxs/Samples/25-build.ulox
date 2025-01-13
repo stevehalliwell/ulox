@@ -6,4 +6,6 @@ var files = Platform.FindFiles("./uloxs/", "01-Hello.ulox", true);
 loop files
 {
     build item;
+    //including double build prevention
+    build item;
 }

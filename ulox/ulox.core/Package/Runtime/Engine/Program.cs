@@ -29,9 +29,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CompiledScript Compile(Script script)
         {
-            var hash = script.GetHashCode();
-
-            var existing = CompiledScripts.Find(x => x.ScriptHash == hash);
+            var existing = CompiledScripts.Find(x => x.ScriptHash == script.ScriptHash);
             if (existing != null)
                 return existing;
 

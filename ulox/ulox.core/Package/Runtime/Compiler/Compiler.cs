@@ -35,14 +35,15 @@ namespace ULox
         private readonly TypeInfo _typeInfo = new();
 
         public TypeInfo TypeInfo => _typeInfo;
+
+        private CompiledScript _compilingScript;
+
         public TokenIterator TokenIterator { get; private set; }
 
         private readonly IndexableStack<CompilerState> _compilerStates = new();
         private readonly Dictionary<TokenType, ICompilette> _declarationCompilettes = new();
         private readonly Dictionary<TokenType, ICompilette> _statementCompilettes = new();
-        private readonly List<Chunk> _allChunks = new();
         private readonly ClassTypeCompilette _classCompiler = new();
-        private readonly List<CompilerMessage> _messages = new();
 
         public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
@@ -132,8 +133,7 @@ namespace ULox
         {
             _compilerStates.Clear();
             TokenIterator = null;
-            _allChunks.Clear();
-            _messages.Clear();
+            _compilingScript = null;
         }
 
         public void ThrowCompilerException(string msg)
@@ -152,7 +152,7 @@ namespace ULox
 
         public void CompilerMessage(string msg)
         {
-            _messages.Add(new CompilerMessage(MessageFromContext(msg)));
+            _compilingScript.CompilerMessages.Add(new CompilerMessage(MessageFromContext(msg)));
         }
 
         public void AddDeclarationCompilette(params (TokenType match, Action<Compiler> action)[] compilettes)
@@ -298,6 +298,7 @@ namespace ULox
 
         public CompiledScript Compile(TokenisedScript tokenisedScript)
         {
+            _compilingScript = new CompiledScript(tokenisedScript.SourceScript.ScriptHash);
             TokenIterator = new TokenIterator(tokenisedScript, this);
             TokenIterator.Advance();
 
@@ -309,11 +310,7 @@ namespace ULox
             }
 
             var topChunk = EndCompile();
-            return new CompiledScript(
-                topChunk,
-                tokenisedScript.SourceScript.ScriptHash,
-                _allChunks.GetRange(0, _allChunks.Count),
-                _messages.GetRange(0, _messages.Count));
+            return _compilingScript;
         }
 
         public void Declaration()
@@ -464,7 +461,7 @@ namespace ULox
             EmitReturn();
             EndScope();
             var returnChunk = _compilerStates.Pop().chunk;
-            _allChunks.Add(returnChunk);
+            _compilingScript.AllChunks.Add(returnChunk);
             return returnChunk;
         }
 
@@ -578,14 +575,14 @@ namespace ULox
         public void IncreaseArity(byte argNameConstant)
         {
             CurrentChunk.ArgumentConstantIds.Add(argNameConstant);
-            if (CurrentChunk.Arity > 255)
+            if (CurrentChunk.ArgumentConstantIds.Count > 255)
                 ThrowCompilerException($"Can't have more than 255 parameters.");
         }
 
         public void IncreaseReturn(byte argNameConstant)
         {
             CurrentChunk.ReturnConstantIds.Add(argNameConstant);
-            if (CurrentChunk.ReturnCount > 255)
+            if (CurrentChunk.ReturnConstantIds.Count > 255)
                 ThrowCompilerException($"Can't have more than 255 returns.");
         }
 

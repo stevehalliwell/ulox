@@ -56,7 +56,7 @@ namespace ULox
                 //remove all the old labels
                 foreach (var labelToRemove in labelsAtLoc)
                 {
-                    chunk.RemoveLabel(labelToRemove.Key);
+                    chunk.Labels.Remove(labelToRemove.Key);
                     //redirect all the jumps to the new label
                     RedirectLabels(
                         _optimiserLabelUsageAccumulator.LabelUsage,

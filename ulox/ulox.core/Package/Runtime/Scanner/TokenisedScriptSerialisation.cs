@@ -29,6 +29,9 @@ namespace ULox
                 binaryWriter.Write(lineLength);
             }
 
+            binaryWriter.Write(tokenisedScript.SourceScript == null ? string.Empty : tokenisedScript.SourceScript.Name);
+            binaryWriter.Write(tokenisedScript.SourceScript == null ? string.Empty : tokenisedScript.SourceScript.Source);
+
             binaryWriter.Flush();
             return stream.ToArray();
         }
@@ -61,7 +64,10 @@ namespace ULox
                 lineLengths[i] = binaryReader.ReadInt32();
             }
 
-            return new TokenisedScript(tokens, lineLengths, null);
+            var scriptName = binaryReader.ReadString();
+            var scriptSource = binaryReader.ReadString();
+
+            return new TokenisedScript(tokens, lineLengths, new Script(scriptName, scriptSource));
         }
     }
 }

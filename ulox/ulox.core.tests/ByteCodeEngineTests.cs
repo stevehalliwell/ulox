@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Linq;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace ULox.Core.Tests
@@ -757,7 +758,7 @@ print(a);");
             var program = testEngine.MyEngine.Context.Program;
 
             var engine2 = new ByteCodeInterpreterTestEngine(System.Console.WriteLine);
-            engine2.MyEngine.Context.Vm.Run(program);
+            engine2.MyEngine.Context.Vm.Interpret(program.CompiledScripts.First().TopLevelChunk);
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
             Assert.AreEqual(engine2.InterpreterResult, "2", engine2.InterpreterResult);

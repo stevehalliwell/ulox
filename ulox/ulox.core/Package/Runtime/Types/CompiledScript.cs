@@ -1,24 +1,28 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace ULox
 {
     public sealed class CompiledScript
     {
-        public Chunk TopLevelChunk { get; }
-        public int ScriptHash { get; }
-        public List<Chunk> AllChunks { get; }
-        public List<CompilerMessage> CompilerMessages = new();
+        public Chunk TopLevelChunk => AllChunks.Last();
+        public readonly int ScriptHash;
+        public readonly List<Chunk> AllChunks = new();
+        public readonly List<CompilerMessage> CompilerMessages = new();
 
         public CompiledScript(
-            Chunk topLevelChunk,
             int scriptHash,
             List<Chunk> allChunks,
             List<CompilerMessage> compilerMessages)
+            : this (scriptHash)
         {
-            TopLevelChunk = topLevelChunk;
-            ScriptHash = scriptHash;
             AllChunks = allChunks;
             CompilerMessages = compilerMessages;
+        }
+
+        public CompiledScript(int scriptHash)
+        {
+            ScriptHash = scriptHash;
         }
 
         public CompiledScript DeepClone()
@@ -30,7 +34,7 @@ namespace ULox
                 newAllChunks.Add(chunk.DeepClone());
             }
 
-            return new CompiledScript(newTopLevel, ScriptHash, newAllChunks, CompilerMessages);
+            return new CompiledScript(ScriptHash, newAllChunks, CompilerMessages);
         }
     }
 }

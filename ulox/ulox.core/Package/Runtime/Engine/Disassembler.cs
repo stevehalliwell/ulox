@@ -30,7 +30,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoArgs(Chunk chunk)
         {
-            if (chunk.Arity == 0)
+            if (chunk.ArgumentConstantIds.Count == 0)
                 return;
 
             stringBuilder.AppendLine();

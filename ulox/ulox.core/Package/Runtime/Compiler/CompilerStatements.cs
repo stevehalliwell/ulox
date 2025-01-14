@@ -134,8 +134,7 @@ namespace ULox
                     var endIndex = compiler.TokenIterator.CurrentToken.StringSourceIndex;
                     var length = endIndex - startIndex;
                     var sourceStringSection = compiler.TokenIterator.GetSourceSection(startIndex, length);
-                    var sectionByte = compiler.AddCustomStringConstant(sourceStringSection.Trim());
-                    compiler.EmitPacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, sectionByte, 0, 0));
+                    compiler.AddConstantStringAndWriteOp(sourceStringSection.Trim());
                 }
                
                 compiler.AddConstantStringAndWriteOp("'");

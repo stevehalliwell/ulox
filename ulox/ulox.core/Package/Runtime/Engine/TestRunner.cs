@@ -75,7 +75,7 @@ namespace ULox
             {
             case TestOpType.CaseStart:
             {
-                var stringName = chunk.ReadConstant(b1).val.asString.String;
+                var stringName = chunk.ReadConstant(b1).val.asString.String; //always string
                 if (b2 != 0)
                 {
                     stringName += $"({ArgDescriptionString(vm, b2)})";
@@ -86,14 +86,14 @@ namespace ULox
 
             case TestOpType.CaseEnd:
             {
-                var stringName = chunk.ReadConstant(b1).val.asString.String;
+                var stringName = chunk.ReadConstant(b1).val.asString.String; //always string
                 EndTest(stringName);
             }
             break;
 
             case TestOpType.TestCase:
             {
-                var name = chunk.ReadConstant(b2).val.asString;
+                var name = chunk.ReadConstant(b2).val.asString; //always string
                 var label = b1;
                 var loc = chunk.GetLabelPosition(label);
 

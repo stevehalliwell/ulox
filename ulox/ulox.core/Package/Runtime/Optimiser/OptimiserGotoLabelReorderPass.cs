@@ -71,7 +71,7 @@ namespace ULox
                             optimiser.AddToRemove(chunk, startAt + i + removedShift);
                         }
                         //that label ws the only way to get here and we are gone now
-                        chunk.RemoveLabel(label);
+                        chunk.Labels.Remove(label);
                         return PassCompleteRequest.Repeat;
                     }
 

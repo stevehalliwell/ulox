@@ -127,6 +127,7 @@ namespace ULox
             return locationName;
         }
 
+        //TODO: the only actual uses of this are goto, goto_if, and init chains. So these don't need to be bytes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ushort GetLabelPosition(byte labelID)
         {

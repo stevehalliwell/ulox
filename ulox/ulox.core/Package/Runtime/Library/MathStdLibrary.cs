@@ -12,6 +12,7 @@ namespace ULox
             diLibInst.AddFieldsToInstance(
                 (nameof(Acos), Value.New(Acos, 1, 1)),
                 (nameof(Abs), Value.New(Abs, 1, 1)),
+                (nameof(AbsSign), Value.New(AbsSign, 2, 1)),
                 (nameof(Asin), Value.New(Asin, 1, 1)),
                 (nameof(Atan), Value.New(Atan, 1, 1)),
                 (nameof(Atan2), Value.New(Atan2, 1, 2)),
@@ -241,6 +242,16 @@ namespace ULox
             var arg1 = vm.GetArg(1);
             var result = Math.Abs(arg1.val.asDouble);
             vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult AbsSign(Vm vm)
+        {
+            var arg1 = vm.GetArg(1);
+            var sign = Math.Sign(arg1.val.asDouble);
+            var result = Math.Abs(arg1.val.asDouble);
+            vm.SetNativeReturn(0, Value.New(result));
+            vm.SetNativeReturn(1, Value.New(sign));
             return NativeCallResult.SuccessfulExpression;
         }
 

@@ -97,7 +97,7 @@ namespace ULox
         public static void Or(Compiler compiler, bool canAssign)
         {
             var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("short_or");
-            var endJump = compiler.GotoUniqueChunkLabel("afte_or");
+            var endJump = compiler.GotoUniqueChunkLabel("after_or");
 
             compiler.EmitLabel(elseJumpLabel);
             compiler.EmitPop();

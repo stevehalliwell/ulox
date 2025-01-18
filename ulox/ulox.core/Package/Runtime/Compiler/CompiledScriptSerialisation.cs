@@ -56,8 +56,15 @@ namespace ULox
                 binaryWriter.Write(chunk.Labels.Count);
                 foreach (var pair in chunk.Labels)
                 {
-                    binaryWriter.Write(pair.Key);
+                    binaryWriter.Write(pair.Key.id);
                     binaryWriter.Write(pair.Value);
+                }
+
+                binaryWriter.Write(chunk.LabelNames.Count);
+                foreach (var pair in chunk.LabelNames)
+                {
+                    binaryWriter.Write(pair.Key.id);
+                    binaryWriter.Write(pair.Value.String);
                 }
 
                 binaryWriter.Write(chunk.Instructions.Count);
@@ -148,7 +155,13 @@ namespace ULox
                 var labelCount = binaryReader.ReadInt32();
                 for (int j = 0; j < labelCount; j++)
                 {
-                    chunk.Labels.Add(binaryReader.ReadByte(), binaryReader.ReadInt32());
+                    chunk.Labels.Add(new(binaryReader.ReadUInt16()), binaryReader.ReadInt32());
+                }
+
+                var labelNameCount = binaryReader.ReadInt32();
+                for (int j = 0; j < labelNameCount; j++)
+                {
+                    chunk.LabelNames.Add(new(binaryReader.ReadUInt16()), new(binaryReader.ReadString()));
                 }
 
                 var instructionCount = binaryReader.ReadInt32();

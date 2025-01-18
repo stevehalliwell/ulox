@@ -29,13 +29,13 @@ namespace ULox
 
         public sealed class LoopState
         {
-            public byte ExitLabelID;
-            public byte ContinueLabelID;
-            public byte StartLabelID;
+            public Label ExitLabelID;
+            public Label ContinueLabelID;
+            public Label StartLabelID;
             public bool HasExit = false;
             public int ScopeDepth;
 
-            public LoopState(byte exitLabelID)
+            public LoopState(Label exitLabelID)
             {
                 ExitLabelID = exitLabelID;
             }

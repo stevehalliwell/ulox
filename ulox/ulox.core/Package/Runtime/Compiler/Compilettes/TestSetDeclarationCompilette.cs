@@ -5,7 +5,7 @@ namespace ULox
     public class TestSetDeclarationCompilette : ICompilette
     {
         private const string AnonTestSetPrefix = "Anon_TestSet_";
-        private readonly List<byte> _currentTestcaseLabels = new();
+        private readonly List<Label> _currentTestcaseLabels = new();
 
         public TokenType MatchingToken
             => TokenType.TEST_SET;
@@ -14,10 +14,10 @@ namespace ULox
 
         public void Process(Compiler compiler)
         {
-            TestDeclaration(compiler);
+            TestSetDeclaration(compiler);
         }
 
-        private void TestDeclaration(Compiler compiler)
+        private void TestSetDeclaration(Compiler compiler)
         {
             //grab name
             var testClassName = compiler.IdentifierOrChunkUnique(AnonTestSetPrefix);
@@ -40,23 +40,26 @@ namespace ULox
             if (testcaseCount > byte.MaxValue)
                 compiler.ThrowCompilerException($"{testcaseCount} has more than {byte.MaxValue} tests, this is not allowed.");
 
-            EmitTestPacket(compiler, TestOpType.TestFixtureBodyInstruction, testFixtureBodyLabel, 0);
+            //this is hard 0 on b4
+            EmitTestPacket(compiler, new(TestOpType.TestSetName, testSetNameID,0));
+            EmitTestPacket(compiler, new(TestOpType.TestSetBodyLabel, testFixtureBodyLabel));
 
             for (int i = 0; i < _currentTestcaseLabels.Count; i++)
             {
-                EmitTestPacket(compiler, TestOpType.TestCase, _currentTestcaseLabels[i], testSetNameID);
+                //todo why do we need two names in here? if we didnt we could put ushort label id in here
+                EmitTestPacket(compiler, new(TestOpType.TestCase, _currentTestcaseLabels[i]));
             }
 
             _currentTestcaseLabels.Clear();
-            EmitTestPacket(compiler, TestOpType.TestSetEnd, 0, 0);
+            EmitTestPacket(compiler, new(TestOpType.TestSetEnd, Label.Default));
 
             CurrentTestSetName = null;
         }
 
-        public static void EmitTestPacket(Compiler compiler, TestOpType opType, byte b1, byte b2)
-            => compiler.EmitPacket(new ByteCodePacket(OpCode.TEST, new ByteCodePacket.TestOpDetails(opType, b1, b2)));
+        public static void EmitTestPacket(Compiler compiler, ByteCodePacket.TestOpDetails testOpDetails)
+            => compiler.EmitPacket(new ByteCodePacket(OpCode.TEST, testOpDetails));
 
-        internal void AddTestCaseLabel(byte labelUniqueChunkLabel)
+        internal void AddTestCaseLabel(Label labelUniqueChunkLabel)
         {
             _currentTestcaseLabels.Add(labelUniqueChunkLabel);
         }

@@ -24,7 +24,7 @@ namespace ULox
             foreach (var label in labelsToCheck)
             {
                 if (!_optimiserLabelUsageAccumulator.LabelUsage.Any(x => x.label == label))
-                    chunk.Labels.Remove(label);
+                    chunk.RemoveLabel(label);
             }
 
             return PassCompleteRequest.None;

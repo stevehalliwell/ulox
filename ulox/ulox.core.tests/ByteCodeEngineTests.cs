@@ -45,6 +45,9 @@ namespace ULox.Core.Tests
         [Test]
         public void ByteCodePacket_Size_4()
         {
+            Assert.AreEqual(3, Marshal.SizeOf<ByteCodePacket.TestOpDetails>());
+            Assert.AreEqual(3, Marshal.SizeOf<ByteCodePacket.ClosureDetails>());
+            Assert.AreEqual(3, Marshal.SizeOf<ByteCodePacket.LabelDetails>());
             Assert.AreEqual(4, Marshal.SizeOf<ByteCodePacket>());
         }
 

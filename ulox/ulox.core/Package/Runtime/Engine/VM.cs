@@ -543,12 +543,12 @@ namespace ULox
                 break;
 
                 case OpCode.GOTO:
-                    _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
+                    _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.labelDetails.LabelId);
                     break;
 
                 case OpCode.GOTO_IF_FALSE:
                     if (Peek().IsFalsey())
-                        _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
+                        _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.labelDetails.LabelId);
                     break;
 
                 case OpCode.ENUM_VALUE:

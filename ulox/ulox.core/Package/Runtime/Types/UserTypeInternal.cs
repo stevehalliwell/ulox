@@ -12,7 +12,7 @@ namespace ULox
 
         public UserType UserType { get; }
         public Value Initialiser { get; protected set; } = Value.Null();
-        public List<(Chunk chunk, byte labelID)> InitChains { get; protected set; } = new List<(Chunk, byte)>();
+        public List<(Chunk chunk, Label labelID)> InitChains { get; protected set; } = new();
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private readonly List<HashedString> _fieldsNames = new();
         protected TypeInfoEntry _typeInfoEntry;
@@ -90,7 +90,7 @@ namespace ULox
             }
         }
 
-        public void AddInitChain(Chunk chunk, byte labelID)
+        public void AddInitChain(Chunk chunk, Label labelID)
         {
             // This is used internally by the vm only does not need to check for frozen
             if (InitChains.Any(x => x.chunk == chunk)) return;

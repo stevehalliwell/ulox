@@ -16,7 +16,7 @@ namespace ULox
         public override UserType UserType => UserType.Class;
 
         private bool _needsEndClosure = false;
-        private byte _initFragmentJump = byte.MaxValue;
+        private Label _initFragmentJump = Label.Default;
 
         public override bool EmitClosureCallAtEnd => _needsEndClosure;
 
@@ -44,7 +44,7 @@ namespace ULox
         protected override void Start()
         {
             _needsEndClosure = false;
-            _initFragmentJump = byte.MaxValue;
+            _initFragmentJump = Label.Default;
         }
 
         protected override void InnerBodyElement(Compiler compiler)
@@ -147,7 +147,7 @@ namespace ULox
 
                 CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Literal);
 
-                if (_initFragmentJump == byte.MaxValue)
+                if (_initFragmentJump == Label.Default)
                 {
                     //emit jump // to skip this during imperative
                     _initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");

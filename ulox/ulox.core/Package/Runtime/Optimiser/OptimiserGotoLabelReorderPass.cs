@@ -71,7 +71,7 @@ namespace ULox
                             optimiser.AddToRemove(chunk, startAt + i + removedShift);
                         }
                         //that label ws the only way to get here and we are gone now
-                        chunk.Labels.Remove(label);
+                        chunk.RemoveLabel(label);
                         return PassCompleteRequest.Repeat;
                     }
 
@@ -81,7 +81,7 @@ namespace ULox
             return retval;
         }
 
-        private static (int startAt, int end) IsolatedLabelBound(Chunk chunk, byte labelId)
+        private static (int startAt, int end) IsolatedLabelBound(Chunk chunk, Label labelId)
         {
             var startAt = chunk.GetLabelPosition(labelId);
             var endAt = -1;

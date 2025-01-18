@@ -10,7 +10,7 @@ namespace ULox
     {
         private readonly Dictionary<string, bool> _testStatus = new();
         private string _lastId;
-        private ushort _fixtureLoc;
+        private ushort _fixtureLoc;//will prob become a label
 
         public TestRunner(Func<Vm> createVM)
         {
@@ -68,14 +68,25 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void DoTestOpCode(Vm vm, Chunk chunk, ByteCodePacket.TestOpDetails testOpDetails)
         {
-            var testOpType = testOpDetails.TestOpType;
-            var b1 = testOpDetails.b1;
-            var b2 = testOpDetails.b2;
-            switch (testOpType)
+            switch (testOpDetails.TestOpType)
             {
+            case TestOpType.TestSetName:
+                CurrentTestSetName = chunk.ReadConstant(testOpDetails.b1).val.asString;
+                break;
+            case TestOpType.TestSetBodyLabel:
+                SetFixtureLoc(chunk.GetLabelPosition(testOpDetails.LabelId));
+                break;
+            case TestOpType.TestCase:
+                if (Enabled)
+                {
+                    var loc = chunk.GetLabelPosition(testOpDetails.LabelId);
+                    RunTestCase(vm, chunk, loc);
+                }
+                break;
             case TestOpType.CaseStart:
             {
-                var stringName = chunk.ReadConstant(b1).val.asString.String; //always string
+                var b2 = testOpDetails.b2;
+                var stringName = chunk.ReadConstant(testOpDetails.b1).val.asString.String; //always string
                 if (b2 != 0)
                 {
                     stringName += $"({ArgDescriptionString(vm, b2)})";
@@ -83,38 +94,16 @@ namespace ULox
                 StartTest(vm, stringName);
             }
             break;
-
             case TestOpType.CaseEnd:
             {
-                var stringName = chunk.ReadConstant(b1).val.asString.String; //always string
+                var stringName = chunk.ReadConstant(testOpDetails.b1).val.asString.String; //always string
                 EndTest(stringName);
             }
             break;
-
-            case TestOpType.TestCase:
-            {
-                var name = chunk.ReadConstant(b2).val.asString; //always string
-                var label = b1;
-                var loc = chunk.GetLabelPosition(label);
-
-                CurrentTestSetName = name;
-                if (Enabled)
-                {
-                    RunTestCase(vm, chunk, loc);
-                }
-            }
-            break;
-
             case TestOpType.TestSetEnd:
                 CurrentTestSetName = new HashedString(string.Empty);
                 SetFixtureLoc(ushort.MaxValue);
                 break;
-            case TestOpType.TestFixtureBodyInstruction:
-            {
-                var loc = chunk.GetLabelPosition(b1);
-                SetFixtureLoc(loc);
-            }
-            break;
             }
         }
 

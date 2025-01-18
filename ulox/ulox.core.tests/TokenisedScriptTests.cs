@@ -20,17 +20,20 @@ namespace ULox.Core.Tests
         }
     }
 
-    //todo CompiledScript serialisation tests
-    //todo chunk serialisation tests, the issue there is that constants can be non-trivial. They are always either number, string, or chunk
-
-    public class CompiledScriptTests
+    //todo types get added to vm as part of compile so how do we handle that
+    public class CompiledScriptTests : EngineTestBase
     {
+        public const string TestString = @"
+var a = ""hello"";
+
+print(a);
+";
+
         [Test]
-        public void DeepClone_WhenRoundTrip_ShouldMatch()
+        public void Serialise_WhenRoundTrip_ShouldMatch()
         {
-            var testString = @"var a = ""hello"";";
             var scanner = new Scanner();
-            var tokenisedScript = scanner.Scan(new Script("test", testString));
+            var tokenisedScript = scanner.Scan(new Script("test", TestString));
             var compiler = new Compiler();
             var compiledScript = compiler.Compile(tokenisedScript);
 
@@ -54,6 +57,18 @@ namespace ULox.Core.Tests
                 Assert.AreEqual(lhs.ContainingChunkChainName, rhs.ContainingChunkChainName);
             }
             CollectionAssert.AreEqual(compiledScript.CompilerMessages, deserialised.CompilerMessages);
+        }
+
+        [Test]
+        public void Run_WhenDeserialised_ShouldMatch()
+        {
+            var compiledScript = testEngine.MyEngine.Context.CompileScript(new Script("test", TestString));
+            var serialised = CompiledScriptSerialisation.Serialise(compiledScript);
+            var deserialised = CompiledScriptSerialisation.Deserialise(serialised);
+
+            testEngine.MyEngine.Context.Vm.Interpret(deserialised.TopLevelChunk);
+
+            Assert.AreEqual("hello", testEngine.InterpreterResult);
         }
     }
 

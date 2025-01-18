@@ -4,6 +4,57 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    public readonly struct Label : System.IEquatable<Label>
+    {
+        public static readonly Label Default = new(ushort.MaxValue);
+
+        public Label(ushort id)
+        {
+            this.id = id;
+        }
+        public readonly ushort id;
+
+        public override bool Equals(object obj)
+        {
+            return obj is Label label && Equals(label);
+        }
+
+        public bool Equals(Label other)
+        {
+            return id == other.id;
+        }
+
+        public override int GetHashCode()
+        {
+            return 1877310944 + id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return id.ToString();
+        }
+
+        public static bool operator ==(Label left, Label right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Label left, Label right)
+        {
+            return !(left == right);
+        }
+
+        static public (byte higher, byte lower) ToBytePair(ushort id)
+        {
+            return ((byte)(id >> 8), (byte)(id & 0xff));
+        }
+
+        static public Label FromBytePair(byte higher, byte lower)
+        {
+            return new Label((ushort)(higher << 8 | lower));
+        }
+    }
+
     //TODO split this up into pure data and operations on it
     public sealed class Chunk
     {
@@ -24,7 +75,8 @@ namespace ULox
 
         public readonly List<Value> Constants = new(ConstantStartingCapacity);
         public readonly List<RunLengthLineNumber> RunLengthLineNumbers = new();
-        public readonly Dictionary<byte, int> Labels = new();
+        public readonly Dictionary<Label, int> Labels = new();
+        public readonly Dictionary<Label, HashedString> LabelNames = new();
         public readonly List<ByteCodePacket> Instructions = new(InstructionStartingCapacity);
         public readonly List<byte> ArgumentConstantIds = new(5);
         public readonly List<byte> ReturnConstantIds = new(5);
@@ -105,7 +157,7 @@ namespace ULox
             if (existingLox != -1) return (byte)existingLox;
 
             if (Constants.Count >= byte.MaxValue)
-                throw new UloxException($"Cannot have more than '{byte.MaxValue}' constants per chunk.");
+                throw new UloxException($"Cannot have more than '{byte.MaxValue}' constants per chunk, when attempting to add '{val}' in chunk '{this}'");
 
             Constants.Add(val);
             return (byte)(Constants.Count - 1);
@@ -129,14 +181,9 @@ namespace ULox
 
         //TODO: the only actual uses of this are goto, goto_if, and init chains. So these don't need to be bytes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort GetLabelPosition(byte labelID)
+        public ushort GetLabelPosition(Label labelID)
         {
             return (ushort)(Labels[labelID] + 1);
-        }
-
-        public void AddLabel(byte id, int currentChunkInstructinCount)
-        {
-            Labels[id] = currentChunkInstructinCount;
         }
 
         public void InsertInstructionsAt(int at, IReadOnlyList<ByteCodePacket> toMove)
@@ -177,9 +224,48 @@ namespace ULox
             return $"{FullName} ({Instructions.Count} instructions)";
         }
 
-        public bool IsInternalLabel(byte key)
+        public bool IsInternalLabel(Label key)
         {
-            return Constants[key].val.asString.String.StartsWith(InternalLabelPrefix);
+            return LabelNames[key].String.StartsWith(InternalLabelPrefix);
+        }
+
+        public Label CreateLabel(HashedString hashedString)
+        {
+            return AddLabel(hashedString, -1);
+        }
+
+        public Label AddLabel(HashedString labelName, int currentChunkInstructinCount)
+        {
+            foreach (var item in LabelNames)
+            {
+                if (item.Value == labelName)
+                {
+                    return item.Key;
+                }
+            }
+            ushort nextLabelId = 0;
+            if (Labels.Count != 0)
+            {
+                var maxCurLabelId = Labels.Keys.Max(x => x.id);
+                if (maxCurLabelId >= Label.Default.id)
+                    throw new UloxException($"Cannot have more than '{Label.Default.id}' labels, when attempting to add '{labelName.String}' in chunk '{this}'");
+                nextLabelId = (ushort)(maxCurLabelId + 1);
+            }
+            var label = new Label(nextLabelId);
+            AddLabel(label, currentChunkInstructinCount);
+            LabelNames.Add(label, labelName);
+            return label;
+        }
+
+        public void AddLabel(Label id, int currentChunkInstructinCount)
+        {
+            Labels[id] = currentChunkInstructinCount;
+        }
+
+        public void RemoveLabel(Label label)
+        {
+            Labels.Remove(label);
+            LabelNames.Remove(label);
         }
 
         internal Chunk DeepClone()

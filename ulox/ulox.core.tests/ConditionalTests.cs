@@ -75,8 +75,8 @@ if(heading < 350)
     if(heading < 180)
     {
     }
-else
-{}
+    else
+    {}
     print(""inner after"");
 }
 else

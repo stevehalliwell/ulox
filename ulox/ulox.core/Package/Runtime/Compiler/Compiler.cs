@@ -45,7 +45,7 @@ namespace ULox
         private readonly Dictionary<TokenType, ICompilette> _statementCompilettes = new();
         private readonly ClassTypeCompilette _classCompiler = new();
 
-        public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
+        public int CurrentChunkInstructionCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
         public CompilerState CurrentCompilerState => _compilerStates.Peek();
 
@@ -637,49 +637,47 @@ namespace ULox
             EndScope();
         }
 
-        internal byte GotoUniqueChunkLabel(string v)
+        internal Label GotoUniqueChunkLabel(string v)
         {
-            byte labelNameID = UniqueChunkLabelStringConstant(v);
+            var labelNameID = CreateUniqueChunkLabel(v);
             EmitGoto(labelNameID);
             return labelNameID;
         }
 
-        internal void EmitGoto(byte labelNameID)
+        internal Label GotoIfUniqueChunkLabel(string v)
         {
-            EmitPacket(new ByteCodePacket(OpCode.GOTO, labelNameID, 0, 0));
-        }
-
-        internal byte GotoIfUniqueChunkLabel(string v)
-        {
-            byte labelNameID = UniqueChunkLabelStringConstant(v);
+            var labelNameID = CreateUniqueChunkLabel(v);
             EmitGotoIf(labelNameID);
             return labelNameID;
         }
 
-        internal void EmitGotoIf(byte labelNameID)
+        internal Label CreateUniqueChunkLabel(string v)
         {
-            EmitPacket(new ByteCodePacket(OpCode.GOTO_IF_FALSE, labelNameID, 0, 0));
+            return CurrentCompilerState.chunk.AddLabel(new HashedString($"{v}_{CurrentChunk.Labels.Count}"),0);
         }
 
-        internal byte UniqueChunkLabelStringConstant(string v)
+        public Label LabelUniqueChunkLabel(string v)
         {
-            var id = AddCustomStringConstant($"{v}_{CurrentChunk.Labels.Count}");
-            CurrentCompilerState.chunk.AddLabel(id, -1);
-            return id;
-        }
-
-        public byte LabelUniqueChunkLabel(string v)
-        {
-            byte labelNameID = UniqueChunkLabelStringConstant(v);
+            var labelNameID = CreateUniqueChunkLabel(v);
             EmitGoto(labelNameID);
             EmitLabel(labelNameID);
             return labelNameID;
         }
 
-        public void EmitLabel(byte id)
+        public void EmitLabel(Label id)
         {
-            CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
-            EmitPacket(new ByteCodePacket(OpCode.LABEL, id, 0, 0));
+            CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructionCount);
+            EmitPacket(new ByteCodePacket(OpCode.LABEL, new ByteCodePacket.LabelDetails(id)));
+        }
+
+        internal void EmitGoto(Label labelNameID)
+        {
+            EmitPacket(new ByteCodePacket(OpCode.GOTO, new ByteCodePacket.LabelDetails(labelNameID)));
+        }
+
+        internal void EmitGotoIf(Label labelNameID)
+        {
+            EmitPacket(new ByteCodePacket(OpCode.GOTO_IF_FALSE, new ByteCodePacket.LabelDetails(labelNameID)));
         }
 
         internal void EmitPop(byte popCount = 1)

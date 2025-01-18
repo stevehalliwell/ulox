@@ -6,7 +6,7 @@ namespace ULox.Core.Tests
     public class LimitTests : EngineTestBase
     {
         [Test]
-        public void Compile_WhenMoreThan255Constants_ShouldFail()
+        public void Compile_WhenManyConstantsAndLabels_ShouldPass()
         {
             testEngine.Run(@"
 fun GameUIUpdate(dt)
@@ -111,7 +111,7 @@ fun GameUIUpdate(dt)
 	ProfileEnd(""UI"");
 }");
 
-            StringAssert.StartsWith("Cannot have more than '255' constants per chunk", testEngine.InterpreterResult);
+            Assert.AreEqual("", testEngine.InterpreterResult);
         }
     }
 }

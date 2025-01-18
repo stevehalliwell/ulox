@@ -162,16 +162,16 @@ namespace ULox
             var matchArgName = compiler.TokenIterator.PreviousToken.Literal;
             var resolveRes = compiler.ResolveNameLookupOpCode(matchArgName);
 
-            var lastElseLabel = -1;
+            var lastElseLabel = Label.Default;
 
-            var matchEndLabelID = compiler.UniqueChunkLabelStringConstant(nameof(MatchStatement));
+            var matchEndLabelID = compiler.CreateUniqueChunkLabel(nameof(MatchStatement));
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
             do
             {
-                if (lastElseLabel != -1)
+                if (lastElseLabel != Label.Default)
                 {
-                    compiler.EmitLabel((byte)lastElseLabel);
+                    compiler.EmitLabel(lastElseLabel);
                     compiler.EmitPop();
                 }
 
@@ -185,8 +185,8 @@ namespace ULox
                 compiler.EmitGoto(matchEndLabelID);
             } while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE));
 
-            if (lastElseLabel != -1)
-                compiler.EmitLabel((byte)lastElseLabel);
+            if (lastElseLabel != Label.Default)
+                compiler.EmitLabel(lastElseLabel);
 
             compiler.AddConstantStringAndWriteOp($"Match on '{matchArgName}' did have a matching case.");
             compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
@@ -200,7 +200,7 @@ namespace ULox
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
             var labelName = compiler.TokenIterator.PreviousToken.Literal;
-            var id = compiler.AddCustomStringConstant(labelName);
+            var id = compiler.CurrentChunk.AddLabel(new HashedString(labelName), compiler.CurrentChunkInstructionCount);//TODO this is just wrong change to add custom label
             compiler.EmitGoto(id);  //we require that you cannot stumble into a label so if you request one you need to go to it immediately
             compiler.EmitLabel(id);
 
@@ -210,8 +210,7 @@ namespace ULox
         public static void GotoStatement(Compiler compiler)
         {
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'goto' statement.");
-            var labelNameID = compiler.AddStringConstant();
-
+            var labelNameID = compiler.CurrentChunk.CreateLabel(new HashedString(compiler.TokenIterator.PreviousToken.Literal));
             compiler.EmitGoto(labelNameID);
 
             compiler.ConsumeEndStatement();
@@ -240,7 +239,7 @@ namespace ULox
             compiler.BeginScope();
 
             var comp = compiler.CurrentCompilerState;
-            var loopState = new LoopState(compiler.UniqueChunkLabelStringConstant("loop_exit"));
+            var loopState = new LoopState(compiler.CreateUniqueChunkLabel("loop_exit"));
             comp.LoopStates.Push(loopState);
 
             //preloop

@@ -4,14 +4,54 @@ using System.Linq;
 
 namespace ULox
 {
-    public interface IPlatform
+    public interface IPlatformFiles
     {
         string[] FindFiles(string inDirectory, string withPattern, bool recurse);
         string LoadFile(string filePath);
         void SaveFile(string filePath, string contents);
     }
 
-    public sealed class DirectoryLimitedPlatform : IPlatform
+    public interface IPlatformIO
+    {
+        void Print(string message);
+    }
+
+    public interface IPlatform : IPlatformFiles, IPlatformIO
+    {
+    }
+
+    public sealed class GenericPlatform<T, U> : IPlatform
+        where T : IPlatformFiles
+        where U : IPlatformIO
+    {
+        public T Files { get; private set; }
+        public U IO { get; private set; }
+
+        public GenericPlatform(T files, U io)
+        {
+            Files = files;
+            IO = io;
+        }
+
+        public string[] FindFiles(string inDirectory, string withPattern, bool recurse) => Files.FindFiles(inDirectory, withPattern, recurse);
+        public string LoadFile(string filePath) => Files.LoadFile(filePath);
+        public void SaveFile(string filePath, string contents) => Files.SaveFile(filePath, contents);
+        public void Print(string message) => IO.Print(message);
+    }
+
+    public sealed class ConsolePrintPlatform : IPlatformIO
+    {
+        public void Print(string message) => Console.WriteLine(message);
+    }
+
+    public sealed class LogIOPlatform : IPlatformIO
+    {
+        public LogIOPlatform(Action<string> log) { _logAction = log; }
+        private Action<string> _logAction;
+        public void Print(string message) => _logAction(message);
+    }
+
+    public sealed class DirectoryLimitedPlatform : IPlatformFiles
     {
         private readonly DirectoryInfo _defaultDirectory;
         private readonly (string prefix, DirectoryInfo dir)[] _additionalDirLookUp;
@@ -87,7 +127,7 @@ namespace ULox
             var path = MakeRooted(partial);
             var safePath = Path.GetFullPath(path);
             if (!Directory.Exists(safePath)) return _defaultDirectory.FullName;  //enjoy the default
-            if(_additionalDirLookUp.Any(x => safePath.StartsWith(x.dir.FullName))) return safePath;  //matching valid folder
+            if (_additionalDirLookUp.Any(x => safePath.StartsWith(x.dir.FullName))) return safePath;  //matching valid folder
             if (safePath.StartsWith(_defaultDirectory.FullName) == false) return _defaultDirectory.FullName;  //enjoy the default
             return safePath;
         }

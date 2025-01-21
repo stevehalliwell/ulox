@@ -6,11 +6,8 @@ namespace ULox
     {
         private static readonly HashedString VMFieldName = new("vm");
 
-        public Func<Vm> CreateVM { get; }
-
-        public VMClass(Func<Vm> createVM) : base(new HashedString("VM"), UserType.Native)
+        public VMClass() : base(new HashedString("VM"), UserType.Native)
         {
-            CreateVM = createVM;
             this.AddMethodsToClass(
                 (ClassTypeCompilette.InitMethodName.String, Value.New(InitInstance, 1, 0)),
                 (nameof(AddGlobal), Value.New(AddGlobal, 1, 2)),
@@ -28,7 +25,9 @@ namespace ULox
         private NativeCallResult InitInstance(Vm vm)
         {
             var inst = vm.GetArg(0);
-            inst.val.asInstance.SetField(VMFieldName, Value.Object(CreateVM()));
+            var newVm = new Vm();
+            newVm.Engine = vm.Engine;
+            inst.val.asInstance.SetField(VMFieldName, Value.Object(newVm));
             vm.SetNativeReturn(0, inst);
             return NativeCallResult.SuccessfulExpression;
         }

@@ -299,7 +299,7 @@ namespace ULox
                     }
                     else
                     {
-                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
+                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs}'");
                     }
 
                     SetLocalFromB3(packet.b3, res);
@@ -320,7 +320,7 @@ namespace ULox
                     }
                     else
                     {
-                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
+                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs}'");
                     }
 
                     SetLocalFromB3(packet.b3, res);
@@ -391,7 +391,7 @@ namespace ULox
                     else
                         Push(upval.value);
                 }
-                    break;
+                break;
 
                 case OpCode.SET_UPVALUE:
                 {
@@ -401,7 +401,7 @@ namespace ULox
                     else
                         upval.value = Peek();
                 }
-                    break;
+                break;
 
                 case OpCode.DEFINE_GLOBAL:
                 {
@@ -454,7 +454,7 @@ namespace ULox
                     break;
 
                 case OpCode.BUILD:
-                    DoBuildOp();
+                    Engine.LocateAndQueue(Pop().ToString());
                     break;
 
                 case OpCode.NATIVE_CALL:
@@ -488,8 +488,21 @@ namespace ULox
                     break;
 
                 case OpCode.NATIVE_TYPE:
-                    DoNativeTypeOp(chunk, packet.NativeType);
-                    break;
+                    switch (packet.NativeType)
+                    {
+                    case NativeType.List:
+                        Push(NativeListClass.SharedNativeListClassValue);
+                        break;
+                    case NativeType.Dynamic:
+                        Push(DynamicClass.SharedDynamicClassValue);
+                        break;
+                    default:
+                        ThrowRuntimeException($"Unhanlded native type creation '{packet.NativeType}'");
+                        break;
+                    }
+
+                    PushCallFrameFromValue(Peek(0), 0);
+                break;
 
                 case OpCode.GET_INDEX:
                 {
@@ -532,7 +545,7 @@ namespace ULox
                     break;
 
                 case OpCode.TYPEOF:
-                    DoTypeOfOp();
+                    Push(Pop().GetClassType());
                     break;
 
                 case OpCode.COUNT_OF:
@@ -685,13 +698,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoTypeOfOp()
-        {
-            var target = Pop();
-            Push(target.GetClassType());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSetIndexOp(Value newValue, Value indexOrName, Value target)
         {
             if (target.type == ValueType.Instance)
@@ -733,25 +739,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNativeTypeOp(Chunk chunk, NativeType nativeTypeRequested)
-        {
-            switch (nativeTypeRequested)
-            {
-            case NativeType.List:
-                Push(NativeListClass.SharedNativeListClassValue);
-                break;
-            case NativeType.Dynamic:
-                Push(DynamicClass.SharedDynamicClassValue);
-                break;
-            default:
-                ThrowRuntimeException($"Unhanlded native type creation '{nativeTypeRequested}'");
-                break;
-            }
-
-            PushCallFrameFromValue(Peek(0), 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoValidateOp(ValidateOp validateOp)
         {
             switch (validateOp)
@@ -778,19 +765,10 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoBuildOp()
-        {
-            var givenVar = Pop();
-            var str = givenVar.ToString();
-            Engine.LocateAndQueue(str);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoClosureOp(Chunk chunk, ByteCodePacket.ClosureDetails closureDetails)
         {
             var type = closureDetails.ClosureType;
             var b1 = closureDetails.b1;
-            //var b2 = closureDetails.b2;
             if (type != ClosureType.Closure)
                 ThrowRuntimeException($"Closure type '{type}' unexpected.");
 
@@ -800,9 +778,6 @@ namespace ULox
             Push(closureVal);
 
             var closure = closureVal.val.asClosure;
-            //todo not sure these are possible to get out of sync, so why are we checking them?
-            //if (b2 != closure.upvalues.Length)
-            //    ThrowRuntimeException($"Closure upvalue count mismatch. Expected '{b2}' but got '{closure.upvalues.Length}'");
 
             for (int i = 0; i < closure.upvalues.Length; i++)
             {

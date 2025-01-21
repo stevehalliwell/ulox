@@ -268,7 +268,7 @@ namespace ULox
             LabelNames.Remove(label);
         }
 
-        internal Chunk DeepClone()
+        public Chunk DeepClone()
         {
             var newChunk = new Chunk(ChunkName, SourceName, ContainingChunkChainName);
 

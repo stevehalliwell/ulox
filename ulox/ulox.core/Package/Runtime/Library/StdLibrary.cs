@@ -14,9 +14,8 @@ namespace ULox
         }
 
         public Table GetBindings()
-        {
-            return this.GenerateBindingTable(
-                ("VM", Value.New(new VMClass(CreateVM))),
+            => this.GenerateBindingTable(
+                ("VM", Value.New(new VMClass())),
                 ("Assert", Value.New(MakeAssertInstance())),
                 ("Serialise", Value.New(SerialiseStdLibrary.MakeInstance())),
                 ("Math", Value.New(MathStdLibrary.MakeInstance())),
@@ -25,8 +24,25 @@ namespace ULox
                 ("Map", NativeMapClass.SharedNativeMapClassValue),
                 ("Dynamic", DynamicClass.SharedDynamicClassValue),
                 ("Object", Value.New(MakeObjectInstance())),
-                (nameof(str), Value.New(str, 1, 1))
-                );
+                (nameof(str), Value.New(str, 1, 1)),
+                (nameof(print), Value.New(print, 1, 1)),
+                (nameof(printh), Value.New(printh, 1, 1))
+                                        );
+
+        public NativeCallResult print(Vm vm)
+        {
+            vm.Engine.Context.Platform.Print(vm.GetArg(1).ToString());
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public NativeCallResult printh(Vm vm)
+        {
+            var val = vm.GetArg(1);
+            var valWriter = new StringBuilderValueHierarchyWriter();
+            var objWalker = new ValueHierarchyWalker(valWriter);
+            objWalker.Walk(val);
+            vm.Engine.Context.Platform.Print(valWriter.GetString());
+            return NativeCallResult.SuccessfulExpression;
         }
 
         internal InstanceInternal MakeAssertInstance()

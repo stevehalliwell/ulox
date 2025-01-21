@@ -760,7 +760,7 @@ print(a);");
 
             var program = testEngine.MyEngine.Context.Program;
 
-            var engine2 = new ByteCodeInterpreterTestEngine(System.Console.WriteLine);
+            var engine2 = new ByteCodeInterpreterTestEngine();
             engine2.MyEngine.Context.Vm.Interpret(program.CompiledScripts.First().TopLevelChunk);
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
@@ -897,6 +897,15 @@ var a = 1;
 a.val = 2;");
 
             StringAssert.StartsWith("Only classes and instances have", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Global_Missing_ShouldError()
+        {
+            testEngine.Run(@"
+print(hello);");
+
+            StringAssert.StartsWith("No global of name 'hello' could be found", testEngine.InterpreterResult);
         }
 
         [Test]

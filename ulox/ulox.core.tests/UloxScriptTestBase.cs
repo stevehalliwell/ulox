@@ -33,7 +33,7 @@ public class UloxScriptTestBase
     [SetUp]
     public virtual void Setup()
     {
-        engine = new ByteCodeInterpreterTestEngine(Console.WriteLine);
+        engine = new ByteCodeInterpreterTestEngine();
     }
 
     protected static TestCaseData[] ScriptGeneratorHelper(string subfolderName)

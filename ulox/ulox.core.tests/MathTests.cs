@@ -245,6 +245,20 @@ expect res == 6;
         }
 
         [Test]
+        public void AbsSign_WhenPositive_Should1()
+        {
+            testEngine.Run(@"
+var (v,s) = Math.AbsSign(-2);
+expect 
+    s == -1,
+    v == 2;
+;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Sign_WhenPositive_Should1()
         {
             testEngine.Run(@"

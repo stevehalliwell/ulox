@@ -13,6 +13,7 @@ namespace ULox
     public sealed class Context
     {
         private readonly List<CompiledScript> _compiledScripts = new();
+        public IReadOnlyList<CompiledScript> CompiledScripts => _compiledScripts;
 
         public Context(
             Program program,
@@ -27,8 +28,6 @@ namespace ULox
         public Program Program { get; }
         public Vm Vm { get; }
         public IPlatform Platform { get; }
-
-        public event Action<string> OnLog;
 
         public void AddLibrary(IULoxLibrary lib)
         {
@@ -49,9 +48,5 @@ namespace ULox
             compiledScriptAction?.Invoke(res);
             return res;
         }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Log(string x)
-            => OnLog?.Invoke(x);
     }
 }

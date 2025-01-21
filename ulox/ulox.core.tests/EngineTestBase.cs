@@ -9,7 +9,7 @@ namespace ULox.Core.Tests
         [SetUp]
         public virtual void Setup()
         {
-            testEngine = new ByteCodeInterpreterTestEngine(System.Console.WriteLine);
+            testEngine = new ByteCodeInterpreterTestEngine();
         }
     }
 }

@@ -21,9 +21,7 @@ namespace ULox.Demo
         public void Reset()
         {
             var scriptLocator = new ScriptLocator(null, Application.streamingAssetsPath);
-            Engine = new Engine(new Context(scriptLocator, new Program(), new Vm(), scriptLocator));
-
-            Engine.Context.AddLibrary(new PrintLibrary(x => Debug.Log(x)));
+            Engine = new Engine(new Context(new Program(), new Vm(), scriptLocator));
 
             List<GameObject> prefabs = null;
             if (prefabCollectionSO != null)
@@ -48,7 +46,7 @@ namespace ULox.Demo
                 vm.Globals.Get(name, out var globalVal);
 
                 if (globalVal.type == ValueType.Closure &&
-                    globalVal.val.asClosure.chunk.Arity == arity)
+                    globalVal.val.asClosure.chunk.ArgumentConstantIds.Count == arity)
                 {
                     return globalVal;
                 }

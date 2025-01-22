@@ -97,7 +97,6 @@ namespace ULox
     {
         TestSetName,//just sets a label location
         TestSetBodyLabel,//just sets a label location
-        //split below in two, one for run and one for set name
         TestCase,   //if enabled, runs a test case and sets the name of it,
         CaseStart,  //marks start of test inside the case set, and any args for the test
         CaseEnd,    //marks end of test inside the case set, but takes the name, could just end the current

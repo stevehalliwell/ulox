@@ -81,7 +81,7 @@ namespace ULox
             return retval;
         }
 
-        private static (int startAt, int end) IsolatedLabelBound(Chunk chunk, byte labelId)
+        private static (int startAt, int end) IsolatedLabelBound(Chunk chunk, Label labelId)
         {
             var startAt = chunk.GetLabelPosition(labelId);
             var endAt = -1;

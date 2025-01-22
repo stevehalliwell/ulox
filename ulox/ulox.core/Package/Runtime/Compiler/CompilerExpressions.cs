@@ -54,7 +54,7 @@ namespace ULox
             case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
             {
-                var number = (double)compiler.TokenIterator.PreviousToken.Literal;
+                var number = double.Parse(compiler.TokenIterator.PreviousToken.Literal);
 
                 var isInt = number == Math.Truncate(number);
 
@@ -64,14 +64,14 @@ namespace ULox
                     return;
                 }
 
-                compiler.AddConstantAndWriteOp(Value.New(number));
+                compiler.AddConstantDoubleAndWriteOp(number);
             }
             break;
 
             case TokenType.STRING:
             {
                 var str = (string)compiler.TokenIterator.PreviousToken.Literal;
-                compiler.AddConstantAndWriteOp(Value.New(str));
+                compiler.AddConstantStringAndWriteOp(str);
             }
             break;
             }
@@ -97,7 +97,7 @@ namespace ULox
         public static void Or(Compiler compiler, bool canAssign)
         {
             var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("short_or");
-            var endJump = compiler.GotoUniqueChunkLabel("afte_or");
+            var endJump = compiler.GotoUniqueChunkLabel("after_or");
 
             compiler.EmitLabel(elseJumpLabel);
             compiler.EmitPop();
@@ -130,7 +130,7 @@ namespace ULox
 
             compiler.Function(
                 globalName != -1
-                ? compiler.TokenIterator.PreviousToken.Literal as string
+                ? compiler.TokenIterator.PreviousToken.Literal
                 : "anonymous",
                  FunctionType.Function);
 
@@ -229,7 +229,7 @@ namespace ULox
         public static void FName(Compiler compiler, bool canAssign)
         {
             var fname = compiler.CurrentChunk.ChunkName;
-            compiler.AddConstantAndWriteOp(Value.New(fname));
+            compiler.AddConstantStringAndWriteOp(fname);
         }
 
         public static void BracketSubScript(Compiler compiler, bool canAssign)

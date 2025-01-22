@@ -6,11 +6,8 @@ namespace ULox
     {
         private static readonly HashedString VMFieldName = new("vm");
 
-        public Func<Vm> CreateVM { get; }
-
-        public VMClass(Func<Vm> createVM) : base(new HashedString("VM"), UserType.Native)
+        public VMClass() : base(new HashedString("VM"), UserType.Native)
         {
-            CreateVM = createVM;
             this.AddMethodsToClass(
                 (ClassTypeCompilette.InitMethodName.String, Value.New(InitInstance, 1, 0)),
                 (nameof(AddGlobal), Value.New(AddGlobal, 1, 2)),
@@ -18,15 +15,19 @@ namespace ULox
                 (nameof(Start), Value.New(Start, 1, 1)),
                 (nameof(InheritFromEnclosing), Value.New(InheritFromEnclosing, 1, 0)),
                 (nameof(CopyBackToEnclosing), Value.New(CopyBackToEnclosing, 1, 0)),
-                (nameof(Resume), Value.New(Resume, 1, 0))
-                                  );
+                (nameof(Resume), Value.New(Resume, 1, 0)),
+                (nameof(GenerateStackDump), Value.New(GenerateStackDump, 1, 0)),
+                (nameof(GenerateGlobalsDump), Value.New(GenerateGlobalsDump, 1, 0))
+                );
             AddFieldName(VMFieldName);
         }
 
         private NativeCallResult InitInstance(Vm vm)
         {
             var inst = vm.GetArg(0);
-            inst.val.asInstance.SetField(VMFieldName, Value.Object(CreateVM()));
+            var newVm = new Vm();
+            newVm.Engine = vm.Engine;
+            inst.val.asInstance.SetField(VMFieldName, Value.Object(newVm));
             vm.SetNativeReturn(0, inst);
             return NativeCallResult.SuccessfulExpression;
         }
@@ -87,6 +88,18 @@ namespace ULox
 
             inst.Fields.Get(VMFieldName, out var found);
             return found.val.asObject as Vm;
+        }
+
+        public static NativeCallResult GenerateStackDump(Vm vm)
+        {
+            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateValueStackDump(vm)));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        public static NativeCallResult GenerateGlobalsDump(Vm vm)
+        {
+            vm.SetNativeReturn(0, Value.New(VmUtil.GenerateGlobalsDump(vm)));
+            return NativeCallResult.SuccessfulExpression;
         }
     }
 }

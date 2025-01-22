@@ -653,28 +653,6 @@ print(f.Method());");
         }
 
         [Test]
-        public void Engine_Duplicate_ClassInstance_Matches()
-        {
-            testEngine.Run(@"
-class Foo
-{
-    var Bar = ""Hello World!"";
-
-    Speak(){print(this.Bar);}
-}
-
-var a = Foo();
-var b = Duplicate(a);
-print(b);
-b.Speak();
-b.Bar = ""Bye"";
-b.Speak();
-a.Speak();");
-
-            Assert.AreEqual("<inst Foo>Hello World!ByeHello World!", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void Engine_Method_Paramless()
         {
             testEngine.Run(@"
@@ -1687,6 +1665,38 @@ a.Meth();");
 var a = 7;
 var closure = a.Meth();");
             StringAssert.StartsWith("Cannot invoke 'Meth' on '7' at ", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void GetFieldViaIndex_WhenExists_ShouldMatchValue()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var a = 1;
+}
+
+var inst = Foo();
+var got = inst[""a""];
+print(got);");
+
+            Assert.AreEqual("1", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void SetFieldViaIndex_WhenExists_ShouldMatchValue()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var a = 1;
+}
+
+var inst = Foo();
+inst[""a""] = 2;
+print(inst.a);");
+
+            Assert.AreEqual("2", testEngine.InterpreterResult);
         }
     }
 }

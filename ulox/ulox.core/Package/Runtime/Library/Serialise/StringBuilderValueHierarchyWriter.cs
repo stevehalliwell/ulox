@@ -3,7 +3,7 @@ using System.Text;
 
 namespace ULox
 {
-    public class StringBuilderValueHeirarchyWriter : IValueHeirarchyWriter
+    public class StringBuilderValueHierarchyWriter : IValueHierarchyWriter
     {
         private readonly StringBuilder _sb = new();
         private int _indent = -1;

@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System;
+using NUnit.Framework;
 
 namespace ULox.Core.Tests
 {
@@ -59,7 +60,8 @@ fun Update(dt)
             var vm = testEngine.MyEngine.Context.Vm;
             vm.Globals.Get(new HashedString("Setup"), out var setupMeth);
             vm.Globals.Get(new HashedString("Update"), out var updateMeth);
-            var newEngine = Engine.CreateDefault();
+            var platform = new GenericPlatform<DirectoryLimitedPlatform, ConsolePrintPlatform>(new(new(Environment.CurrentDirectory)), new());
+            var newEngine = new Engine(new Context(new Program(), new Vm(), platform));
             var newVm = newEngine.Context.Vm;
             newVm.CopyFrom(vm);
             newVm.PushCallFrameAndRun(setupMeth, 0);

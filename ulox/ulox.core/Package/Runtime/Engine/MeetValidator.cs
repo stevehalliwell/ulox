@@ -120,13 +120,13 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static (bool meets, string msg) ChunkMatcher(Chunk lhsMatchingChunk, Chunk contractChunk)
         {
-            var contractMethArity = contractChunk.Arity;
-            var ourArity = lhsMatchingChunk.Arity;
+            var contractMethArity = contractChunk.ArgumentConstantIds.Count;
+            var ourArity = lhsMatchingChunk.ArgumentConstantIds.Count;
             if (ourArity != contractMethArity)
                 return (false, $"Expected arity '{contractMethArity}' but found '{ourArity}'.");
 
-            if (lhsMatchingChunk.ReturnCount != contractChunk.ReturnCount)
-                return (false, $"Expected return count '{contractChunk.ReturnCount}' but found '{lhsMatchingChunk.ReturnCount}'.");
+            if (lhsMatchingChunk.ReturnConstantIds.Count != contractChunk.ReturnConstantIds.Count)
+                return (false, $"Expected return count '{contractChunk.ReturnConstantIds.Count}' but found '{lhsMatchingChunk.ReturnConstantIds.Count}'.");
 
             return (true, string.Empty);
         }

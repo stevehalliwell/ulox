@@ -1,5 +1,4 @@
-﻿#define VM_STATS
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -122,9 +121,9 @@ namespace ULox
 
             _currentCallFrame = callFrame;
             _currentChunk = _currentCallFrame.Closure.chunk;
-#if VM_STATS
+
             Tracing?.ProcessPushCallFrame(callFrame);
-#endif
+
             _callFrames.Push(callFrame);
             for (int i = 0; i < callFrame.ReturnCount; i++)
             {
@@ -142,19 +141,6 @@ namespace ULox
             return Run();
         }
 
-        public InterpreterResult Run(Program program)
-        {
-            foreach (var compiled in program.CompiledScripts)
-            {
-                var res = Interpret(compiled.TopLevelChunk);
-
-                if (res != InterpreterResult.OK)
-                    return res;
-            }
-
-            return InterpreterResult.OK;
-        }
-
         public InterpreterResult Run()
         {
             while (true)
@@ -164,14 +150,12 @@ namespace ULox
                 var packet = ReadPacket(chunk);
                 var opCode = packet.OpCode;
 
-#if VM_STATS
                 Tracing?.ProcessingOpCode(chunk, opCode);
-#endif
 
                 switch (opCode)
                 {
                 case OpCode.PUSH_CONSTANT:
-                    Push(chunk.ReadConstant(packet.b1));
+                    Push(chunk.ReadConstant(packet.b1)); //could be anything
                     break;
 
                 case OpCode.RETURN:
@@ -202,7 +186,7 @@ namespace ULox
                     else if (lhs.type == ValueType.String
                          || rhs.type == ValueType.String)
                     {
-                        res = Value.New(lhs.str() + rhs.str());
+                        res = Value.New(lhs.ToString() + rhs.ToString());
                     }
                     else
                     {
@@ -315,7 +299,7 @@ namespace ULox
                     }
                     else
                     {
-                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
+                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs}'");
                     }
 
                     SetLocalFromB3(packet.b3, res);
@@ -336,7 +320,7 @@ namespace ULox
                     }
                     else
                     {
-                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs.val.asInstance.FromUserType}'");
+                        ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs}'");
                     }
 
                     SetLocalFromB3(packet.b3, res);
@@ -400,16 +384,28 @@ namespace ULox
                     break;
 
                 case OpCode.GET_UPVALUE:
-                    DoGetUpvalueOp(chunk, packet.b1);
-                    break;
+                {
+                    var upval = _currentCallFrame.Closure.upvalues[packet.b1].val.asUpvalue;
+                    if (!upval.isClosed)
+                        Push(_valueStack[upval.index]);
+                    else
+                        Push(upval.value);
+                }
+                break;
 
                 case OpCode.SET_UPVALUE:
-                    DoSetUpvalueOp(chunk, packet.b1);
-                    break;
+                {
+                    var upval = _currentCallFrame.Closure.upvalues[packet.b1].val.asUpvalue;
+                    if (!upval.isClosed)
+                        _valueStack[upval.index] = Peek();
+                    else
+                        upval.value = Peek();
+                }
+                break;
 
                 case OpCode.DEFINE_GLOBAL:
                 {
-                    var globalName = chunk.ReadConstant(packet.b1);
+                    var globalName = chunk.ReadConstant(packet.b1); //always string
                     var popped = Pop();
                     Globals.AddOrSet(globalName.val.asString, popped);
                 }
@@ -417,9 +413,8 @@ namespace ULox
 
                 case OpCode.FETCH_GLOBAL:
                 {
-                    var globalName = chunk.ReadConstant(packet.b1);
+                    var globalName = chunk.ReadConstant(packet.b1); //always string
                     var actualName = globalName.val.asString;
-
                     if (Globals.Get(actualName, out var found))
                         Push(found);
                     else
@@ -428,9 +423,16 @@ namespace ULox
                 break;
 
                 case OpCode.ASSIGN_GLOBAL:
-                    DoAssignGlobalOp(chunk, packet.b1);
-                    break;
-
+                {
+                    var globalName = chunk.ReadConstant(packet.b1); //always string
+                    var actualName = globalName.val.asString;
+                    if (!Globals.Contains(actualName))
+                    {
+                        ThrowRuntimeException($"Global var of name '{actualName}' was not found");
+                    }
+                    Globals.Set(actualName, Peek());
+                }
+                break;
                 case OpCode.CALL:
                 {
                     var argCount = packet.b1;
@@ -443,7 +445,8 @@ namespace ULox
                     break;
 
                 case OpCode.CLOSE_UPVALUE:
-                    DoCloseUpvalueOp();
+                    CloseUpvalues(_valueStack.Count - 1);
+                    _valueStack.DiscardPop();
                     break;
 
                 case OpCode.THROW:
@@ -451,7 +454,7 @@ namespace ULox
                     break;
 
                 case OpCode.BUILD:
-                    DoBuildOp();
+                    Engine.LocateAndQueue(Pop().ToString());
                     break;
 
                 case OpCode.NATIVE_CALL:
@@ -477,7 +480,7 @@ namespace ULox
                 break;
 
                 case OpCode.INVOKE:
-                    DoInvokeOp(chunk, packet);
+                    DoInvokeOp(chunk, packet.b1, packet.b2);
                     break;
 
                 case OpCode.TEST:
@@ -485,8 +488,21 @@ namespace ULox
                     break;
 
                 case OpCode.NATIVE_TYPE:
-                    DoNativeTypeOp(chunk, packet.NativeType);
-                    break;
+                    switch (packet.NativeType)
+                    {
+                    case NativeType.List:
+                        Push(NativeListClass.SharedNativeListClassValue);
+                        break;
+                    case NativeType.Dynamic:
+                        Push(DynamicClass.SharedDynamicClassValue);
+                        break;
+                    default:
+                        ThrowRuntimeException($"Unhanlded native type creation '{packet.NativeType}'");
+                        break;
+                    }
+
+                    PushCallFrameFromValue(Peek(0), 0);
+                break;
 
                 case OpCode.GET_INDEX:
                 {
@@ -529,7 +545,7 @@ namespace ULox
                     break;
 
                 case OpCode.TYPEOF:
-                    DoTypeOfOp();
+                    Push(Pop().GetClassType());
                     break;
 
                 case OpCode.COUNT_OF:
@@ -540,12 +556,12 @@ namespace ULox
                 break;
 
                 case OpCode.GOTO:
-                    _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
+                    _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.labelDetails.LabelId);
                     break;
 
                 case OpCode.GOTO_IF_FALSE:
                     if (Peek().IsFalsey())
-                        _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.b1);
+                        _currentCallFrame.InstructionPointer = chunk.GetLabelPosition(packet.labelDetails.LabelId);
                     break;
 
                 case OpCode.ENUM_VALUE:
@@ -682,13 +698,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoTypeOfOp()
-        {
-            var target = Pop();
-            Push(target.GetClassType());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoSetIndexOp(Value newValue, Value indexOrName, Value target)
         {
             if (target.type == ValueType.Instance)
@@ -730,52 +739,6 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoNativeTypeOp(Chunk chunk, NativeType nativeTypeRequested)
-        {
-            switch (nativeTypeRequested)
-            {
-            case NativeType.List:
-                Push(NativeListClass.SharedNativeListClassValue);
-                break;
-            case NativeType.Dynamic:
-                Push(DynamicClass.SharedDynamicClassValue);
-                break;
-            default:
-                ThrowRuntimeException($"Unhanlded native type creation '{nativeTypeRequested}'");
-                break;
-            }
-
-            PushCallFrameFromValue(Peek(0), 0);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoCloseUpvalueOp()
-        {
-            CloseUpvalues(_valueStack.Count - 1);
-            _valueStack.DiscardPop();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoSetUpvalueOp(Chunk chunk, byte slot)
-        {
-            var upval = _currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
-            if (!upval.isClosed)
-                _valueStack[upval.index] = Peek();
-            else
-                upval.value = Peek();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoGetUpvalueOp(Chunk chunk, byte slot)
-        {
-            var upval = _currentCallFrame.Closure.upvalues[slot].val.asUpvalue;
-            if (!upval.isClosed)
-                Push(_valueStack[upval.index]);
-            else
-                Push(upval.value);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoValidateOp(ValidateOp validateOp)
         {
             switch (validateOp)
@@ -802,45 +765,19 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoBuildOp()
-        {
-            var givenVar = Pop();
-            var str = givenVar.str();
-            Engine.LocateAndQueue(str);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoAssignGlobalOp(Chunk chunk, byte globalId)
-        {
-            var globalName = chunk.ReadConstant(globalId);
-            var actualName = globalName.val.asString;
-            if (!Globals.Contains(actualName))
-            {
-                ThrowRuntimeException($"Global var of name '{actualName}' was not found");
-            }
-            Globals.Set(actualName, Peek());
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoClosureOp(Chunk chunk, ByteCodePacket.ClosureDetails closureDetails)
         {
             var type = closureDetails.ClosureType;
             var b1 = closureDetails.b1;
-            var b2 = closureDetails.b2;
-            var closure = default(ClosureInternal);
-
             if (type != ClosureType.Closure)
                 ThrowRuntimeException($"Closure type '{type}' unexpected.");
 
             var constantIndex = b1;
-            var func = chunk.ReadConstant(constantIndex);
+            var func = chunk.ReadConstant(constantIndex); //always func
             var closureVal = Value.New(new ClosureInternal() { chunk = func.val.asChunk });
             Push(closureVal);
 
-            closure = closureVal.val.asClosure;
-
-            if (b2 != closure.upvalues.Length)
-                ThrowRuntimeException($"Closure upvalue count mismatch. Expected '{b2}' but got '{closure.upvalues.Length}'");
+            var closure = closureVal.val.asClosure;
 
             for (int i = 0; i < closure.upvalues.Length; i++)
             {
@@ -902,9 +839,8 @@ namespace ULox
                 var poppedStackStart = _currentCallFrame.StackStart;
                 //remove top
                 var popped = _callFrames.Pop();
-#if VM_STATS
+
                 Tracing?.ProcessPopCallFrame(popped);
-#endif
 
                 //update cache
                 if (_callFrames.Count > 0)
@@ -1017,10 +953,9 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void Call(ClosureInternal closureInternal, byte argCount)
         {
-            if (argCount != closureInternal.chunk.Arity)
+            if (argCount != closureInternal.chunk.ArgumentConstantIds.Count)
                 ThrowRuntimeException($"Wrong number of params given to '{closureInternal.chunk.ChunkName}'" +
-                    $", got '{argCount}' but expected '{closureInternal.chunk.Arity}'");
-
+                    $", got '{argCount}' but expected '{closureInternal.chunk.ArgumentConstantIds.Count}'");
 
             var stackStart = (byte)System.Math.Max(0, _valueStack.Count - argCount - 1);
             PushNewCallFrame(new CallFrame()
@@ -1028,7 +963,7 @@ namespace ULox
                 StackStart = stackStart,
                 Closure = closureInternal,
                 ArgCount = argCount,
-                ReturnCount = closureInternal.chunk.ReturnCount
+                ReturnCount = (byte)closureInternal.chunk.ReturnConstantIds.Count
             });
         }
 
@@ -1075,7 +1010,7 @@ namespace ULox
                 break;
             }
 
-            var name = chunk.ReadConstant(constantIndex).val.asString;
+            var name = chunk.ReadConstant(constantIndex).val.asString; //always string
 
             if (instance.Fields.Get(name, out var val))
             {
@@ -1133,7 +1068,7 @@ namespace ULox
                 break;
             }
 
-            var name = chunk.ReadConstant(constantIndex).val.asString;
+            var name = chunk.ReadConstant(constantIndex).val.asString; //always string
 
             instance.SetField(name, newVal);
 
@@ -1144,7 +1079,7 @@ namespace ULox
         private void DoGetFieldOp(Chunk chunk, byte b1)
         {
             //Error checking is for comleteness, presenly this op is only emitted after validation that the property exists
-            var argID = chunk.ReadConstant(b1);
+            var argID = chunk.ReadConstant(b1); //always string
             var target = _valueStack[_currentCallFrame.StackStart];
             if (target.type != ValueType.Instance)
                 ThrowRuntimeException($"Cannot get field on non instance type '{target.type}'");
@@ -1160,7 +1095,7 @@ namespace ULox
         private void DoSetFieldOp(Chunk chunk, byte b1)
         {
             //Error checking is for comleteness, presenly this op is only emitted after validation that the property exists
-            var argID = chunk.ReadConstant(b1);
+            var argID = chunk.ReadConstant(b1); //always string
             var target = _valueStack[_currentCallFrame.StackStart];
             if (target.type != ValueType.Instance)
                 ThrowRuntimeException($"Cannot set field on non instance type '{target.type}'");
@@ -1170,12 +1105,9 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoInvokeOp(Chunk chunk, ByteCodePacket packet)
+        private void DoInvokeOp(Chunk chunk, byte constantIndex, byte argCount)
         {
-            var constantIndex = packet.b1;
-            var argCount = packet.b2;
-
-            var methodName = chunk.ReadConstant(constantIndex).val.asString;
+            var methodName = chunk.ReadConstant(constantIndex).val.asString; //always string
 
             var receiver = Peek(argCount);
             switch (receiver.type)

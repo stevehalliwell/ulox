@@ -30,6 +30,17 @@ expect r < 1,
         }
 
         [Test]
+        public void RandRange_When12_ShouldReturn12()
+        {
+            testEngine.Run(@"
+var r = Math.RandRange(1,2);
+expect r < 2,
+    r >= 1;");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Sin_When25_ShouldReturn()
         {
             testEngine.Run(@"
@@ -234,6 +245,20 @@ expect res == 6;
         }
 
         [Test]
+        public void AbsSign_WhenPositive_Should1()
+        {
+            testEngine.Run(@"
+var (v,s) = Math.AbsSign(-2);
+expect 
+    s == -1,
+    v == 2;
+;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Sign_WhenPositive_Should1()
         {
             testEngine.Run(@"
@@ -328,6 +353,17 @@ expect res < 2;
             testEngine.Run(@"
 var res = Math.MoveTowards(1,2,3);
 expect res == 2;
+");
+
+            Assert.AreEqual("", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void MoveTowards_When1to2and0dot5_ShouldBe1dot5()
+        {
+            testEngine.Run(@"
+var res = Math.MoveTowards(1,2,0.5);
+expect res == 1.5;
 ");
 
             Assert.AreEqual("", testEngine.InterpreterResult);

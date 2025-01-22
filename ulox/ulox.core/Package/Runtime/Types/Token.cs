@@ -1,6 +1,6 @@
 ﻿namespace ULox
 {
-    public enum TokenType
+    public enum TokenType : byte
     {
         EOF,
 
@@ -106,13 +106,13 @@
     
     public readonly struct Token
     {
-        public readonly TokenType TokenType;
+        public readonly string Literal;
         public readonly int StringSourceIndex;
-        public readonly object Literal;
+        public readonly TokenType TokenType;
 
         public Token(
             TokenType tokenType,
-            object literal,
+            string literal,
             int stringSourceIndex)
         {
             TokenType = tokenType;
@@ -128,7 +128,7 @@
                 StringSourceIndex);
         }
 
-        public Token Mutate(TokenType tokenType, object literal)
+        public Token Mutate(TokenType tokenType, string literal)
         {
             return new Token(
                 tokenType,

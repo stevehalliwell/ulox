@@ -4,13 +4,65 @@ using System.Runtime.CompilerServices;
 
 namespace ULox
 {
+    public readonly struct Label : System.IEquatable<Label>
+    {
+        public static readonly Label Default = new(ushort.MaxValue);
+
+        public Label(ushort id)
+        {
+            this.id = id;
+        }
+        public readonly ushort id;
+
+        public override bool Equals(object obj)
+        {
+            return obj is Label label && Equals(label);
+        }
+
+        public bool Equals(Label other)
+        {
+            return id == other.id;
+        }
+
+        public override int GetHashCode()
+        {
+            return 1877310944 + id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return id.ToString();
+        }
+
+        public static bool operator ==(Label left, Label right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Label left, Label right)
+        {
+            return !(left == right);
+        }
+
+        static public (byte higher, byte lower) ToBytePair(ushort id)
+        {
+            return ((byte)(id >> 8), (byte)(id & 0xff));
+        }
+
+        static public Label FromBytePair(byte higher, byte lower)
+        {
+            return new Label((ushort)(higher << 8 | lower));
+        }
+    }
+
+    //TODO split this up into pure data and operations on it
     public sealed class Chunk
     {
         public const int InstructionStartingCapacity = 50;
         public const int ConstantStartingCapacity = 15;
         public const string InternalLabelPrefix = "INTERNAL_";
 
-        internal struct RunLengthLineNumber
+        public struct RunLengthLineNumber
         {
             public int startingInstruction;
             public int line;
@@ -21,25 +73,22 @@ namespace ULox
             }
         }
 
-        private readonly List<Value> _constants = new(ConstantStartingCapacity);
-        private readonly List<RunLengthLineNumber> _runLengthLineNumbers = new();
-        private readonly Dictionary<byte, int> _labelIdToInstruction = new();
-        private int instructionCount = -1;
+        public readonly List<Value> Constants = new(ConstantStartingCapacity);
+        public readonly List<RunLengthLineNumber> RunLengthLineNumbers = new();
+        public readonly Dictionary<Label, int> Labels = new();
+        public readonly Dictionary<Label, HashedString> LabelNames = new();
+        public readonly List<ByteCodePacket> Instructions = new(InstructionStartingCapacity);
+        public readonly List<byte> ArgumentConstantIds = new(5);
+        public readonly List<byte> ReturnConstantIds = new(5);
 
-        public List<ByteCodePacket> Instructions { get; } = new List<ByteCodePacket>(InstructionStartingCapacity);
-        public List<byte> ArgumentConstantIds { get; } = new List<byte>(5);
-        public List<byte> ReturnConstantIds { get; } = new List<byte>(5);
-        public IReadOnlyList<Value> Constants => _constants.AsReadOnly();
-        public IReadOnlyDictionary<byte, int> Labels => _labelIdToInstruction;
-        public string ChunkName { get; set; }
-        public string SourceName { get; }
-        public string ContainingChunkChainName { get; }
+        public readonly string ChunkName;
+        public readonly string SourceName;
+        public readonly string ContainingChunkChainName;
+        public int UpvalueCount;
+        public int instructionCount = -1;
+
         public string FullName => $"{SourceName}:{ContainingChunkChainName}.{ChunkName}";
-        public byte Arity => (byte)ArgumentConstantIds.Count;
-        public byte ReturnCount => (byte)ReturnConstantIds.Count;
-        public int UpvalueCount { get; internal set; }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public Chunk(string chunkName, string sourceName, string containingChunkChainName)
         {
             ChunkName = chunkName;
@@ -47,89 +96,33 @@ namespace ULox
             ContainingChunkChainName = containingChunkChainName;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int GetLineForInstruction(int instructionNumber)
         {
-            if (_runLengthLineNumbers.Count == 0) return -1;
+            if (RunLengthLineNumbers.Count == 0) return -1;
 
-            for (int i = 0; i < _runLengthLineNumbers.Count; i++)
+            for (int i = 0; i < RunLengthLineNumbers.Count; i++)
             {
-                if (instructionNumber < _runLengthLineNumbers[i].startingInstruction)
+                if (instructionNumber < RunLengthLineNumbers[i].startingInstruction)
                 {
                     var previous = i - 1;
                     if (previous < 0) return 0;
-                    return _runLengthLineNumbers[i - 1].line;
+                    return RunLengthLineNumbers[i - 1].line;
                 }
             }
 
-            return _runLengthLineNumbers[_runLengthLineNumbers.Count - 1].line;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte AddConstantAndWriteInstruction(Value val, int line)
-        {
-            var at = AddConstant(val);
-            WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
-            return at;
+            return RunLengthLineNumbers[RunLengthLineNumbers.Count - 1].line;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void WritePacket(ByteCodePacket packet, int line)
         {
             Instructions.Add(packet);
-            AddLine(line);
-        }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public byte AddConstant(Value val)
-        {
-            var existingLox = ExistingSimpleConstant(val);
-            if (existingLox != -1) return (byte)existingLox;
-
-            if (_constants.Count >= byte.MaxValue)
-                throw new UloxException($"Cannot have more than '{byte.MaxValue}' constants per chunk.");
-
-            _constants.Add(val);
-            return (byte)(_constants.Count - 1);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Value ReadConstant(byte index) => _constants[index];
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int ExistingSimpleConstant(Value val)
-        {
-            switch (val.type)
-            {
-            case ValueType.Double:
-                return _constants.FindIndex(x => x.type == val.type && val.val.asDouble == x.val.asDouble);
-
-            case ValueType.String:
-                return _constants.FindIndex(x => x.type == val.type && val.val.asString == x.val.asString);
-            // none of those are going to be duplicated by the compiler anyway
-            case ValueType.Bool:
-            case ValueType.Null:
-            case ValueType.Object:
-            case ValueType.Chunk:
-            case ValueType.NativeFunction:
-            case ValueType.Closure:
-            case ValueType.Upvalue:
-            case ValueType.UserType:
-            case ValueType.Instance:
-            case ValueType.BoundMethod:
-            default:
-                return -1;
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void AddLine(int line)
-        {
             instructionCount++;
 
-            if (_runLengthLineNumbers.Count == 0)
+            if (RunLengthLineNumbers.Count == 0)
             {
-                _runLengthLineNumbers.Add(new RunLengthLineNumber()
+                RunLengthLineNumbers.Add(new RunLengthLineNumber()
                 {
                     line = line,
                     startingInstruction = instructionCount
@@ -137,15 +130,40 @@ namespace ULox
                 return;
             }
 
-            if (_runLengthLineNumbers[_runLengthLineNumbers.Count - 1].line != line)
+            if (RunLengthLineNumbers[RunLengthLineNumbers.Count - 1].line != line)
             {
-                _runLengthLineNumbers.Add(new RunLengthLineNumber()
+                RunLengthLineNumbers.Add(new RunLengthLineNumber()
                 {
                     line = line,
                     startingInstruction = instructionCount
                 });
             }
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public byte AddConstant(Value val)
+        {
+            var existingLox = -1;
+
+            switch (val.type)
+            {
+            case ValueType.Double:
+                existingLox = Constants.FindIndex(x => x.type == val.type && val.val.asDouble == x.val.asDouble);
+                break;
+            case ValueType.String:
+                existingLox = Constants.FindIndex(x => x.type == val.type && val.val.asString == x.val.asString);
+                break;
+            }
+            if (existingLox != -1) return (byte)existingLox;
+
+            if (Constants.Count >= byte.MaxValue)
+                throw new UloxException($"Cannot have more than '{byte.MaxValue}' constants per chunk, when attempting to add '{val}' in chunk '{this}'");
+
+            Constants.Add(val);
+            return (byte)(Constants.Count - 1);
+        }
+
+        public Value ReadConstant(byte index) => Constants[index];
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public string GetLocationString(int line = -1)
@@ -161,20 +179,11 @@ namespace ULox
             return locationName;
         }
 
+        //TODO: the only actual uses of this are goto, goto_if, and init chains. So these don't need to be bytes
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public ushort GetLabelPosition(byte labelID)
+        public ushort GetLabelPosition(Label labelID)
         {
-            return (ushort)(_labelIdToInstruction[labelID] + 1);
-        }
-
-        public void AddLabel(byte id, int currentChunkInstructinCount)
-        {
-            _labelIdToInstruction[id] = currentChunkInstructinCount;
-        }
-
-        public void RemoveLabel(byte labelID)
-        {
-            _labelIdToInstruction.Remove(labelID);
+            return (ushort)(Labels[labelID] + 1);
         }
 
         public void InsertInstructionsAt(int at, IReadOnlyList<ByteCodePacket> toMove)
@@ -189,20 +198,20 @@ namespace ULox
 
         public void AdjustLabelIndicies(int byteChangedThreshold, int delta)
         {
-            foreach (var item in _labelIdToInstruction.ToList())
+            foreach (var item in Labels.ToList())
             {
                 if (item.Value < byteChangedThreshold) continue;
-                _labelIdToInstruction[item.Key] = item.Value + delta;
+                Labels[item.Key] = item.Value + delta;
             }
         }
 
         public void AdjustLineNumbers(int byteChangedThreshold, int delta)
         {
-            for (var i = 0; i < _runLengthLineNumbers.Count; i++)
+            for (var i = 0; i < RunLengthLineNumbers.Count; i++)
             {
-                var item = _runLengthLineNumbers[i];
+                var item = RunLengthLineNumbers[i];
                 if (item.startingInstruction < byteChangedThreshold) continue;
-                _runLengthLineNumbers[i] = new RunLengthLineNumber()
+                RunLengthLineNumbers[i] = new RunLengthLineNumber()
                 {
                     line = item.line,
                     startingInstruction = item.startingInstruction + delta
@@ -215,18 +224,57 @@ namespace ULox
             return $"{FullName} ({Instructions.Count} instructions)";
         }
 
-        public bool IsInternalLabel(byte key)
+        public bool IsInternalLabel(Label key)
         {
-            return Constants[key].val.asString.String.StartsWith(InternalLabelPrefix);
+            return LabelNames[key].String.StartsWith(InternalLabelPrefix);
         }
 
-        internal Chunk DeepClone()
+        public Label CreateLabel(HashedString hashedString)
+        {
+            return AddLabel(hashedString, -1);
+        }
+
+        public Label AddLabel(HashedString labelName, int currentChunkInstructinCount)
+        {
+            foreach (var item in LabelNames)
+            {
+                if (item.Value == labelName)
+                {
+                    return item.Key;
+                }
+            }
+            ushort nextLabelId = 0;
+            if (Labels.Count != 0)
+            {
+                var maxCurLabelId = Labels.Keys.Max(x => x.id);
+                if (maxCurLabelId >= Label.Default.id)
+                    throw new UloxException($"Cannot have more than '{Label.Default.id}' labels, when attempting to add '{labelName.String}' in chunk '{this}'");
+                nextLabelId = (ushort)(maxCurLabelId + 1);
+            }
+            var label = new Label(nextLabelId);
+            AddLabel(label, currentChunkInstructinCount);
+            LabelNames.Add(label, labelName);
+            return label;
+        }
+
+        public void AddLabel(Label id, int currentChunkInstructinCount)
+        {
+            Labels[id] = currentChunkInstructinCount;
+        }
+
+        public void RemoveLabel(Label label)
+        {
+            Labels.Remove(label);
+            LabelNames.Remove(label);
+        }
+
+        public Chunk DeepClone()
         {
             var newChunk = new Chunk(ChunkName, SourceName, ContainingChunkChainName);
 
-            foreach (var constant in _constants)
+            foreach (var constant in Constants)
             {
-                newChunk._constants.Add(constant);
+                newChunk.Constants.Add(constant);
             }
 
             foreach (var instruction in Instructions)
@@ -234,14 +282,14 @@ namespace ULox
                 newChunk.Instructions.Add(instruction);
             }
 
-            foreach (var label in _labelIdToInstruction)
+            foreach (var label in Labels)
             {
-                newChunk._labelIdToInstruction.Add(label.Key, label.Value);
+                newChunk.Labels.Add(label.Key, label.Value);
             }
 
-            foreach (var line in _runLengthLineNumbers)
+            foreach (var line in RunLengthLineNumbers)
             {
-                newChunk._runLengthLineNumbers.Add(line);
+                newChunk.RunLengthLineNumbers.Add(line);
             }
 
             foreach (var arg in ArgumentConstantIds)

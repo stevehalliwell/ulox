@@ -9,16 +9,16 @@ var inst = Foo();
 
 var dynInst = {=};
 
-print(IsFrozen(Foo));
-print(IsFrozen(inst));
-print(IsFrozen(dynInst));
+print(Object.IsFrozen(Foo));
+print(Object.IsFrozen(inst));
+print(Object.IsFrozen(dynInst));
 
 dynInst.a = 10;
 
-Freeze(dynInst);
-print(IsFrozen(dynInst));
+Object.Freeze(dynInst);
+print(Object.IsFrozen(dynInst));
 
 
-Unfreeze(inst);
+Object.Unfreeze(inst);
 inst.a = 10;
-print(IsFrozen(inst));
+print(Object.IsFrozen(inst));

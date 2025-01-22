@@ -18,12 +18,12 @@
 
         public void Process(Compiler compiler)
         {
-            var dataExpExecuteLocation = -1;
-            var dataExpJumpBackToStart = -1;
+            var dataExpExecuteLocation = Label.Default;
+            var dataExpJumpBackToStart = Label.Default;
             var testDataIndexLocalId = byte.MaxValue;
             var testDataSourceLocalId = byte.MaxValue;
-            var exitDataLoopJumpLoc = -1;
-            var preRowCountCheck = -1;
+            var exitDataLoopJumpLoc = Label.Default;
+            var preRowCountCheck = Label.Default;
 
             compiler.BeginScope();
 
@@ -66,7 +66,7 @@
             if (string.IsNullOrEmpty(testDeclName))
                 compiler.ThrowCompilerException($"Unexpected test, it can only appear within a testset, '{testcaseName}' is not contained in a testset declaration.");
 
-            var nameConstantID = compiler.CurrentChunk.AddConstant(Value.New(testcaseName));
+            var nameConstantID = compiler.AddCustomStringConstant(testcaseName);
 
             //emit jump // to skip this during imperative
             var testFragmentJump = compiler.GotoUniqueChunkLabel("testFragmentJump");
@@ -75,18 +75,18 @@
 
             compiler.BeginScope();
             var numArgs = compiler.VariableNameListDeclareOptional(null);
-            if (numArgs != 0 && dataExpExecuteLocation == -1)
+            if (numArgs != 0 && dataExpExecuteLocation == Label.Default)
                 compiler.ThrowCompilerException($"Test '{testcaseName}' has arguments but no data expression");
-            if (numArgs == 0 && dataExpExecuteLocation != -1)
+            if (numArgs == 0 && dataExpExecuteLocation != Label.Default)
                 compiler.ThrowCompilerException($"Test '{testcaseName}' has data expression but no arguments");
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before test body.");
 
             //jump back
-            if (dataExpExecuteLocation != -1)
+            if (dataExpExecuteLocation != Label.Default)
             {
-                compiler.EmitGoto((byte)dataExpExecuteLocation);
-                compiler.EmitLabel((byte)dataExpJumpBackToStart);
+                compiler.EmitGoto(dataExpExecuteLocation);
+                compiler.EmitLabel(dataExpJumpBackToStart);
 
                 //need to deal with the args
                 //get testset data row
@@ -112,16 +112,16 @@
             }
 
             // The body.
-            TestSetDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseStart, nameConstantID, numArgs);
+            TestSetDeclarationCompilette.EmitTestPacket(compiler, new(TestOpType.CaseStart, nameConstantID, numArgs));
             compiler.BlockStatement();
-            TestSetDeclarationCompilette.EmitTestPacket(compiler, TestOpType.CaseEnd, nameConstantID, 0);
+            TestSetDeclarationCompilette.EmitTestPacket(compiler, new(TestOpType.CaseEnd, nameConstantID, 0));
             compiler.EndScope();
 
-            if (dataExpExecuteLocation != -1)
+            if (dataExpExecuteLocation != Label.Default)
             {
                 IncrementLocalByOne(compiler, testDataIndexLocalId);
-                compiler.EmitGoto((byte)preRowCountCheck);
-                compiler.EmitLabel((byte)exitDataLoopJumpLoc);
+                compiler.EmitGoto(preRowCountCheck);
+                compiler.EmitLabel(exitDataLoopJumpLoc);
             }
 
             compiler.EmitReturn();
@@ -136,7 +136,7 @@
         public void TestName(Compiler compiler, bool obj)
         {
             var tcname = TestCaseName;
-            compiler.AddConstantAndWriteOp(Value.New(tcname));
+            compiler.AddConstantStringAndWriteOp(tcname);
         }
 
         public static void IsIndexLessThanArrayCount(Compiler compiler, OpCode arrayGetOp, byte arrayArgId, byte indexArgID)

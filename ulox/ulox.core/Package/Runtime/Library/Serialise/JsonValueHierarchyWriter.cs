@@ -4,12 +4,12 @@ using System.Text;
 
 namespace ULox
 {
-    public class JsonValueHeirarchyWriter : IValueHeirarchyWriter
+    public class JsonValueHierarchyWriter : IValueHierarchyWriter
     {
         private readonly JsonTextWriter _jsonWriter;
         private readonly StringBuilder _sb;
 
-        public JsonValueHeirarchyWriter()
+        public JsonValueHierarchyWriter()
         {
             _sb = new StringBuilder();
             var sw = new StringWriter(_sb);

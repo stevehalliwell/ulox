@@ -20,9 +20,9 @@ namespace ULox
                 stringBuilder.AppendLine();
                 stringBuilder.AppendLine("--labels--");
 
-                foreach (var label in chunk.Labels)
+                foreach (var label in chunk.LabelNames)
                 {
-                    stringBuilder.AppendLine($"{chunk.ReadConstant(label.Key)} = {chunk.GetLabelPosition(label.Key)}");
+                    stringBuilder.AppendLine($"{label.Value.String} = {chunk.Labels[label.Key]}");
                 }
             }
         }
@@ -30,7 +30,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void DoArgs(Chunk chunk)
         {
-            if (chunk.Arity == 0)
+            if (chunk.ArgumentConstantIds.Count == 0)
                 return;
 
             stringBuilder.AppendLine();
@@ -120,9 +120,9 @@ namespace ULox
             _prevLine = -1;
         }
 
-        private void PrintLabel(byte labelID)
+        private void PrintLabel(Label labelID)
         {
-            stringBuilder.Append($"({labelID}){CurrentChunk.Constants[labelID]}@{CurrentChunk.GetLabelPosition(labelID)}");
+            stringBuilder.Append($"({labelID}){CurrentChunk.LabelNames[labelID]}@{CurrentChunk.GetLabelPosition(labelID)}");
         }
 
         protected override void ProcessPacket(ByteCodePacket packet)
@@ -192,18 +192,18 @@ namespace ULox
 
                 switch (testOpType)
                 {
-                case TestOpType.TestFixtureBodyInstruction:
-                    PrintLabel(packet.testOpDetails.b1);
+                case TestOpType.TestSetName:
+                {
+                    var stringConstant = packet.testOpDetails.b1;
+                    stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
+                }
+                break;
+                case TestOpType.TestSetBodyLabel:
+                    PrintLabel(packet.testOpDetails.LabelId);
                     AppendSpace();
                     break;
                 case TestOpType.TestCase:
-                {
-                    var label = packet.testOpDetails.b1;
-                    var stringConstant = packet.testOpDetails.b2;
-                    stringBuilder.Append($"({stringConstant}){CurrentChunk.Constants[stringConstant]}");
-                    AppendSpace();
-                    PrintLabel(label);
-                }
+                    PrintLabel(packet.testOpDetails.LabelId);
                 break;
                 case TestOpType.CaseStart:
                 case TestOpType.CaseEnd:
@@ -226,7 +226,7 @@ namespace ULox
                 break;
             case OpCode.GOTO:
             case OpCode.GOTO_IF_FALSE:
-                PrintLabel(packet.b1);
+                PrintLabel(packet.labelDetails.LabelId);
                 break;
             case OpCode.ADD:
             case OpCode.SUBTRACT:
@@ -317,7 +317,7 @@ namespace ULox
             if (labelIds.Any())
             {
                 stringBuilder.Append(" <-- Label: ");
-                stringBuilder.AppendLine(string.Join(", ", labelIds.Select(x => CurrentChunk.Constants[x])));
+                stringBuilder.AppendLine(string.Join(", ", labelIds.Select(x => CurrentChunk.LabelNames[x])));
             }
         }
 

@@ -17,14 +17,14 @@
 
         public string CurrentTypeName => _currentTypeInfo?.Name ?? null;
         public event System.Action<Compiler> OnPostBody;
-        public byte InitChainLabelId { get; private set; }
-        public int PreviousInitFragLabelId { get; set; } = -1;
+        public Label InitChainLabelId { get; private set; } = Label.Default;
+        public Label PreviousInitFragLabelId { get; set; } = Label.Default;
         public bool IsReadOnlyAtEnd { get; set; } = false;
 
         public void CName(Compiler compiler, bool canAssign)
         {
             var cname = CurrentTypeName;
-            compiler.AddConstantAndWriteOp(Value.New(cname));
+            compiler.AddConstantStringAndWriteOp(cname);
         }
 
         public abstract UserType UserType { get; }
@@ -34,7 +34,7 @@
 
         public void Process(Compiler compiler)
         {
-            PreviousInitFragLabelId = -1;
+            PreviousInitFragLabelId = Label.Default;
 
             Start();
 
@@ -49,6 +49,8 @@
             OnPostBody = null;
 
             _currentTypeInfo = null;
+            InitChainLabelId = Label.Default;
+            PreviousInitFragLabelId = Label.Default;
         }
 
         protected abstract void Start();
@@ -63,7 +65,7 @@
             compiler.PushCompilerState($"{CurrentTypeName}", FunctionType.TypeDeclare);
             byte nameConstant = compiler.AddStringConstant();
 
-            InitChainLabelId = compiler.UniqueChunkLabelStringConstant($"{Chunk.InternalLabelPrefix}InitChain");
+            InitChainLabelId = compiler.CreateUniqueChunkLabel($"{Chunk.InternalLabelPrefix}InitChain");
             compiler.EmitPacket(new ByteCodePacket(OpCode.FETCH_GLOBAL, nameConstant));
 
             compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' before type body.");
@@ -86,10 +88,10 @@
             //return stub used by init and test chains
             var classReturnEnd = compiler.GotoUniqueChunkLabel("ClassReturnEnd");
 
-            if (PreviousInitFragLabelId != -1)
+            if (PreviousInitFragLabelId != Label.Default)
             {
-                compiler.EmitLabel((byte)PreviousInitFragLabelId);
-                _currentTypeInfo.PrependInitChain(compiler.CurrentChunk, (byte)InitChainLabelId);
+                compiler.EmitLabel(PreviousInitFragLabelId);
+                _currentTypeInfo.PrependInitChain(compiler.CurrentChunk, InitChainLabelId);
             }
 
             compiler.EmitPacket(new ByteCodePacket(OpCode.RETURN));

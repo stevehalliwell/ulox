@@ -27,23 +27,19 @@ namespace ULox
             while (_buildQueue.HasItems)
             {
                 var script = _buildQueue.Dequeue();
-                var s = Context.CompileScript(script);
-                Context.Vm.PrepareTypes(Context.Program.TypeInfo);
-                Context.Vm.Interpret(s.TopLevelChunk);
+                var s = Context.CompileScript(script, (s) =>
+                {
+                    Context.Vm.PrepareTypes(Context.Program.TypeInfo);
+                    Context.Vm.Interpret(s.TopLevelChunk);
+                });
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void LocateAndQueue(string name)
-            => _buildQueue.Enqueue(Context.ScriptLocator.Find(name));
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Engine CreateDefault()
+        public void LocateAndQueue(string filePath)
         {
-            var context = new Context(new LocalFileScriptLocator(), new Program(), new Vm(), new Platform());
-            var engine = new Engine(context);
-            engine.Context.AddLibrary(new PrintLibrary(x => context.Log(x)));
-            return engine;
+            var script = new Script(filePath, Context.Platform.LoadFile(filePath));
+            _buildQueue.Enqueue(script);
         }
     }
 }

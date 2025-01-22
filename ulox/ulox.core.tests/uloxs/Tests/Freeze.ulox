@@ -32,7 +32,7 @@ testset FreezeTests
         var result = 0;
         var inst = Foo();
 
-        Unfreeze(inst);
+        Object.Unfreeze(inst);
         inst.a = expected;
         result = inst.a;
 
@@ -43,8 +43,8 @@ testset FreezeTests
     {
         var inst = {=};
 
-        Freeze(inst);
+        Object.Freeze(inst);
 
-        expect IsFrozen(inst);
+        expect Object.IsFrozen(inst);
     }
 }

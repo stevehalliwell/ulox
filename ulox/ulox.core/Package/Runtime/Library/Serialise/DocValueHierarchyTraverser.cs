@@ -2,12 +2,12 @@
 
 namespace ULox
 {
-    public abstract class DocValueHeirarchyTraverser : IDocValueHeirarchyTraverser
+    public abstract class DocValueHierarchyTraverser : IDocValueHeirarchyTraverser
     {
         private readonly ValueObjectBuilder _valBuilderRoot;
         protected Stack<ValueObjectBuilder> _builderStack = new();
 
-        protected DocValueHeirarchyTraverser(ValueObjectBuilder valBuilder)
+        protected DocValueHierarchyTraverser(ValueObjectBuilder valBuilder)
         {
             _valBuilderRoot = valBuilder;
             _builderStack.Push(_valBuilderRoot);

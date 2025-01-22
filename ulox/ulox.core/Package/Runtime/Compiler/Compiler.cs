@@ -30,23 +30,24 @@ namespace ULox
 
     public sealed class Compiler : ICompilerDesugarContext
     {
-        private readonly IndexableStack<CompilerState> compilerStates = new();
         //temp
         public readonly PrattParserRuleSet _prattParser = new();
         private readonly TypeInfo _typeInfo = new();
 
         public TypeInfo TypeInfo => _typeInfo;
+
+        private CompiledScript _compilingScript;
+
         public TokenIterator TokenIterator { get; private set; }
 
-        private readonly Dictionary<TokenType, ICompilette> declarationCompilettes = new();
-        private readonly Dictionary<TokenType, ICompilette> statementCompilettes = new();
-        private readonly List<Chunk> _allChunks = new();
+        private readonly IndexableStack<CompilerState> _compilerStates = new();
+        private readonly Dictionary<TokenType, ICompilette> _declarationCompilettes = new();
+        private readonly Dictionary<TokenType, ICompilette> _statementCompilettes = new();
         private readonly ClassTypeCompilette _classCompiler = new();
-        private readonly List<CompilerMessage> _messages = new();
 
-        public int CurrentChunkInstructinCount => CurrentChunk.Instructions.Count;
+        public int CurrentChunkInstructionCount => CurrentChunk.Instructions.Count;
         public Chunk CurrentChunk => CurrentCompilerState.chunk;
-        public CompilerState CurrentCompilerState => compilerStates.Peek();
+        public CompilerState CurrentCompilerState => _compilerStates.Peek();
 
         public Compiler()
         {
@@ -130,10 +131,9 @@ namespace ULox
 
         public void Reset()
         {
-            compilerStates.Clear();
+            _compilerStates.Clear();
             TokenIterator = null;
-            _allChunks.Clear();
-            _messages.Clear();
+            _compilingScript = null;
         }
 
         public void ThrowCompilerException(string msg)
@@ -152,7 +152,7 @@ namespace ULox
 
         public void CompilerMessage(string msg)
         {
-            _messages.Add(new CompilerMessage(MessageFromContext(msg)));
+            _compilingScript.CompilerMessages.Add(new CompilerMessage(MessageFromContext(msg)));
         }
 
         public void AddDeclarationCompilette(params (TokenType match, Action<Compiler> action)[] compilettes)
@@ -188,10 +188,10 @@ namespace ULox
         }
 
         public void AddDeclarationCompilette(ICompilette compilette)
-            => declarationCompilettes[compilette.MatchingToken] = compilette;
+            => _declarationCompilettes[compilette.MatchingToken] = compilette;
 
         public void AddStatementCompilette(ICompilette compilette)
-            => statementCompilettes[compilette.MatchingToken] = compilette;
+            => _statementCompilettes[compilette.MatchingToken] = compilette;
 
         public void SetPrattRule(TokenType tt, IParseRule rule)
             => _prattParser.SetPrattRule(tt, rule);
@@ -214,16 +214,24 @@ namespace ULox
         public byte AddStringConstant()
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
-        public void AddConstantAndWriteOp(Value value)
+        public void AddConstantDoubleAndWriteOp(double dbl)
         {
-            var at = CurrentChunk.AddConstant(value);
+            var at = CurrentChunk.AddConstant(Value.New(dbl));  // always a double
+            //NOTE: this is slow but changing it doesn't change profiler times much.
+            var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
+            CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
+        }
+
+        public void AddConstantStringAndWriteOp(string str)
+        {
+            var at = AddCustomStringConstant(str);
             //NOTE: this is slow but changing it doesn't change profiler times much.
             var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
             CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
         }
 
         public byte AddCustomStringConstant(string str)
-            => CurrentChunk.AddConstant(Value.New(str));
+            => CurrentChunk.AddConstant(Value.New(str));    //always a string
 
         public void EndScope()
         {
@@ -288,9 +296,10 @@ namespace ULox
                 EmitPop(popCount);
         }
 
-        public CompiledScript Compile(List<Token> tokens, int[] lineLengths, Script script)
+        public CompiledScript Compile(TokenisedScript tokenisedScript)
         {
-            TokenIterator = new TokenIterator(script, tokens, lineLengths, this);
+            _compilingScript = new CompiledScript(tokenisedScript.SourceScript.ScriptHash);
+            TokenIterator = new TokenIterator(tokenisedScript, this);
             TokenIterator.Advance();
 
             PushCompilerState("root", FunctionType.Script);
@@ -301,16 +310,12 @@ namespace ULox
             }
 
             var topChunk = EndCompile();
-            return new CompiledScript(
-                topChunk,
-                script.GetHashCode(),
-                _allChunks.GetRange(0, _allChunks.Count),
-                _messages.GetRange(0, _messages.Count));
+            return _compilingScript;
         }
 
         public void Declaration()
         {
-            if (declarationCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
+            if (_declarationCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
             {
                 TokenIterator.Advance();
                 complette.Process(this);
@@ -325,7 +330,7 @@ namespace ULox
 
         public void Statement()
         {
-            if (statementCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
+            if (_statementCompilettes.TryGetValue(TokenIterator.CurrentToken.TokenType, out var complette))
             {
                 TokenIterator.Advance();
                 complette.Process(this);
@@ -377,7 +382,7 @@ namespace ULox
             {
                 chunk = new Chunk(name, TokenIterator?.SourceName, parentChainName),
             };
-            compilerStates.Push(newCompState);
+            _compilerStates.Push(newCompState);
             CurrentCompilerState.AddLocal(this, "", 0);
         }
 
@@ -447,7 +452,7 @@ namespace ULox
                 return new ResolveNameLookupResult(OpCode.GET_FIELD, OpCode.SET_FIELD, AddCustomStringConstant(name));
             }
 
-            argId = CurrentChunk.AddConstant(Value.New(name));
+            argId = AddCustomStringConstant(name);
             return new ResolveNameLookupResult(OpCode.FETCH_GLOBAL, OpCode.ASSIGN_GLOBAL, (byte)argId);
         }
 
@@ -455,8 +460,8 @@ namespace ULox
         {
             EmitReturn();
             EndScope();
-            var returnChunk = compilerStates.Pop().chunk;
-            _allChunks.Add(returnChunk);
+            var returnChunk = _compilerStates.Pop().chunk;
+            _compilingScript.AllChunks.Add(returnChunk);
             return returnChunk;
         }
 
@@ -570,14 +575,14 @@ namespace ULox
         public void IncreaseArity(byte argNameConstant)
         {
             CurrentChunk.ArgumentConstantIds.Add(argNameConstant);
-            if (CurrentChunk.Arity > 255)
+            if (CurrentChunk.ArgumentConstantIds.Count > 255)
                 ThrowCompilerException($"Can't have more than 255 parameters.");
         }
 
         public void IncreaseReturn(byte argNameConstant)
         {
             CurrentChunk.ReturnConstantIds.Add(argNameConstant);
-            if (CurrentChunk.ReturnCount > 255)
+            if (CurrentChunk.ReturnConstantIds.Count > 255)
                 ThrowCompilerException($"Can't have more than 255 returns.");
         }
 
@@ -632,49 +637,47 @@ namespace ULox
             EndScope();
         }
 
-        internal byte GotoUniqueChunkLabel(string v)
+        internal Label GotoUniqueChunkLabel(string v)
         {
-            byte labelNameID = UniqueChunkLabelStringConstant(v);
+            var labelNameID = CreateUniqueChunkLabel(v);
             EmitGoto(labelNameID);
             return labelNameID;
         }
 
-        internal void EmitGoto(byte labelNameID)
+        internal Label GotoIfUniqueChunkLabel(string v)
         {
-            EmitPacket(new ByteCodePacket(OpCode.GOTO, labelNameID, 0, 0));
-        }
-
-        internal byte GotoIfUniqueChunkLabel(string v)
-        {
-            byte labelNameID = UniqueChunkLabelStringConstant(v);
+            var labelNameID = CreateUniqueChunkLabel(v);
             EmitGotoIf(labelNameID);
             return labelNameID;
         }
 
-        internal void EmitGotoIf(byte labelNameID)
+        internal Label CreateUniqueChunkLabel(string v)
         {
-            EmitPacket(new ByteCodePacket(OpCode.GOTO_IF_FALSE, labelNameID, 0, 0));
+            return CurrentCompilerState.chunk.AddLabel(new HashedString($"{v}_{CurrentChunk.Labels.Count}"),0);
         }
 
-        internal byte UniqueChunkLabelStringConstant(string v)
+        public Label LabelUniqueChunkLabel(string v)
         {
-            var id = AddCustomStringConstant($"{v}_{CurrentChunk.Labels.Count}");
-            CurrentCompilerState.chunk.AddLabel(id, -1);
-            return id;
-        }
-
-        public byte LabelUniqueChunkLabel(string v)
-        {
-            byte labelNameID = UniqueChunkLabelStringConstant(v);
+            var labelNameID = CreateUniqueChunkLabel(v);
             EmitGoto(labelNameID);
             EmitLabel(labelNameID);
             return labelNameID;
         }
 
-        public void EmitLabel(byte id)
+        public void EmitLabel(Label id)
         {
-            CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructinCount);
-            EmitPacket(new ByteCodePacket(OpCode.LABEL, id, 0, 0));
+            CurrentCompilerState.chunk.AddLabel(id, CurrentChunkInstructionCount);
+            EmitPacket(new ByteCodePacket(OpCode.LABEL, new ByteCodePacket.LabelDetails(id)));
+        }
+
+        internal void EmitGoto(Label labelNameID)
+        {
+            EmitPacket(new ByteCodePacket(OpCode.GOTO, new ByteCodePacket.LabelDetails(labelNameID)));
+        }
+
+        internal void EmitGotoIf(Label labelNameID)
+        {
+            EmitPacket(new ByteCodePacket(OpCode.GOTO_IF_FALSE, new ByteCodePacket.LabelDetails(labelNameID)));
         }
 
         internal void EmitPop(byte popCount = 1)
@@ -685,7 +688,7 @@ namespace ULox
         internal string IdentifierOrChunkUnique(string prefix)
         {
             if (TokenIterator.Match(TokenType.IDENTIFIER))
-                return TokenIterator.PreviousToken.Literal as string;
+                return TokenIterator.PreviousToken.Literal;
 
             return ChunkUniqueName(prefix);
         }

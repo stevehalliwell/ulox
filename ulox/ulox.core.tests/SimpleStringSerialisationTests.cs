@@ -42,13 +42,23 @@ c:True
             var result = "error";
             testEngine.Run(scriptString);
             testEngine.MyEngine.Context.Vm.Globals.Get(new HashedString("obj"), out var obj);
-            var testWriter = new StringBuilderValueHeirarchyWriter();
-            var testObjWalker = new ValueHeirarchyWalker(testWriter);
+            var testWriter = new StringBuilderValueHierarchyWriter();
+            var testObjWalker = new ValueHierarchyWalker(testWriter);
 
             testObjWalker.Walk(obj);
             result = testWriter.GetString();
 
             StringAssert.Contains(Regex.Replace(expected, @"\s+", " "), Regex.Replace(result, @"\s+", " "));
+        }
+
+        [Test]
+        public void printh_WhenGivenKnownObject_ShouldReturnExpectedOutput()
+        {
+            var scriptString = UloxTestObjectString;
+            testEngine.Run(scriptString);
+            testEngine.Run("printh(obj);");
+
+            Assert.AreEqual(UloxSBExpectedResult, testEngine.InterpreterResult);
         }
     }
 }

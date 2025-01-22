@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using static ULox.ByteCodePacket;
 using static ULox.Optimiser;
 
 namespace ULox
@@ -47,11 +48,17 @@ namespace ULox
                 //add a new label that is the combined name of all the labels at this location
                 //PERF: would love to use span, but we don't have access to it...
                 var labelsAtLoc = allOptimisableLabels.Skip(i).Take(j - i + 1).ToArray();
-                var newLabelName = string.Join("_", labelsAtLoc
-                    .Select(x => chunk.Constants[x.Key].val.asString.String));
+                //perf: not a great way to do this
+                var labelsThatStillExist = labelsAtLoc
+                    .Where(x => chunk.Labels.ContainsKey(x.Key))
+                    .ToArray();
+                if (!labelsThatStillExist.Any())
+                    continue;
 
-                var newLabelId = chunk.AddConstant(Value.New(newLabelName));
-                chunk.AddLabel(newLabelId, labelValue);
+                var newLabelName = string.Join("_", labelsAtLoc
+                    .Select(x => chunk.LabelNames[x.Key].String));
+
+                var newLabelId = chunk.AddLabel(new HashedString(newLabelName), labelValue);
 
                 //remove all the old labels
                 foreach (var labelToRemove in labelsAtLoc)
@@ -70,10 +77,10 @@ namespace ULox
         }
 
         public static void RedirectLabels(
-            IReadOnlyList<(int from, byte label, OpCode opCode, bool isWeaved)> labelUsage,
+            IReadOnlyList<(int from, Label label, OpCode opCode, bool isWeaved)> labelUsage,
             Chunk chunk,
-            byte from,
-            byte to)
+            Label from,
+            Label to)
         {
             var labelUsageToRedirect = labelUsage.Where(x => x.label == from);
             foreach (var (fromInst, label, opCode, isWeaved) in labelUsageToRedirect)
@@ -82,18 +89,17 @@ namespace ULox
                 switch (packet.OpCode)
                 {
                 case OpCode.GOTO:
-                    chunk.Instructions[fromInst] = new ByteCodePacket(OpCode.GOTO, to);
+                    chunk.Instructions[fromInst] = new ByteCodePacket(OpCode.GOTO, new LabelDetails(to));
                     break;
                 case OpCode.GOTO_IF_FALSE:
-                    chunk.Instructions[fromInst] = new ByteCodePacket(OpCode.GOTO_IF_FALSE, to);
+                    chunk.Instructions[fromInst] = new ByteCodePacket(OpCode.GOTO_IF_FALSE, new LabelDetails(to));
                     break;
                 case OpCode.TEST:
-                    if (packet.testOpDetails.TestOpType == TestOpType.TestFixtureBodyInstruction
+                    if (packet.testOpDetails.TestOpType == TestOpType.TestSetBodyLabel
                         || packet.testOpDetails.TestOpType == TestOpType.TestCase)
                     {
                         var type = packet.testOpDetails.TestOpType;
-                        var b2 = packet.testOpDetails.b2;
-                        chunk.Instructions[fromInst] = new ByteCodePacket(OpCode.TEST, new ByteCodePacket.TestOpDetails(type, to, b2));
+                        chunk.Instructions[fromInst] = new ByteCodePacket(OpCode.TEST, new ByteCodePacket.TestOpDetails(type, label));
                     }
                     break;
                 }

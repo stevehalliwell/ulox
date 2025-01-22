@@ -7,10 +7,10 @@ namespace ULox
     {
         public Scanner Scanner { get; } = new();
         public Compiler Compiler { get; } = new();
-        public Optimiser Optimiser { get; } = new Optimiser();
+        public Optimiser Optimiser { get; } = new();
         public TypeInfo TypeInfo => Compiler.TypeInfo;
 
-        public List<CompiledScript> CompiledScripts { get; } = new List<CompiledScript>();
+        public List<CompiledScript> CompiledScripts { get; } = new ();
 
         public string Disassembly
         {
@@ -29,9 +29,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CompiledScript Compile(Script script)
         {
-            var hash = script.GetHashCode();
-
-            var existing = CompiledScripts.Find(x => x.ScriptHash == hash);
+            var existing = CompiledScripts.Find(x => x.ScriptHash == script.ScriptHash);
             if (existing != null)
                 return existing;
 
@@ -39,8 +37,8 @@ namespace ULox
             Compiler.Reset();
             Optimiser.Reset();
             
-            var tokens = Scanner.Scan(script);
-            var compiled = Compiler.Compile(tokens, Scanner.GetLineLengths(), script);
+            var tokenisedScript = Scanner.Scan(script);
+            var compiled = Compiler.Compile(tokenisedScript);
             
             CompiledScripts.Add(compiled);
             Optimiser.Optimise(compiled);

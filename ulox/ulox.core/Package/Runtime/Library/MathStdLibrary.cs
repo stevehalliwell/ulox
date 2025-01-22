@@ -6,12 +6,13 @@ namespace ULox
     {
         private static readonly Random _random = new();
 
-        internal static InstanceInternal MakeMathInstance()
+        internal static InstanceInternal MakeInstance()
         {
             var diLibInst = new InstanceInternal();
             diLibInst.AddFieldsToInstance(
                 (nameof(Acos), Value.New(Acos, 1, 1)),
                 (nameof(Abs), Value.New(Abs, 1, 1)),
+                (nameof(AbsSign), Value.New(AbsSign, 2, 1)),
                 (nameof(Asin), Value.New(Asin, 1, 1)),
                 (nameof(Atan), Value.New(Atan, 1, 1)),
                 (nameof(Atan2), Value.New(Atan2, 1, 2)),
@@ -25,6 +26,7 @@ namespace ULox
                 (nameof(Pow), Value.New(Pow, 1, 2)),
                 (nameof(Rad2Deg), Value.New(Rad2Deg, 1, 1)),
                 (nameof(Rand), Value.New(Rand, 1, 0)),
+                (nameof(RandRange), Value.New(RandRange, 1, 2)),
                 (nameof(RandUnitCircle), Value.New(RandUnitCircle, 2, 0)),
                 (nameof(Round), Value.New(Round, 1, 1)),
                 (nameof(Floor), Value.New(Floor, 1, 1)),
@@ -51,6 +53,16 @@ namespace ULox
         private static NativeCallResult Rand(Vm vm)
         {
             var result = _random.NextDouble();
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult RandRange(Vm vm)
+        {
+            var result = _random.NextDouble();
+            var min = vm.GetArg(1).val.asDouble;
+            var max = vm.GetArg(2).val.asDouble;
+            result = min + result * (max - min);
             vm.SetNativeReturn(0, Value.New(result));
             return NativeCallResult.SuccessfulExpression;
         }
@@ -230,6 +242,16 @@ namespace ULox
             var arg1 = vm.GetArg(1);
             var result = Math.Abs(arg1.val.asDouble);
             vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult AbsSign(Vm vm)
+        {
+            var arg1 = vm.GetArg(1);
+            var sign = Math.Sign(arg1.val.asDouble);
+            var result = Math.Abs(arg1.val.asDouble);
+            vm.SetNativeReturn(0, Value.New(result));
+            vm.SetNativeReturn(1, Value.New(sign));
             return NativeCallResult.SuccessfulExpression;
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Linq;
+using System.Runtime.InteropServices;
 using NUnit.Framework;
 
 namespace ULox.Core.Tests
@@ -10,11 +11,14 @@ namespace ULox.Core.Tests
         {
             var chunk = new Chunk("main", "native", "");
 
-            chunk.AddConstantAndWriteInstruction(Value.New(0.5), 1);
-            chunk.AddConstantAndWriteInstruction(Value.New(1), 1);
+            var at = chunk.AddConstant(Value.New(0.5));
+            chunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), 1);
+            at = chunk.AddConstant(Value.New(1));
+            chunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.NEGATE), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.ADD), 1);
-            chunk.AddConstantAndWriteInstruction(Value.New(2), 1);
+            at = chunk.AddConstant(Value.New(2));
+            chunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.MULTIPLY), 1);
             chunk.WritePacket(new ByteCodePacket(OpCode.RETURN), 2);
 
@@ -41,6 +45,9 @@ namespace ULox.Core.Tests
         [Test]
         public void ByteCodePacket_Size_4()
         {
+            Assert.AreEqual(3, Marshal.SizeOf<ByteCodePacket.TestOpDetails>());
+            Assert.AreEqual(3, Marshal.SizeOf<ByteCodePacket.ClosureDetails>());
+            Assert.AreEqual(3, Marshal.SizeOf<ByteCodePacket.LabelDetails>());
             Assert.AreEqual(4, Marshal.SizeOf<ByteCodePacket>());
         }
 
@@ -137,17 +144,20 @@ print (myOtherVar);");
         [Test]
         public void Engine_Cycle_Global_Var_DoubleRun()
         {
-            var script = @"var myVar = 10;
+            testEngine.Run(@"var myVar = 10;
 var myNull;
 print (myVar);
 print (myNull);
 
 var myOtherVar = myVar * 2;
 
-print (myOtherVar);";
-
-            testEngine.Run(script);
-            testEngine.Run(script);
+print (myOtherVar);");
+            testEngine.Run(@"var myVar = 10;
+var myNull;
+print (myVar);
+print (myNull);
+var myOtherVar = myVar * 2;
+print (myOtherVar);");
 
             Assert.AreEqual("10null2010null20", testEngine.InterpreterResult);
         }
@@ -582,6 +592,7 @@ c2();");
         [Test]
         public void Engine_Closure_Counter_NoPrint()
         {
+            //This test actually hits the closure upvalue packet
             testEngine.Run(@"
 fun makeCounter()
 {
@@ -749,8 +760,8 @@ print(a);");
 
             var program = testEngine.MyEngine.Context.Program;
 
-            var engine2 = new ByteCodeInterpreterTestEngine(System.Console.WriteLine);
-            engine2.MyEngine.Context.Vm.Run(program);
+            var engine2 = new ByteCodeInterpreterTestEngine();
+            engine2.MyEngine.Context.Vm.Interpret(program.CompiledScripts.First().TopLevelChunk);
 
             Assert.AreEqual("2", testEngine.InterpreterResult);
             Assert.AreEqual(engine2.InterpreterResult, "2", engine2.InterpreterResult);
@@ -761,7 +772,7 @@ print(a);");
         {
             testEngine.Run(@"
 var a = 1;
-var b = Duplicate(a);
+var b = Object.Duplicate(a);
 print(b);
 b = 2;
 print(b);
@@ -775,7 +786,7 @@ print(a);");
         {
             testEngine.Run(@"
 var a = ""Foo"";
-var b = Duplicate(a);
+var b = Object.Duplicate(a);
 print(b);
 b = 2;
 print(b);
@@ -886,6 +897,15 @@ var a = 1;
 a.val = 2;");
 
             StringAssert.StartsWith("Only classes and instances have", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Global_Missing_ShouldError()
+        {
+            testEngine.Run(@"
+print(hello);");
+
+            StringAssert.StartsWith("No global of name 'hello' could be found", testEngine.InterpreterResult);
         }
 
         [Test]

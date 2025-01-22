@@ -95,11 +95,12 @@ namespace ULox
 
     public enum TestOpType : byte
     {
-        TestFixtureBodyInstruction,
-        TestCase,
-        CaseStart,
-        CaseEnd,
-        TestSetEnd,
+        TestSetName,//just sets a label location
+        TestSetBodyLabel,//just sets a label location
+        TestCase,   //if enabled, runs a test case and sets the name of it,
+        CaseStart,  //marks start of test inside the case set, and any args for the test
+        CaseEnd,    //marks end of test inside the case set, but takes the name, could just end the current
+        TestSetEnd, //clears internals
     }
 
     public enum ValidateOp : byte
@@ -115,6 +116,7 @@ namespace ULox
         public readonly struct TestOpDetails
         {
             public TestOpType TestOpType => (TestOpType)_testOp;
+            public Label LabelId => Label.FromBytePair(b1, b2);
 
             [FieldOffset(0)]
             public readonly byte _testOp;
@@ -122,6 +124,12 @@ namespace ULox
             public readonly byte b1;
             [FieldOffset(2)]
             public readonly byte b2;
+
+            public TestOpDetails(TestOpType testOpType, Label label) : this()
+            {
+                _testOp = (byte)testOpType;
+                (b1,b2) = Label.ToBytePair(label.id);
+            }
 
             public TestOpDetails(TestOpType testOpType, byte b1, byte b2) : this()
             {
@@ -139,9 +147,9 @@ namespace ULox
             [FieldOffset(0)]
             public readonly byte _type;
             [FieldOffset(1)]
-            public readonly byte b1;
+            public readonly byte b1;    //if we split closure and upvalue info, we can keep a bigger constant index
             [FieldOffset(2)]
-            public readonly byte b2;
+            public readonly byte b2;    //used for upvalue not closure
 
             public ClosureDetails(ClosureType testOpType, byte b1, byte b2) : this()
             {
@@ -151,11 +159,31 @@ namespace ULox
             }
         }
 
+        [StructLayout(LayoutKind.Explicit)]
+        public readonly struct LabelDetails
+        {
+            [FieldOffset(0)]
+            public readonly byte labelId_higher;
+            [FieldOffset(1)]
+            public readonly byte labelId_lower;
+            [FieldOffset(2)]
+            public readonly byte _;
+
+            public Label LabelId => Label.FromBytePair(labelId_higher, labelId_lower);
+
+            public LabelDetails(Label labelId) : this()
+            {
+                (labelId_higher, labelId_lower) = Label.ToBytePair(labelId.id);
+            }
+        }
+
         public OpCode OpCode => (OpCode)_opCode;
         public NativeType NativeType => (NativeType)b1;
         public ValidateOp ValidateOp => (ValidateOp)b1;
         public bool BoolValue => b1 != 0;
 
+        [FieldOffset(0)]
+        public readonly uint _data;
         [FieldOffset(0)]
         public readonly byte _opCode;
         [FieldOffset(1)]
@@ -166,13 +194,13 @@ namespace ULox
         public readonly byte b3;
 
         [FieldOffset(1)]
-        public readonly ushort u1;
-
-        [FieldOffset(1)]
         public readonly TestOpDetails testOpDetails;
 
         [FieldOffset(1)]
         public readonly ClosureDetails closureDetails;
+
+        [FieldOffset(1)]
+        public readonly LabelDetails labelDetails;
         
         public ByteCodePacket(OpCode opCode)
             : this(
@@ -229,9 +257,24 @@ namespace ULox
             this.closureDetails = closureDetails;
         }
 
+        public ByteCodePacket(OpCode opCode, LabelDetails labelDetails) : this(opCode)
+        {
+            this.labelDetails = labelDetails;
+        }
+
         public override string ToString()
         {
             return $"{OpCode} {b1} {b2} {b3}";
+        }
+
+        private ByteCodePacket(uint data) : this()
+        {
+            _data = data;
+        }
+
+        internal static ByteCodePacket FromUint(uint v)
+        {
+            return new ByteCodePacket(v);
         }
     }
 }

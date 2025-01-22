@@ -70,10 +70,6 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsNull() => type == ValueType.Null;
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public string str() => ToString();
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public override string ToString()
         {
             switch (type)
@@ -92,9 +88,7 @@ namespace ULox
 
             case ValueType.Chunk:
                 var chunk = val.asChunk;
-                if (chunk == null)
-                    return "<Null Chunk in Value.ToString. Illegal.>";
-                var name = chunk.ChunkName;
+                var name = chunk.ChunkName ?? "null";
                 return "<fn " + name + "> ";
 
             case ValueType.NativeFunction:
@@ -328,7 +322,7 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Value UpdateFrom(Value lhs, Value rhs, Vm vm)
         {
-            if (rhs.type != lhs.type)
+            if (!lhs.IsNull() && rhs.type != lhs.type)
             {
                 return lhs;
             }

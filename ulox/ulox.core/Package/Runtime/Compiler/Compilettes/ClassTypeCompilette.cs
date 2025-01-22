@@ -16,7 +16,7 @@ namespace ULox
         public override UserType UserType => UserType.Class;
 
         private bool _needsEndClosure = false;
-        private byte _initFragmentJump = byte.MaxValue;
+        private Label _initFragmentJump = Label.Default;
 
         public override bool EmitClosureCallAtEnd => _needsEndClosure;
 
@@ -44,7 +44,7 @@ namespace ULox
         protected override void Start()
         {
             _needsEndClosure = false;
-            _initFragmentJump = byte.MaxValue;
+            _initFragmentJump = Label.Default;
         }
 
         protected override void InnerBodyElement(Compiler compiler)
@@ -74,7 +74,7 @@ namespace ULox
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect method name");
 
             var _ = compiler.AddStringConstant();
-            var methodName = compiler.TokenIterator.PreviousToken.Literal as string;
+            var methodName = compiler.TokenIterator.PreviousToken.Literal;
 
             compiler.PushCompilerState(methodName, functionType);
 
@@ -110,7 +110,7 @@ namespace ULox
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                 byte nameConstant = compiler.AddStringConstant();
-                CurrentTypeInfoEntry.AddStaticField(compiler.TokenIterator.PreviousToken.Literal as string);
+                CurrentTypeInfoEntry.AddStaticField(compiler.TokenIterator.PreviousToken.Literal);
 
                 compiler.EmitPacket(new ByteCodePacket(OpCode.GET_LOCAL, 1));//get class or inst this on the stack
 
@@ -145,9 +145,9 @@ namespace ULox
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect var name");
                 byte nameConstant = compiler.AddStringConstant();
 
-                CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Literal as string);
+                CurrentTypeInfoEntry.AddField(compiler.TokenIterator.PreviousToken.Literal);
 
-                if (_initFragmentJump == byte.MaxValue)
+                if (_initFragmentJump == Label.Default)
                 {
                     //emit jump // to skip this during imperative
                     _initFragmentJump = compiler.GotoUniqueChunkLabel("SkipInitDuringImperative");
@@ -187,7 +187,7 @@ namespace ULox
             do
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
-                var targetname = compiler.TokenIterator.PreviousToken.Literal as string;
+                var targetname = compiler.TokenIterator.PreviousToken.Literal;
                 var targetTypeInfoEntry = compiler.TypeInfo.GetUserType(targetname);
                 CurrentTypeInfoEntry.AddMixin(targetTypeInfoEntry);
                 compiler.TokenIterator.Match(TokenType.COMMA);
@@ -202,7 +202,7 @@ namespace ULox
             do
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after signs into class.");
-                contractNames.Add(compiler.TokenIterator.PreviousToken.Literal as string);
+                contractNames.Add(compiler.TokenIterator.PreviousToken.Literal);
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (!compiler.TokenIterator.Check(TokenType.END_STATEMENT));
 

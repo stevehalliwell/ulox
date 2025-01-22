@@ -14,7 +14,7 @@ namespace ULox
         public void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context)
         {
             var currentToken = tokens[currentTokenIndex];
-            var literalString = currentToken.Literal as string;
+            var literalString = currentToken.Literal;
             var newStr = literalString;
             var locStart = InterpolationStart(literalString, 0);
             var interpTokens = default(List<Token>);
@@ -26,7 +26,8 @@ namespace ULox
                 var interpStr = literalString.Substring(locStart + 1, locEnd - locStart - 1);
                 var postInterpStr = literalString.Substring(locEnd + 1);
                 var scanner = new Scanner();
-                interpTokens = scanner.Scan(new Script("_interp", interpStr));
+                var tokenisedScript = scanner.Scan(new Script("_interp", interpStr));
+                interpTokens = tokenisedScript.Tokens;
                 interpTokens.RemoveAt(interpTokens.Count - 1);
                 interpTokens.InsertRange(0, new[] {
                     currentToken.MutateType(TokenType.PLUS),

@@ -2,7 +2,7 @@
 
 namespace ULox.Core.Tests
 {
-    public class FreezeTests : EngineTestBase
+    public class ObjectLibraryTests : EngineTestBase
     {
         [Test]
         public void Instance_WhenUnfrozen_ShouldActAsDynamic()
@@ -11,7 +11,7 @@ namespace ULox.Core.Tests
 class Pair {}
 
 var pair = Pair();
-Unfreeze(pair);
+Object.Unfreeze(pair);
 pair.first = 1;
 pair.second = 2;
 print( pair.first + pair.second);");
@@ -24,7 +24,7 @@ print( pair.first + pair.second);");
         {
             testEngine.Run(@"
 var foo = 7;
-Freeze(foo);");
+Object.Freeze(foo);");
 
             StringAssert.StartsWith("Freeze attempted on unsupported type 'Double'", testEngine.InterpreterResult);
         }
@@ -34,12 +34,34 @@ Freeze(foo);");
         {
             testEngine.Run(@"
 var foo = {=};
-print(IsFrozen(foo));
-Freeze(foo);
-print(IsFrozen(foo));
+print(Object.IsFrozen(foo));
+Object.Freeze(foo);
+print(Object.IsFrozen(foo));
 ");
 
             Assert.AreEqual("FalseTrue", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Engine_Duplicate_ClassInstance_Matches()
+        {
+            testEngine.Run(@"
+class Foo
+{
+    var Bar = ""Hello World!"";
+
+    Speak(){print(this.Bar);}
+}
+
+var a = Foo();
+var b = Object.Duplicate(a);
+print(b);
+b.Speak();
+b.Bar = ""Bye"";
+b.Speak();
+a.Speak();");
+
+            Assert.AreEqual("<inst Foo>Hello World!ByeHello World!", testEngine.InterpreterResult);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ULox
 {
@@ -27,25 +26,19 @@ namespace ULox
     {
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
-        public string SourceName => _script.Name;
+        public string SourceName => _tokeisedScript.SourceScript.Name;
 
-        private readonly Script _script;
-        private readonly List<Token> _tokens;
-        private readonly int[] _lineLengths;
+        private readonly TokenisedScript _tokeisedScript;
         private readonly ICompilerDesugarContext _compilerDesugarContext;
         private readonly List<IDesugarStep> _desugarSteps = new();
 
         private int _currentTokenIndex = -1;
 
         public TokenIterator(
-            Script script,
-            List<Token> tokens,
-            int[] lineLengths,
+            TokenisedScript tokenisedScript,
             ICompilerDesugarContext compilerDesugarContext)
         {
-            _script = script;
-            _tokens = tokens;
-            _lineLengths = lineLengths;
+            _tokeisedScript = tokenisedScript;
             _compilerDesugarContext = compilerDesugarContext;
 
             _desugarSteps.Add(new StringInterpDesugar());
@@ -61,13 +54,13 @@ namespace ULox
 
         public string GetSourceSection(int start, int len)
         {
-            return _script.Source.Substring(start, len);
+            return _tokeisedScript.SourceScript.Source.Substring(start, len);
         }
 
         public void Advance()
         {
             PreviousToken = CurrentToken;
-            CurrentToken = _tokens[++_currentTokenIndex];
+            CurrentToken = _tokeisedScript.Tokens[++_currentTokenIndex];
 
             foreach (var desugarStep in _desugarSteps)
             {
@@ -75,8 +68,8 @@ namespace ULox
                 switch (request)
                 {
                 case DesugarStepRequest.Replace:
-                    desugarStep.ProcessDesugar(_currentTokenIndex, _tokens, _compilerDesugarContext);
-                    CurrentToken = _tokens[_currentTokenIndex];
+                    desugarStep.ProcessDesugar(_currentTokenIndex, _tokeisedScript.Tokens, _compilerDesugarContext);
+                    CurrentToken = _tokeisedScript.Tokens[_currentTokenIndex];
                     break;
                 case DesugarStepRequest.None:
                     break;
@@ -128,21 +121,22 @@ namespace ULox
         public TokenType PeekType(int v)
         {
             var index = _currentTokenIndex + v;
-            if (index < 0 || index >= _tokens.Count)
+            if (index < 0 || index >= _tokeisedScript.Tokens.Count)
                 return TokenType.EOF;
-            return _tokens[index].TokenType;
+            return _tokeisedScript.Tokens[index].TokenType;
         }
 
         public (int line, int chararacter) GetLineAndCharacter(int stringSourceIndex)
         {
-            var len = _lineLengths.Length;
+            var lineLengths = _tokeisedScript.LineLengths;
+            var len = lineLengths.Length;
             for (int i = 0; i < len; i++)
             {
-                stringSourceIndex -= _lineLengths[i];
+                stringSourceIndex -= lineLengths[i];
                 if (stringSourceIndex <= 0)
-                    return (i + 1, _lineLengths[i] + stringSourceIndex + 1);
+                    return (i + 1, lineLengths[i] + stringSourceIndex + 1);
             }
-            return (len+1, _lineLengths[len-1]+1);
+            return (len+1, lineLengths[len-1]+1);
         }
     }
 }

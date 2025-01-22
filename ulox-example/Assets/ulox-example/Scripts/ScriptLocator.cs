@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace ULox
 {
-    public class ScriptLocator : IScriptLocator, IPlatform
+    public class ScriptLocator : IPlatform
     {
         private readonly Dictionary<string, string> _builtinScripts = new Dictionary<string, string>();
 #if !UNITY_WEBGL
@@ -70,6 +71,21 @@ namespace ULox
             catch (Exception) { }
 
             return ret;
+        }
+
+        public string LoadFile(string filePath)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void SaveFile(string filePath, string contents)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Print(string message)
+        {
+            Debug.Log(message);
         }
     }
 }

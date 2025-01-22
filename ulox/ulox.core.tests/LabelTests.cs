@@ -5,11 +5,11 @@ namespace ULox.Core.Tests
     public class LabelTests : EngineTestBase
     {
         [Test]
-        public void Engine_MapEmtpy_Count0()
+        public void Goto_WhenValid_ShouldSkipPrint()
         {
             testEngine.Run(@"
 goto end;
-print(fail);
+print(""fail"");
 label end;
 ");
 

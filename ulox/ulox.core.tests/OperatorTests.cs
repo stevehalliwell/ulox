@@ -101,18 +101,32 @@ print(-2%3);");
             Assert.AreEqual("1", testEngine.InterpreterResult);
         }
 
-        [Test]
-        [TestCase("+")]
-        [TestCase("-")]
-        [TestCase("*")]
-        [TestCase("/")]
-        [TestCase("%")]
-        [TestCase(">")]
-        [TestCase("<")]
+        [TestCaseSource(nameof(OperatorCases))]
         public void Op_WhenIncompatTypes_ShouldError(string op)
         {
             testEngine.Run($"var res = 1 {op} [];");
             StringAssert.StartsWith("Cannot perform op", testEngine.InterpreterResult);
+        }
+
+        [TestCaseSource(nameof(OperatorCases))]
+        public void Op_WhenOrderInvertedIncompatTypes_ShouldError(string op)
+        {
+            testEngine.Run($"var res = [] {op} 1;");
+            StringAssert.StartsWith("Cannot perform op", testEngine.InterpreterResult);
+        }
+
+        public static object[] OperatorCases()
+        {
+            return new object[]
+            {
+                new object[] { "+" },
+                new object[] { "-" },
+                new object[] { "*" },
+                new object[] { "/" },
+                new object[] { "%" },
+                new object[] { ">" },
+                new object[] { "<" },
+            };
         }
     }
 }

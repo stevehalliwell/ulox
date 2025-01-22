@@ -5,7 +5,7 @@ namespace ULox.Core.Tests
     public class ContractTests : EngineTestBase
     {
         [Test]
-        public void Meets_WhenITAndTMatch_ShouldNotThrow()
+        public void Signs_WhenITAndTMatch_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -23,7 +23,7 @@ class T
         }
 
         [Test]
-        public void Meets_WhenITAndTMatchWithVars_ShouldNotThrow()
+        public void Signs_WhenITAndTMatchWithVars_ShouldNotThrow()
         {
             testEngine.Run(@"
 class IT
@@ -517,6 +517,5 @@ print(doesMatchSecond);
 
             Assert.AreEqual("FalseTrue", testEngine.InterpreterResult);
         }
-
     }
 }

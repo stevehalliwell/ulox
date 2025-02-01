@@ -315,7 +315,7 @@ soa FooSoa
             var script = new Script("test", scriptContent);
             var tokenisedScript = scanner.Scan(script);
             var context = new DummyContext();
-            var tokenIterator = new TokenIterator(tokenisedScript, context);
+            var tokenIterator = new TokenIterator(tokenisedScript, context, null);
             return (tokenisedScript.Tokens, tokenIterator, context);
         }
 

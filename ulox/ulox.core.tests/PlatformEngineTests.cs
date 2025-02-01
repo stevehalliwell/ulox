@@ -24,7 +24,7 @@ var fileContent = ""hello"";
 var fileLoc = ""temp:PlatformWriteTempFile_ReadTempFile_ShouldMatch.txt"";
 Platform.WriteFile(fileLoc, fileContent);
 var readBack = Platform.ReadFile(fileLoc);
-print(fileContent == readBack)");
+print(fileContent == readBack);");
 
             Assert.AreEqual("True", testEngine.InterpreterResult);
         }

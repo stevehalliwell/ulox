@@ -299,7 +299,7 @@ namespace ULox
         public CompiledScript Compile(TokenisedScript tokenisedScript)
         {
             _compilingScript = new CompiledScript(tokenisedScript.SourceScript.ScriptHash);
-            TokenIterator = new TokenIterator(tokenisedScript, this);
+            TokenIterator = new TokenIterator(tokenisedScript, this, this);
             TokenIterator.Advance();
 
             PushCompilerState("root", FunctionType.Script);
@@ -367,7 +367,7 @@ namespace ULox
             => _prattParser.ParsePrecedence(this, pre);
 
         public void ConsumeEndStatement([CallerMemberName] string after = default)
-            => TokenIterator.Consume(TokenType.END_STATEMENT, $"Expect ; after {after}.");
+            => TokenIterator.Consume(TokenType.END_STATEMENT, $"Expect ; after {after}");
 
         public void PushCompilerState(string name, FunctionType functionType)
         {

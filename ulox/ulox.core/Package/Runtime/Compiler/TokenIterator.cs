@@ -28,6 +28,7 @@ namespace ULox
         public Token PreviousToken { get; private set; }
         public string SourceName => _tokeisedScript.SourceScript.Name;
 
+        private readonly Compiler _compiler;
         private readonly TokenisedScript _tokeisedScript;
         private readonly ICompilerDesugarContext _compilerDesugarContext;
         private readonly List<IDesugarStep> _desugarSteps = new();
@@ -36,8 +37,10 @@ namespace ULox
 
         public TokenIterator(
             TokenisedScript tokenisedScript,
-            ICompilerDesugarContext compilerDesugarContext)
+            ICompilerDesugarContext compilerDesugarContext,
+            Compiler compiler)
         {
+            _compiler = compiler;
             _tokeisedScript = tokenisedScript;
             _compilerDesugarContext = compilerDesugarContext;
 
@@ -83,6 +86,8 @@ namespace ULox
         {
             if (CurrentToken.TokenType == tokenType)
                 Advance();
+            else
+                _compiler.ThrowCompilerException(msg);
         }
 
         public bool Check(TokenType type)

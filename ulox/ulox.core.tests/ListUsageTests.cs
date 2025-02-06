@@ -141,7 +141,7 @@ readonly arr;
 arr.Add(1);
 ");
 
-            StringAssert.StartsWith("Attempted to modify a read only list at ip:'", testEngine.InterpreterResult);
+            StringAssert.Contains("Attempted to modify a read only list at ip:'", testEngine.InterpreterResult);
         }
 
         [Test]

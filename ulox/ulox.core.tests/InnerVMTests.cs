@@ -111,7 +111,7 @@ fun InnerMain()
 var innerVM = VM();
 innerVM.Start(InnerMain);"
             );
-            StringAssert.StartsWith("Global var of name 'a' was not found at ip:'2' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
+            StringAssert.Contains("Global var of name 'a' was not found at ip:'2' in chunk:'InnerMain(test:5)'.", testEngine.InterpreterResult, testEngine.InterpreterResult);
         }
 
         [Test]

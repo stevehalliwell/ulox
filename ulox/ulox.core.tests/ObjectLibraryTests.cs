@@ -26,7 +26,7 @@ print( pair.first + pair.second);");
 var foo = 7;
 Object.Freeze(foo);");
 
-            StringAssert.StartsWith("Freeze attempted on unsupported type 'Double'", testEngine.InterpreterResult);
+            StringAssert.Contains("Freeze attempted on unsupported type 'Double'", testEngine.InterpreterResult);
         }
 
         [Test]

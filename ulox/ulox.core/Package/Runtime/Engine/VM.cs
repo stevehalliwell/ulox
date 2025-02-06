@@ -814,7 +814,16 @@ namespace ULox
             if (_currentCallFrame.nativeFunc == null)
                 ThrowRuntimeException($"{opCode} without nativeFunc encountered. This is not allowed");
             var argCount = _valueStack.Count - _currentCallFrame.StackStart;
-            var res = _currentCallFrame.nativeFunc.Invoke(this);
+            var res = NativeCallResult.Failure;
+            try
+            {
+                res = _currentCallFrame.nativeFunc.Invoke(this);
+            }
+            catch (System.Exception e)
+            {
+                ProcessReturns();
+                ThrowRuntimeException($"Native call failed with inner '{e}'");
+            }
 
             if (res == NativeCallResult.SuccessfulExpression)
             {

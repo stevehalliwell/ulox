@@ -99,7 +99,7 @@ readonly obj;
 
 obj.RemoveField(obj, ""a"");");
 
-            StringAssert.StartsWith("Cannot remove field from read only", testEngine.InterpreterResult);
+            StringAssert.Contains("Cannot remove field from read only", testEngine.InterpreterResult);
         }
 
         [Test]

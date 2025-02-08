@@ -696,7 +696,7 @@ Assert.AreEqual(1,1);
 Assert.AreEqual(1,2);
 Assert.AreEqual(1,1);");
 
-            StringAssert.StartsWith("'1' does not equal '2' at ip:'1' in native:'AreEqual'.", testEngine.InterpreterResult);
+            StringAssert.Contains("'1' does not equal '2' at ip:'1' in native:'AreEqual'.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -707,7 +707,7 @@ Assert.AreApproxEqual(1,1);
 Assert.AreApproxEqual(1,1.000000001);
 Assert.AreApproxEqual(1,2);");
 
-            StringAssert.StartsWith("'1' and '2' are '-1' apart.", testEngine.InterpreterResult);
+            StringAssert.Contains("'1' and '2' are '-1' apart.", testEngine.InterpreterResult);
         }
 
         [Test]

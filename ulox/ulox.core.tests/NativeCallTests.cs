@@ -185,5 +185,25 @@ Locals();");
 
             Assert.AreEqual("Hello, you, me, and everybody, I'm native.", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void CallNativeFunc_WhenThrows_ShouldThrowUloxWrapped()
+        {
+            NativeCallResult Func(Vm vm)
+            {
+                throw new System.Exception("Native exception");
+                return NativeCallResult.SuccessfulExpression;
+            }
+
+            testEngine.MyEngine.Context.Vm.Globals.AddOrSet(new HashedString("WillThrow"), Value.New(Func, 1, 0));
+
+            testEngine.Run(@"
+var a = 1;
+WillThrow();
+");
+
+            StringAssert.StartsWith("Native call failed", testEngine.InterpreterResult);
+            StringAssert.Contains("ip:'4' in chunk:'root(test:3)'", testEngine.InterpreterResult);
+        }
     }
 }

@@ -42,7 +42,7 @@
                     compiler.DeclareAndDefineCustomVariable(TestDataRowVarName);
                     compiler.EmitNULL();
                     compiler.DeclareAndDefineCustomVariable(TestDataIndexVarName);
-                    compiler.EmitPushValue((byte)0);
+                    compiler.EmitPushValue(0);
                     compiler.Expression();
                     var res = compiler.ResolveLocal(TestDataSourceVarName);
                     testDataSourceLocalId = (byte)res;

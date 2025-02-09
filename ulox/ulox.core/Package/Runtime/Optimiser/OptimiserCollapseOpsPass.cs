@@ -21,10 +21,6 @@ namespace ULox
         {
             switch (packet.OpCode)
             {
-            case OpCode.PUSH_VALUE:
-                if (packet.b1 == (byte)PushValueOpType.Byte)
-                    _byteToProcess.Add(inst);
-                break;
             case OpCode.GET_LOCAL:
                 if (packet.b2 == Optimiser.NOT_LOCAL_BYTE)   //for now only optimise single byte locals
                     _getLocals.Add(inst);
@@ -39,26 +35,6 @@ namespace ULox
 
         public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-            for (int i = 0; i < _byteToProcess.Count - 1; i++)
-            {
-                var inst1 = _byteToProcess[i];
-                var inst2 = _byteToProcess[i + 1];
-                if (inst2 - inst1 != 1
-                    || chunk.Labels.Any(x => x.Value == inst1))
-                    continue;
-
-                var packet1 = chunk.Instructions[inst1];
-                var packet2 = chunk.Instructions[inst2];
-                if (packet1.OpCode == OpCode.PUSH_VALUE && packet2.OpCode == OpCode.PUSH_VALUE)
-                {
-                    var newPacket = new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Bytes, packet1.b2, packet2.b2);
-                    chunk.Instructions[inst1] = newPacket;
-                    optimiser.AddToRemove(chunk, inst2);
-                }
-
-                i++;
-            }
-
             for (int i = 0; i < _getLocals.Count - 1; i++)
             {
                 var inst1 = _getLocals[i];

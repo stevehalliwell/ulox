@@ -57,7 +57,7 @@ namespace ULox
                 else
                 {
                     SetMode(compiler, Mode.Auto);
-                    compiler.EmitPushValue((byte)++_previousNumber);
+                    compiler.EmitPushValue((short)++_previousNumber);
                 }
 
 

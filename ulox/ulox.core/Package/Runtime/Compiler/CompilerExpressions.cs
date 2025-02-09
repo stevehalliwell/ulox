@@ -49,7 +49,8 @@ namespace ULox
         public static void Literal(Compiler compiler, bool canAssign)
         {
             switch (compiler.TokenIterator.PreviousToken.TokenType)
-            {case TokenType.TRUE: compiler.EmitPushValue(true); break;
+            {
+            case TokenType.TRUE: compiler.EmitPushValue(true); break;
             case TokenType.FALSE: compiler.EmitPushValue(false); break;
             case TokenType.NULL: compiler.EmitNULL(); break;
             case TokenType.NUMBER:
@@ -58,9 +59,16 @@ namespace ULox
 
                 var isInt = number == Math.Truncate(number);
 
-                if (isInt && number < byte.MaxValue && number >= byte.MinValue)
+                if (isInt && number < short.MaxValue && number >= short.MinValue)
                 {
-                    compiler.EmitPushValue((byte)number);
+                    compiler.EmitPushValue((short)number);
+                    return;
+                }
+
+                var (isQuotientable, num, dem) = IsNumberQuotientable(number);
+                if (isQuotientable)
+                {
+                    compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.QuotientDetails(num, dem)));
                     return;
                 }
 
@@ -75,6 +83,24 @@ namespace ULox
             }
             break;
             }
+        }
+
+        public static (bool, short, byte) IsNumberQuotientable(double number)
+        {
+            var (isPossible, nume, denom) = DoubleToQuotient.ToQuotient(number, 10);
+            if (!isPossible)
+            {
+                return (false, 0, 0);
+            }
+
+            if (nume <= short.MaxValue 
+                && nume >= short.MinValue
+                && denom <= byte.MaxValue)
+            {
+                return (true, (short)nume, (byte)denom);
+            }
+
+            return (false, 0, 0);
         }
 
         public static void Variable(Compiler compiler, bool canAssign)

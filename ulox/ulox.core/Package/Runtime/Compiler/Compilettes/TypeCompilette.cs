@@ -77,7 +77,7 @@
             var chunk = compiler.EndCompile();
             if (EmitClosureCallAtEnd)
             {
-                compiler.EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, compiler.CurrentChunk.AddConstant(Value.New(chunk)), (byte)chunk.UpvalueCount)));
+                compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.ClosureDetails(ClosureType.Closure, compiler.CurrentChunk.AddConstant(Value.New(chunk)), (byte)chunk.UpvalueCount)));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.CALL, 0, 0, 0));
                 compiler.EmitPop();
             }

@@ -8,6 +8,7 @@ namespace ULox
 
         PUSH_CONSTANT,
         PUSH_VALUE,
+        PUSH_QUOTIENT,
 
         POP,
         DUPLICATE,
@@ -177,10 +178,39 @@ namespace ULox
             }
         }
 
+        [StructLayout(LayoutKind.Explicit)]
+        public readonly struct QuotientDetails
+        {
+            [FieldOffset(0)]
+            public readonly byte numerator_high;
+            [FieldOffset(1)]
+            public readonly byte numerator_low;
+            [FieldOffset(2)]
+            public readonly byte denom;
+
+            public QuotientDetails(short numerator, byte denom) : this()
+            {
+                (numerator_high, numerator_low) = QuotientDetails.ToBytePair(numerator);
+                this.denom = denom;
+            
+            }
+
+            public static (byte, byte) ToBytePair(short value)
+            {
+                return ((byte)((value >> 8) & 0xFF), (byte)(value & 0xFF));
+            }
+
+            public short GetNumeratorShort()
+            {
+                return (short)((numerator_high << 8) | numerator_low);
+            }
+        }
+
         public OpCode OpCode => (OpCode)_opCode;
         public NativeType NativeType => (NativeType)b1;
         public ValidateOp ValidateOp => (ValidateOp)b1;
         public bool BoolValue => b1 != 0;
+        public short ShortValue => (short)((b2 << 8) | b3);
 
         [FieldOffset(0)]
         public readonly uint _data;
@@ -201,6 +231,9 @@ namespace ULox
 
         [FieldOffset(1)]
         public readonly LabelDetails labelDetails;
+
+        [FieldOffset(1)]
+        public readonly QuotientDetails quotientDetails;
         
         public ByteCodePacket(OpCode opCode)
             : this(
@@ -219,7 +252,16 @@ namespace ULox
                   Optimiser.NOT_LOCAL_BYTE)
         {
         }
-        
+
+        public ByteCodePacket(OpCode opCode, byte b1, short s)
+            : this(
+                  opCode,
+                  b1,
+                  (byte)((s >> 8) & 0xFF),
+                  (byte)(s & 0xFF))
+        {
+        }
+
         public ByteCodePacket(OpCode opCode, byte b1, byte b2)
             : this(
                   opCode,
@@ -252,7 +294,7 @@ namespace ULox
             this.testOpDetails = testOpDetails;
         }
 
-        public ByteCodePacket(OpCode opCode, ClosureDetails closureDetails) : this(opCode)
+        public ByteCodePacket(ClosureDetails closureDetails) : this(OpCode.CLOSURE)
         {
             this.closureDetails = closureDetails;
         }
@@ -260,6 +302,11 @@ namespace ULox
         public ByteCodePacket(OpCode opCode, LabelDetails labelDetails) : this(opCode)
         {
             this.labelDetails = labelDetails;
+        }
+
+        public ByteCodePacket(QuotientDetails quotientDetails) : this(OpCode.PUSH_QUOTIENT)
+        {
+            this.quotientDetails = quotientDetails;
         }
 
         public override string ToString()

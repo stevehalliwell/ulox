@@ -204,7 +204,7 @@ namespace ULox
                     break;
                 case TestOpType.TestCase:
                     PrintLabel(packet.testOpDetails.LabelId);
-                break;
+                    break;
                 case TestOpType.CaseStart:
                 case TestOpType.CaseEnd:
                 {
@@ -259,16 +259,19 @@ namespace ULox
                 case PushValueOpType.Bool:
                     stringBuilder.Append($"({packet.b2 == 1})");
                     break;
-                case PushValueOpType.Byte:
-                    stringBuilder.Append($"({packet.b2})");
-                    break;
-                case PushValueOpType.Bytes:
-                    stringBuilder.Append($"({packet.b2},{packet.b3})");
+                case PushValueOpType.Short:
+                    stringBuilder.Append($"({packet.ShortValue})");
                     break;
                 }
             }
             break;
-
+            case OpCode.PUSH_QUOTIENT:
+            {
+                var nume = packet.quotientDetails.GetNumeratorShort();
+                var val = nume / (double)packet.quotientDetails.denom;
+                stringBuilder.Append($"{nume} / {packet.quotientDetails.denom} ({val})");
+            }
+            break;
             case OpCode.GET_LOCAL:
             {
                 var b1 = packet.b1;

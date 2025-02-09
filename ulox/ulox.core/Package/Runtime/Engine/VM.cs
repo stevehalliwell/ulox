@@ -343,16 +343,18 @@ namespace ULox
                     case PushValueOpType.Bool:
                         Push(Value.New(packet.b2 == 1));
                         break;
-                    case PushValueOpType.Byte:
-                        Push(Value.New(packet.b2));
-                        break;
-                    case PushValueOpType.Bytes:
-                        Push(Value.New(packet.b2));
-                        Push(Value.New(packet.b3));
+                    case PushValueOpType.Short:
+                        Push(Value.New(packet.ShortValue));
                         break;
                     default:
                         break;
                     }
+                }
+                break;
+                case OpCode.PUSH_QUOTIENT:
+                {
+                    var val = packet.quotientDetails.GetNumeratorShort() / (double)packet.quotientDetails.denom;
+                    Push(Value.New(val));
                 }
                 break;
 

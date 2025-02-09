@@ -17,8 +17,7 @@ namespace ULox
     {
         Null,
         Bool,
-        Byte,
-        Bytes,
+        Short,
     }
 
     public interface ICompilette
@@ -202,11 +201,12 @@ namespace ULox
             var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
             CurrentChunk.WritePacket(packet, line);
         }
+
         public void EmitNULL()
             => EmitPacket(new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Null));
 
-        public void EmitPushValue(byte b)
-            => EmitPacket(new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Byte, b));
+        public void EmitPushValue(short s)
+            => EmitPacket(new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Short, s));
 
         public void EmitPushValue(bool b)
             => EmitPacket(new ByteCodePacket(OpCode.PUSH_VALUE, (byte)PushValueOpType.Bool, (byte)(b ? 1 : 0)));
@@ -534,12 +534,12 @@ namespace ULox
             // Create the function object.
             var comp = CurrentCompilerState;   //we need this to mark upvalues
             var function = EndCompile();
-            EmitPacket(new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount)));
+            EmitPacket(new ByteCodePacket(new ByteCodePacket.ClosureDetails(ClosureType.Closure, CurrentChunk.AddConstant(Value.New(function)), (byte)function.UpvalueCount)));
 
             for (int i = 0; i < function.UpvalueCount; i++)
             {
                 EmitPacket(
-                    new ByteCodePacket(OpCode.CLOSURE, new ByteCodePacket.ClosureDetails(
+                    new ByteCodePacket(new ByteCodePacket.ClosureDetails(
                     ClosureType.UpValueInfo,
                     comp.upvalues[i].isLocal ? (byte)1 : (byte)0,
                     comp.upvalues[i].index)));

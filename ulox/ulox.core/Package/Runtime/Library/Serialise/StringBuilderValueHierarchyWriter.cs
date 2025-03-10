@@ -14,7 +14,8 @@ namespace ULox
 
         private void AppendIndent()
         {
-            _sb.Append(string.Concat(Enumerable.Repeat("  ", _indent)));
+            if(_indent > 0)
+                _sb.Append(string.Concat(Enumerable.Repeat("  ", _indent)));
         }
 
         public void WriteNameAndValue(string name, Value v)

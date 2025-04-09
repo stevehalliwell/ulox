@@ -405,5 +405,41 @@ for(var i = 0; i < c; i += 1)
 
             Assert.AreEqual("512345-1-2-3-4-5", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Shuffle_WhenCalled_MightBeDifferentOrder()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+arr.Shuffle();
+printh(arr);
+");
+
+            StringAssert.Contains("1", testEngine.InterpreterResult);
+            StringAssert.Contains("2", testEngine.InterpreterResult);
+            StringAssert.Contains("3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Contains_Does_True()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+print(arr.Contains(2));
+");
+
+            Assert.AreEqual("True", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Contains_Doesnt_False()
+        {
+            testEngine.Run(@"
+var arr = [1,2,3];
+print(arr.Contains(5));
+");
+
+            Assert.AreEqual("False", testEngine.InterpreterResult);
+        }
     }
 }

@@ -34,7 +34,7 @@ namespace ULox
             case ValueType.Instance:
                 if (v.val.asInstance is NativeListInstance listInst)
                 {
-                    _writer.StartArray(name.String);
+                    _writer.StartArray(name?.String ?? string.Empty);
 
                     foreach (var elm in listInst.List)
                     {

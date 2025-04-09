@@ -41,6 +41,9 @@ namespace ULox
                 case JsonToken.String:
                     Field(prevPropName, (string)_reader.Value);
                     break;
+                case JsonToken.Integer:
+                    Field(prevPropName, (long)_reader.Value);
+                    break;
                 case JsonToken.Float:
                     Field(prevPropName, (double)_reader.Value);
                     break;

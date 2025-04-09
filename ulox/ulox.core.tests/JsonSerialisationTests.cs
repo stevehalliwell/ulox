@@ -219,14 +219,16 @@ print(res.c);
         public void DeserialiseViaLibrary_WhenGivenKnownArray_ShouldReturnExpectedOutput()
         {
             testEngine.Run(@"
-var jsonString = ""\{ \""a\"": [ 1.0, 2.0, 3.0 ] }"";
+var jsonString = ""\{ \""a\"": [ 1.0, 2.0, 3.0 ], \""b\"": [ 1, 2, 3 ]}"";
 var res = Serialise.FromJson(jsonString);
+printh(res);
 ");
 
-            Assert.AreEqual("", testEngine.InterpreterResult);
+            Assert.AreEqual("a:[\r\n1\r\n2\r\n3\r\n]\r\nb:[\r\n1\r\n2\r\n3\r\n]\r\n", testEngine.InterpreterResult);
         }
+
         [Test]
-        public void SerialiseToJson_WhenComplextDataStore_ShouldBeSuccess()
+        public void SerialiseToJson_WhenComplextDataStore_ShouldBeEmpty()
         {
             testEngine.Run(@"
 class ShipCharacter
@@ -300,9 +302,20 @@ var enemyShipData =
 print(Serialise.ToJson(enemyShipData));
 ");
 
-            StringAssert.StartsWith("{" + Environment.NewLine 
-            + "  \"EnemyA\": {"+ Environment.NewLine
+            StringAssert.StartsWith("{" + Environment.NewLine
+            + "  \"EnemyA\": {" + Environment.NewLine
             + "    \"accel\": 25.0,", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Serialise_WhenArray_ShouldBeEmpty()
+        {
+            testEngine.Run(@"
+var obj = [1,2,3];
+var res = Serialise.ToJson(obj);
+print(res);
+");
+            Assert.AreEqual("", testEngine.InterpreterResult);
         }
     }
 }

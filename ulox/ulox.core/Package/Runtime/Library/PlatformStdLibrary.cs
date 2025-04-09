@@ -14,7 +14,7 @@
             platformLibInst.Freeze();
             return platformLibInst;
         }
-        
+
         public static NativeCallResult FindFiles(Vm vm)
         {
             var platform = vm.Engine.Context.Platform;
@@ -27,7 +27,7 @@
             {
                 arr.List.Add(Value.New(item));
             }
-            vm.SetNativeReturn(0,Value.New(arr));
+            vm.SetNativeReturn(0, Value.New(arr));
             return NativeCallResult.SuccessfulExpression;
         }
 

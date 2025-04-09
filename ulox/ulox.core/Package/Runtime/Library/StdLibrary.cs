@@ -20,6 +20,7 @@ namespace ULox
                 ("Serialise", Value.New(SerialiseStdLibrary.MakeInstance())),
                 ("Math", Value.New(MathStdLibrary.MakeInstance())),
                 ("Platform", Value.New(PlatformStdLibrary.MakeInstance())),
+                ("String", Value.New(StringStdLibrary.MakeInstance())),
                 ("List", NativeListClass.SharedNativeListClassValue),
                 ("Map", NativeMapClass.SharedNativeMapClassValue),
                 ("Dynamic", DynamicClass.SharedDynamicClassValue),

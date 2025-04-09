@@ -93,5 +93,26 @@ print(s);");
 
             Assert.AreEqual("Hi, 3.14", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Explode_WhenEmpty_ShouldReturnEmpty()
+        {
+            testEngine.Run(@"
+var arr = String.Explode("""","""");
+print(arr.Count());");
+
+            Assert.AreEqual("0", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Explode_WhenWords_ShouldReturnWords()
+        {
+            testEngine.Run(@"
+var arr = String.Explode(""hello world"","" "");
+print(arr.Count());
+loop arr {print(item);}");
+
+            Assert.AreEqual("2helloworld", testEngine.InterpreterResult);
+        }
     }
 }

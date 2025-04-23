@@ -58,8 +58,20 @@ namespace ULox
 
         public InterpreterResult PushCallFrameAndRun(Value func, byte args)
         {
-            PushCallFrameFromValue(func, args);
-            return Run();
+            try
+            {
+                PushCallFrameFromValue(func, args);
+                return Run();
+            }
+            catch(ULox.UloxException uloxEx)
+            {
+                throw uloxEx;
+            }
+            catch (System.Exception e)
+            {
+                ThrowRuntimeException($"Unhandled exception '{e}'");
+            }
+            return InterpreterResult.OK;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

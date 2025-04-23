@@ -142,7 +142,24 @@ print(foo meets foo2);
 
             StringAssert.StartsWith("22False", testEngine.InterpreterResult);
         }
-        
+
+        [Test]
+        public void Update_WhenMatchNameNull_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+var foo = {a=1, b=2,};
+var foo2 = {a=null, c=3,};
+
+foo = foo update foo2;
+print(foo.a);
+print(foo.b);
+print(foo meets foo2);
+"
+            );
+
+            StringAssert.StartsWith("null2False", testEngine.InterpreterResult);
+        }
+
         [Test]
         public void Update_WhenPartialHierarchyMatch_ShouldUpdateValue()
         {

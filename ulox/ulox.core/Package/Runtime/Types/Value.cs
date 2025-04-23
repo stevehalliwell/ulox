@@ -322,10 +322,11 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal static Value UpdateFrom(Value lhs, Value rhs, Vm vm)
         {
-            if (!lhs.IsNull() && rhs.type != lhs.type)
-            {
+            if (!lhs.IsNull() && rhs.type != lhs.type && rhs.type != ValueType.Null)
                 return lhs;
-            }
+
+            if (rhs.IsNull())
+                return rhs;
 
             switch (lhs.type)
             {

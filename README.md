@@ -115,10 +115,10 @@ var anotherDynObject = //an inline dynamic object
 var referenceToAnother = anotherDynObject;
 //duplicate creates a deep copy
 var dupOfOther = Duplicate(anotherDynObject);
-//update keyword updates all matching elements 
+//Object.TraverseUpdate will call for all matching elements 
 //  in left hand side with the matching values from right side
 //  here it changes the dupOfOther.a to the 7 in dynObject
-dupOfOther update dynObject;
+dupOfOther = Object.TraverseUpdate(dupOfOther, dynObject, fun (lhs, rhs) {retval = rhs;});
 
 //comparisons classics
 3 == 2; // false

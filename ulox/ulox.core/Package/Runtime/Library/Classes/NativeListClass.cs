@@ -154,9 +154,7 @@ namespace ULox
             {
                 vm.Push(fn);
                 vm.Push(list[i]);
-                vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOnReturn();
-                vm.Run();
+                vm.PushCallFrameRunYield(fn, 1);
                 retvalList.Add(vm.Pop());
             }
 
@@ -175,9 +173,7 @@ namespace ULox
                 vm.Push(fn);
                 vm.Push(list[i]);
                 vm.Push(runningVal);
-                vm.PushCallFrameFromValue(fn, 2);
-                vm.SetCurrentCallFrameToYieldOnReturn();
-                vm.Run();
+                vm.PushCallFrameRunYield(fn, 2);
                 runningVal = vm.Pop();
             }
 
@@ -196,9 +192,7 @@ namespace ULox
                 vm.Push(fn);
                 vm.Push(list[i]);
                 vm.Push(runningVal);
-                vm.PushCallFrameFromValue(fn, 2);
-                vm.SetCurrentCallFrameToYieldOnReturn();
-                vm.Run();
+                vm.PushCallFrameRunYield(fn, 2);
                 runningVal = vm.Pop();
             }
 
@@ -220,9 +214,7 @@ namespace ULox
                 var testVal = list[i];
                 vm.Push(fn);
                 vm.Push(testVal);
-                vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOnReturn();
-                vm.Run();
+                vm.PushCallFrameRunYield(fn, 1);
 
                 var filterRes = vm.Pop();
 
@@ -246,9 +238,7 @@ namespace ULox
                 var valAtIndex = list[i];
                 vm.Push(fn);
                 vm.Push(valAtIndex);
-                vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOnReturn();
-                vm.Run();
+                vm.PushCallFrameRunYield(fn, 1);
 
                 var orderBy = vm.Pop();
                 orderByArr[i] = (orderBy, i);
@@ -310,9 +300,7 @@ namespace ULox
                 var testVal = list[i];
                 vm.Push(fn);
                 vm.Push(testVal);
-                vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOnReturn();
-                vm.Run();
+                vm.PushCallFrameRunYield(fn, 1);
 
                 var filterRes = vm.Pop();
 
@@ -341,9 +329,7 @@ namespace ULox
                 var fn = list[i];
                 vm.Push(fn);
                 vm.Push(sharedVarToRunOn);
-                vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOnReturn();
-                vm.Run();
+                vm.PushCallFrameRunYield(fn, 1);
 
                 var result = vm.Pop();
                 retvalList.Add(result);
@@ -363,9 +349,7 @@ namespace ULox
                 var fn = list[i];
                 vm.Push(fn);
                 vm.Push(sharedVarToRunOn);
-                vm.PushCallFrameFromValue(fn, 1);
-                vm.SetCurrentCallFrameToYieldOnReturn();
-                vm.Run();
+                vm.PushCallFrameRunYield(fn, 1);
 
                 var result = vm.Pop();
 

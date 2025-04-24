@@ -8,8 +8,7 @@ namespace ULox
     {
         private readonly JsonTextReader _reader;
 
-        public JsonDocValueHierarchyTraverser
-            (
+        public JsonDocValueHierarchyTraverser(
             ValueObjectBuilder valBuilder,
             TextReader reader)
             : base(valBuilder)

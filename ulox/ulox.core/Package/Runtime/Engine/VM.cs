@@ -80,12 +80,6 @@ namespace ULox
             _valueStack[_currentCallFrame.StackStart + _currentCallFrame.ArgCount + returnIndex + 1] = val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetCurrentCallFrameToYieldOnReturn()
-        {
-            _currentCallFrame.YieldOnReturn = true;
-        }
-
         public void CopyFrom(Vm otherVM)
         {
             Engine = otherVM.Engine;
@@ -941,6 +935,14 @@ namespace ULox
                 openUpvalues.AddLast(upval);
 
             return upval;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public InterpreterResult PushCallFrameRunYield(Value callee, byte argCount)
+        {
+            PushCallFrameFromValue(callee, argCount);
+            _currentCallFrame.YieldOnReturn = true;
+            return Run();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

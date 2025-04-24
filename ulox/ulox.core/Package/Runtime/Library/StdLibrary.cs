@@ -24,7 +24,7 @@ namespace ULox
                 ("List", NativeListClass.SharedNativeListClassValue),
                 ("Map", NativeMapClass.SharedNativeMapClassValue),
                 ("Dynamic", DynamicClass.SharedDynamicClassValue),
-                ("Object", Value.New(MakeObjectInstance())),
+                ("Object", Value.New(ObjectLibrary.MakeInstance())),
                 (nameof(str), Value.New(str, 1, 1)),
                 (nameof(print), Value.New(print, 1, 1)),
                 (nameof(printh), Value.New(printh, 1, 1))
@@ -62,19 +62,6 @@ namespace ULox
                 (nameof(Throws), Value.New(Throws, 1, 1)),
                 (nameof(Pass), Value.New(Pass, 1, 0)),
                 (nameof(Fail), Value.New(Fail, 1, 0)));
-            assertInst.Freeze();
-            return assertInst;
-        }
-
-        internal InstanceInternal MakeObjectInstance()
-        {
-            var assertInst = new InstanceInternal();
-            assertInst.AddFieldsToInstance(
-                (nameof(Duplicate), Value.New(Duplicate, 1, 1)),
-                (nameof(IsFrozen), Value.New(IsFrozen, 1, 1)),
-                (nameof(Unfreeze), Value.New(Unfreeze, 1, 1)),
-                (nameof(Freeze), Value.New(Freeze, 1, 1))
-                );
             assertInst.Freeze();
             return assertInst;
         }
@@ -211,59 +198,10 @@ namespace ULox
             return NativeCallResult.SuccessfulExpression;
         }
 
-        public static NativeCallResult IsFrozen(Vm vm)
-        {
-            var target = vm.GetArg(1);
-            if (target.type == ValueType.Instance)
-                vm.SetNativeReturn(0, Value.New(target.val.asInstance.IsFrozen));
-            else if (target.type == ValueType.UserType)
-                vm.SetNativeReturn(0, Value.New(target.val.asClass.IsFrozen));
-
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        public static NativeCallResult Unfreeze(Vm vm)
-        {
-            var target = vm.GetArg(1);
-            if (target.type == ValueType.Instance)
-                target.val.asInstance.Unfreeze();
-            if (target.type == ValueType.UserType)
-                target.val.asClass.Unfreeze();
-
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        public static NativeCallResult Freeze(Vm vm)
-        {
-            var instVal = vm.GetArg(1);
-            switch (instVal.type)
-            {
-            case ValueType.Instance:
-                instVal.val.asInstance.Freeze();
-                break;
-
-            case ValueType.UserType:
-                instVal.val.asClass.Freeze();
-                break;
-
-            default:
-                vm.ThrowRuntimeException($"Freeze attempted on unsupported type '{instVal.type}'");
-                break;
-            }
-
-            return NativeCallResult.SuccessfulExpression;
-        }
-
         public static NativeCallResult str(Vm vm)
         {
             var v = vm.GetArg(1);
             vm.SetNativeReturn(0, Value.New(v.ToString()));
-            return NativeCallResult.SuccessfulExpression;
-        }
-
-        public static NativeCallResult Duplicate(Vm vm)
-        {
-            vm.SetNativeReturn(0, Value.Copy(vm.GetArg(1)));
             return NativeCallResult.SuccessfulExpression;
         }
     }

@@ -2,7 +2,7 @@
 
 namespace ULox.Core.Tests
 {
-    public class UpdateTests : EngineTestBase
+    public class ObjectTraverseTests : EngineTestBase
     {
         [Test]
         public void Update_WhenClassIsEmptyAndSameType_ShouldNotThrow()
@@ -158,6 +158,80 @@ print(foo meets foo2);
             );
 
             StringAssert.StartsWith("null2False", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TraveseUpdate_WhenMatchNameNull_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+var foo = {a=1, b=2,};
+var foo2 = {a=null, c=3,};
+
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+Object.TraverseUpdate(foo, foo2, Update);
+
+printh(foo);
+"
+            );
+
+            StringAssert.Contains("a:null", testEngine.InterpreterResult);
+            StringAssert.Contains("b:2", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Accum_WhenMatchNameNull_ShouldIncreaseValue()
+        {
+            testEngine.Run(@"
+var foo = {a=1, b=2,};
+var foo2 = {a=null, b=3,};
+
+fun Accum(lhs, rhs)
+{
+    if (!lhs)
+        lhs = 0;
+    if (!rhs)
+        rhs = 0;
+    retval = lhs + rhs;
+}
+
+Object.TraverseUpdate(foo, foo2, Accum);
+
+printh(foo);
+"
+            );
+
+            StringAssert.Contains("a:1", testEngine.InterpreterResult);
+            StringAssert.Contains("b:5", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void Scale_WhenMatchNameNull_ShouldIncreaseValue()
+        {
+            testEngine.Run(@"
+var foo = {a=2, b=3,};
+var foo2 = {a=0.5, b=2,};
+
+fun Scale(lhs, rhs)
+{
+    if (!lhs)
+        lhs = 1;
+    if (!rhs)
+        rhs = 1;
+    retval = lhs * rhs;
+}
+
+Object.TraverseUpdate(foo, foo2, Scale);
+
+printh(foo);
+"
+            );
+
+            StringAssert.Contains("a:1", testEngine.InterpreterResult);
+            StringAssert.Contains("b:6", testEngine.InterpreterResult);
         }
 
         [Test]

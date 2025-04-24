@@ -582,10 +582,6 @@ namespace ULox
                 case OpCode.READ_ONLY:
                     DoReadOnlyOp(chunk);
                     break;
-
-                case OpCode.UPDATE:
-                    DoUpdateOp();
-                    break;
                 case OpCode.GET_FIELD:
                     DoGetFieldOp(chunk, packet.b1);
                     break;
@@ -644,16 +640,6 @@ namespace ULox
                 VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
                 VmUtil.GenerateValueStackDump(this),
                 VmUtil.GenerateCallStackDump(this));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoUpdateOp()
-        {
-            var (rhs, lhs) = Pop2();
-
-            var res = Value.UpdateFrom(lhs, rhs, this);
-
-            Push(res);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

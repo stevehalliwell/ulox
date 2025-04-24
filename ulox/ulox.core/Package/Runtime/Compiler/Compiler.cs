@@ -123,8 +123,7 @@ namespace ULox
                 (TokenType.MEETS, null, CompilerExpressions.Meets, Precedence.Comparison),
                 (TokenType.SIGNS, null, CompilerExpressions.Signs, Precedence.Comparison),
                 (TokenType.FUNCTION, CompilerExpressions.FunExp, null, Precedence.Call),
-                (TokenType.COUNT_OF, CompilerExpressions.CountOf, null, Precedence.None),
-                (TokenType.UPDATE, null, CompilerExpressions.Update, Precedence.Comparison)
+                (TokenType.COUNT_OF, CompilerExpressions.CountOf, null, Precedence.None)
                               );
         }
 

@@ -228,12 +228,6 @@ namespace ULox
             compiler.EmitPacket(new ByteCodePacket(OpCode.COUNT_OF));
         }
 
-        public static void Update(Compiler compiler, bool canAssign)
-        {
-            compiler.Expression();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.UPDATE));
-        }
-
         public static void Call(Compiler compiler, bool canAssign)
         {
             var argCount = compiler.ArgumentList();

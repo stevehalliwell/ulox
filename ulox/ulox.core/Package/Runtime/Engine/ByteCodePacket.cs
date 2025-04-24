@@ -73,13 +73,11 @@ namespace ULox
 
         ENUM_VALUE,
         READ_ONLY, //could collapse with FREEZE
-
-        UPDATE,
     }
 
     public static class OpCodeUtil
     {
-        public const int NumberOfOpCodes = (int)OpCode.UPDATE + 1;
+        public const int NumberOfOpCodes = (int)OpCode.READ_ONLY + 1;
     }
     
     public enum ClosureType : byte

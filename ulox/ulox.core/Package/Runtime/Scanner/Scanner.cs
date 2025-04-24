@@ -85,8 +85,6 @@ namespace ULox
 
                 ("readonly", TokenType.READ_ONLY),
 
-                ("update", TokenType.UPDATE),
-
                 ("soa", TokenType.SOA));
 
 

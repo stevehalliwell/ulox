@@ -80,12 +80,6 @@ namespace ULox
             _valueStack[_currentCallFrame.StackStart + _currentCallFrame.ArgCount + returnIndex + 1] = val;
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SetCurrentCallFrameToYieldOnReturn()
-        {
-            _currentCallFrame.YieldOnReturn = true;
-        }
-
         public void CopyFrom(Vm otherVM)
         {
             Engine = otherVM.Engine;
@@ -588,10 +582,6 @@ namespace ULox
                 case OpCode.READ_ONLY:
                     DoReadOnlyOp(chunk);
                     break;
-
-                case OpCode.UPDATE:
-                    DoUpdateOp();
-                    break;
                 case OpCode.GET_FIELD:
                     DoGetFieldOp(chunk, packet.b1);
                     break;
@@ -650,16 +640,6 @@ namespace ULox
                 VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
                 VmUtil.GenerateValueStackDump(this),
                 VmUtil.GenerateCallStackDump(this));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void DoUpdateOp()
-        {
-            var (rhs, lhs) = Pop2();
-
-            var res = Value.UpdateFrom(lhs, rhs, this);
-
-            Push(res);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -941,6 +921,14 @@ namespace ULox
                 openUpvalues.AddLast(upval);
 
             return upval;
+        }
+        
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public InterpreterResult PushCallFrameRunYield(Value callee, byte argCount)
+        {
+            PushCallFrameFromValue(callee, argCount);
+            _currentCallFrame.YieldOnReturn = true;
+            return Run();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

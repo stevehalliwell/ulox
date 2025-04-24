@@ -18,11 +18,16 @@ var rhs =
     c= 6,
 };
 
-res = lhs update rhs;
-//res now contains a refernce to lhs, but with a is 4, b is 5, and c is 6
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+res = Object.TraverseUpdate(lhs, rhs, Update);
+//res now contains a reference to lhs, but with a is 4, b is 5, and c is 6
 
 // The root objects do not have to be the same type, nor the same shape, were a match
-//  is found in the right that value is applyed to the left
+//  is found in the right that value is applied to the left
 
 var bigRhs =
 {
@@ -33,7 +38,7 @@ var bigRhs =
 };
 
 // res now contains the same as lhs, and lhs still does not have a 'd' field
-res = lhs update bigRhs;
+res = Object.TraverseUpdate(lhs, bigRhs, Update);
 
 // This also works with smaller objects
 
@@ -43,7 +48,7 @@ var smallRhs =
 };
 
 // res now contains the same as lhs, and a is 11, b is still 8, c is still 9
-res = lhs update smallRhs;
+res = Object.TraverseUpdate(lhs, smallRhs, Update);
 
 // When names match but type of value does not, the value is not updated
 
@@ -54,7 +59,7 @@ var typeMismatch =
     c= 3,
 };
 
-res = lhs update typeMismatch;
+res = Object.TraverseUpdate(lhs, typeMismatch, Update);
 // res is still the same as lhs, a is still 11, as the value in typeMismatch is a string, not a number
 
 // The update keyword can be used to update nested objects as well
@@ -85,7 +90,7 @@ var nestedRhs =
     },
 };
 
-res = nestedLhs update nestedRhs;
+res = Object.TraverseUpdate(nestedLhs, nestedRhs, Update);
 
 // update also understands native collection types, list and map
 
@@ -104,5 +109,5 @@ var colrhs =
     d= [10, 11, 12, 13, 14, 15],
 };
 
-res = colLhs update colrhs;
+res = Object.TraverseUpdate(colLhs, colrhs, Update);
 // res now contains the same as colLhs, but a is 7, b is a map with 2 keys, and d is a list with 6 elements

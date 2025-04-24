@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -317,67 +316,6 @@ namespace ULox
                 break;
             }
             return Value.Null();
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static Value UpdateFrom(Value lhs, Value rhs, Vm vm)
-        {
-            if (!lhs.IsNull() && rhs.type != lhs.type && rhs.type != ValueType.Null)
-                return lhs;
-
-            if (rhs.IsNull())
-                return rhs;
-
-            switch (lhs.type)
-            {
-            case ValueType.BoundMethod:
-            case ValueType.UserType:
-            case ValueType.Upvalue:
-            case ValueType.Closure:
-            case ValueType.NativeFunction:
-            case ValueType.Chunk:
-            case ValueType.Null:
-            case ValueType.Object:
-                lhs = rhs;
-                break;
-            case ValueType.Double:
-                lhs.val.asDouble = rhs.val.asDouble;
-                break;
-            case ValueType.Bool:
-                lhs.val.asBool = rhs.val.asBool;
-                break;
-            case ValueType.String:
-                lhs.val.asString = rhs.val.asString;
-                break;
-            case ValueType.Instance:
-                if (lhs.val.asInstance is INativeCollection lhsNativeCol
-                    && rhs.val.asInstance is INativeCollection rhsNativeCol
-                    && lhsNativeCol.GetType() == rhsNativeCol.GetType())
-                {
-                    //we could do internal changes but we end up just doing this more long form
-                    lhs = rhs;
-                }
-                else
-                {
-                    //deal with regular field updates
-                    var lhsInst = lhs.val.asInstance;
-                    //todo this is now slow and bad
-                    foreach (var item in lhsInst.Fields.ToArray())
-                    {
-                        if (rhs.val.asInstance.Fields.Get(item.Key, out var rhsField))
-                        {
-                            lhsInst.Fields.Get(item.Key, out var lhsVal);
-                            lhsInst.Fields.Set(item.Key, UpdateFrom(lhsVal, rhsField, vm));
-                        }
-                    }
-                }
-                break;
-            default:
-                vm.ThrowRuntimeException($"Unhandled value type '{lhs.type}' in update, with lhs '{lhs}' and rhs '{rhs}'");
-                break;
-            }
-
-            return lhs;
         }
     }
 }

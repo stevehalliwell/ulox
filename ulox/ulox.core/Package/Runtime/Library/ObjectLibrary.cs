@@ -143,7 +143,7 @@ namespace ULox
             vm.Push(lhs);
             vm.Push(rhs);
             vm.PushCallFrameRunYield(func, 2);
-            lhs = vm.Pop();
+            lhs = vm.Peek();
             return lhs;
         }
     }

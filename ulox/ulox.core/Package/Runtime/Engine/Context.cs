@@ -37,7 +37,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public CompiledScript CompileScript(Script script, Action<CompiledScript> compiledScriptAction = null)
+        public CompiledScript CompileScript(Script script)
         {
             var existing = _compiledScripts.Find(x => x.ScriptHash == script.ScriptHash);
             if (existing != null)
@@ -45,7 +45,9 @@ namespace ULox
 
             var res = Program.Compile(script);
             _compiledScripts.Add(res);
-            compiledScriptAction?.Invoke(res);
+            Vm.PrepareTypes(Program.TypeInfo);
+            Vm.Clear();
+            Vm.Interpret(res.TopLevelChunk);
             return res;
         }
     }

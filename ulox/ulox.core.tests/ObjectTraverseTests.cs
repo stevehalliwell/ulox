@@ -19,10 +19,11 @@ fun Update(lhs, rhs)
 }
 
 foo = Object.TraverseUpdate(foo, foo2, Update);
+print(1);
 "
             );
 
-            Assert.AreEqual("", testEngine.InterpreterResult);
+            Assert.AreEqual("1", testEngine.InterpreterResult);
         }
         
         [Test]
@@ -397,6 +398,38 @@ print(foo.c);
 ");
 
             Assert.AreEqual("1<inst NativeList>null", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TraveseUpdate_WhenNested_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+var foo = {a=1, b=2,};
+
+fun TraverseUpdateAssigner(lhs, rhs)
+{
+    retval = rhs;
+}
+
+fun TraverseUpdate(lhs, rhs)
+{
+    retval = Object.TraverseUpdate(lhs, rhs, TraverseUpdateAssigner);
+}
+
+var nested = 
+{
+    sub = TraverseUpdate(Object.Duplicate(foo), {b=1}),
+    sub2 = TraverseUpdate(Object.Duplicate(foo), {a=2}),
+};
+
+printh(nested);
+"
+            );
+
+            StringAssert.Contains("a:1", testEngine.InterpreterResult);
+            StringAssert.Contains("b:1", testEngine.InterpreterResult);
+            StringAssert.Contains("a:2", testEngine.InterpreterResult);
+            StringAssert.Contains("b:2", testEngine.InterpreterResult);
         }
     }
 }

@@ -140,7 +140,6 @@ namespace ULox
         public InterpreterResult Interpret(Chunk chunk)
         {
             //push this empty string to match the expectation of the function compiler
-            Push(Value.New(""));
             Push(Value.New(new ClosureInternal() { chunk = chunk }));
             PushCallFrameFromValue(Peek(), 0);
 
@@ -1225,6 +1224,14 @@ namespace ULox
                 var klassVal = Value.New(klass);
                 Globals.AddOrSet(klass.Name, klassVal);
             }
+        }
+
+        internal void Clear()
+        {
+            _valueStack.Reset();
+            _callFrames.Reset();
+            _currentCallFrame = default;
+            _currentChunk = default;
         }
     }
 }

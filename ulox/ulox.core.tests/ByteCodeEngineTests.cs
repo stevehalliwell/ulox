@@ -842,7 +842,6 @@ var c = b + a;");
             Assert.AreEqual(@"Cannot perform op across types 'Double' and 'Null' at ip:'7' in chunk:'root(test:4)'.
 ===Stack===
 <closure root upvals:0>
-
 ===CallStack===
 chunk:'root(test)'
 

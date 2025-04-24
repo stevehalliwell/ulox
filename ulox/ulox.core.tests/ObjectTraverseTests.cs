@@ -13,7 +13,12 @@ class Foo {}
 var foo = Foo();
 var foo2 = Foo();
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 "
             );
 
@@ -29,7 +34,12 @@ class Foo {}
 var foo = Foo();
 var foo2 = {=};
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 "
             );
 
@@ -47,7 +57,12 @@ foo.a = 1;
 var foo2 = Foo();
 foo2.a = 2;
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo.a);
 "
             );
@@ -62,7 +77,12 @@ print(foo.a);
 var foo = 1;
 var foo2 = 2;
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo);
 "
             );
@@ -77,7 +97,12 @@ print(foo);
 var foo = 1;
 var foo2 = 2;
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo);
 ");
 
@@ -91,7 +116,12 @@ print(foo);
 var foo = true;
 var foo2 = false;
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo);
 ");
 
@@ -105,7 +135,12 @@ print(foo);
 var foo = ""Hello"";
 var foo2 = ""World"";
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo);
 ");
 
@@ -119,7 +154,12 @@ print(foo);
 var foo = 1;
 var foo2 = false;
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo);
 ");
 
@@ -133,7 +173,12 @@ print(foo);
 var foo = {a=1, b=2,};
 var foo2 = {a=2, c=3,};
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo.a);
 print(foo.b);
 print(foo meets foo2);
@@ -150,7 +195,12 @@ print(foo meets foo2);
 var foo = {a=1, b=2,};
 var foo2 = {a=null, c=3,};
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo.a);
 print(foo.b);
 print(foo meets foo2);
@@ -172,7 +222,7 @@ fun Update(lhs, rhs)
     retval = rhs;
 }
 
-Object.TraverseUpdate(foo, foo2, Update);
+foo = Object.TraverseUpdate(foo, foo2, Update);
 
 printh(foo);
 "
@@ -266,7 +316,12 @@ var foo2 =
     }
 };
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo.a.val);
 print(foo.d.a);
 print(foo meets foo2);
@@ -284,7 +339,12 @@ print(foo meets foo2);
 var foo = {a=[], b=2, d = Map().CreateOrUpdate(1,1).CreateOrUpdate(2,2)};
 var foo2 = {a=[1,2], c=3, d = Map().CreateOrUpdate(""a"",1).CreateOrUpdate(""b"",2).CreateOrUpdate(""c"",3)};
 
-foo = foo update foo2;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+foo = Object.TraverseUpdate(foo, foo2, Update);
 print(foo.a.Count());
 print(foo.d[""c""]);
 print(foo meets foo2);
@@ -304,7 +364,7 @@ class Foo
 
     init()
     {
-        this update {a = 1,};
+        Object.TraverseUpdate(this, {a = 1,}, fun (lhs, rhs) {retval = rhs;});
     }
 }
 
@@ -325,7 +385,12 @@ class Foo {mixin Bar; var c;}
 var bar = Bar();
 bar.a = 1;
 bar.b = [];
-var foo = Foo() update bar;
+fun Update(lhs, rhs)
+{
+    retval = rhs;
+}
+
+var foo = Object.TraverseUpdate(Foo(), bar, Update);
 print(foo.a);
 print(foo.b);
 print(foo.c);

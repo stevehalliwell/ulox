@@ -654,7 +654,7 @@ namespace ULox
 
             throw new RuntimeUloxException(msg,
                 currentInstruction,
-                VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
+                VmUtil.GetLocationNameFromFrame(frame),
                 VmUtil.GenerateValueStackDump(this),
                 VmUtil.GenerateCallStackDump(this));
         }
@@ -1443,8 +1443,9 @@ namespace ULox
             return string.Join(System.Environment.NewLine, stackVars);
         }
 
-        internal static string GetLocationNameFromFrame(CallFrame frame, int currentInstruction = -1)
+        internal static string GetLocationNameFromFrame(CallFrame frame)
         {
+            var currentInstruction = frame.InstructionPointer;
             if (frame.nativeFunc != null)
             {
                 var name = frame.nativeFunc.Method.Name;

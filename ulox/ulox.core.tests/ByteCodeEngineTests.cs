@@ -843,7 +843,7 @@ var c = b + a;");
 ===Stack===
 <closure root upvals:0>
 ===CallStack===
-chunk:'root(test)'
+chunk:'root(test:2)'
 
 ", testEngine.InterpreterResult);
         }

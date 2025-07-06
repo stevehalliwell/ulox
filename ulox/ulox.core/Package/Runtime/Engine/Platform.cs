@@ -86,7 +86,7 @@ namespace ULox
         public string LoadFile(string filePath)
         {
             string safePath = MakeFilePathSafe(filePath);
-            if (!File.Exists(safePath)) return string.Empty;
+            if (!File.Exists(safePath)) return null;
             return File.ReadAllText(safePath);
         }
 

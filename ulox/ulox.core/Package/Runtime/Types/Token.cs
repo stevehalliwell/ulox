@@ -62,7 +62,7 @@
         FALSE,
         NULL,
 
-        THROW,
+        PANIC,
 
         CLASS,
         THIS,

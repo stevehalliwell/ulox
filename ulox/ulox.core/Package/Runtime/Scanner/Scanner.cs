@@ -48,7 +48,7 @@ namespace ULox
                 ("false", TokenType.FALSE),
                 ("null", TokenType.NULL),
                 ("fun", TokenType.FUNCTION),
-                ("throw", TokenType.THROW),
+                ("panic", TokenType.PANIC),
                 ("yield", TokenType.YIELD),
                 ("fname", TokenType.CONTEXT_NAME_FUNC),
 

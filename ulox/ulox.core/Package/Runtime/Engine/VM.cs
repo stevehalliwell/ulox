@@ -456,7 +456,7 @@ namespace ULox
                     _valueStack.DiscardPop();
                     break;
 
-                case OpCode.THROW:
+                case OpCode.PANIC:
                     ThrowRuntimeException(Pop().ToString());
                     break;
 

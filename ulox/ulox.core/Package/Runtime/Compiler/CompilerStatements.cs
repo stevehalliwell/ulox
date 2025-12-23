@@ -89,7 +89,7 @@ namespace ULox
         public static void BlockStatement(Compiler compiler)
             => compiler.BlockStatement();
 
-        public static void ThrowStatement(Compiler compiler)
+        public static void PanicStatement(Compiler compiler)
         {
             if (!compiler.TokenIterator.Check(TokenType.END_STATEMENT))
             {
@@ -101,7 +101,7 @@ namespace ULox
             }
 
             compiler.ConsumeEndStatement();
-            compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.PANIC));
         }
 
         public static void NoOpStatement(Compiler compiler)
@@ -140,7 +140,7 @@ namespace ULox
                 compiler.AddConstantStringAndWriteOp("'");
                 compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
-                compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
+                compiler.EmitPacket(new ByteCodePacket(OpCode.PANIC));
                 compiler.EmitLabel(thenjumpLabel);
                 compiler.EmitPop();
 
@@ -189,7 +189,7 @@ namespace ULox
                 compiler.EmitLabel(lastElseLabel);
 
             compiler.AddConstantStringAndWriteOp($"Match on '{matchArgName}' did have a matching case.");
-            compiler.EmitPacket(new ByteCodePacket(OpCode.THROW));
+            compiler.EmitPacket(new ByteCodePacket(OpCode.PANIC));
 
             compiler.EmitLabel(matchEndLabelID);
 

@@ -77,7 +77,7 @@ namespace ULox
                 (TokenType.BREAK, CompilerStatements.BreakStatement),
                 (TokenType.CONTINUE, CompilerStatements.ContinueStatement),
                 (TokenType.OPEN_BRACE, CompilerStatements.BlockStatement),
-                (TokenType.THROW, CompilerStatements.ThrowStatement),
+                (TokenType.PANIC, CompilerStatements.PanicStatement),
                 (TokenType.END_STATEMENT, CompilerStatements.NoOpStatement),
                 (TokenType.EXPECT, CompilerStatements.ExpectStatement),
                 (TokenType.MATCH, CompilerStatements.MatchStatement),

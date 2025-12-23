@@ -323,26 +323,26 @@ testset FooTests
 {
     test ForceFail
     {
-        //throw keyword can be used anywhere, 
+        //panic keyword can be used anywhere, 
         //  it will stop the vm, 
         //  it can have an arg or message
         //Tests are run in an isolated inner vm, 
         //  the vm running the tests continues, but knows 
         //  the test failed.
-        throw;
+        panic;
     }
 
     test AreEqual
     {
         //there are many Assert methods, 
-        //  this means you don't need to if something throw
+        //  this means you don't need to `if` something to panic
         Assert.AreEqual(1,1);
     }
 
     test ExpectEqual
     {
         //expect allows for chaining multiple asserts
-        //  It will desugar to a throw with a message
+        //  It will desugar to a panic with a message
         //  You can specify the message as a string
         //  after the expression with : "literal did not match"
         expect 

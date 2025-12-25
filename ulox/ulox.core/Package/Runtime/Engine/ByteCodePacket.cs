@@ -211,8 +211,6 @@ namespace ULox
         public short ShortValue => (short)((b2 << 8) | b3);
 
         [FieldOffset(0)]
-        public readonly uint _data;
-        [FieldOffset(0)]
         public readonly byte _opCode;
         [FieldOffset(1)]
         public readonly byte b1;
@@ -310,16 +308,6 @@ namespace ULox
         public override string ToString()
         {
             return $"{OpCode} {b1} {b2} {b3}";
-        }
-
-        private ByteCodePacket(uint data) : this()
-        {
-            _data = data;
-        }
-
-        internal static ByteCodePacket FromUint(uint v)
-        {
-            return new ByteCodePacket(v);
         }
     }
 }

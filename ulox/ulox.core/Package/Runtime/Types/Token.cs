@@ -104,8 +104,8 @@
     
     public readonly struct Token
     {
-        public readonly string Literal;
         public readonly int StringSourceIndex;
+        public readonly string Literal;
         public readonly TokenType TokenType;
 
         public Token(

@@ -1,6 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using System.Linq;
 
+//TODO: these are just used by the vm, move them there
+
 namespace ULox
 {
     public static class MeetValidator

@@ -2,6 +2,7 @@
 
 namespace ULox
 {
+    //TODO: we don' need types for this, just make the base configurable
     public abstract class NativeTypeDesugar : IDesugarStep
     {
         private readonly string _nativeTypeName;

@@ -1,5 +1,6 @@
 ﻿namespace ULox
 {
+    //TODO: collapse these two classes and change inher to composition
     public abstract class ChunkIterator
     {
         public int CurrentInstructionIndex { get; protected set; }

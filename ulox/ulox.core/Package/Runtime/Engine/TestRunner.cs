@@ -10,7 +10,7 @@ namespace ULox
     {
         private readonly Dictionary<string, bool> _testStatus = new();
         private string _lastId;
-        private ushort _fixtureLoc;//will prob become a label
+        private ushort _fixtureLoc;
 
         public TestRunner(Func<Vm> createVM)
         {

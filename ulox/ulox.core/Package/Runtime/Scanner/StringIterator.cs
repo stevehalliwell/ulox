@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 
 namespace ULox
@@ -32,13 +31,6 @@ namespace ULox
         private int SafeRead(int index)
         {
             return index < _source.Length ? _source[index] : -1;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal void ReadLine()
-        {
-            while (Peek() != -1 && CurrentChar != '\n')
-                Advance();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

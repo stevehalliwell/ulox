@@ -3,6 +3,7 @@ using static ULox.CompilerState;
 
 namespace ULox
 {
+    //TODO: move to compiler?
     public static class CompilerStatements
     {
         public static void BuildStatement(Compiler compiler)
@@ -122,7 +123,7 @@ namespace ULox
                 compiler.EmitPacket(new ByteCodePacket(OpCode.NOT));
                 var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if_false");
                 compiler.EmitPop();
-               
+
                 compiler.AddConstantStringAndWriteOp("Expect failed, '");
 
                 if (compiler.TokenIterator.Match(TokenType.COLON))
@@ -136,7 +137,7 @@ namespace ULox
                     var sourceStringSection = compiler.TokenIterator.GetSourceSection(startIndex, length);
                     compiler.AddConstantStringAndWriteOp(sourceStringSection.Trim());
                 }
-               
+
                 compiler.AddConstantStringAndWriteOp("'");
                 compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
                 compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));

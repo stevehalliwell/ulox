@@ -2,6 +2,7 @@
 
 namespace ULox
 {
+    //TODO: move to compiler?
     public static class CompilerDeclarations
     {
         public static void FunctionDeclaration(Compiler compiler)

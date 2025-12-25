@@ -63,7 +63,7 @@ namespace ULox
                 PushCallFrameFromValue(func, args);
                 return Run();
             }
-            catch(ULox.UloxException uloxEx)
+            catch(UloxException uloxEx)
             {
                 throw uloxEx;
             }

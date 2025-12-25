@@ -3,6 +3,7 @@ using System.Linq;
 
 namespace ULox
 {
+    //TODO: if class instances still carry their own stuff around, perhaps they could just become one of these?
     public sealed class TypeInfo
     {
         private Dictionary<string, TypeInfoEntry> _userTypes = new();

@@ -1,8 +1,8 @@
 ﻿using System.Linq;
-using static ULox.Vm;
 
 namespace ULox
 {
+    //TODO: move to vm?
     public static class VmUtil
     {
         public static string GenerateGlobalsDump(Vm vm)

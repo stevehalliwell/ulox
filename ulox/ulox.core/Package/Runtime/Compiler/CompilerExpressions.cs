@@ -2,6 +2,7 @@
 
 namespace ULox
 {
+    //TODO: move to compiler?
     public static class CompilerExpressions
     {
         public static void Unary(Compiler compiler, bool canAssign)
@@ -158,7 +159,7 @@ namespace ULox
                 globalName != -1
                 ? compiler.TokenIterator.PreviousToken.Literal
                 : "anonymous",
-                 FunctionType.Function);
+                FunctionType.Function);
 
             if (globalName != -1)
             {

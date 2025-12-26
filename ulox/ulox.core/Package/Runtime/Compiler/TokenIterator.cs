@@ -53,9 +53,9 @@ namespace ULox
             _desugarSteps.Add(new CompoundAssignDesugar());//could be done at token emit time
             _desugarSteps.Add(new LoopDesugar());
 
-            _desugarSteps.Add(new ListDesugar());//these types are a if you see this sequence of tokens replace it with this one
-            _desugarSteps.Add(new MapDesugar());
-            _desugarSteps.Add(new DynamicDesugar());
+            _desugarSteps.Add(new NativeTypeDesugar("List", new[] { TokenType.OPEN_BRACKET, TokenType.CLOSE_BRACKET }));
+            _desugarSteps.Add(new NativeTypeDesugar("Map", new[] { TokenType.OPEN_BRACKET, TokenType.COLON, TokenType.CLOSE_BRACKET }));
+            _desugarSteps.Add(new NativeTypeDesugar("Dynamic", new[] { TokenType.OPEN_BRACE, TokenType.ASSIGN, TokenType.CLOSE_BRACE}));
             
             _desugarSteps.Add(new ClassInitArgMatchDesugar());  //this is the only one that needs context right now
             _desugarSteps.Add(new SoaClassDesugar());

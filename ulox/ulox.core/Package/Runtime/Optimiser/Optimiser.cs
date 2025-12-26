@@ -2,6 +2,13 @@
 
 namespace ULox
 {
+    public interface IOptimiserPass
+    {
+        void Prepare(Optimiser optimiser, Chunk chunk);
+        void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet);
+        Optimiser.PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk);
+    }
+
     public sealed class Optimiser
     {
         public enum PassCompleteRequest

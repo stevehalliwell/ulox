@@ -1009,12 +1009,21 @@ namespace ULox
                     //if comma consume
                     compiler.TokenIterator.Match(TokenType.COMMA);
                 }
+
+                return;
             }
-            else
+            
+            if (compiler.TokenIterator.Match(midTok))
             {
-                //TODO: expects others to have already been desugared, not sure that's a win
-                compiler.ThrowCompilerException("Expect identifier or '=' after '{'");
+                if(compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
+                {
+                    //empty dynamic
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
+                    return;
+                }
             }
+            
+            compiler.ThrowCompilerException("Expect identifier or '=' after '{'");
         }
 
         public static void CountOf(Compiler compiler, bool canAssign)

@@ -206,7 +206,7 @@ print(a);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 14 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 13 -> 10", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]

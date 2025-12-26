@@ -214,22 +214,6 @@ print(a);";
         }
 
         [Test]
-        public void EmptyList_WhenDesugar_ShouldIdentList()
-        {
-            var scriptContent = @"
-var a = [];
-";
-            var (tokens, tokenIterator, _) = Prepare(scriptContent);
-            var startingCount = tokens.Count;
-            var res = new List<Token>();
-
-            AdvanceGather(tokenIterator, res);
-
-            Assert.Greater(res.Count, startingCount);
-            Assert.IsTrue(res.Any(x => x.Literal == "List"));
-        }
-
-        [Test]
         public void EmptyMap_WhenDesugar_ShouldIdentMap()
         {
             var scriptContent = @"
@@ -242,21 +226,6 @@ var a = [:];
             AdvanceGather(tokenIterator, res);
 
             Assert.IsTrue(res.Any(x => x.Literal == "Map"));
-        }
-
-        [Test]
-        public void EmptyDynamic_WhenDesugar_ShouldIdentDynamic()
-        {
-            var scriptContent = @"
-var a = {=};
-";
-            var (tokens, tokenIterator, _) = Prepare(scriptContent);
-            var startingCount = tokens.Count;
-            var res = new List<Token>();
-
-            AdvanceGather(tokenIterator, res);
-
-            Assert.IsTrue(res.Any(x => x.Literal == "Dynamic"));
         }
 
         [Test]

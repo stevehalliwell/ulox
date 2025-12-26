@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using static ULox.CompilerState;
 
 namespace ULox
 {
@@ -67,63 +68,63 @@ namespace ULox
                 );
 
             AddDeclarationCompilette(
-                (TokenType.FUNCTION, CompilerDeclarations.FunctionDeclaration),
-                (TokenType.VAR, CompilerDeclarations.VarDeclaration)
+                (TokenType.FUNCTION, FunctionDeclaration),
+                (TokenType.VAR, VarDeclaration)
                 );
 
             AddStatementCompilette(
-                (TokenType.IF, CompilerStatements.IfStatement),
-                (TokenType.YIELD, CompilerStatements.YieldStatement),
-                (TokenType.BREAK, CompilerStatements.BreakStatement),
-                (TokenType.CONTINUE, CompilerStatements.ContinueStatement),
-                (TokenType.OPEN_BRACE, CompilerStatements.BlockStatement),
-                (TokenType.PANIC, CompilerStatements.PanicStatement),
-                (TokenType.END_STATEMENT, CompilerStatements.NoOpStatement),
-                (TokenType.EXPECT, CompilerStatements.ExpectStatement),
-                (TokenType.MATCH, CompilerStatements.MatchStatement),
-                (TokenType.LABEL, CompilerStatements.LabelStatement),
-                (TokenType.GOTO, CompilerStatements.GotoStatement),
-                (TokenType.READ_ONLY, CompilerStatements.ReadOnlyStatement),
-                (TokenType.RETURN, CompilerStatements.ReturnStatement),
-                (TokenType.FOR, CompilerStatements.ForStatement),
-                (TokenType.BUILD, CompilerStatements.BuildStatement)
+                (TokenType.IF, IfStatement),
+                (TokenType.YIELD, YieldStatement),
+                (TokenType.BREAK, BreakStatement),
+                (TokenType.CONTINUE, ContinueStatement),
+                (TokenType.OPEN_BRACE, BlockStatement),
+                (TokenType.PANIC, PanicStatement),
+                (TokenType.END_STATEMENT, NoOpStatement),
+                (TokenType.EXPECT, ExpectStatement),
+                (TokenType.MATCH, MatchStatement),
+                (TokenType.LABEL, LabelStatement),
+                (TokenType.GOTO, GotoStatement),
+                (TokenType.READ_ONLY, ReadOnlyStatement),
+                (TokenType.RETURN, ReturnStatement),
+                (TokenType.FOR, ForStatement),
+                (TokenType.BUILD, BuildStatement)
                 );
 
             SetPrattRules(
-                (TokenType.MINUS, CompilerExpressions.Unary, CompilerExpressions.Binary, Precedence.Term),
-                (TokenType.PLUS, null, CompilerExpressions.Binary, Precedence.Term),
-                (TokenType.SLASH, null, CompilerExpressions.Binary, Precedence.Factor),
-                (TokenType.STAR, null, CompilerExpressions.Binary, Precedence.Factor),
-                (TokenType.PERCENT, null, CompilerExpressions.Binary, Precedence.Factor),
-                (TokenType.BANG, CompilerExpressions.Unary, null, Precedence.None),
-                (TokenType.NUMBER, CompilerExpressions.Literal, null, Precedence.None),
-                (TokenType.TRUE, CompilerExpressions.Literal, null, Precedence.None),
-                (TokenType.FALSE, CompilerExpressions.Literal, null, Precedence.None),
-                (TokenType.NULL, CompilerExpressions.Literal, null, Precedence.None),
-                (TokenType.BANG_EQUAL, null, CompilerExpressions.Binary, Precedence.Equality),
-                (TokenType.EQUALITY, null, CompilerExpressions.Binary, Precedence.Equality),
-                (TokenType.LESS, null, CompilerExpressions.Binary, Precedence.Comparison),
-                (TokenType.LESS_EQUAL, null, CompilerExpressions.Binary, Precedence.Comparison),
-                (TokenType.GREATER, null, CompilerExpressions.Binary, Precedence.Comparison),
-                (TokenType.GREATER_EQUAL, null, CompilerExpressions.Binary, Precedence.Comparison),
-                (TokenType.STRING, CompilerExpressions.Literal, null, Precedence.None),
-                (TokenType.IDENTIFIER, CompilerExpressions.Variable, null, Precedence.None),
-                (TokenType.AND, null, CompilerExpressions.And, Precedence.And),
-                (TokenType.OR, null, CompilerExpressions.Or, Precedence.Or),
-                (TokenType.OPEN_PAREN, CompilerExpressions.Grouping, CompilerExpressions.Call, Precedence.Call),
-                (TokenType.CONTEXT_NAME_FUNC, CompilerExpressions.FName, null, Precedence.None),
-                (TokenType.OPEN_BRACKET, CompilerExpressions.BracketCreate, CompilerExpressions.BracketSubScript, Precedence.Call),
-                (TokenType.OPEN_BRACE, CompilerExpressions.BraceCreateDynamic, null, Precedence.Call),
-                (TokenType.DOT, null, CompilerExpressions.Dot, Precedence.Call),
+                (TokenType.MINUS, Unary, Binary, Precedence.Term),
+                (TokenType.PLUS, null, Binary, Precedence.Term),
+                (TokenType.SLASH, null, Binary, Precedence.Factor),
+                (TokenType.STAR, null, Binary, Precedence.Factor),
+                (TokenType.PERCENT, null, Binary, Precedence.Factor),
+                (TokenType.BANG, Unary, null, Precedence.None),
+                (TokenType.NUMBER, Literal, null, Precedence.None),
+                (TokenType.TRUE, Literal, null, Precedence.None),
+                (TokenType.FALSE, Literal, null, Precedence.None),
+                (TokenType.NULL, Literal, null, Precedence.None),
+                (TokenType.BANG_EQUAL, null, Binary, Precedence.Equality),
+                (TokenType.EQUALITY, null, Binary, Precedence.Equality),
+                (TokenType.LESS, null, Binary, Precedence.Comparison),
+                (TokenType.LESS_EQUAL, null, Binary, Precedence.Comparison),
+                (TokenType.GREATER, null, Binary, Precedence.Comparison),
+                (TokenType.GREATER_EQUAL, null, Binary, Precedence.Comparison),
+                (TokenType.STRING, Literal, null, Precedence.None),
+                (TokenType.IDENTIFIER, Variable, null, Precedence.None),
+                (TokenType.AND, null, And, Precedence.And),
+                (TokenType.OR, null, Or, Precedence.Or),
+                (TokenType.OPEN_PAREN, Grouping, Call, Precedence.Call),
+                (TokenType.CONTEXT_NAME_FUNC, FName, null, Precedence.None),
+                (TokenType.OPEN_BRACKET, BracketCreate, BracketSubScript, Precedence.Call),
+                (TokenType.OPEN_BRACE, BraceCreateDynamic, null, Precedence.Call),
+                (TokenType.DOT, null, Dot, Precedence.Call),
                 (TokenType.THIS, _classCompiler.This, null, Precedence.None),
                 (TokenType.CONTEXT_NAME_CLASS, _classCompiler.CName, null, Precedence.None),
                 (TokenType.CONTEXT_NAME_TEST, testcaseCompilette.TestName, null, Precedence.None),
                 (TokenType.CONTEXT_NAME_TESTSET, testdec.TestSetName, null, Precedence.None),
-                (TokenType.TYPEOF, CompilerExpressions.TypeOf, null, Precedence.Term),
-                (TokenType.MEETS, null, CompilerExpressions.Meets, Precedence.Comparison),
-                (TokenType.SIGNS, null, CompilerExpressions.Signs, Precedence.Comparison),
-                (TokenType.FUNCTION, CompilerExpressions.FunExp, null, Precedence.Call),
-                (TokenType.COUNT_OF, CompilerExpressions.CountOf, null, Precedence.None)
+                (TokenType.TYPEOF, TypeOf, null, Precedence.Term),
+                (TokenType.MEETS, null, Meets, Precedence.Comparison),
+                (TokenType.SIGNS, null, Signs, Precedence.Comparison),
+                (TokenType.FUNCTION, FunExp, null, Precedence.Call),
+                (TokenType.COUNT_OF, CountOf, null, Precedence.None)
                               );
         }
 
@@ -731,6 +732,658 @@ namespace ULox
         public static string ChunkToLocationStr(Chunk chunk)
         {
             return $"chunk '{chunk.GetLocationString()}'";
+        }
+
+        public static void FunctionDeclaration(Compiler compiler)
+        {
+            InnerFunctionDeclaration(compiler, true);
+        }
+
+        public static void VarDeclaration(Compiler compiler)
+        {
+            if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
+                MultiVarAssignToReturns(compiler);
+            else
+                PlainVarDeclare(compiler);
+
+            compiler.ConsumeEndStatement();
+        }
+
+        private static void PlainVarDeclare(Compiler compiler)
+        {
+            do
+            {
+                var id = compiler.ParseVariable("Expect variable name");
+
+                if (compiler.TokenIterator.Match(TokenType.ASSIGN))
+                    compiler.Expression();
+                else
+                    compiler.EmitNULL();
+
+                compiler.DefineVariable(id);
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+        }
+
+        private static void MultiVarAssignToReturns(Compiler compiler)
+        {
+            var varNames = new List<string>();
+            do
+            {
+                compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier within multivar declaration.");
+                varNames.Add((string)compiler.TokenIterator.PreviousToken.Literal);
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' to end a multivar declaration.");
+            compiler.TokenIterator.Consume(TokenType.ASSIGN, "Expect '=' after multivar declaration.");
+
+            //mark stack start
+            compiler.EmitPacket(new ByteCodePacket(OpCode.MULTI_VAR, 1));
+
+            compiler.Expression();
+
+            compiler.EmitPacket(new ByteCodePacket(OpCode.MULTI_VAR, 0, (byte)varNames.Count));
+
+            if (compiler.CurrentCompilerState.scopeDepth == 0)
+            {
+                for (int i = varNames.Count - 1; i >= 0; i--)
+                {
+                    var varName = varNames[i];
+                    compiler.DeclareAndDefineCustomVariable(varName);
+                }
+            }
+            else
+            {
+                for (int i = 0; i < varNames.Count; i++)
+                {
+                    var varName = varNames[i];
+                    compiler.DeclareAndDefineCustomVariable(varName);
+                }
+            }
+        }
+         public static void Unary(Compiler compiler, bool canAssign)
+        {
+            var op = compiler.TokenIterator.PreviousToken.TokenType;
+
+            compiler.ParsePrecedence(Precedence.Unary);
+
+            switch (op)
+            {
+            case TokenType.MINUS: compiler.EmitPacket(new ByteCodePacket(OpCode.NEGATE)); break;
+            case TokenType.BANG: compiler.EmitPacket(new ByteCodePacket(OpCode.NOT)); break;
+            default:
+                break;
+            }
+        }
+
+        public static void Binary(Compiler compiler, bool canAssign)
+        {
+            TokenType operatorType = compiler.TokenIterator.PreviousToken.TokenType;
+
+            // Compile the right operand.
+            var rule = compiler._prattParser.GetRule(operatorType);
+            compiler.ParsePrecedence((Precedence)(rule.Precedence + 1));
+
+            switch (operatorType)
+            {
+            case TokenType.PLUS: compiler.EmitPacket(new ByteCodePacket(OpCode.ADD)); break;
+            case TokenType.MINUS: compiler.EmitPacket(new ByteCodePacket(OpCode.SUBTRACT)); break;
+            case TokenType.STAR: compiler.EmitPacket(new ByteCodePacket(OpCode.MULTIPLY)); break;
+            case TokenType.SLASH: compiler.EmitPacket(new ByteCodePacket(OpCode.DIVIDE)); break;
+            case TokenType.PERCENT: compiler.EmitPacket(new ByteCodePacket(OpCode.MODULUS)); break;
+            case TokenType.EQUALITY: compiler.EmitPacket(new ByteCodePacket(OpCode.EQUAL)); break;
+            case TokenType.GREATER: compiler.EmitPacket(new ByteCodePacket(OpCode.GREATER)); break;
+            case TokenType.LESS: compiler.EmitPacket(new ByteCodePacket(OpCode.LESS)); break;
+            case TokenType.BANG_EQUAL: compiler.EmitPacket(new ByteCodePacket(OpCode.EQUAL)); compiler.EmitPacket(new ByteCodePacket(OpCode.NOT)); break;
+            case TokenType.GREATER_EQUAL: compiler.EmitPacket(new ByteCodePacket(OpCode.LESS)); compiler.EmitPacket(new ByteCodePacket(OpCode.NOT)); break;
+            case TokenType.LESS_EQUAL: compiler.EmitPacket(new ByteCodePacket(OpCode.GREATER)); compiler.EmitPacket(new ByteCodePacket(OpCode.NOT)); break;
+
+            default:
+                break;
+            }
+        }
+
+        public static void Literal(Compiler compiler, bool canAssign)
+        {
+            switch (compiler.TokenIterator.PreviousToken.TokenType)
+            {
+            case TokenType.TRUE: compiler.EmitPushValue(true); break;
+            case TokenType.FALSE: compiler.EmitPushValue(false); break;
+            case TokenType.NULL: compiler.EmitNULL(); break;
+            case TokenType.NUMBER:
+            {
+                var number = double.Parse(compiler.TokenIterator.PreviousToken.Literal);
+
+                var isInt = number == Math.Truncate(number);
+
+                if (isInt && number < short.MaxValue && number >= short.MinValue)
+                {
+                    compiler.EmitPushValue((short)number);
+                    return;
+                }
+
+                var (isQuotientable, num, dem) = IsNumberQuotientable(number);
+                if (isQuotientable)
+                {
+                    compiler.EmitPacket(new ByteCodePacket(new ByteCodePacket.QuotientDetails(num, dem)));
+                    return;
+                }
+
+                compiler.AddConstantDoubleAndWriteOp(number);
+            }
+            break;
+
+            case TokenType.STRING:
+            {
+                var str = (string)compiler.TokenIterator.PreviousToken.Literal;
+                compiler.AddConstantStringAndWriteOp(str);
+            }
+            break;
+            }
+        }
+
+        public static (bool, short, byte) IsNumberQuotientable(double number)
+        {
+            var (isPossible, nume, denom) = DoubleToQuotient.ToQuotient(number, 10);
+            if (!isPossible)
+            {
+                return (false, 0, 0);
+            }
+
+            if (nume <= short.MaxValue 
+                && nume >= short.MinValue
+                && denom <= byte.MaxValue)
+            {
+                return (true, (short)nume, (byte)denom);
+            }
+
+            return (false, 0, 0);
+        }
+
+        public static void Variable(Compiler compiler, bool canAssign)
+        {
+            var name = (string)compiler.TokenIterator.PreviousToken.Literal;
+            compiler.NamedVariable(name, canAssign);
+        }
+
+        public static void And(Compiler compiler, bool canAssign)
+        {
+            var endJumpLabel = compiler.GotoIfUniqueChunkLabel("after_and");
+
+            compiler.EmitPop();
+            compiler.ParsePrecedence(Precedence.And);
+
+            compiler.EmitGoto(endJumpLabel);
+            compiler.EmitLabel(endJumpLabel);
+        }
+
+        public static void Or(Compiler compiler, bool canAssign)
+        {
+            var elseJumpLabel = compiler.GotoIfUniqueChunkLabel("short_or");
+            var endJump = compiler.GotoUniqueChunkLabel("after_or");
+
+            compiler.EmitLabel(elseJumpLabel);
+            compiler.EmitPop();
+
+            compiler.ParsePrecedence(Precedence.Or);
+
+            compiler.EmitGoto(endJump);
+            compiler.EmitLabel(endJump);
+        }
+
+        public static void Grouping(Compiler compiler, bool canAssign)
+        {
+            compiler.ExpressionList(TokenType.CLOSE_PAREN, "Expect ')' after expression.");
+        }
+
+        public static void FunExp(Compiler compiler, bool canAssign)
+        {
+            InnerFunctionDeclaration(compiler, false);
+        }
+
+        public static void InnerFunctionDeclaration(Compiler compiler, bool requirePop)
+        {
+            var isNamed = compiler.TokenIterator.Check(TokenType.IDENTIFIER);
+            var globalName = -1;
+            if (isNamed)
+            {
+                globalName = compiler.ParseVariable("Expect function name.");
+                compiler.CurrentCompilerState.MarkInitialised();
+            }
+
+            compiler.Function(
+                globalName != -1
+                ? compiler.TokenIterator.PreviousToken.Literal
+                : "anonymous",
+                FunctionType.Function);
+
+            if (globalName != -1)
+            {
+                compiler.DefineVariable((byte)globalName);
+
+                if (!requirePop)
+                {
+                    var resolveRes = compiler.ResolveNameLookupOpCode(compiler.CurrentChunk.ReadConstant((byte)globalName).val.asString.String);
+                    compiler.EmitPacketFromResolveGet(resolveRes);
+                }
+            }
+        }
+
+        public static void BracketCreate(Compiler compiler, bool canAssign)
+        {
+            compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.List));
+
+            while (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACKET))
+            {
+                compiler.Expression();
+
+                var constantNameId = compiler.AddCustomStringConstant("Add");
+                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, constantNameId, 1, 0));
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            }
+
+            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");
+        }
+
+        public static void BraceCreateDynamic(Compiler compiler, bool arg2)
+        {
+            var midTok = TokenType.ASSIGN;
+            if (compiler.TokenIterator.Check(TokenType.IDENTIFIER))
+            {
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NATIVE_TYPE, NativeType.Dynamic));
+
+                while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE))
+                {
+                    //we need to copy the dynamic inst
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.DUPLICATE));  //todo this is now the only thing that uses this
+                    compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier.");
+                    //add the constant
+                    var identConstantID = compiler.AddStringConstant();
+                    //read the colon
+                    compiler.TokenIterator.Consume(midTok, "Expect '=' after identifiier.");
+                    //do expression
+                    compiler.Expression();
+                    //we need a set property
+                    compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, identConstantID));
+                    compiler.EmitPop();
+
+                    //if comma consume
+                    compiler.TokenIterator.Match(TokenType.COMMA);
+                }
+            }
+            else
+            {
+                //TODO: expects others to have already been desugared, not sure that's a win
+                compiler.ThrowCompilerException("Expect identifier or '=' after '{'");
+            }
+        }
+
+        public static void CountOf(Compiler compiler, bool canAssign)
+        {
+            compiler.Expression();
+            compiler.EmitPacket(new ByteCodePacket(OpCode.COUNT_OF));
+        }
+
+        public static void Call(Compiler compiler, bool canAssign)
+        {
+            var argCount = compiler.ArgumentList();
+            compiler.EmitPacket(new ByteCodePacket(OpCode.CALL, argCount, 0, 0));
+        }
+
+        public static void Meets(Compiler compiler, bool canAssign)
+        {
+            compiler.Expression();
+            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.Meets));
+        }
+
+        public static void Signs(Compiler compiler, bool canAssign)
+        {
+            compiler.Expression();
+            compiler.EmitPacket(new ByteCodePacket(OpCode.VALIDATE, ValidateOp.Signs));
+        }
+
+        public static void FName(Compiler compiler, bool canAssign)
+        {
+            var fname = compiler.CurrentChunk.ChunkName;
+            compiler.AddConstantStringAndWriteOp(fname);
+        }
+
+        public static void BracketSubScript(Compiler compiler, bool canAssign)
+        {
+            compiler.Expression();
+            compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, "Expect close of bracket after open and expression");
+            if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
+            {
+                compiler.Expression();
+                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_INDEX));
+            }
+            else
+            {
+                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_INDEX));
+            }
+        }
+
+        public static void Dot(Compiler compiler, bool canAssign)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+            byte nameId = compiler.AddStringConstant();
+
+            if (canAssign && compiler.TokenIterator.Match(TokenType.ASSIGN))
+            {
+                compiler.Expression();
+                compiler.EmitPacket(new ByteCodePacket(OpCode.SET_PROPERTY, nameId));
+            }
+            else if (compiler.TokenIterator.Match(TokenType.OPEN_PAREN))
+            {
+                var argCount = compiler.ArgumentList();
+                compiler.EmitPacket(new ByteCodePacket(OpCode.INVOKE, nameId, argCount));
+            }
+            else
+            {
+                compiler.EmitPacket(new ByteCodePacket(OpCode.GET_PROPERTY, nameId));
+            }
+        }
+
+        public static void TypeOf(Compiler compiler, bool canAssign)
+        {
+            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after typeof.");
+            compiler.Expression();
+            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after typeof.");
+            compiler.EmitPacket(new ByteCodePacket(OpCode.TYPEOF));
+        }
+
+         public static void BuildStatement(Compiler compiler)
+        {
+            do
+            {
+                compiler.Expression();
+                compiler.EmitPacket(new ByteCodePacket(OpCode.BUILD));
+            } while (compiler.TokenIterator.Match(TokenType.COMMA));
+
+            compiler.ConsumeEndStatement("build command identifier(s)");
+        }
+
+        public static void IfStatement(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after if.");
+            compiler.Expression();
+            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after if.");
+
+            //todo can we make goto_if consume the value in the vm so we don't need to play pop wackamole
+            var wasFalseLabel = compiler.GotoIfUniqueChunkLabel("if_false");
+            compiler.EmitPop();
+
+            compiler.Statement();
+
+            var afterIfLabel = compiler.GotoUniqueChunkLabel("if_end");
+
+            if (compiler.TokenIterator.Match(TokenType.ELSE))
+            {
+                var elseJump = compiler.GotoUniqueChunkLabel("else");
+
+                compiler.EmitLabel(wasFalseLabel);
+                compiler.EmitPop();
+
+                compiler.Statement();
+
+                compiler.EmitGoto(afterIfLabel);
+                compiler.EmitLabel(elseJump);
+            }
+            else
+            {
+                compiler.EmitLabel(wasFalseLabel);
+                compiler.EmitPop();
+                compiler.EmitGoto(afterIfLabel);
+            }
+
+            compiler.EmitLabel(afterIfLabel);
+        }
+
+        public static void YieldStatement(Compiler compiler)
+        {
+            compiler.EmitPacket(new ByteCodePacket(OpCode.YIELD));
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void BreakStatement(Compiler compiler)
+        {
+            var comp = compiler.CurrentCompilerState;
+            if (comp.LoopStates.Count == 0)
+                compiler.ThrowCompilerException($"Cannot break when not inside a loop.");
+
+
+            compiler.PopBackToScopeDepth(comp.LoopStates.Last().ScopeDepth);
+
+            compiler.EmitNULL();
+            compiler.EmitGoto(comp.LoopStates.Peek().ExitLabelID);
+            comp.LoopStates.Peek().HasExit = true;
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void ContinueStatement(Compiler compiler)
+        {
+            var comp = compiler.CurrentCompilerState;
+            if (comp.LoopStates.Count == 0)
+                compiler.ThrowCompilerException($"Cannot continue when not inside a loop.");
+
+            compiler.PopBackToScopeDepth(comp.LoopStates.Last().ScopeDepth);
+            compiler.EmitGoto(comp.LoopStates.Peek().ContinueLabelID);
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void BlockStatement(Compiler compiler)
+            => compiler.BlockStatement();
+
+        public static void PanicStatement(Compiler compiler)
+        {
+            if (!compiler.TokenIterator.Check(TokenType.END_STATEMENT))
+            {
+                compiler.Expression();
+            }
+            else
+            {
+                compiler.EmitNULL();
+            }
+
+            compiler.ConsumeEndStatement();
+            compiler.EmitPacket(new ByteCodePacket(OpCode.PANIC));
+        }
+
+        public static void NoOpStatement(Compiler compiler)
+        {
+        }
+
+        //todo expects be desugar
+        //could be come if (!(exp)) throw "Expects failed, '{msg}'"
+        //problem is we don't know what an exp or statement is yet, tokens would need to either be ast or know similar for
+        //  us to be able to scan ahead and reorder them correctly
+        public static void ExpectStatement(Compiler compiler)
+        {
+            do
+            {
+                //find start of the string so we can later substr it if desired
+                var startIndex = compiler.TokenIterator.PreviousToken.StringSourceIndex + 1;
+                compiler.Expression();
+                compiler.EmitPacket(new ByteCodePacket(OpCode.NOT));
+                var thenjumpLabel = compiler.GotoIfUniqueChunkLabel("if_false");
+                compiler.EmitPop();
+
+                compiler.AddConstantStringAndWriteOp("Expect failed, '");
+
+                if (compiler.TokenIterator.Match(TokenType.COLON))
+                {
+                    compiler.Expression();
+                }
+                else
+                {
+                    var endIndex = compiler.TokenIterator.CurrentToken.StringSourceIndex;
+                    var length = endIndex - startIndex;
+                    var sourceStringSection = compiler.TokenIterator.GetSourceSection(startIndex, length);
+                    compiler.AddConstantStringAndWriteOp(sourceStringSection.Trim());
+                }
+
+                compiler.AddConstantStringAndWriteOp("'");
+                compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
+                compiler.EmitPacket(new ByteCodePacket(OpCode.ADD));
+                compiler.EmitPacket(new ByteCodePacket(OpCode.PANIC));
+                compiler.EmitLabel(thenjumpLabel);
+                compiler.EmitPop();
+
+                //if trailing comma, eat it
+                compiler.TokenIterator.Match(TokenType.COMMA);
+            } while (!compiler.TokenIterator.Check(TokenType.END_STATEMENT));
+
+            compiler.ConsumeEndStatement();
+        }
+
+        //todo match be sugar?
+        //could become if (a) statement elseif (b) statement // else throw $"Match on '{matchArgName}' did have a matching case."
+        public static void MatchStatement(Compiler compiler)
+        {
+            //make a scope
+            compiler.BeginScope();
+
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after match statement.");
+            var matchArgName = compiler.TokenIterator.PreviousToken.Literal;
+            var resolveRes = compiler.ResolveNameLookupOpCode(matchArgName);
+
+            var lastElseLabel = Label.Default;
+
+            var matchEndLabelID = compiler.CreateUniqueChunkLabel(nameof(MatchStatement));
+
+            compiler.TokenIterator.Consume(TokenType.OPEN_BRACE, "Expect '{' after match expression.");
+            do
+            {
+                if (lastElseLabel != Label.Default)
+                {
+                    compiler.EmitLabel(lastElseLabel);
+                    compiler.EmitPop();
+                }
+
+                compiler.Expression();
+                compiler.EmitPacketFromResolveGet(resolveRes);
+                compiler.EmitPacket(new ByteCodePacket(OpCode.EQUAL));
+                lastElseLabel = compiler.GotoIfUniqueChunkLabel("match");
+                compiler.EmitPop();
+                compiler.TokenIterator.Consume(TokenType.COLON, "Expect ':' after match case expression.");
+                compiler.Statement();
+                compiler.EmitGoto(matchEndLabelID);
+            } while (!compiler.TokenIterator.Match(TokenType.CLOSE_BRACE));
+
+            if (lastElseLabel != Label.Default)
+                compiler.EmitLabel(lastElseLabel);
+
+            compiler.AddConstantStringAndWriteOp($"Match on '{matchArgName}' did have a matching case.");
+            compiler.EmitPacket(new ByteCodePacket(OpCode.PANIC));
+
+            compiler.EmitLabel(matchEndLabelID);
+
+            compiler.EndScope();
+        }
+
+        public static void LabelStatement(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'label' statement.");
+            var labelName = compiler.TokenIterator.PreviousToken.Literal;
+            var id = compiler.CurrentChunk.AddLabel(new HashedString(labelName), compiler.CurrentChunkInstructionCount);//TODO this is just wrong change to add custom label
+            compiler.EmitGoto(id);  //we require that you cannot stumble into a label so if you request one you need to go to it immediately
+            compiler.EmitLabel(id);
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void GotoStatement(Compiler compiler)
+        {
+            compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after 'goto' statement.");
+            var labelNameID = compiler.CurrentChunk.CreateLabel(new HashedString(compiler.TokenIterator.PreviousToken.Literal));
+            compiler.EmitGoto(labelNameID);
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void ReadOnlyStatement(Compiler compiler)
+        {
+            compiler.Expression();
+            compiler.EmitPacket(new ByteCodePacket(OpCode.READ_ONLY));
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void ReturnStatement(Compiler compiler)
+        {
+            if (compiler.CurrentCompilerState.functionType == FunctionType.Init)
+                compiler.ThrowCompilerException("Cannot return an expression from an 'init'");
+
+            compiler.EmitReturn();
+
+            compiler.ConsumeEndStatement();
+        }
+
+        public static void ForStatement(Compiler compiler)
+        {
+            compiler.BeginScope();
+
+            var comp = compiler.CurrentCompilerState;
+            var loopState = new LoopState(compiler.CreateUniqueChunkLabel("loop_exit"));
+            comp.LoopStates.Push(loopState);
+
+            //preloop
+            compiler.TokenIterator.Consume(TokenType.OPEN_PAREN, "Expect '(' after loop with conditions.");
+            //we really only want a var decl, var assign, or empty but Declaration covers everything
+            compiler.Declaration();
+
+            loopState.StartLabelID = compiler.LabelUniqueChunkLabel("loop_start");
+            loopState.ContinueLabelID = loopState.StartLabelID;
+
+            //begine loop
+            var hasCondition = false;
+            //condition
+            {
+                if (!compiler.TokenIterator.Check(TokenType.END_STATEMENT))
+                {
+                    hasCondition = true;
+                    compiler.Expression();
+                    loopState.HasExit = true;
+                }
+                compiler.ConsumeEndStatement("loop condition");
+
+                // Jump out of the loop if the condition is false.
+                compiler.EmitGotoIf(loopState.ExitLabelID);
+                if (hasCondition)
+                    compiler.EmitPop(); // Condition.
+            }
+
+            var bodyJump = compiler.GotoUniqueChunkLabel("loop_body");
+            //increment
+            {
+                var newStartLabel = compiler.LabelUniqueChunkLabel("loop_continue");
+                loopState.ContinueLabelID = newStartLabel;
+                if (compiler.TokenIterator.CurrentToken.TokenType != TokenType.CLOSE_PAREN)
+                {
+                    compiler.Expression();
+                    compiler.EmitPop();
+                }
+                compiler.EmitGoto(loopState.StartLabelID);
+                loopState.StartLabelID = newStartLabel;
+                compiler.EmitLabel(bodyJump);
+            }
+
+            compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after loop clauses.");
+
+            compiler.BeginScope();
+            loopState.ScopeDepth = comp.scopeDepth;
+            compiler.Statement();
+            compiler.EndScope();
+
+            compiler.EmitGoto(loopState.StartLabelID);
+
+            if (!loopState.HasExit)
+                compiler.ThrowCompilerException("Loops must contain a termination");
+            compiler.EmitLabel(loopState.ExitLabelID);
+            compiler.EmitPop();
+
+            compiler.EndScope();
         }
     }
 }

@@ -5,33 +5,31 @@ namespace ULox
 {
     public sealed class OptimisationReporter
     {
-        public sealed class CompiledScriptStatistics : CompiledScriptIterator
+        public sealed class CompiledScriptStatistics
         {
             public sealed class ChunkStatistics
             {
                 public int LabelCount;
                 public int InstructionCount;
-                public int[] OpCodeOccurances = new int[OpCodeUtil.NumberOfOpCodes];
+                public int[] OpCodeOccurrences = new int[OpCodeUtil.NumberOfOpCodes];
             }
 
             public Dictionary<Chunk, ChunkStatistics> ChunkLookUp = new();
             private ChunkStatistics _current;
 
-            protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
+            internal void Iterate(CompiledScript compiledScript)
             {
-                _current = new ChunkStatistics();
-                ChunkLookUp.Add(chunk, _current);
-            }
-
-            protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
-            {
-                _current.InstructionCount = chunk.Instructions.Count;
-                _current.LabelCount = chunk.Labels.Count;
-            }
-
-            protected override void ProcessPacket(ByteCodePacket packet)
-            {
-                _current.OpCodeOccurances[(byte)packet.OpCode]++;
+                foreach (var chunk in compiledScript.AllChunks)
+                {
+                    _current = new ChunkStatistics();
+                    ChunkLookUp.Add(chunk, _current);
+                    foreach (var packet in chunk.Instructions)
+                    {
+                        _current.OpCodeOccurrences[(byte)packet.OpCode]++;
+                    }
+                    _current.InstructionCount = chunk.Instructions.Count;
+                    _current.LabelCount = chunk.Labels.Count;
+                }
             }
         }
 
@@ -63,8 +61,8 @@ namespace ULox
             public int InstructionCountAfter;
             public int LabelCountBefore;
             public int LabelCountAfter;
-            public int[] OpCodeOccurancesBefore = new int[OpCodeUtil.NumberOfOpCodes];
-            public int[] OpCodeOccurancesAfter = new int[OpCodeUtil.NumberOfOpCodes];
+            public int[] OpCodeOccurrencesBefore = new int[OpCodeUtil.NumberOfOpCodes];
+            public int[] OpCodeOccurrencesAfter = new int[OpCodeUtil.NumberOfOpCodes];
         }
 
         private readonly List<ChunkOptimisationReport> _chunkOptimisationReports = new();
@@ -80,16 +78,16 @@ namespace ULox
                 sb.AppendLine($"  Instructions: {item.InstructionCountBefore} -> {item.InstructionCountAfter}");
                 sb.AppendLine($"  Labels: {item.LabelCountBefore} -> {item.LabelCountAfter}");
                 var hasHeader = false;
-                for (int i = 0; i < item.OpCodeOccurancesBefore.Length; i++)
+                for (int i = 0; i < item.OpCodeOccurrencesBefore.Length; i++)
                 {
-                    if (item.OpCodeOccurancesBefore[i] != item.OpCodeOccurancesAfter[i])
+                    if (item.OpCodeOccurrencesBefore[i] != item.OpCodeOccurrencesAfter[i])
                     {
                         if (!hasHeader)
                         {
-                            sb.AppendLine($"  OpCode Occurances:");
+                            sb.AppendLine($"  OpCode Occurrences:");
                             hasHeader = true;
                         }
-                        sb.AppendLine($"    {(OpCode)i}: {item.OpCodeOccurancesBefore[i]} -> {item.OpCodeOccurancesAfter[i]}");
+                        sb.AppendLine($"    {(OpCode)i}: {item.OpCodeOccurrencesBefore[i]} -> {item.OpCodeOccurrencesAfter[i]}");
                     }
                 }
             }
@@ -111,10 +109,10 @@ namespace ULox
                     LabelCountBefore = preChunk.LabelCount,
                     LabelCountAfter = item.Value.LabelCount,
                 };
-                for (int i = 0; i < preChunk.OpCodeOccurances.Length; i++)
+                for (int i = 0; i < preChunk.OpCodeOccurrences.Length; i++)
                 {
-                    chunkReport.OpCodeOccurancesBefore[i] = preChunk.OpCodeOccurances[i];
-                    chunkReport.OpCodeOccurancesAfter[i] = item.Value.OpCodeOccurances[i];
+                    chunkReport.OpCodeOccurrencesBefore[i] = preChunk.OpCodeOccurrences[i];
+                    chunkReport.OpCodeOccurrencesAfter[i] = item.Value.OpCodeOccurrences[i];
                 }
                 report._chunkOptimisationReports.Add(chunkReport);
             }

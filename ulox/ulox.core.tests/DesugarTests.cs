@@ -46,26 +46,7 @@ namespace ULox.Core.Tests
 
             Assert.Greater(res.Count, startingCount);
         }
-
-        [Test]
-        public void While_WhenDesugar_ShouldBeFor()
-        {
-            var scriptContent = @"
-var i = 1;
-while(i<10)
-{
-i+= 1;
-}";
-            var (tokens, tokenIterator, _) = Prepare(scriptContent);
-            var startingCount = tokens.Count;
-            var res = new List<Token>();
-
-            AdvanceGather(tokenIterator, res);
-
-            Assert.Greater(res.Count, startingCount);
-            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.FOR));
-        }
-
+        
         [Test]
         public void Loop_WhenInfinite_ShouldBeFor()
         {

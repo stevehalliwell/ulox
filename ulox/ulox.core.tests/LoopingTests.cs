@@ -72,7 +72,7 @@ for(;;)
         {
             testEngine.Run(@"
 var i = 0;
-while(i < 2)
+for(;i < 2;)
 {
     print (""hip, "");
     i = i + 1;
@@ -103,7 +103,7 @@ print(""hurray"");
         {
             testEngine.Run(@"
 var i = 0;
-while(i < 5)
+for(;i < 5;)
 {
     print (""success?"");
     break;
@@ -125,10 +125,10 @@ print (""hurray"");");
             testEngine.Run(@"
 var i = 0;
 var j = 0;
-while(i < 5)
+for(;i < 5;)
 {
     j= 0;
-    while(j < 5)
+    for(;j < 5;)
     {
         j = j + 1;
         print (j);
@@ -146,10 +146,10 @@ while(i < 5)
         {
             testEngine.Run(@"
 var i = 0;
-while(i < 5)
+for(;i < 5;)
 {
     var j = 0;
-    while(j < 5)
+    for(;j < 5;)
     {
         j = j + 1;
         print (j);
@@ -704,7 +704,7 @@ loop thing.arr, j
         {
             testEngine.Run(@"
 var i = 0;
-while(i < 3)
+for(;i < 3;)
 {
     i = i + 1;
     print (i);

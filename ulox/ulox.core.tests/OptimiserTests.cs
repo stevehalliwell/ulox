@@ -415,7 +415,7 @@ var t = T(1,2);");
         fun DoIt()
         {
             var i = 0;
-            while(i < 5)
+            for(;i < 5;)
             {
                 i = i + 1;
                 print (i);
@@ -433,7 +433,7 @@ var t = T(1,2);");
         {
             testEngine.Run(@"
         var i = 0;
-        while(i < 5)
+        for(;i < 5;)
         {
             i = i + 1;
             print (i);
@@ -452,10 +452,10 @@ var t = T(1,2);");
         {
             var i = 0;
             var j = 0;
-            while(i < 5)
+            for(;i < 5;)
             {
                 j= 0;
-                while(j < 5)
+                for(;j < 5;)
                 {
                     j = j + 1;
                     print (j);
@@ -633,7 +633,7 @@ var t = T(1,2);");
                 var limit = 1000;
                 var accum = 1;
 
-                while(accum < limit) accum += accum;
+                for(;accum < limit;) accum += accum;
 
                 Assert.AreEqual(expected, accum);
             }
@@ -669,7 +669,7 @@ var t = T(1,2);");
                 var limit = 1000;
                 var accum = 1;
 
-                while(true)
+                for(;true;)
                 {
                     accum += accum;
                     if(accum > limit) 

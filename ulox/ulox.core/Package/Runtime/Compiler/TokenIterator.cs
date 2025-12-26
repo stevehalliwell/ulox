@@ -49,7 +49,6 @@ namespace ULox
             _compilerDesugarContext = compilerDesugarContext;
 
             _desugarSteps.Add(new StringInterpDesugar());
-            _desugarSteps.Add(new WhileDesugar());
             _desugarSteps.Add(new CompoundAssignDesugar());//could be done at token emit time
             _desugarSteps.Add(new LoopDesugar());
 

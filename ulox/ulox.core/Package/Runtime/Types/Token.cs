@@ -49,7 +49,6 @@
         OR,
         IF,
         ELSE,
-        WHILE,
         FOR,
 
         LOOP,

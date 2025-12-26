@@ -26,7 +26,6 @@ namespace ULox
                 {"or", TokenType.OR},
                 {"if", TokenType.IF},
                 {"else", TokenType.ELSE},
-                {"while", TokenType.WHILE},
                 {"for", TokenType.FOR},
                 {"loop", TokenType.LOOP},
                 {"return", TokenType.RETURN},

@@ -52,10 +52,7 @@ namespace ULox
             _desugarSteps.Add(new CompoundAssignDesugar());//could be done at token emit time
             _desugarSteps.Add(new LoopDesugar());
 
-            _desugarSteps.Add(new NativeTypeDesugar("Map", new[] { TokenType.OPEN_BRACKET, TokenType.COLON, TokenType.CLOSE_BRACKET }));
-            
             _desugarSteps.Add(new ClassInitArgMatchDesugar());  //this is the only one that needs context right now
-            _desugarSteps.Add(new SoaClassDesugar());
         }
 
         public string GetSourceSection(int start, int len)

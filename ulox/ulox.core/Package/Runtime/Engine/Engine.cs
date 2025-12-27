@@ -2,7 +2,7 @@
 
 namespace ULox
 {
-    //TODO: feelslike his could just be the context...
+    //TODO: feels like his could just be the context...
     public sealed class Engine
     {
         public Context Context { get; }

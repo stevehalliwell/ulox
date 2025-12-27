@@ -20,7 +20,6 @@ namespace ULox
 
         public PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk)
         {
-
             return PassCompleteRequest.None;
         }
     }

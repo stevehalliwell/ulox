@@ -19,7 +19,7 @@ namespace ULox.Core.Tests
         {
             testEngine.Run(ObjectVsSoa.SoaBasedScript);
 
-            var compiledScript = testEngine.MyEngine.Context.CompiledScripts[0];
+            var compiledScript = testEngine.MyEngine.Context.Program.CompiledScripts[0];
             var clone = compiledScript.DeepClone();
 
             Assert.AreEqual(compiledScript.ScriptHash, clone.ScriptHash);

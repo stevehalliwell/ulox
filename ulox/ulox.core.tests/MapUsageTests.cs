@@ -8,7 +8,7 @@ namespace ULox.Core.Tests
         public void Engine_MapEmtpy_Count0()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 print(map.Count());
 ");
 
@@ -19,7 +19,7 @@ print(map.Count());
         public void Engine_NativeMap_Create()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 print(map);
 ");
 
@@ -30,7 +30,7 @@ print(map);
         public void Engine_MapSet_Count1()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 map[1] = 2;
 print(map.Count());
 ");
@@ -42,7 +42,7 @@ print(map.Count());
         public void Map_ReadOnlyThenSet_Error()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 readonly map;
 map[1] = 2;
 ");
@@ -54,7 +54,7 @@ map[1] = 2;
         public void Engine_MapSet_MatchesValue()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 map[1] = 2;
 print(map[1]);
 ");
@@ -78,7 +78,7 @@ print(map[1]);
         public void Engine_MapSetAndUpdate_MatchesValue()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 map[""a""] = 2;
 map[""a""] = 5;
 print(map[""a""]);

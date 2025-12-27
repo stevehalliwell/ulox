@@ -97,8 +97,6 @@
         ENUM,
 
         READ_ONLY,
-
-        SOA,
     }
     
     public readonly struct Token

@@ -70,9 +70,7 @@ namespace ULox
 
                 {"enum", TokenType.ENUM},
 
-                {"readonly", TokenType.READ_ONLY},
-
-                {"soa", TokenType.SOA}
+                {"readonly", TokenType.READ_ONLY}
         };
 
         public Scanner()

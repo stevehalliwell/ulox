@@ -142,7 +142,7 @@ namespace ULox
 
         private string MessageFromContext(string msg)
         {
-            var location = ChunkToLocationStr(CurrentChunk);
+            var location =  $"chunk '{CurrentChunk.GetLocationString()}'";
             var previousToken = TokenIterator.PreviousToken;
             var (line, character) = TokenIterator.GetLineAndCharacter(previousToken.StringSourceIndex);
             msg = msg + $" in {location} at {line}:{character}{LiteralStringPartial(previousToken.Literal)}.";
@@ -186,6 +186,7 @@ namespace ULox
             }
         }
 
+        //TODO we can remove these it's all internal now
         public void AddDeclarationCompilette(ICompilette compilette)
             => _declarationCompilettes[compilette.MatchingToken] = compilette;
 
@@ -321,12 +322,10 @@ namespace ULox
                 complette.Process(this);
                 return;
             }
-
-            NoDeclarationFound();
+            
+            //no declaration found
+            Statement();
         }
-
-        private void NoDeclarationFound()
-            => Statement();
 
         public void Statement()
         {
@@ -337,14 +336,7 @@ namespace ULox
                 return;
             }
 
-            NoStatementFound();
-        }
-
-        private void NoStatementFound()
-            => ExpressionStatement();
-
-        public void ExpressionStatement()
-        {
+            //no statement found, do an expression as a statement
             Expression();
             ConsumeEndStatement();
             EmitPop();
@@ -401,7 +393,7 @@ namespace ULox
             {
                 Expression();
 
-                EmitPacketFromResolveSet(resolveRes);
+                EmitPacket(new ByteCodePacket(resolveRes.SetOp, resolveRes.ArgId));
                 return;
             }
 
@@ -411,11 +403,6 @@ namespace ULox
         public void EmitPacketFromResolveGet(ResolveNameLookupResult resolveRes)
         {
             EmitPacket(new ByteCodePacket(resolveRes.GetOp, resolveRes.ArgId));
-        }
-
-        public void EmitPacketFromResolveSet(ResolveNameLookupResult resolveRes)
-        {
-            EmitPacket(new ByteCodePacket(resolveRes.SetOp, resolveRes.ArgId));
         }
 
         public struct ResolveNameLookupResult
@@ -524,7 +511,6 @@ namespace ULox
             if (returnCount == 0)
             {
                 AutoDefineRetval();
-
             }
 
             // The body.
@@ -729,11 +715,6 @@ namespace ULox
             return $" '{str}'";
         }
 
-        public static string ChunkToLocationStr(Chunk chunk)
-        {
-            return $"chunk '{chunk.GetLocationString()}'";
-        }
-
         public static void FunctionDeclaration(Compiler compiler)
         {
             InnerFunctionDeclaration(compiler, true);
@@ -800,7 +781,8 @@ namespace ULox
                 }
             }
         }
-         public static void Unary(Compiler compiler, bool canAssign)
+
+        public static void Unary(Compiler compiler, bool canAssign)
         {
             var op = compiler.TokenIterator.PreviousToken.TokenType;
 
@@ -984,7 +966,7 @@ namespace ULox
             compiler.TokenIterator.Consume(TokenType.CLOSE_BRACKET, $"Expect ']' after list.");
         }
 
-        public static void BraceCreateDynamic(Compiler compiler, bool arg2)
+        public static void BraceCreateDynamic(Compiler compiler, bool canAssign)
         {
             var midTok = TokenType.ASSIGN;
             if (compiler.TokenIterator.Check(TokenType.IDENTIFIER))
@@ -1100,7 +1082,7 @@ namespace ULox
             compiler.EmitPacket(new ByteCodePacket(OpCode.TYPEOF));
         }
 
-         public static void BuildStatement(Compiler compiler)
+        public static void BuildStatement(Compiler compiler)
         {
             do
             {

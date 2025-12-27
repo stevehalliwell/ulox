@@ -331,7 +331,7 @@ loop arr
         public void Loop_WhenGivenEmptyMap_ShouldDoNothing()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 
 loop map
 {
@@ -348,7 +348,7 @@ print(""Pass"");
         public void Loop_WhenGivenNonEmptyMap_ShouldFail()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 map[""nothing""] = ""something"";
 
 loop map
@@ -366,7 +366,7 @@ print(""Pass"");
         public void Loop_WhenGivenNonEmptyMapWithValidNumberKey_ShouldPass()
         {
             testEngine.Run(@"
-var map = [:];
+var map = Map();
 map[0] = ""something"";
 
 loop map

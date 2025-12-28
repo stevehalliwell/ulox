@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace ULox
@@ -12,6 +13,7 @@ namespace ULox
                 public int LabelCount;
                 public int InstructionCount;
                 public int[] OpCodeOccurrences = new int[OpCodeUtil.NumberOfOpCodes];
+                public int Constants;
             }
 
             public Dictionary<Chunk, ChunkStatistics> ChunkLookUp = new();
@@ -29,6 +31,7 @@ namespace ULox
                     }
                     _current.InstructionCount = chunk.Instructions.Count;
                     _current.LabelCount = chunk.Labels.Count;
+                    _current.Constants = chunk.Constants.Count;
                 }
             }
         }
@@ -63,6 +66,8 @@ namespace ULox
             public int LabelCountAfter;
             public int[] OpCodeOccurrencesBefore = new int[OpCodeUtil.NumberOfOpCodes];
             public int[] OpCodeOccurrencesAfter = new int[OpCodeUtil.NumberOfOpCodes];
+            public int ConstantsBefore;
+            public int ConstantsAfter;
         }
 
         private readonly List<ChunkOptimisationReport> _chunkOptimisationReports = new();
@@ -76,6 +81,7 @@ namespace ULox
             {
                 sb.AppendLine($"Chunk: {item.Name}");
                 sb.AppendLine($"  Instructions: {item.InstructionCountBefore} -> {item.InstructionCountAfter}");
+                sb.AppendLine($"  Constants: {item.ConstantsBefore} -> {item.ConstantsAfter}");
                 sb.AppendLine($"  Labels: {item.LabelCountBefore} -> {item.LabelCountAfter}");
                 var hasHeader = false;
                 for (int i = 0; i < item.OpCodeOccurrencesBefore.Length; i++)
@@ -91,6 +97,19 @@ namespace ULox
                     }
                 }
             }
+
+            //and a quick summary
+            sb.AppendLine("Summary:");
+            var totalInstructionsBefore = ChunkOptimisationReports.Sum(c => c.InstructionCountBefore);
+            var totalInstructionsAfter = ChunkOptimisationReports.Sum(c => c.InstructionCountAfter);
+            sb.AppendLine($"  Total Instructions: {totalInstructionsBefore} -> {totalInstructionsAfter}");
+            var totalConstantsBefore = ChunkOptimisationReports.Sum(c => c.ConstantsBefore);
+            var totalConstantsAfter = ChunkOptimisationReports.Sum(c => c.ConstantsAfter);
+            sb.AppendLine($"  Total Constants: {totalConstantsBefore} -> {totalConstantsAfter}");
+            var totalLabelsBefore = ChunkOptimisationReports.Sum(c => c.LabelCountBefore);
+            var totalLabelsAfter = ChunkOptimisationReports.Sum(c => c.LabelCountAfter);
+            sb.AppendLine($"  Total Labels: {totalLabelsBefore} -> {totalLabelsAfter}");
+
 
             return sb.ToString();
         }
@@ -108,6 +127,8 @@ namespace ULox
                     InstructionCountAfter = item.Value.InstructionCount,
                     LabelCountBefore = preChunk.LabelCount,
                     LabelCountAfter = item.Value.LabelCount,
+                    ConstantsBefore = preChunk.Constants,
+                    ConstantsAfter = item.Value.Constants,
                 };
                 for (int i = 0; i < preChunk.OpCodeOccurrences.Length; i++)
                 {

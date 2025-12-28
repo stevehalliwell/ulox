@@ -32,15 +32,11 @@
 			"patterns": [
 				{
 					"name": "keyword.control.ulox",
-					"match": "\\b(if|else|while|loop|for|return|match|break|continue|panic|yield|goto|label|soa)\\b"
+					"match": "\\b(if|else|loop|for|return|match|break|continue|panic|yield|goto|label|expect|test|testset|and|or)\\b"
 				},
 				{
 					"name": "keyword.operator.logical.ulox",
 					"match": "\\b(and|or)\\b"
-				},
-				{
-					"name": "keyword.operator.binary.ulox",
-					"match": "\\b(update)\\b"
 				},
 				{
 					"name": "keyword.language.null.ulox",
@@ -123,7 +119,7 @@
 				},
 				{
 					"name": "keyword.bultin.ulox",
-					"match": "\\b(typeof|countof|mixin|static|build|init|var|expect)\\b"
+					"match": "\\b(typeof|countof|mixin|static|build|init|var|expect|panic|test|testset|and|or)\\b"
 				}
 			]
 		},

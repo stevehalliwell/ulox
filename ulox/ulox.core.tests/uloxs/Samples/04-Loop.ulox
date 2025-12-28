@@ -1,13 +1,3 @@
-// while loops
-var i = 0;
-while(i < 2)
-{
-    print ("hip, ");
-    i = i + 1;
-}
-
-print ("hurray");
-
 // for loops
 for(var i = 0; i < 2; i += 1)
 {

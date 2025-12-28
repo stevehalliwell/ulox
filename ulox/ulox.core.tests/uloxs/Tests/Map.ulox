@@ -4,7 +4,7 @@ testset MapTests
     {
         var key = "key";
         var result = 0;
-        var m = [:];
+        var m = Map();
 
         result = m.ReadOrDefault(key, null);
 
@@ -16,7 +16,7 @@ testset MapTests
         var key = "key";
         var initial = "value";
         var result = 0;
-        var m = [:];
+        var m = Map();
 
         result = m.Update(key, initial);
 
@@ -28,7 +28,7 @@ testset MapTests
         var key = "key";
         var expected = "value";
         var result = 0;
-        var m = [:];
+        var m = Map();
 
         m.Create(key, expected);
         result = m.Read(key);
@@ -41,7 +41,7 @@ testset MapTests
         var key = "key";
         var initial = "value";
         var result = 0;
-        var m = [:];
+        var m = Map();
 
         m.Create(key, initial);
         result = m.Create(key, initial);
@@ -55,7 +55,7 @@ testset MapTests
         var initial = "value";
         var expected = "changed";
         var result = 0;
-        var m = [:];
+        var m = Map();
         m.Create(key, initial);
 
         m.Update(key, expected);
@@ -70,7 +70,7 @@ testset MapTests
         var initial = "value";
         var expected = "changed";
         var result = 0;
-        var m = [:];
+        var m = Map();
         m.Create(key, initial);
 
         m.Update(key, expected);
@@ -84,7 +84,7 @@ testset MapTests
         var key = "key";
         var initial = "value";
         var result = 0;
-        var m = [:];
+        var m = Map();
         m.Create(key, initial);
 
         m.Delete(key);
@@ -99,7 +99,7 @@ testset MapTests
         var initial = "value";
         var result = 0;
         var expected = 1;
-        var m = [:];
+        var m = Map();
 
         m.Create(key, initial);
         result = m.Count();
@@ -113,7 +113,7 @@ testset MapTests
         var initial = "value";
         var expected = "value5";
         var result = 0;
-        var m = [:];
+        var m = Map();
         
         for(var i = 0; i < 10; i+= 1)
         {
@@ -129,7 +129,7 @@ testset MapTests
         var key = "key";
         var initial = "value";
         var result = 0;
-        var m = [:];
+        var m = Map();
         
         for(var i = 0; i < 10; i+= 1)
         {

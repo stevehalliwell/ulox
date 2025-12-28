@@ -234,7 +234,7 @@ namespace ULox
             if (Match('/'))
             {
                 //can this just be !match
-                while (Peek() != -1 && CurrentChar != '\n')
+                while (!IsAtEnd() && CurrentChar != '\n')
                     Advance();
             }
             else if (Match('*'))

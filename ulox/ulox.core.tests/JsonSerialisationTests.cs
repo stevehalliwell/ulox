@@ -224,7 +224,9 @@ var res = Serialise.FromJson(jsonString);
 printh(res);
 ");
 
-            Assert.AreEqual("a:[\r\n1\r\n2\r\n3\r\n]\r\nb:[\r\n1\r\n2\r\n3\r\n]\r\n", testEngine.InterpreterResult);
+            var expResult = "a:[\r\n1\r\n2\r\n3\r\n]\r\nb:[\r\n1\r\n2\r\n3\r\n]\r\n";
+            expResult = expResult.Replace("\r\n", Environment.NewLine);
+            Assert.AreEqual(expResult, testEngine.InterpreterResult);
         }
 
         [Test]

@@ -15,7 +15,7 @@ testset SimpleTest
 		expect -1 == res : "1 minus 2 should be -1";
 	}
 	
-	test ManuallyThrow
+	test ManuallyPanic
 	{
 		var lhs = 1;
 		var rhs = 2;
@@ -23,7 +23,7 @@ testset SimpleTest
 		var res = Add(lhs,rhs);
 
 		if(res != 3)
-			throw "1 + 2 Should be 3.";
+			panic "1 + 2 Should be 3.";
 	}
 	
 	test AssertLibrary

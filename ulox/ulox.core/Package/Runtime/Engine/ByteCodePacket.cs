@@ -44,7 +44,7 @@ namespace ULox
 
         MULTI_VAR,
 
-        THROW,
+        PANIC,
 
         VALIDATE,
 

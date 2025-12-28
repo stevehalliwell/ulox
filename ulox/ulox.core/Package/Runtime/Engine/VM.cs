@@ -198,7 +198,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -217,7 +217,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -236,7 +236,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -255,7 +255,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -276,7 +276,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot perform op across types '{lhs.type}' and '{rhs.type}'");
                     }
 
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -285,7 +285,7 @@ namespace ULox
                 {
                     var (rhs, lhs) = Pop2OrLocals(packet.b1, packet.b2);
                     var res = Value.New(Value.Compare(ref lhs, ref rhs));
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -307,7 +307,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs}'");
                     }
 
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -328,7 +328,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot perform op '{opCode}' on user types '{lhs.val.asInstance.FromUserType}' and '{rhs}'");
                     }
 
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -476,6 +476,11 @@ namespace ULox
                 {
                     var targetVal = PopOrLocal(packet.b3);
                     DoGetPropertyOp(chunk, packet.b1, targetVal);
+                    var assignVal = packet.b2;
+                    if(assignVal != Optimiser.NOT_LOCAL_BYTE)
+                    {
+                        SetLocalRegisterFromValue(assignVal, Pop());
+                    }
                 }
                 break;
 
@@ -535,7 +540,7 @@ namespace ULox
                         ThrowRuntimeException($"Cannot perform get index on type '{targetValue.type}'");
                     }
 
-                    SetLocalFromB3(packet.b3, res);
+                    SetLocalRegisterFromValue(packet.b3, res);
                     Push(res);
                 }
                 break;
@@ -596,7 +601,7 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetLocalFromB3(byte localSetLocation, Value res)
+        private void SetLocalRegisterFromValue(byte localSetLocation, Value res)
         {
             if (localSetLocation != Optimiser.NOT_LOCAL_BYTE)
             {

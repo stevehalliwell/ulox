@@ -13,6 +13,7 @@ namespace ULox
             Binary,
             SetIndex,
             SetProp,
+            GetProp,
         }
 
         private List<(int inst, RegisteriseType regType)> _potentialRegisterise = new();
@@ -42,6 +43,9 @@ namespace ULox
                 break;
             case OpCode.SET_PROPERTY:
                 _potentialRegisterise.Add((inst, RegisteriseType.SetProp));
+                break;
+                case OpCode.GET_PROPERTY:
+                _potentialRegisterise.Add((inst, RegisteriseType.GetProp));
                 break;
             }
         }
@@ -131,6 +135,31 @@ namespace ULox
                             nb2 = prevprev.b1; // newval
                         }
                     }
+                    break;
+                case RegisteriseType.GetProp:
+                        {
+                            //detecting a var a = obj.prop; pattern to registerise the getprop
+                            //we put the setlocal byte into the getprop and remove the setlocal and pop
+                            var nextInst = inst + 1;
+                            if (chunk.Instructions.Count > nextInst)
+                            {
+                                var next = chunk.Instructions[nextInst];
+                                if (next.OpCode == OpCode.SET_LOCAL)
+                                {
+                                    var nextNextInst = nextInst + 1;
+                                    if (chunk.Instructions.Count > nextNextInst)
+                                    {
+                                        var nextNext = chunk.Instructions[nextNextInst];
+                                        if (nextNext.OpCode == OpCode.POP && nextNext.b1 == 1)
+                                        {
+                                            optimiser.AddToRemove(chunk, nextNextInst);
+                                            optimiser.AddToRemove(chunk, nextInst);
+                                            nb2 = next.b1; // setlocal byte
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     break;
                 case RegisteriseType.Unknown:
                 default:

@@ -215,9 +215,8 @@ namespace ULox
         public byte AddStringConstant()
             => AddCustomStringConstant((string)TokenIterator.PreviousToken.Literal);
 
-        public void AddConstantDoubleAndWriteOp(double dbl)
+        private void WriteConstantAt(byte at)
         {
-            var at = CurrentChunk.AddConstant(Value.New(dbl));  // always a double
             //NOTE: this is slow but changing it doesn't change profiler times much.
             var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
             CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
@@ -226,9 +225,7 @@ namespace ULox
         public void AddConstantStringAndWriteOp(string str)
         {
             var at = AddCustomStringConstant(str);
-            //NOTE: this is slow but changing it doesn't change profiler times much.
-            var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
-            CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
+            WriteConstantAt(at);
         }
 
         public byte AddCustomStringConstant(string str)
@@ -850,7 +847,8 @@ namespace ULox
                     return;
                 }
 
-                compiler.AddConstantDoubleAndWriteOp(number);
+                var at = compiler.CurrentChunk.AddConstant(Value.New(number));
+                compiler.WriteConstantAt(at);
             }
             break;
 

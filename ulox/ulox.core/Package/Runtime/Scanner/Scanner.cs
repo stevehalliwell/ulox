@@ -266,7 +266,7 @@ namespace ULox
                 (c >= 'A' && c <= 'Z') ||
                 c == '_';
 
-        public static bool IsAlphaNumber(int c) => IsAlpha(c) || Scanner.IsDigit(c);
+        public static bool IsAlphaNumber(int c) => IsAlpha(c) || IsDigit(c);
 
         public void ConsumeDigit()
         {

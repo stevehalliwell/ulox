@@ -6,15 +6,29 @@ namespace ULox
     //TODO: if class instances still carry their own stuff around, perhaps they could just become one of these?
     public sealed class TypeInfo
     {
-        private Dictionary<string, TypeInfoEntry> _userTypes = new();
+        private readonly Dictionary<string, TypeInfoEntry> _userTypes = new();
 
         public int UserTypeCount => _userTypes.Count;
 
+        public bool AllowTypeReplacement { get; set; } = false;
+
         public IEnumerable<TypeInfoEntry> Types => _userTypes.Values;
 
-        public void AddType(TypeInfoEntry typeInfoEntry)
+        public void AddType(TypeInfoEntry typeInfoEntry, Compiler compiler)
         {
-            _userTypes.Add(typeInfoEntry.Name, typeInfoEntry);
+            if (AllowTypeReplacement)
+            {
+                _userTypes[typeInfoEntry.Name] = typeInfoEntry;
+                return;
+            }
+            try
+            {
+                _userTypes.Add(typeInfoEntry.Name, typeInfoEntry);
+            }
+            catch (System.Exception)
+            {
+                compiler.ThrowCompilerException($"Type of name '{typeInfoEntry.Name}' is already defined.");
+            }
         }
 
         public TypeInfoEntry GetUserType(string v)
@@ -29,13 +43,13 @@ namespace ULox
 
     public sealed class TypeInfoEntry
     {
-        private string _name;
-        private List<Chunk> _methods = new();
-        private List<string> _fields = new();
-        private List<string> _staticFields = new();
-        private List<string> _contracts = new();
-        private List<TypeInfoEntry> _mixins = new();
-        private List<(Chunk chunk, Label labelID)> _initChains = new();
+        private readonly string _name;
+        private readonly List<Chunk> _methods = new();
+        private readonly List<string> _fields = new();
+        private readonly List<string> _staticFields = new();
+        private readonly List<string> _contracts = new();
+        private readonly List<TypeInfoEntry> _mixins = new();
+        private readonly List<(Chunk chunk, Label labelID)> _initChains = new();
         public string Name => _name;
         public IReadOnlyList<Chunk> Methods => _methods;
         public IReadOnlyList<string> Fields => _fields;

@@ -137,7 +137,18 @@ namespace ULox
 
         public void ThrowCompilerException(string msg)
         {
-            throw new CompilerException(MessageFromContext(msg));
+            var str = "";
+            try
+            {
+                str = MessageFromContext(msg);
+            }
+            catch (Exception)
+            {
+            }
+            finally
+            {
+                throw new CompilerException(str);
+            }
         }
 
         private string MessageFromContext(string msg)

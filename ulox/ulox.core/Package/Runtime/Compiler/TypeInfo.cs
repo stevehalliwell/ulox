@@ -31,13 +31,14 @@ namespace ULox
             }
         }
 
-        public TypeInfoEntry GetUserType(string v)
+        public TypeInfoEntry GetUserType(string v, Compiler compiler)
         {
             //todo move out of here so we get better context in the exception
             if (_userTypes.TryGetValue(v, out var res))
                 return res;
 
-            throw new UloxException($"Type of name '{v}' is not found.");
+            compiler.ThrowCompilerException($"Type of name '{v}' is not found.");
+            return null;
         }
     }
 

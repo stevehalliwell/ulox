@@ -10,7 +10,7 @@ namespace ULox
     {
         private readonly Dictionary<string, bool> _testStatus = new();
         private string _lastId;
-        private ushort _fixtureLoc;//will prob become a label
+        private ushort _fixtureLoc;
 
         public TestRunner(Func<Vm> createVM)
         {
@@ -74,7 +74,8 @@ namespace ULox
                 CurrentTestSetName = chunk.ReadConstant(testOpDetails.b1).val.asString;
                 break;
             case TestOpType.TestSetBodyLabel:
-                SetFixtureLoc(chunk.GetLabelPosition(testOpDetails.LabelId));
+                
+                _fixtureLoc = chunk.GetLabelPosition(testOpDetails.LabelId);
                 break;
             case TestOpType.TestCase:
                 if (Enabled)
@@ -102,15 +103,9 @@ namespace ULox
             break;
             case TestOpType.TestSetEnd:
                 CurrentTestSetName = new HashedString(string.Empty);
-                SetFixtureLoc(ushort.MaxValue);
+                _fixtureLoc = ushort.MaxValue;
                 break;
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void SetFixtureLoc(ushort loc)
-        {
-            _fixtureLoc = loc;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

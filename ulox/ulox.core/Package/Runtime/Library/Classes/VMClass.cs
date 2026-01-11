@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ULox
+﻿namespace ULox
 {
     public sealed class VMClass : UserTypeInternal
     {

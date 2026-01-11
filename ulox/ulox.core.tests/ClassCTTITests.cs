@@ -4,6 +4,11 @@ namespace ULox.Core.Tests
 {
     public class ClassCTTITests : EngineTestBase
     {
+        public TypeInfoEntry GetUserType(string name)
+        {
+            return testEngine.MyEngine.Context.Program.TypeInfo.GetUserType(name, testEngine.MyEngine.Context.Program.Compiler);
+        }
+
         [Test]
         public void EmptyClass_WhenCorrect_ShouldHave1UserType()
         {
@@ -20,7 +25,7 @@ class Foo{};");
             testEngine.Run(@"
 class Foo{};");
 
-            Assert.IsNotNull(testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Foo"));
+            Assert.IsNotNull(GetUserType("Foo"));
             Assert.AreEqual("", testEngine.InterpreterResult);
         }
 
@@ -30,8 +35,7 @@ class Foo{};");
             testEngine.Run(@"
 class Foo{};");
 
-            Assert.Throws<UloxException>(() =>
-                testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Bar"));
+            Assert.Throws<CompilerException>(() => GetUserType("Bar"));
         }
 
         [Test]
@@ -43,7 +47,7 @@ class Foo
     Bar{}
 };");
 
-            var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Foo");
+            var ctti = GetUserType("Foo");
             Assert.AreEqual(1, ctti.Methods.Count);
             Assert.AreEqual("Bar", ctti.Methods[0].ChunkName);
             Assert.AreEqual("", testEngine.InterpreterResult);
@@ -58,7 +62,7 @@ class Foo
     init{}
 };");
 
-            var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Foo");
+            var ctti = GetUserType("Foo");
             Assert.AreEqual(1, ctti.Methods.Count);
             Assert.AreEqual("init", ctti.Methods[0].ChunkName);
             Assert.AreEqual("", testEngine.InterpreterResult);
@@ -73,7 +77,7 @@ class Foo
     var bar;
 };");
 
-            var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Foo");
+            var ctti = GetUserType("Foo");
             Assert.AreEqual(1, ctti.Fields.Count);
             Assert.AreEqual("bar", ctti.Fields[0]);
             Assert.AreEqual("", testEngine.InterpreterResult);
@@ -92,7 +96,7 @@ class Bar
     mixin Foo;
 };");
 
-            var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Bar");
+            var ctti = GetUserType("Bar");
             Assert.AreEqual(1, ctti.Mixins.Count);
             Assert.AreEqual("Foo", ctti.Mixins[0].Name);
             Assert.AreEqual("", testEngine.InterpreterResult);
@@ -112,7 +116,7 @@ class Bar
     mixin Foo;
 };");
 
-            var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Bar");
+            var ctti = GetUserType("Bar");
             Assert.AreEqual(1, ctti.Fields.Count);
             Assert.AreEqual("a", ctti.Fields[0]);
             Assert.AreEqual("", testEngine.InterpreterResult);
@@ -132,7 +136,7 @@ class Bar
     mixin Foo;
 };");
 
-            var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Bar");
+            var ctti = GetUserType("Bar");
             Assert.AreEqual(1, ctti.Methods.Count);
             Assert.AreEqual("Meth", ctti.Methods[0].ChunkName);
             Assert.AreEqual("", testEngine.InterpreterResult);
@@ -154,7 +158,7 @@ class Bar
 };");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
-            var ctti = testEngine.MyEngine.Context.Program.TypeInfo.GetUserType("Bar");
+            var ctti = GetUserType("Bar");
             Assert.AreEqual(1, ctti.Contracts.Count);
             Assert.AreEqual("Foo", ctti.Contracts[0]);
         }

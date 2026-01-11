@@ -4,11 +4,14 @@ using System.Text;
 
 namespace ULox
 {
-    public sealed class Disassembler : CompiledScriptIterator
+    public sealed class Disassembler
     {
         private readonly StringBuilder stringBuilder = new();
         private int _currentInstructionCount;
         private int _prevLine;
+
+        public int CurrentInstructionIndex { get; private set; }
+        public Chunk CurrentChunk { get; private set; }
 
         public string GetString() => stringBuilder.ToString();
 
@@ -92,7 +95,7 @@ namespace ULox
             }
         }
 
-        protected override void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
+        private void PostChunkIterate(CompiledScript compiledScript, Chunk chunk)
         {
             DoLabels(chunk);
             DoConstants(chunk);
@@ -110,7 +113,7 @@ namespace ULox
             }
         }
 
-        protected override void PreChunkInterate(CompiledScript compiledScript, Chunk chunk)
+        private void PreChunkIterate(CompiledScript compiledScript, Chunk chunk)
         {
             stringBuilder.AppendLine(chunk.FullName);
 
@@ -125,7 +128,7 @@ namespace ULox
             stringBuilder.Append($"({labelID}){CurrentChunk.LabelNames[labelID]}@{CurrentChunk.GetLabelPosition(labelID)}");
         }
 
-        protected override void ProcessPacket(ByteCodePacket packet)
+        private void ProcessPacket(ByteCodePacket packet)
         {
             stringBuilder.Append(CurrentInstructionIndex.ToString("00000"));
             DoLineNumber(CurrentChunk);
@@ -363,6 +366,26 @@ namespace ULox
         {
             var sc = packet.b1;
             stringBuilder.Append($"'{CurrentChunk.Constants[sc]}'");
+        }
+
+        public void Iterate(CompiledScript compiledScript)
+        {
+            foreach ( var chunk in compiledScript.AllChunks )
+            {
+                CurrentChunk = chunk;
+                CurrentInstructionIndex = 0;
+
+                PreChunkIterate(compiledScript, chunk);
+
+                for(var i = 0; i < chunk.Instructions.Count; i++)
+                {
+                    var packet = chunk.Instructions[i];
+                    ProcessPacket(packet);
+                    CurrentInstructionIndex++;
+                }
+
+                PostChunkIterate(compiledScript, chunk);
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace ULox
 {
+    //TODO: feels like his could just be the context...
     public sealed class Engine
     {
         public Context Context { get; }
@@ -34,7 +35,13 @@ namespace ULox
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void LocateAndQueue(string filePath)
         {
-            var script = new Script(filePath, Context.Platform.LoadFile(filePath));
+            var source = Context.Platform.LoadFile(filePath);
+            if(source == null)
+            {
+                Context.Platform.Print($"Error: Could not find script file at {filePath}");
+                return;
+            }
+            var script = new Script(filePath, source);
             _buildQueue.Enqueue(script);
         }
     }

@@ -1,8 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Linq;
+using System;
 
 namespace ULox
 {
+    public class RuntimeUloxException : UloxException
+    {
+        //TODO:only used by vm, move there?
+        public RuntimeUloxException(string msg, int currentInstruction, string locationName, string valueStack, string callStack)
+            : base($"{msg} at ip:'{currentInstruction}' in {locationName}.{Environment.NewLine}" +
+                  $"===Stack==={Environment.NewLine}{valueStack}{Environment.NewLine}" +
+                  $"===CallStack==={Environment.NewLine}{callStack}{Environment.NewLine}")
+        {
+        }
+    }
+    
     //this could maybe move as nested inside vm
     public enum InterpreterResult
     {
@@ -63,7 +76,7 @@ namespace ULox
                 PushCallFrameFromValue(func, args);
                 return Run();
             }
-            catch(ULox.UloxException uloxEx)
+            catch(UloxException uloxEx)
             {
                 throw uloxEx;
             }
@@ -460,10 +473,6 @@ namespace ULox
                     ThrowRuntimeException(Pop().ToString());
                     break;
 
-                case OpCode.BUILD:
-                    Engine.LocateAndQueue(Pop().ToString());
-                    break;
-
                 case OpCode.NATIVE_CALL:
                     DoNativeCall(opCode);
                     break;
@@ -641,7 +650,7 @@ namespace ULox
 
             throw new RuntimeUloxException(msg,
                 currentInstruction,
-                VmUtil.GetLocationNameFromFrame(frame, currentInstruction),
+                VmUtil.GetLocationNameFromFrame(frame),
                 VmUtil.GenerateValueStackDump(this),
                 VmUtil.GenerateCallStackDump(this));
         }
@@ -803,7 +812,8 @@ namespace ULox
             ProcessReturns();
 
             return _callFrames.Count == 0
-                || (_callFrames.Count < origCallFrameCount && wantsToYieldOnReturn);
+                || (_callFrames.Count < origCallFrameCount && wantsToYieldOnReturn)
+                || _currentCallFrame.InstructionPointer >= _currentChunk.instructionCount;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -1239,4 +1249,215 @@ namespace ULox
             _currentChunk = default;
         }
     }
+
+        public static class MeetValidator
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static (bool meets, string msg) ValidateClassMeetsClass(UserTypeInternal lhs, UserTypeInternal contract)
+        {
+            foreach (var contractMeth in contract.Methods)
+            {
+                if (!lhs.Methods.Get(contractMeth.Key, out var ourContractMatchingMeth))
+                    return (false, $"'{lhs.Name.String}' does not contain matching method '{contractMeth.Key.String}'.");
+
+                var contractChunk = contractMeth.Value.val.asClosure.chunk;
+                var ourContractMatchingChunk = ourContractMatchingMeth.val.asClosure.chunk;
+                var res = ChunkMatcher(ourContractMatchingChunk, contractChunk);
+                if (!res.meets)
+                    return res;
+
+            }
+
+            foreach (var contractVar in contract.FieldNames)
+            {
+                if (lhs.FieldNames.FirstOrDefault(x => x == contractVar) == null)
+                {
+                    return (false, $"'{lhs.Name.String}' has no field of name '{contractVar.String}'.");
+                }
+            }
+            return (true, string.Empty);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static (bool meets, string msg) ValidateInstanceMeetsClass(InstanceInternal lhs, UserTypeInternal contract)
+        {
+            foreach (var contractMeth in contract.Methods)
+            {
+                Value ourContractMatchingMeth = Value.Null();
+                if (lhs.Fields.Get(contractMeth.Key, out ourContractMatchingMeth)
+                    || lhs.FromUserType.Methods.Get(contractMeth.Key, out ourContractMatchingMeth))
+                {
+                    if (contractMeth.Value.type == ValueType.Closure
+                        && ourContractMatchingMeth.type == ValueType.Closure)
+                    {
+                        var res = ChunkMatcher(ourContractMatchingMeth.val.asClosure.chunk, contractMeth.Value.val.asClosure.chunk);
+                        if (!res.meets)
+                            return res;
+                    }
+                }
+                else
+                {
+                    return (false, $"instance does not contain matching method '{contractMeth.Key.String}'.");
+                }
+            }
+
+            foreach (var contractVar in contract.FieldNames)
+            {
+                if (!lhs.Fields.Get(contractVar, out var _))
+                {
+                    return (false, $"instance does not contain matching field '{contractVar.String}'.");
+                }
+            }
+
+            return (true, string.Empty);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static (bool meets, string msg) ValidateInstanceMeetsInstance(InstanceInternal lhs, InstanceInternal contract)
+        {
+            if (lhs.GetType() != contract.GetType())
+                return (false, $"instance does not match internal type, expected '{contract.GetType()}' but found '{lhs.GetType()}'.");
+
+            if ((lhs.FromUserType == null || lhs.FromUserType is DynamicClass)
+                && (contract.FromUserType == null || contract.FromUserType is DynamicClass))
+            {
+                return InstanceContentMatcher(lhs, contract);
+            }
+
+            return ValidateInstanceMeetsClass(lhs, contract.FromUserType);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static (bool meets, string msg) InstanceContentMatcher(InstanceInternal lhs, InstanceInternal contract)
+        {
+            foreach (var field in contract.Fields)
+            {
+                Value ourMatch = Value.Null();
+                if (lhs.Fields.Get(field.Key, out ourMatch)
+                    || lhs.FromUserType.Methods.Get(field.Key, out ourMatch))
+                {
+                    if (field.Value.type != ourMatch.type)
+                        return (false, $"instance has matching field name '{field.Key.String}' but type does not match, expected '{ourMatch.type}' but found '{field.Value.type}'.");
+
+                    switch (field.Value.type)
+                    {
+                    case ValueType.Closure:
+                        var contractMeth = field.Value.val.asClosure.chunk;
+                        var resClosure = ChunkMatcher(ourMatch.val.asClosure.chunk, contractMeth);
+                        if (!resClosure.meets)
+                            return resClosure;
+                        break;
+                    case ValueType.Instance:
+                        var resInst = ValidateInstanceMeetsInstance(ourMatch.val.asInstance, field.Value.val.asInstance);
+                        if (!resInst.meets)
+                            return resInst;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+                else
+                {
+                    return (false, $"instance does not contain matching field '{field.Key.String}'.");
+                }
+            }
+            return (true, string.Empty);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static (bool meets, string msg) ChunkMatcher(Chunk lhsMatchingChunk, Chunk contractChunk)
+        {
+            var contractMethArity = contractChunk.ArgumentConstantIds.Count;
+            var ourArity = lhsMatchingChunk.ArgumentConstantIds.Count;
+            if (ourArity != contractMethArity)
+                return (false, $"Expected arity '{contractMethArity}' but found '{ourArity}'.");
+
+            if (lhsMatchingChunk.ReturnConstantIds.Count != contractChunk.ReturnConstantIds.Count)
+                return (false, $"Expected return count '{contractChunk.ReturnConstantIds.Count}' but found '{lhsMatchingChunk.ReturnConstantIds.Count}'.");
+
+            return (true, string.Empty);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static (bool meets, string msg) ValidateClassMeetsClass(TypeInfoEntry targetType, TypeInfoEntry contractType)
+        {
+            foreach (var field in contractType.Fields)
+            {
+                if (!targetType.Fields.Contains(field))
+                    return (false, $"Type '{targetType.Name}' does not contain matching field '{field}'.");
+            }
+
+            foreach (var method in contractType.Methods)
+            {
+                var found = targetType.Methods.FirstOrDefault(x => x.ChunkName == method.ChunkName);
+                if (found == null)
+                    return (false, $"Type '{targetType.Name}' does not contain matching method '{method.ChunkName}'.");
+
+                var (meets, msg) = ChunkMatcher(method, found);
+                if(!meets)
+                    return (false, msg);
+            }
+
+            return (true, string.Empty);
+        }
+    }
+    public static class VmUtil
+    {
+        public static string GenerateGlobalsDump(Vm vm)
+        {
+            var sb = new System.Text.StringBuilder();
+
+            foreach (var item in vm.Globals)
+            {
+                sb.Append($"{item.Key} : {item.Value}");
+            }
+
+            return sb.ToString();
+        }
+        
+        public static string GenerateCallStackDump(Vm vm)
+        {
+            var sb = new System.Text.StringBuilder();
+
+            for (int i = 0; i < vm.CallFrames.Count; i++)
+            {
+                var cf = vm.CallFrames.Peek(i);
+                sb.AppendLine(GetLocationNameFromFrame(cf));
+            }
+
+            return sb.ToString();
+        }
+        
+        public static string GenerateValueStackDump(Vm vm) => DumpStack(vm.ValueStack);
+        
+        private static string DumpStack(FastStack<Value> valueStack)
+        {
+            var stackVars = valueStack
+                .Select(x => x.ToString())
+                .Take(valueStack.Count)
+                .Reverse();
+
+            return string.Join(System.Environment.NewLine, stackVars);
+        }
+
+        internal static string GetLocationNameFromFrame(CallFrame frame)
+        {
+            var currentInstruction = frame.InstructionPointer;
+            if (frame.nativeFunc != null)
+            {
+                var name = frame.nativeFunc.Method.Name;
+                if (frame.nativeFunc.Target != null)
+                    name = frame.nativeFunc.Target.GetType().Name + "." + frame.nativeFunc.Method.Name;
+                return $"native:'{name}'";
+            }
+
+            var line = -1;
+            if (currentInstruction != -1)
+                line = frame.Closure?.chunk?.GetLineForInstruction(currentInstruction) ?? -1;
+
+            var locationName = frame.Closure?.chunk.GetLocationString(line);
+            return $"chunk:'{locationName}'";
+        }
+    }
+
 }

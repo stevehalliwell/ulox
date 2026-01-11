@@ -25,6 +25,11 @@ namespace ULox
             public Phase phase;
             public long timeStamp;
             public int threadId;
+
+            public override string ToString()
+            {
+                return $"{phase}:{name}";
+            }
         }
 
         private readonly Dictionary<Chunk, ChunkStatistics> _perChunkStats = new();

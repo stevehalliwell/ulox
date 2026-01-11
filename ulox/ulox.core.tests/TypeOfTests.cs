@@ -63,7 +63,7 @@ print(t);
         public void TypeOf_WhenCalledOnMap_ShouldReturnMap()
         {
             testEngine.Run(@"
-var t = typeof([:]);
+var t = typeof(Map());
 print(t);
 ");
 

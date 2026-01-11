@@ -97,7 +97,7 @@ aList.Add(7);   //methods to add remove and the like.
 
 var anotherList = [1,2,3,4,]; // inline declare the value of a list
 
-var aMap = [:]; //an empty map
+var aMap = Map(); //an empty map
 aMap.Create(1,"hi");    //CRUD methods on map 
 
 var dynObject = {=};    //an empty object
@@ -159,13 +159,6 @@ match a
 }
 
 //looping constructs
-//while continues the block (or single statement)
-//  until the condition is false
-while(true)
-{
-    break;  //go to end of containing loop
-}
-
 //for is declare ; condition; post step, each is optional
 for(var i = 0; i < 10 ; i += 1)
 {
@@ -173,7 +166,7 @@ for(var i = 0; i < 10 ; i += 1)
         continue;   //skip to next 
 }
 
-//loop, without anything following is equiv to while(true)
+//loop, without anything following is equiv to for(;;)
 loop
 {
     break;

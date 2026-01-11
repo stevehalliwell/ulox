@@ -36,7 +36,7 @@ namespace ULox
         }
 
         public void SetPrattRule(TokenType tt, IParseRule rule)
-           => rules[(int)tt] = rule;
+            => rules[(int)tt] = rule;
 
         public IParseRule GetRule(TokenType operatorType) 
             => rules[(int)operatorType];

@@ -38,7 +38,7 @@ namespace ULox
 
         public DesugarStepRequest IsDesugarRequested(TokenIterator tokenIterator, ICompilerDesugarContext context)
         {
-            //we pretty dump right now
+            //we pretty dumb right now
             if(tokenIterator.PreviousToken.TokenType != TokenType.IDENTIFIER)
                 return DesugarStepRequest.None;
 

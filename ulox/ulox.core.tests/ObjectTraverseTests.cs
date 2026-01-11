@@ -431,5 +431,57 @@ printh(nested);
             StringAssert.Contains("a:2", testEngine.InterpreterResult);
             StringAssert.Contains("b:2", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void TraveseAccum_WhenValid_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+var foo = {a=1, b=2,};
+
+var traverseNumberType = typeof(0);
+
+fun TraverseAccumNumericCombiner(lhs, rhs)
+{
+    if(typeof(lhs) != traverseNumberType or typeof(rhs) != traverseNumberType)
+    {
+        retval = lhs;
+        return;
+    }
+    retval = lhs + rhs;
+}
+
+fun TraverseAccum(lhs, rhs)
+{
+    retval = Object.TraverseUpdate(lhs, rhs, TraverseAccumNumericCombiner);
+}
+
+foo = TraverseAccum(foo, {a=1, b=1});
+
+printh(foo);
+"
+            );
+
+            StringAssert.Contains("a:2", testEngine.InterpreterResult);
+            StringAssert.Contains("b:3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void TraveseScale_WhenValid_ShouldUpdateValue()
+        {
+            testEngine.Run(@"
+var foo = {a=1, b=2,};
+
+foo = Object.TraverseUpdate(
+    foo, 
+    {a=2, b=3},
+    fun (lhs, rhs) { retval = lhs * rhs; });
+
+printh(foo);
+"
+            );
+
+            StringAssert.Contains("a:2", testEngine.InterpreterResult);
+            StringAssert.Contains("b:6", testEngine.InterpreterResult);
+        }
     }
 }

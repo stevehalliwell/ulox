@@ -5,7 +5,10 @@ var files = Platform.FindFiles("./uloxs/", "01-Hello.ulox", true);
 
 loop files
 {
-    build item;
+    Build.QueueFile(item);
     //including double build prevention
-    build item;
+    Build.QueueFile(item);
 }
+
+Build.ProcessQueue();
+// calling this at the tail end of a vm means we end up in bad place during it's compilation. We need to be able to nested compile or defer the build to a safe time.

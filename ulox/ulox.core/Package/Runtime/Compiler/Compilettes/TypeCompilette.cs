@@ -1,5 +1,18 @@
 ﻿namespace ULox
 {
+    public enum TypeCompiletteStage 
+    { 
+        Invalid, 
+        Begin, 
+        Static, 
+        Mixin,
+        Signs,
+        Var, 
+        Init, 
+        Method, 
+        Complete 
+    }
+    
     public enum UserType : byte
     {
         Native,
@@ -60,7 +73,7 @@
             Stage = TypeCompiletteStage.Begin;
             compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect type name.");
             _currentTypeInfo = new TypeInfoEntry((string)compiler.TokenIterator.PreviousToken.Literal, UserType); 
-            compiler.TypeInfo.AddType(_currentTypeInfo);
+            compiler.TypeInfo.AddType(_currentTypeInfo, compiler);
 
             compiler.PushCompilerState($"{CurrentTypeName}", FunctionType.TypeDeclare);
             byte nameConstant = compiler.AddStringConstant();

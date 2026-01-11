@@ -2,6 +2,7 @@
 
 namespace ULox
 {
+    //TODO: could prob be a fast list
     public sealed class IndexableStack<T> : List<T>
     {
         public void Push(T t) 

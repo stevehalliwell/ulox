@@ -1,7 +1,7 @@
 // Maps (or dictionaries) are natively supported. They are generic keyvalue stores.
 var key = "key";
 var expected = "value";
-var m = [:];
+var m = Map();
 
 // they can be used directly via CRUD
 m.Create(key, expected);
@@ -14,4 +14,4 @@ m[key] = expected;
 print(m[key]);
 
 // can also be chain created
-var m = [:].CreateOrUpdate("dog","woof").CreateOrUpdate("cat","meow");
+var m = Map().CreateOrUpdate("dog","woof").CreateOrUpdate("cat","meow");

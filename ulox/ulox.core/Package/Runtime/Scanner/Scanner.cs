@@ -42,8 +42,6 @@ namespace ULox
                 {"testset", TokenType.TEST_SET},
                 {"test", TokenType.TESTCASE},
 
-                {"build", TokenType.BUILD},
-
                 {"tname", TokenType.CONTEXT_NAME_TEST},
                 {"tsname", TokenType.CONTEXT_NAME_TESTSET},
 

@@ -56,8 +56,6 @@ namespace ULox
 
         TEST,
 
-        BUILD,
-
         NATIVE_TYPE,
         GET_INDEX,
         SET_INDEX,

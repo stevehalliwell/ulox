@@ -473,10 +473,6 @@ namespace ULox
                     ThrowRuntimeException(Pop().ToString());
                     break;
 
-                case OpCode.BUILD:
-                    Engine.LocateAndQueue(Pop().ToString());
-                    break;
-
                 case OpCode.NATIVE_CALL:
                     DoNativeCall(opCode);
                     break;
@@ -816,7 +812,8 @@ namespace ULox
             ProcessReturns();
 
             return _callFrames.Count == 0
-                || (_callFrames.Count < origCallFrameCount && wantsToYieldOnReturn);
+                || (_callFrames.Count < origCallFrameCount && wantsToYieldOnReturn)
+                || _currentCallFrame.InstructionPointer >= _currentChunk.instructionCount;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

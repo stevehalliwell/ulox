@@ -78,8 +78,6 @@
         CONTEXT_NAME_TEST,
         CONTEXT_NAME_TESTSET,
 
-        BUILD,
-
         TYPEOF,
 
         MEETS,

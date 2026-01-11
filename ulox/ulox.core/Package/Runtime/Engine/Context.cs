@@ -20,6 +20,7 @@
         public Program Program { get; }
         public Vm Vm { get; }
         public IPlatform Platform { get; }
+        public bool ReinterpretOnEachCompile { get; set; } = false;
 
         public void AddLibrary(IULoxLibrary lib)
         {
@@ -30,13 +31,18 @@
 
         public CompiledScript CompileScript(Script script)
         {
-            var existing = Program.CompiledScripts.Find(x => x.ScriptHash == script.ScriptHash);
-            if (existing != null)
-                return existing;
-
+            var compScript = Program.CompiledScripts.Find(x => x.ScriptHash == script.ScriptHash);
+            if (compScript != null)
+            {
+                if(ReinterpretOnEachCompile)
+                {
+                    Vm.PrepareTypes(Program.TypeInfo);
+                    Vm.Interpret(compScript.TopLevelChunk);
+                }
+                return compScript;
+            }
             var res = Program.Compile(script);
             Vm.PrepareTypes(Program.TypeInfo);
-            Vm.Clear();
             Vm.Interpret(res.TopLevelChunk);
             return res;
         }

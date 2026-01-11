@@ -119,7 +119,7 @@
 				},
 				{
 					"name": "keyword.bultin.ulox",
-					"match": "\\b(typeof|countof|mixin|static|build|init|var|expect|panic|test|testset|and|or)\\b"
+					"match": "\\b(typeof|countof|mixin|static|init|var|expect|panic|test|testset|and|or)\\b"
 				}
 			]
 		},

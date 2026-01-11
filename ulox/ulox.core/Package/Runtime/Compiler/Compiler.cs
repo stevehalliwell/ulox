@@ -86,8 +86,7 @@ namespace ULox
                 (TokenType.GOTO, GotoStatement),
                 (TokenType.READ_ONLY, ReadOnlyStatement),
                 (TokenType.RETURN, ReturnStatement),
-                (TokenType.FOR, ForStatement),
-                (TokenType.BUILD, BuildStatement)
+                (TokenType.FOR, ForStatement)
                 );
 
             SetPrattRules(
@@ -499,7 +498,7 @@ namespace ULox
         {
             BeginScope();
             VariableNameListDeclareOptional(() => IncreaseArity(AddStringConstant()));
-            var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));
+            var returnCount = VariableNameListDeclareOptional(() => IncreaseReturn(AddStringConstant()));//change this to a regular variable declare, but track the names and count
             return returnCount;
         }
 
@@ -1089,17 +1088,6 @@ namespace ULox
             compiler.Expression();
             compiler.TokenIterator.Consume(TokenType.CLOSE_PAREN, "Expect ')' after typeof.");
             compiler.EmitPacket(new ByteCodePacket(OpCode.TYPEOF));
-        }
-
-        public static void BuildStatement(Compiler compiler)
-        {
-            do
-            {
-                compiler.Expression();
-                compiler.EmitPacket(new ByteCodePacket(OpCode.BUILD));
-            } while (compiler.TokenIterator.Match(TokenType.COMMA));
-
-            compiler.ConsumeEndStatement("build command identifier(s)");
         }
 
         public static void IfStatement(Compiler compiler)

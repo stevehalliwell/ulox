@@ -18,6 +18,7 @@ namespace ULox
                 ("VM", Value.New(new VMClass())),
                 ("Assert", Value.New(MakeAssertInstance())),
                 ("Serialise", Value.New(SerialiseStdLibrary.MakeInstance())),
+                ("Build", Value.New(BuildStdLibrary.MakeInstance())),
                 ("Math", Value.New(MathStdLibrary.MakeInstance())),
                 ("Platform", Value.New(PlatformStdLibrary.MakeInstance())),
                 ("String", Value.New(StringStdLibrary.MakeInstance())),

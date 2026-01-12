@@ -1,5 +1,6 @@
 ﻿namespace ULox
 {
+    //todo: move this to where it is used
     public class InvalidParseRule : IParseRule
     {
         public Precedence Precedence => Precedence.None;

@@ -48,25 +48,6 @@ namespace ULox.Core.Tests
         }
 
         [Test]
-        public void While_WhenDesugar_ShouldBeFor()
-        {
-            var scriptContent = @"
-var i = 1;
-while(i<10)
-{
-i+= 1;
-}";
-            var (tokens, tokenIterator, _) = Prepare(scriptContent);
-            var startingCount = tokens.Count;
-            var res = new List<Token>();
-
-            AdvanceGather(tokenIterator, res);
-
-            Assert.Greater(res.Count, startingCount);
-            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.FOR));
-        }
-
-        [Test]
         public void Loop_WhenInfinite_ShouldBeFor()
         {
             var scriptContent = @"
@@ -214,52 +195,6 @@ print(a);";
         }
 
         [Test]
-        public void EmptyList_WhenDesugar_ShouldIdentList()
-        {
-            var scriptContent = @"
-var a = [];
-";
-            var (tokens, tokenIterator, _) = Prepare(scriptContent);
-            var startingCount = tokens.Count;
-            var res = new List<Token>();
-
-            AdvanceGather(tokenIterator, res);
-
-            Assert.Greater(res.Count, startingCount);
-            Assert.IsTrue(res.Any(x => x.Literal == "List"));
-        }
-
-        [Test]
-        public void EmptyMap_WhenDesugar_ShouldIdentMap()
-        {
-            var scriptContent = @"
-var a = [:];
-";
-            var (tokens, tokenIterator, _) = Prepare(scriptContent);
-            var startingCount = tokens.Count;
-            var res = new List<Token>();
-
-            AdvanceGather(tokenIterator, res);
-
-            Assert.IsTrue(res.Any(x => x.Literal == "Map"));
-        }
-
-        [Test]
-        public void EmptyDynamic_WhenDesugar_ShouldIdentDynamic()
-        {
-            var scriptContent = @"
-var a = {=};
-";
-            var (tokens, tokenIterator, _) = Prepare(scriptContent);
-            var startingCount = tokens.Count;
-            var res = new List<Token>();
-
-            AdvanceGather(tokenIterator, res);
-
-            Assert.IsTrue(res.Any(x => x.Literal == "Dynamic"));
-        }
-
-        [Test]
         public void Init_WhenDesugar_ShouldSelfAssign()
         {
             var scriptContent = @"
@@ -280,33 +215,6 @@ class Foo
             AdvanceGather(tokenIterator, res);
 
             Assert.Greater(res.Count, startingCount);
-        }
-
-        [Test]
-        public void Soa_FooAB_ClassWith2Arrays()
-        {
-            var scriptContent = @"
-soa FooSoa
-{
-    Foo,
-}
-";
-            var (tokens, tokenIterator, context) = Prepare(scriptContent);
-            var startingCount = tokens.Count;
-            var res = new List<Token>();
-            var fooType = new TypeInfoEntry("Foo", UserType.Class);
-            fooType.AddField("a");
-            fooType.AddField("b");
-            context.TypeInfo.AddType(fooType);
-
-            AdvanceGather(tokenIterator, res);
-
-            Assert.Greater(res.Count, startingCount);
-            Assert.IsTrue(res.Any(x => x.TokenType == TokenType.CLASS));
-            Assert.IsTrue(res.Any(x => x.Literal == "FooSoa"));
-            Assert.IsTrue(res.Any(x => x.Literal == "a"));
-            Assert.IsTrue(res.Any(x => x.Literal == "b"));
-            Assert.IsTrue(res.Any(x => x.Literal == "Count"));
         }
 
         private static (List<Token> tokens, TokenIterator tokenIterator, DummyContext context) Prepare(string scriptContent)

@@ -188,7 +188,7 @@ namespace ULox
             {
                 compiler.TokenIterator.Consume(TokenType.IDENTIFIER, "Expect identifier after mixin into class.");
                 var targetname = compiler.TokenIterator.PreviousToken.Literal;
-                var targetTypeInfoEntry = compiler.TypeInfo.GetUserType(targetname);
+                var targetTypeInfoEntry = compiler.TypeInfo.GetUserType(targetname, compiler);
                 CurrentTypeInfoEntry.AddMixin(targetTypeInfoEntry);
                 compiler.TokenIterator.Match(TokenType.COMMA);
             } while (!compiler.TokenIterator.Check(TokenType.END_STATEMENT));
@@ -213,7 +213,7 @@ namespace ULox
                 foreach (var contractName in contractNames)
                 {
                     CurrentTypeInfoEntry.AddContract(contractName);
-                    var (meets, msg) = MeetValidator.ValidateClassMeetsClass(CurrentTypeInfoEntry, compiler.TypeInfo.GetUserType(contractName));
+                    var (meets, msg) = MeetValidator.ValidateClassMeetsClass(CurrentTypeInfoEntry, compiler.TypeInfo.GetUserType(contractName, compiler));
                     if (!meets)
                     {
                         compiler.ThrowCompilerException($"Class '{CurrentTypeName}' does not meet contract '{contractName}'. {msg}");

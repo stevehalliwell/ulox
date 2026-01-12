@@ -278,10 +278,10 @@ print (A());");
             testEngine.Run(@"
 var i = 0;
 fun DoIt(){
-while(i < 5)
+for(;i < 5;)
 {
     var j = 0;
-    while(j < 5)
+    for(;j < 5;)
     {
         j = j + 1;
         print (j);
@@ -303,10 +303,10 @@ DoIt();");
 fun DoIt(){
 var i = 0;
 var j = 0;
-while(i < 5)
+for(;i < 5;)
 {
     j= 0;
-    while(j < 5)
+    for(;j < 5;)
     {
         j = j + 1;
         print (j);
@@ -843,7 +843,7 @@ var c = b + a;");
 ===Stack===
 <closure root upvals:0>
 ===CallStack===
-chunk:'root(test)'
+chunk:'root(test:2)'
 
 ", testEngine.InterpreterResult);
         }

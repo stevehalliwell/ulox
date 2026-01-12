@@ -22,6 +22,10 @@ namespace ULox
         void ProcessDesugar(int currentTokenIndex, List<Token> tokens, ICompilerDesugarContext context);
     }
 
+    //todo: split desugar that needs context from that which doesn't, and blast through all the 
+    //  desugars that don't need context ahead of time. If the desugar doesn't need to read ahead,
+    //  it can be done at scan token emit.
+
     public sealed class TokenIterator
     {
         public Token CurrentToken { get; private set; }
@@ -45,14 +49,10 @@ namespace ULox
             _compilerDesugarContext = compilerDesugarContext;
 
             _desugarSteps.Add(new StringInterpDesugar());
-            _desugarSteps.Add(new WhileDesugar());
-            _desugarSteps.Add(new CompoundAssignDesugar());
+            _desugarSteps.Add(new CompoundAssignDesugar());//could be done at token emit time
             _desugarSteps.Add(new LoopDesugar());
-            _desugarSteps.Add(new ListDesugar());
-            _desugarSteps.Add(new MapDesugar());
-            _desugarSteps.Add(new DynamicDesugar());
-            _desugarSteps.Add(new ClassInitArgMatchDesugar());
-            _desugarSteps.Add(new SoaClassDesugar());
+
+            _desugarSteps.Add(new ClassInitArgMatchDesugar());  //this is the only one that needs context right now
         }
 
         public string GetSourceSection(int start, int len)

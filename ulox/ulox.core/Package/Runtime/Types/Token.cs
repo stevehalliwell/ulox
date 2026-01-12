@@ -49,7 +49,6 @@
         OR,
         IF,
         ELSE,
-        WHILE,
         FOR,
 
         LOOP,
@@ -79,8 +78,6 @@
         CONTEXT_NAME_TEST,
         CONTEXT_NAME_TESTSET,
 
-        BUILD,
-
         TYPEOF,
 
         MEETS,
@@ -98,14 +95,12 @@
         ENUM,
 
         READ_ONLY,
-
-        SOA,
     }
     
     public readonly struct Token
     {
-        public readonly string Literal;
         public readonly int StringSourceIndex;
+        public readonly string Literal;
         public readonly TokenType TokenType;
 
         public Token(

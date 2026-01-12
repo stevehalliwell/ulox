@@ -2,6 +2,13 @@
 
 namespace ULox
 {
+    public interface IOptimiserPass
+    {
+        void Prepare(Optimiser optimiser, Chunk chunk);
+        void ProcessPacket(Optimiser optimiser, Chunk chunk, int inst, ByteCodePacket packet);
+        Optimiser.PassCompleteRequest Complete(Optimiser optimiser, Chunk chunk);
+    }
+
     public sealed class Optimiser
     {
         public enum PassCompleteRequest
@@ -41,12 +48,12 @@ namespace ULox
             OptimisationReporter?.PreOptimise(compiledScript);
             foreach (var chunk in compiledScript.AllChunks)
             {
-                for (int passIndex = 0; passIndex < OptimiserPasses.Count; passIndex++)
+                for (var passIndex = 0; passIndex < OptimiserPasses.Count; passIndex++)
                 {
                     var pass = OptimiserPasses[passIndex];
                     var len = chunk.Instructions.Count;
                     pass.Prepare(this, chunk);
-                    for (int i = 0; i < len; i++)
+                    for (var i = 0; i < len; i++)
                     {
                         pass.ProcessPacket(this, chunk, i, chunk.Instructions[i]);
                     }
@@ -78,7 +85,7 @@ namespace ULox
 
             //PERF: doing this at instruction at a time is slow
             //  ordering by chunk and marching from front to back 
-            //  with a running count would be faster
+            //  with a running count would be faster (split read and write heads)
             for (int i = _toRemove.Count - 1; i >= 0; i--)
             {
                 var item = _toRemove[i];

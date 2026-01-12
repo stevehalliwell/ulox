@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-
-namespace ULox
+﻿namespace ULox
 {
     public interface IULoxLibrary
     {
@@ -12,9 +7,6 @@ namespace ULox
 
     public sealed class Context
     {
-        private readonly List<CompiledScript> _compiledScripts = new();
-        public IReadOnlyList<CompiledScript> CompiledScripts => _compiledScripts;
-
         public Context(
             Program program,
             Vm vm,
@@ -28,6 +20,7 @@ namespace ULox
         public Program Program { get; }
         public Vm Vm { get; }
         public IPlatform Platform { get; }
+        public bool ReinterpretOnEachCompile { get; set; } = false;
 
         public void AddLibrary(IULoxLibrary lib)
         {
@@ -36,17 +29,20 @@ namespace ULox
             Vm.Globals.CopyFrom(toAdd);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public CompiledScript CompileScript(Script script)
         {
-            var existing = _compiledScripts.Find(x => x.ScriptHash == script.ScriptHash);
-            if (existing != null)
-                return existing;
-
+            var compScript = Program.CompiledScripts.Find(x => x.ScriptHash == script.ScriptHash);
+            if (compScript != null)
+            {
+                if(ReinterpretOnEachCompile)
+                {
+                    Vm.PrepareTypes(Program.TypeInfo);
+                    Vm.Interpret(compScript.TopLevelChunk);
+                }
+                return compScript;
+            }
             var res = Program.Compile(script);
-            _compiledScripts.Add(res);
             Vm.PrepareTypes(Program.TypeInfo);
-            Vm.Clear();
             Vm.Interpret(res.TopLevelChunk);
             return res;
         }

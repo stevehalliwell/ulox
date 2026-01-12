@@ -55,19 +55,6 @@ namespace ULox.Core.Bench
         //    engine.RunScript(new Script("", ScriptVsNativeFunctional.FunctionalNative));
         //}
 
-        //[Benchmark]
-        //public void Object_PosVelUpdate()
-        //{
-        //    var engine = CreateEngine();
-        //    engine.RunScript(new Script("", ObjectVsSoa.ObjectBasedScript));
-        //}
-
-        //[Benchmark]
-        //public void Soa_PosVelUpdate()
-        //{
-        //    var engine = CreateEngine();
-        //    engine.RunScript(new Script("", ObjectVsSoa.SoaBasedScript));
-        //}
 
         [Benchmark]
         public Engine CompileVsExecute_NewEngineOnly()

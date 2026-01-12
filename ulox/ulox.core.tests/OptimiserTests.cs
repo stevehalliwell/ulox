@@ -206,7 +206,7 @@ print(a);
 }");
 
             Assert.AreEqual("0", testEngine.InterpreterResult);
-            StringAssert.Contains("Instructions: 14 -> 11", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 13 -> 10", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]
@@ -415,7 +415,7 @@ var t = T(1,2);");
         fun DoIt()
         {
             var i = 0;
-            while(i < 5)
+            for(;i < 5;)
             {
                 i = i + 1;
                 print (i);
@@ -433,7 +433,7 @@ var t = T(1,2);");
         {
             testEngine.Run(@"
         var i = 0;
-        while(i < 5)
+        for(;i < 5;)
         {
             i = i + 1;
             print (i);
@@ -452,10 +452,10 @@ var t = T(1,2);");
         {
             var i = 0;
             var j = 0;
-            while(i < 5)
+            for(;i < 5;)
             {
                 j= 0;
-                while(j < 5)
+                for(;j < 5;)
                 {
                     j = j + 1;
                     print (j);
@@ -633,7 +633,7 @@ var t = T(1,2);");
                 var limit = 1000;
                 var accum = 1;
 
-                while(accum < limit) accum += accum;
+                for(;accum < limit;) accum += accum;
 
                 Assert.AreEqual(expected, accum);
             }
@@ -669,7 +669,7 @@ var t = T(1,2);");
                 var limit = 1000;
                 var accum = 1;
 
-                while(true)
+                for(;true;)
                 {
                     accum += accum;
                     if(accum > limit) 
@@ -690,27 +690,6 @@ var t = T(1,2);");
                     accum += accum;
                     if(accum > limit)
                         break;
-                }
-
-                Assert.AreEqual(expected, accum);
-            }
-
-            test ContinueWhile
-            {
-                var expected = 51;
-                var limit = 100;
-                var accum = 1;
-                var i = 0;
-
-                while(i < limit)
-                {
-                    i += 1;
-                    if(i % 2 == 0)
-                    {
-                        continue;
-                    }
-
-                    accum += 1;
                 }
 
                 Assert.AreEqual(expected, accum);
@@ -828,7 +807,7 @@ var t = T(1,2);");
 
             Assert.AreEqual("", testEngine.InterpreterResult);
             Assert.IsTrue(testEngine.MyEngine.Context.Vm.TestRunner.AllPassed);
-            StringAssert.Contains("Instructions: 813 -> 518", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+            StringAssert.Contains("Instructions: 757 -> 484", _opt.OptimisationReporter.GetReport().GenerateStringReport());
         }
 
         [Test]

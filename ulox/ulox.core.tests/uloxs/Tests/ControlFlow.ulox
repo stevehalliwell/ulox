@@ -83,17 +83,6 @@ testset ControlFlow
         Assert.AreEqual(expected, result);
     }
 
-    test While
-    {
-        var expected = 1024;
-        var limit = 1000;
-        var accum = 1;
-
-        while(accum < limit) accum += accum;
-
-        Assert.AreEqual(expected, accum);
-    }
-
     test For
     {
         var expected = 4951;
@@ -119,21 +108,6 @@ testset ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    test Break
-    {
-        var expected = 1024;
-        var limit = 1000;
-        var accum = 1;
-
-        while(true)
-        {
-            accum += accum;
-            if(accum > limit) 
-                break;
-        }
-
-        Assert.AreEqual(expected, accum);
-    }
 
     test Loop
     {
@@ -151,26 +125,6 @@ testset ControlFlow
         Assert.AreEqual(expected, accum);
     }
 
-    test ContinueWhile
-    {
-        var expected = 51;
-        var limit = 100;
-        var accum = 1;
-        var i = 0;
-
-        while(i < limit)
-        {
-            i += 1;
-            if(i % 2 == 0)
-            {
-                continue;
-            }
-
-            accum += 1;
-        }
-
-        Assert.AreEqual(expected, accum);
-    }
 
     test ContinueFor
     {

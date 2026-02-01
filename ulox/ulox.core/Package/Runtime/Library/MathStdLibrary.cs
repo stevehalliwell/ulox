@@ -23,6 +23,7 @@ namespace ULox
                 (nameof(Ln), Value.New(Ln, 1, 1)),
                 (nameof(Log), Value.New(Log, 1, 2)),
                 (nameof(Pi), Value.New(Pi, 1, 0)),
+                (nameof(MaxSafeInt), Value.New(MaxSafeInt, 1, 0)),
                 (nameof(Pow), Value.New(Pow, 1, 2)),
                 (nameof(Rad2Deg), Value.New(Rad2Deg, 1, 1)),
                 (nameof(Rand), Value.New(Rand, 1, 0)),
@@ -185,6 +186,13 @@ namespace ULox
         private static NativeCallResult Pi(Vm vm)
         {
             var result = Math.PI;
+            vm.SetNativeReturn(0, Value.New(result));
+            return NativeCallResult.SuccessfulExpression;
+        }
+
+        private static NativeCallResult MaxSafeInt(Vm vm)
+        {
+            var result = (1 << 53)-1;
             vm.SetNativeReturn(0, Value.New(result));
             return NativeCallResult.SuccessfulExpression;
         }

@@ -441,5 +441,23 @@ print(arr.Contains(5));
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void ListLiteral_WhenElaborateValues_ShouldMatch()
+        {
+            testEngine.Run(@"
+var arr =
+[
+    {
+        a = 1,
+        b = 2;  //whoops meant to be comma
+        c = 3,
+    }
+];
+printh(arr);
+");
+
+            StringAssert.StartsWith("Expect identifier or '}' after ','", testEngine.InterpreterResult);
+        }
     }
 }

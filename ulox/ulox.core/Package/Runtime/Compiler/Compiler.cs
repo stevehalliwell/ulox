@@ -997,7 +997,15 @@ namespace ULox
                     compiler.EmitPop();
 
                     //if comma consume
-                    compiler.TokenIterator.Match(TokenType.COMMA);
+                    if(compiler.TokenIterator.Match(TokenType.COMMA))
+                    {
+                        continue;
+                    }
+                    else if (!compiler.TokenIterator.Check(TokenType.CLOSE_BRACE))
+                    {
+                        compiler.ThrowCompilerException("Expect identifier or '}' after ',' in dynamic creation.");
+                    }
+
                 }
 
                 return;

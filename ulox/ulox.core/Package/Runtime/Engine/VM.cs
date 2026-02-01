@@ -76,9 +76,13 @@ namespace ULox
                 PushCallFrameFromValue(func, args);
                 return Run();
             }
+            catch(RuntimeUloxException runtimeEx)
+            {
+                throw runtimeEx;
+            }
             catch(UloxException uloxEx)
             {
-                throw uloxEx;
+                ThrowRuntimeException($"Unhandled UloxException '{uloxEx}'");
             }
             catch (System.Exception e)
             {
@@ -1401,6 +1405,7 @@ namespace ULox
             return (true, string.Empty);
         }
     }
+
     public static class VmUtil
     {
         public static string GenerateGlobalsDump(Vm vm)
@@ -1409,7 +1414,7 @@ namespace ULox
 
             foreach (var item in vm.Globals)
             {
-                sb.Append($"{item.Key} : {item.Value}");
+                sb.AppendLine($"{item.Key} : {item.Value}");
             }
 
             return sb.ToString();

@@ -44,7 +44,7 @@ namespace ULox
             case OpCode.SET_PROPERTY:
                 _potentialRegisterise.Add((inst, RegisteriseType.SetProp));
                 break;
-                case OpCode.GET_PROPERTY:
+            case OpCode.GET_PROPERTY:
                 _potentialRegisterise.Add((inst, RegisteriseType.GetProp));
                 break;
             }
@@ -137,30 +137,30 @@ namespace ULox
                     }
                     break;
                 case RegisteriseType.GetProp:
+                {
+                    //detecting a var a = obj.prop; pattern to registerise the getprop
+                    //we put the setlocal byte into the getprop and remove the setlocal and pop
+                    var nextInst = inst + 1;
+                    if (chunk.Instructions.Count > nextInst)
+                    {
+                        var next = chunk.Instructions[nextInst];
+                        if (next.OpCode == OpCode.SET_LOCAL)
                         {
-                            //detecting a var a = obj.prop; pattern to registerise the getprop
-                            //we put the setlocal byte into the getprop and remove the setlocal and pop
-                            var nextInst = inst + 1;
-                            if (chunk.Instructions.Count > nextInst)
+                            var nextNextInst = nextInst + 1;
+                            if (chunk.Instructions.Count > nextNextInst)
                             {
-                                var next = chunk.Instructions[nextInst];
-                                if (next.OpCode == OpCode.SET_LOCAL)
+                                var nextNext = chunk.Instructions[nextNextInst];
+                                if (nextNext.OpCode == OpCode.POP && nextNext.b1 == 1)
                                 {
-                                    var nextNextInst = nextInst + 1;
-                                    if (chunk.Instructions.Count > nextNextInst)
-                                    {
-                                        var nextNext = chunk.Instructions[nextNextInst];
-                                        if (nextNext.OpCode == OpCode.POP && nextNext.b1 == 1)
-                                        {
-                                            optimiser.AddToRemove(chunk, nextNextInst);
-                                            optimiser.AddToRemove(chunk, nextInst);
-                                            nb2 = next.b1; // setlocal byte
-                                        }
-                                    }
+                                    optimiser.AddToRemove(chunk, nextNextInst);
+                                    optimiser.AddToRemove(chunk, nextInst);
+                                    nb2 = next.b1; // setlocal byte
                                 }
                             }
                         }
-                    break;
+                    }
+                }
+                break;
                 case RegisteriseType.Unknown:
                 default:
                     throw new UloxException($"Unknown registerise type {regType}");

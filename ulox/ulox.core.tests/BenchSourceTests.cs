@@ -4,6 +4,7 @@ using ULox.Core.Bench;
 namespace ULox.Core.Tests
 {
     [TestFixture]
+    [Ignore("Benchmarks are ignored by default. Run them manually if needed.")]
     public class BenchSourceTests : EngineTestBase
     {
         [Test]

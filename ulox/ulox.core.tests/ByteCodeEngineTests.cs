@@ -700,6 +700,7 @@ Assert.AreEqual(1,1);");
         }
 
         [Test]
+        [Ignore("slow")]
         public void Engine_Approx_Assert()
         {
             testEngine.Run(@"

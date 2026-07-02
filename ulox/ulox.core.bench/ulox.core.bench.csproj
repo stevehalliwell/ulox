@@ -8,6 +8,9 @@
 		<ProjectReference Include="..\ulox.core\ulox.core.csproj" />
 	</ItemGroup>
 	<ItemGroup>
+		<None Include="..\ulox.core.tests\uloxs\**" Link="uloxs\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+	<ItemGroup>
 		<AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
 	</ItemGroup>
 	<ItemGroup>

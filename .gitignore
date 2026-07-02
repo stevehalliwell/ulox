@@ -1,2 +1,5 @@
 .vscode
 .DS_Store
+benchmark-results.txt
+BenchmarkDotNet.Artifacts
+TestResults

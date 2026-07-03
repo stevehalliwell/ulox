@@ -3,6 +3,7 @@ using BenchmarkDotNet.Attributes;
 namespace ULox.Core.Bench
 {
     [MemoryDiagnoser]
+    [BenchmarkCategory("ALL", "LITE", "MODERATE")]
     public class CompileExecuteSplitOptimiserOff
     {
         private Engine _engine;
@@ -13,7 +14,7 @@ namespace ULox.Core.Bench
         {
             _engine = Program.CreateEngine();
             _engine.Context.Program.Optimiser.Enabled = false;
-            _compiled = _engine.Context.Program.Compile(Vec2Variants.Type);
+            _compiled = _engine.Context.Program.Compile(Vec2Variants.Tuple);
             _engine.Context.Vm.PrepareTypes(_engine.Context.Program.TypeInfo);
         }
 

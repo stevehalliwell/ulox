@@ -27,6 +27,29 @@ else
     i = 3;
 }
 ");
+
+        public static readonly Script RunOnceThenUpdateMany = new(nameof(RunOnceThenUpdateMany), @"
+var runningTime = 0;
+var x = 1;
+var y = 2;
+var total = 0;
+
+fun SetupGame()
+{
+    runningTime = 0;
+    x = 1;
+    y = 2;
+    total = 0;
+}
+
+fun Update(dt)
+{
+    runningTime += dt;
+    x = x * 1.001 + y * dt;
+    y = y * 0.999 + x * dt;
+    total += x + y;
+}
+");
     }
 
     public static class Vec2Variants

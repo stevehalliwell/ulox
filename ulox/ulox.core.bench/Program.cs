@@ -47,7 +47,6 @@ namespace ULox.Core.Bench
         {
             var config = DefaultConfig.Instance.AddJob(
                 Job.Default
-                    .WithId("TwoMinute")
                     .WithLaunchCount(1)
                     .WithWarmupCount(6)
                     .WithIterationCount(20)
@@ -58,6 +57,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public void ScriptVsNativeFunctional_UloxMethods()
         {
             var engine = CreateEngine();
@@ -66,6 +66,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public void ScriptVsNativeFunctional_NativeMethods()
         {
             var engine = CreateEngine();
@@ -73,12 +74,14 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE")]
         public void BytecodeOptimiser_CompileOnly_OptimisationsOff()
         {
             DoByteCodeEngineCompile(engine => engine.Context.Program.Optimiser.Enabled = false);
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE")]
         public void BytecodeOptimiser_CompileOnly_OptimisationsOn()
         {
             DoByteCodeEngineCompile(engine => engine.Context.Program.Optimiser.Enabled = true);
@@ -115,6 +118,7 @@ namespace ULox.Core.Bench
 
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public Engine CompileVsExecute_NewEngineOnly()
         {
             _engine = CreateEngine();
@@ -122,6 +126,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public TokenisedScript CompileVsExecute_TokeniseOnly()
         {
             _engine = CreateEngine();
@@ -129,6 +134,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public CompiledScript CompileVsExecute_CompileOnly()
         {
             _engine = CreateEngine();
@@ -136,6 +142,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public CompiledScript CompileVsExecute_DeepCloneOnly()
         {
             _engine = CreateEngine();
@@ -144,6 +151,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public void CompileVsExecute_All()
         {
             _engine = CreateEngine();
@@ -151,6 +159,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public void Looping_Loop()
         {
             var engine = CreateEngine();
@@ -158,6 +167,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public void Conditional_If()
         {
             var engine = CreateEngine();
@@ -165,6 +175,7 @@ namespace ULox.Core.Bench
         }
 
         [Benchmark]
+        [BenchmarkCategory("ALL", "LITE", "MODERATE")]
         public string Dissasm_Script()
         {
             var dis = new Disassembler();

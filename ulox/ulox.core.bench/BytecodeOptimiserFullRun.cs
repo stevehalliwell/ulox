@@ -5,8 +5,7 @@ using BenchmarkDotNet.Attributes;
 namespace ULox.Core.Bench
 {
     [MemoryDiagnoser]
-    [WarmupCount(3)]
-    [IterationCount(5)]
+    [BenchmarkCategory("ALL")]
     public class BytecodeOptimiserFullRun
     {
         [Benchmark]

@@ -42,20 +42,6 @@ def build_key(row: dict) -> tuple[str, str]:
     return row["Type"], row["Method"]
 
 
-def shortest_unique_prefixes(values: list[str], minimum: int = 1) -> dict[str, str]:
-    unique_values = sorted(set(values))
-    result: dict[str, str] = {}
-    for value in unique_values:
-        for size in range(minimum, len(value) + 1):
-            prefix = value[:size]
-            if sum(other.startswith(prefix) for other in unique_values) == 1:
-                result[value] = prefix
-                break
-        else:
-            result[value] = value
-    return result
-
-
 def format_mean(value: float | None) -> str:
     if value is None:
         return "NA"
@@ -69,11 +55,13 @@ def format_stddev(value: float | None) -> str:
 
 
 def format_diff(current: float | None, previous: float | None) -> str:
-    if current is None or previous is None:
+    if current is None or previous is None or previous == 0:
         return "-"
     diff = current - previous
-    sign = "+" if diff > 0 else ""
-    return f"{sign}{diff:,.3f} μs"
+    diff_sign = "+" if diff > 0 else ""
+    percent = (diff / previous) * 100
+    percent_sign = "+" if percent > 0 else ""
+    return f"{diff_sign}{diff:,.3f} μs ({percent_sign}{percent:.2f}%)"
 
 
 def format_gen_sum(row: dict) -> str:
@@ -99,13 +87,6 @@ def make_summary_rows(
     rows_with_mean = [
         row for row in current_rows if parse_number(row.get("Mean", "")) is not None
     ]
-    type_short = shortest_unique_prefixes(
-        [row["Type"] for row in rows_with_mean], minimum=3
-    )
-    method_short = shortest_unique_prefixes(
-        [row["Method"] for row in rows_with_mean], minimum=4
-    )
-
     summary_rows = []
     missing_count = 0
     for row in current_rows:
@@ -121,7 +102,7 @@ def make_summary_rows(
         current_stddev = parse_number(row.get("StdDev", ""))
         summary_rows.append(
             {
-                "Name": f"{type_short[row['Type']]}.{method_short[row['Method']]}",
+                "Name": f"{row['Type']}.{row['Method']}",
                 "Mean": format_mean(current_mean),
                 "StdDev": format_stddev(current_stddev),
                 "Prev Mean dif": format_diff(current_mean, previous_mean),
@@ -129,6 +110,7 @@ def make_summary_rows(
                 "Allocated": format_allocated(row),
             }
         )
+    summary_rows.sort(key=lambda row: row["Name"])
     return summary_rows, missing_count
 
 

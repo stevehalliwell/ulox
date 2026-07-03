@@ -13,9 +13,12 @@ namespace ULox
     public sealed class Scanner
     {
         public const int TokenStartingCapacity = 500;
-        private StringIterator _stringIterator = new("");
-        public char CurrentChar => _stringIterator.CurrentChar;
-        public int CurrentIndex => _stringIterator.CurrentIndex;
+        private string _source;
+        private int _index;
+        private int _previousRunningCount;
+        private readonly List<int> _lineLengths = new();
+        public char CurrentChar { get; private set; }
+        public int CurrentIndex => _index;
         private Script _script;
         private List<Token> _tokens;
         private readonly StringBuilder _workingSpaceStringBuilder = new();
@@ -78,7 +81,10 @@ namespace ULox
 
         public void Reset()
         {
-            _stringIterator = null;
+            _source = null;
+            _index = -1;
+            _previousRunningCount = 0;
+            _lineLengths.Clear();
             _script = default;
             _workingSpaceStringBuilder.Clear();
         }
@@ -86,7 +92,10 @@ namespace ULox
         public TokenisedScript Scan(Script script)
         {
             _script = script;
-            _stringIterator = new StringIterator(_script.Source);
+            _source = _script.Source;
+            _index = -1;
+            _previousRunningCount = 0;
+            _lineLengths.Clear();
             _tokens = new List<Token>(TokenStartingCapacity);
 
             while (!IsAtEnd())
@@ -95,10 +104,10 @@ namespace ULox
                 Consume();
             }
 
-            _stringIterator.FinishLineLengths();
+            _lineLengths.Add(_index - _previousRunningCount);
             EmitTokenSingle(TokenType.EOF);
 
-            return new TokenisedScript(_tokens, _stringIterator.LineLengths.ToArray(), script);
+            return new TokenisedScript(_tokens, _lineLengths.ToArray(), script);
         }
 
         private void Consume()
@@ -309,13 +318,13 @@ namespace ULox
 
         public void ThrowScannerException(string msg)
         {
-            var (line, characterNumber) = _stringIterator.GetLineAndCharacterNumber();
+            var (line, characterNumber) = GetLineAndCharacterNumber();
             throw new ScannerException(msg, TokenType.IDENTIFIER, line, characterNumber, _script.Name);
         }
 
         public bool Match(char matchingCharToConsume)
         {
-            if (_stringIterator.Peek() == matchingCharToConsume)
+            if (Peek() == matchingCharToConsume)
             {
                 Advance();
                 return true;
@@ -324,14 +333,28 @@ namespace ULox
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Advance() => _stringIterator.Advance();
+        public void Advance()
+        {
+            _index++;
+            CurrentChar = (char)SafeRead(_index);
+            if (CurrentChar == '\n' || CurrentChar == '\0')
+            {
+                _lineLengths.Add(_index - _previousRunningCount);
+                _previousRunningCount = _index;
+            }
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool IsAtEnd() => _stringIterator.Peek() == -1;
+        public bool IsAtEnd() => Peek() == -1;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public char Peek()
-            => (char)_stringIterator.Peek();
+        public int Peek() => SafeRead(_index + 1);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private int SafeRead(int index)
+        {
+            return index < _source.Length ? _source[index] : -1;
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void EmitTokenSingle(TokenType token)
@@ -343,13 +366,18 @@ namespace ULox
             _tokens.Add(new Token(
                 simpleToken,
                 literal,
-                _stringIterator.CurrentIndex));
+                _index));
         }
 
         public string SubStrFrom(int startingIndex)
         {
-            var length = _stringIterator.CurrentIndex - startingIndex;
+            var length = _index - startingIndex;
             return _script.Source.Substring(startingIndex, length + 1);
+        }
+
+        private (int line, int characterNumber) GetLineAndCharacterNumber()
+        {
+            return (_lineLengths.Count + 1, _index - _previousRunningCount + 1);
         }
     }
 }

@@ -9,9 +9,9 @@ Review scope: `Scanner.cs`, `StringIterator.cs`, `Token.cs`, `TokenisedScript.cs
 - Risk: line/character accounting changes; cover with scanner tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
-- [ ] Improved and Committed
+- [x] Attempted
+- [x] Tested
+- [x] Improved and Committed
 
 ## 2. Avoid per-token substring unless parser needs literal
 - Current scanner allocates `Substring` for every identifier and number.

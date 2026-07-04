@@ -68,10 +68,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: readability loss and edge-case mistakes; keep changes local and benchmark each pass-specific edit separately.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-13-31`: compile-only 400,647.300 μs (+3.35%), optimisations-on update-many 6,634,085.500 μs (+2.44%), optimisations-off update-many 6,794,261.500 μs (-0.28%). User chose revert; no code kept.
 
 ## 5. Cache label positions per pass
 - Current: passes repeatedly scan `chunk.Labels` to answer "is there a label at this instruction?" or "where is the next label?".
@@ -80,10 +80,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: cache must be rebuilt after any pass mutates labels/instructions; stale positions break jumps.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-17-34`: compile-only 398,548.700 μs (+2.81% vs baseline), optimisations-on update-many 6,658,480.500 μs (+2.81% vs baseline), optimisations-off update-many 7,079,828.500 μs (+3.91% vs baseline). Worse; user chose revert; no code kept.
 
 ## 6. Use sorted label positions for unreachable-code bounds
 - Current: `OptimiserUnreachableCodeRemovalPass.Complete` finds next label with `chunk.Labels.Values.Where(...).DefaultIfEmpty(...).Min()` for each unreachable point.
@@ -92,10 +92,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: default end index must match current inclusive removal behaviour exactly.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-20-08`: compile-only 413,202.700 μs (+6.59% vs baseline), optimisations-on update-many 6,914,787.800 μs (+6.77% vs baseline), optimisations-off update-many 7,872,806.600 μs (+15.55% vs baseline). Worse; user chose revert; no code kept.
 
 ## 7. Precompute label usage counts
 - Current: `OptimiserGotoLabelReorderPass` calls `labelUsage.Count(x => x.label == label)` inside loop.
@@ -104,10 +104,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: low; counts must include TEST/GOTO/GOTO_IF_FALSE same as current accumulator.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-22-24`: compile-only 379,830.100 μs (-2.02% vs baseline), optimisations-on update-many 6,594,750.000 μs (+1.83% vs baseline), optimisations-off update-many 6,896,121.100 μs (+1.21% vs baseline). Mixed/noisy; user chose revert; no code kept.
 
 ## 8. Precompute used labels for unused-label removal
 - Current: `OptimiserRemoveUnusedLabelOpCodesPass` checks each label with `LabelUsage.Any(...)`.
@@ -116,10 +116,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: low; internal-label filtering must stay unchanged.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-24-43`: compile-only 406,582.500 μs (+4.88% vs baseline), optimisations-on update-many 6,559,925.600 μs (+1.29% vs baseline), optimisations-off update-many 6,959,597.000 μs (+2.14% vs baseline). Worse; user chose revert; no code kept.
 
 ## 9. Speed duplicate-label collapse grouping
 - Current: `OptimiserCollapseDuplicateLabelsPass` sorts labels, then allocates arrays via `Skip/Take/ToArray`, checks existence with `ContainsKey`, joins names, and redirects by scanning usage per label.
@@ -128,10 +128,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: combined label names and redirect semantics must remain byte-for-byte compatible if tests depend on reports/disassembly.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-31-53`: compile-only 395,329.400 μs (+1.98% vs baseline), optimisations-on update-many 7,102,084.300 μs (+9.66% vs baseline), optimisations-off update-many 7,797,239.600 μs (+14.43% vs baseline). Worse; user chose revert; no code kept.
 
 ## 10. Avoid label-weave work when pass does not need it
 - Current: `OptimiserLabelUsageAccumulator.AddLabelUsage` always calls `Optimiser.IsIndexWeaved`, even for passes that only need label ids.

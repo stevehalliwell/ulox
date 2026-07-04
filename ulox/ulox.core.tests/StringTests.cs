@@ -95,6 +95,25 @@ print(s);");
         }
 
         [Test]
+        public void Interpolate_WhenMemberAndIndex_ShouldPrintValues()
+        {
+            testEngine.Run(@"
+var obj = { name = ""Ada"", nums = [4,5,6], };
+print(""{obj.name}:{obj.nums[1]}:{obj.nums.Count()}"");");
+
+            Assert.AreEqual("Ada:5:3", testEngine.InterpreterResult);
+        }
+
+        [Test]
+        public void String_WhenEscapedNewline_ShouldUnescape()
+        {
+            testEngine.Run(@"
+print(""a\nb"");");
+
+            Assert.AreEqual("a\nb", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Explode_WhenEmpty_ShouldReturnEmpty()
         {
             testEngine.Run(@"

@@ -18,5 +18,20 @@ var foo
 
             StringAssert.StartsWith("Expect ; after VarDeclaration", testEngine.InterpreterResult);
         }
+
+        [Test]
+        public void Error_WhenAfterBlankLinesAndComments_ShouldReportCorrectLine()
+        {
+            testEngine.Run(@"
+// pad 1
+
+// pad 3
+class T
+{
+    init(){return 1;}
+}");
+
+            Assert.AreEqual("Cannot return an expression from an 'init' in chunk 'init(test)' at 7:18.", testEngine.InterpreterResult);
+        }
     }
 }

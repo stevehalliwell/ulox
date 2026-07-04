@@ -215,6 +215,37 @@ class Foo
             AdvanceGather(tokenIterator, res);
 
             Assert.Greater(res.Count, startingCount);
+            Assert.AreEqual(2, res.Count(x => x.TokenType == TokenType.THIS));
+        }
+
+        [Test]
+        public void Init_WhenNotInClass_ShouldNotSelfAssign()
+        {
+            var scriptContent = @"
+fun init(bar){}
+";
+            var (tokens, tokenIterator, context) = Prepare(scriptContent);
+            var startingCount = tokens.Count;
+            var res = new List<Token>();
+            context.ClassFieldNames.Add("bar");
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.AreEqual(startingCount, res.Count);
+            Assert.IsFalse(res.Any(x => x.TokenType == TokenType.THIS));
+        }
+
+        [Test]
+        public void StringInterp_WhenEscapedBrace_ShouldBecomePlainString()
+        {
+            var scriptContent = @"var s = ""Hi, \{3}"";";
+            var (_, tokenIterator, _) = Prepare(scriptContent);
+            var res = new List<Token>();
+
+            AdvanceGather(tokenIterator, res);
+
+            Assert.AreEqual("Hi, {3}", res.Single(x => x.TokenType == TokenType.STRING).Literal);
+            Assert.IsFalse(res.Any(x => x.TokenType == TokenType.PLUS));
         }
 
         private static (List<Token> tokens, TokenIterator tokenIterator, DummyContext context) Prepare(string scriptContent)

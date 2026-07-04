@@ -67,9 +67,7 @@ namespace ULox
                 switch (regType)
                 {
                 case RegisteriseType.Binary:
-                    //TODO: would like to but it conflicts with add overload internals at the moment
-                    // either way we would need to have all the binary ops check the set byte for local or stack
-                    //if the following is a set local we can just do that
+                    //if the following is a set local we can write the binary result there directly
                     if (chunk.Instructions.Count > inst)
                     {
                         var next = chunk.Instructions[inst + 1];

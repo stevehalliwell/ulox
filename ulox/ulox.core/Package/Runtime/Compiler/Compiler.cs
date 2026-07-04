@@ -232,7 +232,7 @@ namespace ULox
 
         private void WriteConstantAt(byte at)
         {
-            CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), TokenIterator.PreviousTokenLine);
+            EmitPacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0));
         }
 
         public void AddConstantStringAndWriteOp(string str)

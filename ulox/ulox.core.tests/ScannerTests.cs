@@ -206,7 +206,7 @@ fun foo(p)
         }
 
         [Test]
-        public void Scanner_AllKeywords_EmitKeywordTokensWithOriginalLiteral()
+        public void Scanner_AllKeywords_EmitKeywordTokensWithoutLiteral()
         {
             var testString = "var and or if else for loop return break continue true false null fun panic yield fname testset test tname tsname class mixin this static init cname typeof meets signs countof expect match label goto enum readonly";
             var expected = new[]
@@ -254,7 +254,8 @@ fun foo(p)
             var tokenisedScript = scanner.Scan(new Script("test", testString));
 
             CollectionAssert.AreEqual(expected, tokenisedScript.Tokens.Select(x => x.TokenType).ToArray());
-            CollectionAssert.AreEqual(testString.Split(' '), tokenisedScript.Tokens.Take(expected.Length - 1).Select(x => x.Literal).ToArray());
+            Assert.That(tokenisedScript.Tokens.Single(x => x.TokenType == TokenType.INIT).Literal, Is.EqualTo("init"));
+            Assert.That(tokenisedScript.Tokens.Take(expected.Length - 1).Where(x => x.TokenType != TokenType.INIT).All(x => x.Literal == null), Is.True);
         }
 
         [Test]
@@ -313,7 +314,7 @@ fun foo(p)
             var tokenisedScript = scanner.Scan(new Script("test", testString));
 
             CollectionAssert.AreEqual(
-                new[] { "var", "a", "1", "var", "b", "3" },
+                new[] { "a", "1", "b", "3" },
                 tokenisedScript.Tokens.Where(x => x.Literal != null).Select(x => x.Literal).ToArray());
         }
 
@@ -325,7 +326,7 @@ fun foo(p)
             var tokenisedScript = scanner.Scan(new Script("test", testString));
 
             CollectionAssert.AreEqual(
-                new[] { "var", "a", "1", "var", "b", "3" },
+                new[] { "a", "1", "b", "3" },
                 tokenisedScript.Tokens.Where(x => x.Literal != null).Select(x => x.Literal).ToArray());
         }
 

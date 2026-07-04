@@ -221,7 +221,7 @@ class A
     init(){return;}
 }");
 
-            Assert.AreEqual("Cannot return an expression from an 'init' in chunk 'init(test)' at 4:18 'return'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot return an expression from an 'init' in chunk 'init(test)' at 4:18.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -230,7 +230,7 @@ class A
             testEngine.Run(@"
 var a = this.a;");
 
-            Assert.AreEqual("Cannot use the 'this' keyword outside of a class in chunk 'root(test)' at 2:13 'this'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Cannot use the 'this' keyword outside of a class in chunk 'root(test)' at 2:13.", testEngine.InterpreterResult);
         }
 
         [Test]
@@ -547,7 +547,7 @@ var t = T();
 print(t.a);
 print(t.b);");
 
-            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element in chunk 'T(test)' at 5:8 'var'.", testEngine.InterpreterResult);
+            Assert.AreEqual("Stage out of order. Type 'T' is at stage 'Init' has encountered a late 'Var' stage element in chunk 'T(test)' at 5:8.", testEngine.InterpreterResult);
         }
 
         [Test]

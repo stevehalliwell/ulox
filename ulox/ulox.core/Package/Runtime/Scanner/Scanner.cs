@@ -22,57 +22,6 @@ namespace ULox
         private Script _script;
         private List<Token> _tokens;
         private readonly StringBuilder _workingSpaceStringBuilder = new();
-        private readonly Dictionary<string, TokenType> keywords = new()
-        {
-                {"var", TokenType.VAR},
-                {"and", TokenType.AND},
-                {"or", TokenType.OR},
-                {"if", TokenType.IF},
-                {"else", TokenType.ELSE},
-                {"for", TokenType.FOR},
-                {"loop", TokenType.LOOP},
-                {"return", TokenType.RETURN},
-                {"break", TokenType.BREAK},
-                {"continue", TokenType.CONTINUE},
-                {"true", TokenType.TRUE},
-                {"false", TokenType.FALSE},
-                {"null", TokenType.NULL},
-                {"fun", TokenType.FUNCTION},
-                {"panic", TokenType.PANIC},
-                {"yield", TokenType.YIELD},
-                {"fname", TokenType.CONTEXT_NAME_FUNC},
-
-                {"testset", TokenType.TEST_SET},
-                {"test", TokenType.TESTCASE},
-
-                {"tname", TokenType.CONTEXT_NAME_TEST},
-                {"tsname", TokenType.CONTEXT_NAME_TESTSET},
-
-                {"class", TokenType.CLASS},
-                {"mixin", TokenType.MIXIN},
-                {ClassTypeCompilette.ThisName.String, TokenType.THIS},
-                {"static", TokenType.STATIC},
-                {"init", TokenType.INIT},
-                {"cname", TokenType.CONTEXT_NAME_CLASS},
-
-                {"typeof", TokenType.TYPEOF},
-
-                {"meets", TokenType.MEETS},
-                {"signs", TokenType.SIGNS},
-
-                {"countof", TokenType.COUNT_OF},
-
-                {"expect", TokenType.EXPECT},
-
-                {"match", TokenType.MATCH},
-
-                {"label", TokenType.LABEL},
-                {"goto", TokenType.GOTO},
-
-                {"enum", TokenType.ENUM},
-
-                {"readonly", TokenType.READ_ONLY}
-        };
 
         public Scanner()
         {
@@ -307,13 +256,79 @@ namespace ULox
                 Advance();
             }
 
-            var identString = SubStrFrom(_startingIndex);
-            var token = TokenType.IDENTIFIER;
+            var token = IdentifierTokenType(_startingIndex, _index - _startingIndex + 1);
+            EmitToken(token, token == TokenType.IDENTIFIER || token == TokenType.INIT ? SubStrFrom(_startingIndex) : null);
+        }
 
-            if (keywords.TryGetValue(identString, out var keywordTokenType))
-                token = keywordTokenType;
+        private TokenType IdentifierTokenType(int start, int length)
+        {
+            switch (length)
+            {
+                case 2:
+                    if (Matches(start, "if")) return TokenType.IF;
+                    if (Matches(start, "or")) return TokenType.OR;
+                    break;
+                case 3:
+                    if (Matches(start, "and")) return TokenType.AND;
+                    if (Matches(start, "for")) return TokenType.FOR;
+                    if (Matches(start, "fun")) return TokenType.FUNCTION;
+                    if (Matches(start, "var")) return TokenType.VAR;
+                    break;
+                case 4:
+                    if (Matches(start, "else")) return TokenType.ELSE;
+                    if (Matches(start, "enum")) return TokenType.ENUM;
+                    if (Matches(start, "goto")) return TokenType.GOTO;
+                    if (Matches(start, "init")) return TokenType.INIT;
+                    if (Matches(start, "loop")) return TokenType.LOOP;
+                    if (Matches(start, "null")) return TokenType.NULL;
+                    if (Matches(start, "test")) return TokenType.TESTCASE;
+                    if (Matches(start, "this")) return TokenType.THIS;
+                    if (Matches(start, "true")) return TokenType.TRUE;
+                    break;
+                case 5:
+                    if (Matches(start, "break")) return TokenType.BREAK;
+                    if (Matches(start, "class")) return TokenType.CLASS;
+                    if (Matches(start, "cname")) return TokenType.CONTEXT_NAME_CLASS;
+                    if (Matches(start, "fname")) return TokenType.CONTEXT_NAME_FUNC;
+                    if (Matches(start, "false")) return TokenType.FALSE;
+                    if (Matches(start, "label")) return TokenType.LABEL;
+                    if (Matches(start, "match")) return TokenType.MATCH;
+                    if (Matches(start, "meets")) return TokenType.MEETS;
+                    if (Matches(start, "mixin")) return TokenType.MIXIN;
+                    if (Matches(start, "panic")) return TokenType.PANIC;
+                    if (Matches(start, "signs")) return TokenType.SIGNS;
+                    if (Matches(start, "tname")) return TokenType.CONTEXT_NAME_TEST;
+                    if (Matches(start, "yield")) return TokenType.YIELD;
+                    break;
+                case 6:
+                    if (Matches(start, "expect")) return TokenType.EXPECT;
+                    if (Matches(start, "return")) return TokenType.RETURN;
+                    if (Matches(start, "static")) return TokenType.STATIC;
+                    if (Matches(start, "tsname")) return TokenType.CONTEXT_NAME_TESTSET;
+                    if (Matches(start, "typeof")) return TokenType.TYPEOF;
+                    break;
+                case 7:
+                    if (Matches(start, "countof")) return TokenType.COUNT_OF;
+                    if (Matches(start, "testset")) return TokenType.TEST_SET;
+                    break;
+                case 8:
+                    if (Matches(start, "continue")) return TokenType.CONTINUE;
+                    if (Matches(start, "readonly")) return TokenType.READ_ONLY;
+                    break;
+            }
 
-            EmitToken(token, identString);
+            return TokenType.IDENTIFIER;
+        }
+
+        private bool Matches(int start, string value)
+        {
+            for (var i = 0; i < value.Length; i++)
+            {
+                if (_source[start + i] != value[i])
+                    return false;
+            }
+
+            return true;
         }
 
         public void ThrowScannerException(string msg)

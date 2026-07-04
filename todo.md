@@ -20,9 +20,10 @@ Review scope: `Scanner.cs`, `StringIterator.cs`, `Token.cs`, `TokenisedScript.cs
 - Risk: any compiler/desugar path expecting keyword `Literal`; grep before change.
 
 ### Status
-- [ ] Attempted
+- [x] Attempted
 - [ ] Tested
 - [ ] Improved and Committed
+- Failed/skipped: avoiding keyword substring depends on item 3 replacing dictionary lookup; null keyword literals alone would not remove allocation.
 
 ## 3. Replace keyword `Dictionary<string, TokenType>` 
 - Current identifier path creates string then dictionary lookup.
@@ -32,9 +33,10 @@ Review scope: `Scanner.cs`, `StringIterator.cs`, `Token.cs`, `TokenisedScript.cs
 - Risk: more manual code; generate none. Keep boring switch.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
+- Tests passing. Moderate benchmark passed: `CompileVsExecute_TokeniseOnly` 14.46 μs vs prior scanner note 14.99 μs.
 
 ## 4. Use `Substring` for strings instead of `StringBuilder` when no escapes processed
 - Current string scan appends every char into reused `StringBuilder`.

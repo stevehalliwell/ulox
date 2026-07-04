@@ -140,10 +140,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: goto-reorder still needs exact `isWeaved` behaviour.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-37-12`: compile-only 407,054.600 μs (+5.01% vs baseline), optimisations-on update-many 6,489,553.300 μs (+0.20% vs baseline), optimisations-off update-many 6,831,186.200 μs (+0.26% vs baseline). No improvement; user chose revert; no code kept.
 
 ## 11. Early-skip label passes with no relevant labels/usages
 - Current: label passes still scan chunks with no labels, only internal labels, or no label-using opcodes.
@@ -152,10 +152,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: guard must not skip internal-label or TEST cases that current passes intentionally handle.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-40-09`: compile-only 398,694.200 μs (+2.85% vs baseline), optimisations-on update-many 6,488,643.700 μs (+0.19% vs baseline), optimisations-off update-many 6,772,914.500 μs (-0.60% vs baseline). No meaningful improvement; user chose revert; no code kept.
 
 ## 12. Run follow-up passes only when previous pass changed relevant state
 - Current: pass list repeats unreachable, duplicate-label, and collapse passes unconditionally.
@@ -167,7 +167,7 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - [ ] Attempted
 - [ ] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: paused before implementation. Next session should choose scope first: removal-only tracking is smallest/safest; full dirty flags match item better but touch more optimiser APIs and risk false negatives. Current baseline remains item 2 run: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs.
 
 ## 13. Combine safe adjacent scan-only passes
 - Current: each optimiser pass scans every instruction separately.

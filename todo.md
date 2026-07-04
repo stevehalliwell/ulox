@@ -91,10 +91,10 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-25-
 - Risk: tokenization differences in fast path; cover simple and complex interpolation tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only 421,770.1 -> 420,187.7 μs (-0.38%); not a meaningful win, code reverted.
 
 ## 6. Reduce list mutation cost in loop desugar
 - Current: `LoopDesugar` repeatedly uses `FindIndex`, `GetRange`, `RemoveRange`, and multiple `InsertRange` calls over the shared token list.

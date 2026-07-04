@@ -37,7 +37,10 @@ namespace ULox
         private readonly Compiler _compiler;
         private readonly TokenisedScript _tokeisedScript;
         private readonly ICompilerDesugarContext _compilerDesugarContext;
-        private readonly List<IDesugarStep> _desugarSteps = new();
+        private readonly StringInterpDesugar _stringInterpDesugar = new();
+        private readonly CompoundAssignDesugar _compoundAssignDesugar = new();
+        private readonly LoopDesugar _loopDesugar = new();
+        private readonly ClassInitArgMatchDesugar _classInitArgMatchDesugar = new();
 
         private int _currentTokenIndex = -1;
         private int _currentTokenLine;
@@ -55,12 +58,6 @@ namespace ULox
             _tokeisedScript = tokenisedScript;
             _compilerDesugarContext = compilerDesugarContext;
             _lineEndSourceIndex = tokenisedScript.LineLengths.Length > 0 ? tokenisedScript.LineLengths[0] : 0;
-
-            _desugarSteps.Add(new StringInterpDesugar());
-            _desugarSteps.Add(new CompoundAssignDesugar());//could be done at token emit time
-            _desugarSteps.Add(new LoopDesugar());
-
-            _desugarSteps.Add(new ClassInitArgMatchDesugar());  //this is the only one that needs context right now
         }
 
         public string GetSourceSection(int start, int len)
@@ -77,20 +74,40 @@ namespace ULox
             CurrentToken = _tokeisedScript.Tokens[++_currentTokenIndex];
             (_currentTokenLine, _currentTokenCharacter) = GetCachedLineAndCharacter(CurrentToken.StringSourceIndex);
 
-            foreach (var desugarStep in _desugarSteps)
+            switch (CurrentToken.TokenType)
             {
-                var request = desugarStep.IsDesugarRequested(this, _compilerDesugarContext);
-                switch (request)
-                {
-                case DesugarStepRequest.Replace:
-                    desugarStep.ProcessDesugar(_currentTokenIndex, _tokeisedScript.Tokens, _compilerDesugarContext);
-                    CurrentToken = _tokeisedScript.Tokens[_currentTokenIndex];
-                    break;
-                case DesugarStepRequest.None:
-                    break;
-                default:
-                    throw new System.ArgumentOutOfRangeException(nameof(request), request, null);
-                }
+            case TokenType.STRING:
+                TryDesugar(_stringInterpDesugar);
+                break;
+            case TokenType.PLUS_EQUAL:
+            case TokenType.MINUS_EQUAL:
+            case TokenType.STAR_EQUAL:
+            case TokenType.SLASH_EQUAL:
+            case TokenType.PERCENT_EQUAL:
+                TryDesugar(_compoundAssignDesugar);
+                break;
+            case TokenType.LOOP:
+                TryDesugar(_loopDesugar);
+                break;
+            case TokenType.INIT:
+                TryDesugar(_classInitArgMatchDesugar);
+                break;
+            }
+        }
+
+        private void TryDesugar(IDesugarStep desugarStep)
+        {
+            var request = desugarStep.IsDesugarRequested(this, _compilerDesugarContext);
+            switch (request)
+            {
+            case DesugarStepRequest.Replace:
+                desugarStep.ProcessDesugar(_currentTokenIndex, _tokeisedScript.Tokens, _compilerDesugarContext);
+                CurrentToken = _tokeisedScript.Tokens[_currentTokenIndex];
+                break;
+            case DesugarStepRequest.None:
+                break;
+            default:
+                throw new System.ArgumentOutOfRangeException(nameof(request), request, null);
             }
         }
 

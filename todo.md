@@ -57,9 +57,10 @@ Review scope: `Scanner.cs`, `StringIterator.cs`, `Token.cs`, `TokenisedScript.cs
 - Risk: tiny. Benchmark both heuristics.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
+- Failed: `Math.Max(16, source.Length / 4)` passed tests but moderate benchmark was slower (`CompileVsExecute_TokeniseOnly` 14.23 μs vs 14.07 μs; update-many also slower). Scanner change reverted.
 
 ## 6. Reuse `LineLengths` storage or return `List<int>` directly
 - Current `StringIterator` owns `List<int>`, then `ToArray()` allocates copy in `TokenisedScript`.
@@ -68,9 +69,10 @@ Review scope: `Scanner.cs`, `StringIterator.cs`, `Token.cs`, `TokenisedScript.cs
 - Risk: compiler `GetLineAndCharacter` only indexes/Length; small signature change.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
+- Failed: returning scanner `List<int>` directly passed tests but moderate benchmark was slower (`CompileVsExecute_TokeniseOnly` 14.39 μs vs 14.07 μs baseline). Scanner/compiler changes reverted.
 
 ## 7. Collapse direct-symbol dispatch into table/switch fast path only after measuring
 - Current `Consume()` calls `ConsumeDirectSymbol()` before digit/alpha tests.
@@ -79,9 +81,10 @@ Review scope: `Scanner.cs`, `StringIterator.cs`, `Token.cs`, `TokenisedScript.cs
 - Risk: large diff for small gain; do after items above.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
-- [ ] Improved and Committed
+- [x] Attempted
+- [x] Tested
+- [x] Improved and Committed
+- Tests passing. Moderate benchmark passed: `CompileVsExecute_TokeniseOnly` 14.13 μs vs previous run 14.39 μs.
 
 ## 8. Benchmark scanner with allocation columns before/after each item
 - Existing benchmark: `CompileVsExecute_TokeniseOnly`.

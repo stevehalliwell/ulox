@@ -59,8 +59,35 @@ namespace ULox
         private void Consume()
         {
             var ch = CurrentChar;
-            if (ConsumeDirectSymbol())
-                return;
+            switch (ch)
+            {
+                case '"': ConsumeString(); return;
+                case '(': EmitTokenSingle(TokenType.OPEN_PAREN); return;
+                case ')': EmitTokenSingle(TokenType.CLOSE_PAREN); return;
+                case '{': EmitTokenSingle(TokenType.OPEN_BRACE); return;
+                case '}': EmitTokenSingle(TokenType.CLOSE_BRACE); return;
+                case '[': EmitTokenSingle(TokenType.OPEN_BRACKET); return;
+                case ']': EmitTokenSingle(TokenType.CLOSE_BRACKET); return;
+                case ',': EmitTokenSingle(TokenType.COMMA); return;
+                case ';': EmitTokenSingle(TokenType.END_STATEMENT); return;
+                case '.': EmitTokenSingle(TokenType.DOT); return;
+                case ':': EmitTokenSingle(TokenType.COLON); return;
+                case '+': EmitTokenSingle(!Match('=') ? TokenType.PLUS : TokenType.PLUS_EQUAL); return;
+                case '-': EmitTokenSingle(!Match('=') ? TokenType.MINUS : TokenType.MINUS_EQUAL); return;
+                case '*': EmitTokenSingle(!Match('=') ? TokenType.STAR : TokenType.STAR_EQUAL); return;
+                case '%': EmitTokenSingle(!Match('=') ? TokenType.PERCENT : TokenType.PERCENT_EQUAL); return;
+                case '!': EmitTokenSingle(!Match('=') ? TokenType.BANG : TokenType.BANG_EQUAL); return;
+                case '=': EmitTokenSingle(!Match('=') ? TokenType.ASSIGN : TokenType.EQUALITY); return;
+                case '<': EmitTokenSingle(!Match('=') ? TokenType.LESS : TokenType.LESS_EQUAL); return;
+                case '>': EmitTokenSingle(!Match('=') ? TokenType.GREATER : TokenType.GREATER_EQUAL); return;
+                case '/': ConsumeSlash(); return;
+                case ' ':
+                case '\r':
+                case '\t':
+                case '\n':
+                    return;
+            }
+
             if (IsDigit(ch))
             {
                 ConsumeDigit();
@@ -101,82 +128,6 @@ namespace ULox
             EmitToken(TokenType.STRING, _source.Substring(start, _index - start));
         }
 
-        private bool ConsumeDirectSymbol()
-        {
-            switch (CurrentChar)
-            {
-                case '"':
-                    ConsumeString();
-                    break;
-                case '(':
-                    EmitTokenSingle(TokenType.OPEN_PAREN);
-                    break;
-                case ')':
-                    EmitTokenSingle(TokenType.CLOSE_PAREN);
-                    break;
-                case '{':
-                    EmitTokenSingle(TokenType.OPEN_BRACE);
-                    break;
-                case '}':
-                    EmitTokenSingle(TokenType.CLOSE_BRACE);
-                    break;
-                case '[':
-                    EmitTokenSingle(TokenType.OPEN_BRACKET);
-                    break;
-                case ']':
-                    EmitTokenSingle(TokenType.CLOSE_BRACKET);
-                    break;
-                case ',':
-                    EmitTokenSingle(TokenType.COMMA);
-                    break;
-                case ';':
-                    EmitTokenSingle(TokenType.END_STATEMENT);
-                    break;
-                case '.':
-                    EmitTokenSingle(TokenType.DOT);
-                    break;
-                case ':':
-                    EmitTokenSingle(TokenType.COLON);
-                    break;
-                //compound
-                case '+':
-                    EmitTokenSingle(!Match('=') ? TokenType.PLUS : TokenType.PLUS_EQUAL);
-                    break;
-                case '-':
-                    EmitTokenSingle(!Match('=') ? TokenType.MINUS : TokenType.MINUS_EQUAL);
-                    break;
-                case '*':
-                    EmitTokenSingle(!Match('=') ? TokenType.STAR : TokenType.STAR_EQUAL);
-                    break;
-                case '%':
-                    EmitTokenSingle(!Match('=') ? TokenType.PERCENT : TokenType.PERCENT_EQUAL);
-                    break;
-                case '!':
-                    EmitTokenSingle(!Match('=') ? TokenType.BANG : TokenType.BANG_EQUAL);
-                    break;
-                case '=':
-                    EmitTokenSingle(!Match('=') ? TokenType.ASSIGN : TokenType.EQUALITY);
-                    break;
-                case '<':
-                    EmitTokenSingle(!Match('=') ? TokenType.LESS : TokenType.LESS_EQUAL);
-                    break;
-                case '>':
-                    EmitTokenSingle(!Match('=') ? TokenType.GREATER : TokenType.GREATER_EQUAL);
-                    break;
-                case '/':
-                    ConsumeSlash();
-                    break;
-                //whitespace
-                case ' ':
-                case '\r':
-                case '\t':
-                case '\n':
-                    break;
-                default:
-                    return false;
-            }
-            return true;
-        }
 
         private void ConsumeSlash()
         {

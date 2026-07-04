@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using System.Linq;
+using NUnit.Framework;
 
 namespace ULox.Core.Tests
 {
@@ -14,6 +15,12 @@ namespace ULox.Core.Tests
             _opt = testEngine.MyEngine.Context.Program.Optimiser;
             _opt.OptimisationReporter = new OptimisationReporter();
         }
+
+        private ByteCodePacket[] TopLevelInstructions => testEngine.MyEngine.Context.Program.CompiledScripts[0].TopLevelChunk.Instructions.ToArray();
+
+        private static int CountOp(ByteCodePacket[] instructions, OpCode opCode) => instructions.Count(x => x.OpCode == opCode);
+
+        private static ByteCodePacket SingleOp(ByteCodePacket[] instructions, OpCode opCode) => instructions.Single(x => x.OpCode == opCode);
         
         [Test]
         public void Optimiser_NothingToOptimise_DoesNothing()
@@ -116,6 +123,89 @@ print (c);
 
             Assert.AreEqual("False", testEngine.InterpreterResult);
             StringAssert.Contains("Instructions: 15 -> 10", _opt.OptimisationReporter.GetReport().GenerateStringReport());
+        }
+
+        [Test]
+        public void Optimiser_BinaryLocalMath_WhenOptimised_ShouldUseRegisterOperandsAndTarget()
+        {
+            testEngine.Run(@"
+{
+var a = 1;
+var b = 2;
+var c = 0;
+c = a + b;
+print (c);
+}");
+
+            var instructions = TopLevelInstructions;
+            var add = SingleOp(instructions, OpCode.ADD);
+
+            Assert.AreEqual("3", testEngine.InterpreterResult);
+            Assert.AreNotEqual(Optimiser.NOT_LOCAL_BYTE, add.b1);
+            Assert.AreNotEqual(Optimiser.NOT_LOCAL_BYTE, add.b2);
+            Assert.AreNotEqual(Optimiser.NOT_LOCAL_BYTE, add.b3);
+            Assert.AreEqual(0, CountOp(instructions, OpCode.SET_LOCAL));
+            Assert.AreEqual(1, CountOp(instructions, OpCode.GET_LOCAL));
+        }
+
+        [Test]
+        public void Optimiser_CommutativeLocalAndConstant_WhenOptimised_ShouldKeepLocalOperandRegisterised()
+        {
+            testEngine.Run(@"
+{
+var a = 2;
+var c = 0;
+c = a + 3;
+print (c);
+}");
+
+            var instructions = TopLevelInstructions;
+            var add = SingleOp(instructions, OpCode.ADD);
+
+            Assert.AreEqual("5", testEngine.InterpreterResult);
+            Assert.AreEqual(Optimiser.NOT_LOCAL_BYTE, add.b1);
+            Assert.AreNotEqual(Optimiser.NOT_LOCAL_BYTE, add.b2);
+            Assert.AreNotEqual(Optimiser.NOT_LOCAL_BYTE, add.b3);
+            Assert.AreEqual(0, CountOp(instructions, OpCode.SET_LOCAL));
+        }
+
+        [Test]
+        public void Optimiser_CallWithLocalArgs_WhenOptimised_ShouldPackGetLocals()
+        {
+            testEngine.Run(@"
+fun F(a,b,c)
+{
+    print(""{a}{b}{c}"");
+}
+
+{
+var a = 1;
+var b = 2;
+var c = 3;
+F(a,b,c);
+}");
+
+            var getLocal = TopLevelInstructions.Single(x => x.OpCode == OpCode.GET_LOCAL && x.b2 != Optimiser.NOT_LOCAL_BYTE);
+
+            Assert.AreEqual("123", testEngine.InterpreterResult);
+            Assert.AreNotEqual(Optimiser.NOT_LOCAL_BYTE, getLocal.b3);
+        }
+
+        [Test]
+        public void Optimiser_BlockScope_WhenOptimised_ShouldCollapseAdjacentPops()
+        {
+            testEngine.Run(@"
+{
+var a = 1;
+var b = 2;
+var c = 3;
+print(a+b+c);
+}");
+
+            var instructions = TopLevelInstructions;
+
+            Assert.AreEqual("6", testEngine.InterpreterResult);
+            Assert.IsTrue(instructions.Any(x => x.OpCode == OpCode.POP && x.b1 > 1));
         }
 
         [Test]

@@ -280,7 +280,7 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-50-
 - Risk: over-allocation on tiny scripts; keep conservative caps. Cover compile tests and allocation benchmark.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only regressed 382,638.9 -> 391,351.0 μs (+2.28%); allocated 1,004,674 -> 1,031,154 B; code reverted.

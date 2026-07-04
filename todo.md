@@ -45,9 +45,10 @@ Review scope: `Scanner.cs`, `StringIterator.cs`, `Token.cs`, `TokenisedScript.cs
 - Risk: preserve escaped quote behavior and unterminated-string error location.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
-- [ ] Improved and Committed
+- [x] Attempted
+- [x] Tested
+- [x] Improved and Committed
+- Tests passing. Moderate benchmark passed: `CompileVsExecute_TokeniseOnly` 14.07 μs vs previous 14.46 μs.
 
 ## 5. Pre-size token list from source length
 - Current `TokenStartingCapacity = 500` fixed capacity.

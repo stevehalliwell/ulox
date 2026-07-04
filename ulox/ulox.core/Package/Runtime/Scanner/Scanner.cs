@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Text;
 
 namespace ULox
 {
@@ -21,7 +20,6 @@ namespace ULox
         public int CurrentIndex => _index;
         private Script _script;
         private List<Token> _tokens;
-        private readonly StringBuilder _workingSpaceStringBuilder = new();
 
         public Scanner()
         {
@@ -35,7 +33,6 @@ namespace ULox
             _previousRunningCount = 0;
             _lineLengths.Clear();
             _script = default;
-            _workingSpaceStringBuilder.Clear();
         }
 
         public TokenisedScript Scan(Script script)
@@ -80,21 +77,18 @@ namespace ULox
 
         private void ConsumeString()
         {
-            var str = default(string);
-            _workingSpaceStringBuilder.Clear();
             var prevChar = CurrentChar;
             Advance();//skip leading "
+            var start = CurrentIndex;
+
             while (!IsAtEnd())
             {
                 if (CurrentChar == '"'
                     && prevChar != '\\')
                 {
-                    str = _workingSpaceStringBuilder.ToString();
-                    EmitToken(TokenType.STRING, str);
+                    EmitToken(TokenType.STRING, _source.Substring(start, _index - start));
                     return;
                 }
-
-                _workingSpaceStringBuilder.Append(CurrentChar);
 
                 prevChar = CurrentChar;
                 Advance();
@@ -104,8 +98,7 @@ namespace ULox
             if (CurrentChar != '"')
                 ThrowScannerException("Unterminated String");
 
-            str = _workingSpaceStringBuilder.ToString();
-            EmitToken(TokenType.STRING, str);
+            EmitToken(TokenType.STRING, _source.Substring(start, _index - start));
         }
 
         private bool ConsumeDirectSymbol()

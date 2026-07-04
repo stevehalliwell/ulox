@@ -213,10 +213,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: broader `Chunk` behaviour; avoid unless profiler shows label creation matters.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 396,837.700 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,438,873.100 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,905,278.900 μs. Attempt: keep reverse label-name lookup and next-label counter inside `Chunk`. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-05-07-05-56`: compile-only 390,939.600 μs (-1.49% vs baseline), optimisations-on update-many 6,411,732.300 μs (-0.42% vs baseline), optimisations-off update-many 6,880,987.800 μs (-0.35% vs baseline). No meaningful wall-clock improvement; allocations increased. User chose revert; no code kept.
 
 ## 17. Measure optimiser-only wall clock before code changes
 - Current: benchmark table covers compile-only and optimise-on/off scenarios, but not isolated optimiser time per pass.

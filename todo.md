@@ -16,6 +16,7 @@
 - If implementation needs broader refactor than todo describes, stop and ask before changing code.
 - When user says to keep an item, update status, update baseline if requested, commit, then ask before moving on.
 - Do not attempt any item marked `SKIP`.
+- When moving to a new item, regardless of keep or revert, update the todo and commit that change.
 
 ## Todo item template
 
@@ -164,10 +165,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: needs precise dirty flags; false negatives leave old optimisation result different.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: paused before implementation. Next session should choose scope first: removal-only tracking is smallest/safest; full dirty flags match item better but touch more optimiser APIs and risk false negatives. Current baseline remains item 2 run: `Program.CompileVsExecute_CompileOnly` 387,647.200 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,476,323.600 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,813,529.400 μs.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 396,837.700 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,438,873.100 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,905,278.900 μs. User chose full dirty flags. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-05-06-39-07`: compile-only 383,385.100 μs (-3.39% vs baseline), optimisations-on update-many 6,569,707.100 μs (+2.03% vs baseline), optimisations-off update-many 6,981,348.000 μs (+1.10% vs baseline). Optimisations-on/off are within/no worse than ~3% run-to-run variance; compile-only improved just beyond noise. User chose revert; no code kept.
 
 ## 13. Combine safe adjacent scan-only passes
 - Current: each optimiser pass scans every instruction separately.
@@ -176,10 +177,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: highest risk in this list; pass ordering is observable through optimisation counts and bytecode shape.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 396,837.700 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,438,873.100 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,905,278.900 μs. Maximalist practical attempt: share instruction scans for pass pairs 5+6 and 9+10, preserving completion order. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-05-06-51-28`: compile-only 386,710.300 μs (-2.55% vs baseline), optimisations-on update-many 6,438,755.300 μs (-0.00% vs baseline), optimisations-off update-many 6,564,432.000 μs (-4.94% vs baseline). User chose revert; no code kept.
 
 ## 14. Process registerise candidates inline or with reusable storage
 - Current: `OptimiserRegisterisePass` collects potential instruction indexes in a list, then loops them in `Complete`.
@@ -188,10 +189,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: overlapping removals and lookahead/lookbehind rules are easy to break; keep exact existing registerised bytecode counts.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 396,837.700 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,438,873.100 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,905,278.900 μs. Attempt: encode registerise candidates into one `int` list entry instead of tuple list. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-05-06-58-02`: compile-only 384,978.000 μs (-2.99% vs baseline), optimisations-on update-many 6,713,950.300 μs (+4.27% vs baseline), optimisations-off update-many 6,822,851.000 μs (-1.19% vs baseline). Worse for optimisations-on. User chose revert; no code kept.
 
 ## 15. Reduce `Chunk.InsertInstructionsAt` adjustment cost
 - Current: goto reorder inserts a copied range, then adjusts labels once and line numbers once per inserted instruction.
@@ -200,10 +201,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: line-number run lengths must still map to same source lines after reordering/removal.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
-- [ ] Improved and Committed
-- Notes: not attempted.
+- [x] Attempted
+- [x] Tested
+- [x] Improved and Committed
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 396,837.700 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,438,873.100 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,905,278.900 μs. Attempt: replace per-inserted-instruction line-number adjustment with one `AdjustLineNumbers(at, toMove.Count)` call. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-05-07-00-14`: compile-only 389,069.400 μs (-1.96% vs baseline), optimisations-on update-many 6,338,192.500 μs (-1.56% vs baseline), optimisations-off update-many 6,644,422.000 μs (-3.78% vs baseline). User chose keep.
 
 ## 16. Avoid repeated label-name scans in `Chunk.AddLabel`
 - Current: adding a label scans `LabelNames` for name equality and computes max label id with `Labels.Keys.Max(...)`.
@@ -227,7 +228,7 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - [ ] Attempted
 - [ ] Tested
 - [ ] Improved and Committed
-- Notes: not attempted.
+- Notes: SKIP per user; continue with item 13 instead.
 
 ## Non-wall-clock optimiser-output ideas
 
@@ -305,23 +306,25 @@ These may make generated bytecode faster or smaller. They do not target optimise
 - [ ] Improved and Committed
 - Notes: not attempted.
 
-## Benchmark baseline - MODERATE - 2026-07-04
+## Benchmark baseline - MODERATE - 2026-07-05
 
-Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-20-55-09-report.csv`
+Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-05-06-28-21-report.csv`
+
+Run-to-run variance estimate from immediate rerun `BenchmarkRun-joined-2026-07-05-06-33-52`: compile-only +0.11%, optimisations-on +1.89%, optimisations-off +2.66%. Treat optimiser wall-clock changes under ~3% as noise unless repeated.
 
 | Name                                           |             Mean |         StdDev |            Prev Mean dif |      Gen |   Allocated |
 | :--------------------------------------------- | ---------------: | -------------: | -----------------------: | -------: | ----------: |
-| CompileExecuteSplit.Execute                    |       216.900 μs |       5.330 μs |       -5.800 μs (-2.60%) |        - |       192 B |
-| CompileExecuteSplitOptimiserOff.Execute        |       220.700 μs |       7.740 μs |      +11.200 μs (+5.35%) |        - |       192 B |
-| Program.CompileVsExecute_All                   |    89,603.800 μs |   6,277.450 μs |     +685.500 μs (+0.77%) |        - |   136,528 B |
-| Program.CompileVsExecute_CompileOnly           |   404,156.100 μs | 126,630.890 μs |  +26,759.200 μs (+7.09%) | 125.0000 | 1,004,802 B |
-| Program.CompileVsExecute_DeepCloneOnly         |    11,562.700 μs |     116.530 μs |     -112.700 μs (-0.97%) |        - |    53,512 B |
-| Program.CompileVsExecute_NewEngineOnly         |     8,858.100 μs |     208.130 μs |     -201.400 μs (-2.22%) |        - |    38,592 B |
-| Program.CompileVsExecute_TokeniseOnly          |    13,940.600 μs |     274.490 μs |     +270.100 μs (+1.98%) |        - |    48,672 B |
-| Program.Conditional_If                         |     9,952.000 μs |     228.510 μs |     +229.200 μs (+2.36%) |        - |    38,648 B |
-| Program.Dissasm_Script                         |    65,788.100 μs |   1,332.140 μs |   -1,797.100 μs (-2.66%) |        - |    96,549 B |
-| Program.Looping_Loop                           |    34,858.100 μs |   1,149.780 μs |     +253.000 μs (+0.73%) |        - |    44,280 B |
-| Program.ScriptVsNativeFunctional_NativeMethods |   106,305.700 μs |   2,642.090 μs |   +2,615.300 μs (+2.52%) |        - |   154,744 B |
-| Program.ScriptVsNativeFunctional_UloxMethods   |   299,108.900 μs |  46,655.340 μs |  -19,640.600 μs (-6.16%) |  15.6250 |   344,472 B |
-| RunScriptThenUpdateMany.OptimisationsOff       | 6,859,557.700 μs |  78,766.910 μs | -144,509.800 μs (-2.06%) |        - |    72,692 B |
-| RunScriptThenUpdateMany.OptimisationsOn        | 6,549,466.000 μs |  66,885.040 μs | -439,147.800 μs (-6.28%) |        - |    78,833 B |
+| CompileExecuteSplit.Execute                    |       218.000 μs |       3.660 μs |       +4.400 μs (+2.06%) |        - |       192 B |
+| CompileExecuteSplitOptimiserOff.Execute        |       208.200 μs |       4.240 μs |      -14.700 μs (-6.59%) |        - |       192 B |
+| Program.CompileVsExecute_All                   |    91,250.300 μs |   7,452.340 μs |   +3,072.300 μs (+3.48%) |        - |   134,720 B |
+| Program.CompileVsExecute_CompileOnly           |   396,837.700 μs | 118,574.470 μs |   -1,856.500 μs (-0.47%) | 125.0000 | 1,004,842 B |
+| Program.CompileVsExecute_DeepCloneOnly         |    11,681.600 μs |     329.480 μs |       +4.000 μs (+0.03%) |        - |    53,552 B |
+| Program.CompileVsExecute_NewEngineOnly         |     9,050.700 μs |     251.830 μs |     +119.800 μs (+1.34%) |        - |    38,632 B |
+| Program.CompileVsExecute_TokeniseOnly          |    13,623.700 μs |     407.140 μs |      +33.800 μs (+0.25%) |        - |    48,712 B |
+| Program.Conditional_If                         |     9,606.200 μs |     222.870 μs |     +327.300 μs (+3.53%) |        - |    38,688 B |
+| Program.Dissasm_Script                         |    66,433.600 μs |   2,037.830 μs |     +553.800 μs (+0.84%) |        - |    96,549 B |
+| Program.Looping_Loop                           |    34,198.600 μs |   1,078.340 μs |     -423.600 μs (-1.22%) |        - |    44,320 B |
+| Program.ScriptVsNativeFunctional_NativeMethods |   102,847.400 μs |   2,796.670 μs |   +6,830.000 μs (+7.11%) |        - |   154,600 B |
+| Program.ScriptVsNativeFunctional_UloxMethods   |   286,854.800 μs |  49,356.140 μs |  +13,344.600 μs (+4.88%) |  15.6250 |   322,672 B |
+| RunScriptThenUpdateMany.OptimisationsOff       | 6,905,278.900 μs | 110,441.500 μs | +132,364.400 μs (+1.95%) |        - |    72,732 B |
+| RunScriptThenUpdateMany.OptimisationsOn        | 6,438,873.100 μs |  85,258.750 μs |  -49,770.600 μs (-0.77%) |        - |    78,849 B |

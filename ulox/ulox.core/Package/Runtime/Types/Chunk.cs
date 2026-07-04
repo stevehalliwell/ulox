@@ -190,10 +190,7 @@ namespace ULox
         {
             Instructions.InsertRange(at, toMove);
             AdjustLabelIndicies(at, toMove.Count);
-            for (int i = 0; i < toMove.Count; i++)
-            {
-                AdjustLineNumbers(at + i, 1);
-            }
+            AdjustLineNumbers(at, toMove.Count);
         }
 
         public void AdjustLabelIndicies(int byteChangedThreshold, int delta)

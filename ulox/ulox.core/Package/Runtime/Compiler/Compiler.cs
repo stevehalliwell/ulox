@@ -154,8 +154,7 @@ namespace ULox
         {
             var location =  $"chunk '{CurrentChunk.GetLocationString()}'";
             var previousToken = TokenIterator.PreviousToken;
-            var (line, character) = TokenIterator.GetLineAndCharacter(previousToken.StringSourceIndex);
-            msg = msg + $" in {location} at {line}:{character}{LiteralStringPartial(previousToken.Literal)}.";
+            msg = msg + $" in {location} at {TokenIterator.PreviousTokenLine}:{TokenIterator.PreviousTokenCharacter}{LiteralStringPartial(previousToken.Literal)}.";
             return msg;
         }
 
@@ -208,9 +207,7 @@ namespace ULox
 
         public void EmitPacket(ByteCodePacket packet)
         {
-            //NOTE: this is slow but changing it doesn't change profiler times much.
-            var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
-            CurrentChunk.WritePacket(packet, line);
+            CurrentChunk.WritePacket(packet, TokenIterator.PreviousTokenLine);
         }
 
         public void EmitNULL()
@@ -227,9 +224,7 @@ namespace ULox
 
         private void WriteConstantAt(byte at)
         {
-            //NOTE: this is slow but changing it doesn't change profiler times much.
-            var (line, _) = TokenIterator.GetLineAndCharacter(TokenIterator.PreviousToken.StringSourceIndex);
-            CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), line);
+            CurrentChunk.WritePacket(new ByteCodePacket(OpCode.PUSH_CONSTANT, at, 0, 0), TokenIterator.PreviousTokenLine);
         }
 
         public void AddConstantStringAndWriteOp(string str)

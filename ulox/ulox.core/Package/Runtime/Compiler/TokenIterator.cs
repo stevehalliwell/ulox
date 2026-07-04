@@ -30,6 +30,8 @@ namespace ULox
     {
         public Token CurrentToken { get; private set; }
         public Token PreviousToken { get; private set; }
+        public int PreviousTokenLine { get; private set; }
+        public int PreviousTokenCharacter { get; private set; }
         public string SourceName => _tokeisedScript.SourceScript.Name;
 
         private readonly Compiler _compiler;
@@ -38,6 +40,11 @@ namespace ULox
         private readonly List<IDesugarStep> _desugarSteps = new();
 
         private int _currentTokenIndex = -1;
+        private int _currentTokenLine;
+        private int _currentTokenCharacter;
+        private int _lineIndex;
+        private int _lineStartSourceIndex;
+        private int _lineEndSourceIndex;
 
         public TokenIterator(
             TokenisedScript tokenisedScript,
@@ -47,6 +54,7 @@ namespace ULox
             _compiler = compiler;
             _tokeisedScript = tokenisedScript;
             _compilerDesugarContext = compilerDesugarContext;
+            _lineEndSourceIndex = tokenisedScript.LineLengths.Length > 0 ? tokenisedScript.LineLengths[0] : 0;
 
             _desugarSteps.Add(new StringInterpDesugar());
             _desugarSteps.Add(new CompoundAssignDesugar());//could be done at token emit time
@@ -63,7 +71,11 @@ namespace ULox
         public void Advance()
         {
             PreviousToken = CurrentToken;
+            PreviousTokenLine = _currentTokenLine;
+            PreviousTokenCharacter = _currentTokenCharacter;
+
             CurrentToken = _tokeisedScript.Tokens[++_currentTokenIndex];
+            (_currentTokenLine, _currentTokenCharacter) = GetCachedLineAndCharacter(CurrentToken.StringSourceIndex);
 
             foreach (var desugarStep in _desugarSteps)
             {
@@ -142,6 +154,28 @@ namespace ULox
                     return (i + 1, lineLengths[i] + stringSourceIndex + 1);
             }
             return (len+1, lineLengths[len-1]+1);
+        }
+
+        private (int line, int character) GetCachedLineAndCharacter(int stringSourceIndex)
+        {
+            var lineLengths = _tokeisedScript.LineLengths;
+            var len = lineLengths.Length;
+            if (len == 0)
+                return (1, 1);
+
+            if (stringSourceIndex < _lineStartSourceIndex)
+                return GetLineAndCharacter(stringSourceIndex);
+
+            while (_lineIndex < len - 1 && stringSourceIndex > _lineEndSourceIndex)
+            {
+                _lineStartSourceIndex = _lineEndSourceIndex;
+                _lineEndSourceIndex += lineLengths[++_lineIndex];
+            }
+
+            if (stringSourceIndex <= _lineEndSourceIndex)
+                return (_lineIndex + 1, stringSourceIndex - _lineStartSourceIndex + 1);
+
+            return (len + 1, lineLengths[len - 1] + 1);
         }
     }
 }

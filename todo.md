@@ -55,10 +55,10 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-15-56-
 - Risk: wrong run-length line metadata; cover with disassembly/diagnostic line tests plus full compiler tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only improved 573,048.1 -> 550,787.2 μs (-3.88%); runtime-heavy rows mixed/noisy.
 
 ## 3. Run desugar checks by token type instead of every step every token
 - Current: `TokenIterator.Advance` calls every desugar step for every token, even though most steps match one token type.

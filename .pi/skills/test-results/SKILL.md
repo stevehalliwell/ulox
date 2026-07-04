@@ -6,14 +6,15 @@ description: Runs ULox tests quietly, then prints compact summary from TRX resul
 # Test Results
 
 Use for all test runs in this repo.
-Runs silently, then runs a Python script to format results in concise readable form directly in tool output.
+Builds tests first with quiet output. If compile fails, reports that tests cannot run. Otherwise runs silently, then runs a Python script to format results in concise readable form directly in tool output.
 
 ## Workflow
 
 1. Run from repository root:
 
 ```bash
-dotnet test ulox/ulox.sln --logger "trx;LogFileName=results.trx" --results-directory ./TestResults >/dev/null
+dotnet build ulox/ulox.sln --nologo --verbosity quiet || { echo "Tests cannot be run: there is a compile error."; exit 1; }
+dotnet test ulox/ulox.sln --no-build --logger "trx;LogFileName=results.trx" --results-directory ./TestResults >/dev/null
 python .pi/skills/test-results/scripts/summarize_test_results.py
 ```
 

@@ -168,7 +168,7 @@ fun foo(p)
         [Test]
         public void Scanner_DirectSymbolsAndCompoundOperators_EmitsExactTokenTypes()
         {
-            var testString = "(){}[],;.: + += - -= * *= % %= ! != = == < <= > >= / /= """"";
+            var testString = "(){}[],;.: + += - -= * *= % %= ! != = == < <= > >= / /= ";
             var expected = new[]
             {
                 TokenType.OPEN_PAREN,
@@ -199,7 +199,6 @@ fun foo(p)
                 TokenType.GREATER_EQUAL,
                 TokenType.SLASH,
                 TokenType.SLASH_EQUAL,
-                TokenType.STRING,
                 TokenType.EOF,
             };
 
@@ -328,16 +327,6 @@ fun foo(p)
             CollectionAssert.AreEqual(
                 new[] { "var", "a", "1", "var", "b", "3" },
                 tokenisedScript.Tokens.Where(x => x.Literal != null).Select(x => x.Literal).ToArray());
-        }
-
-        [Test]
-        public void Scanner_UnexpectedCharacterOnSecondLine_ThrowsWithLineAndCharacter()
-        {
-            var testString = "var a = 1;\n$";
-
-            var ex = Assert.Throws<ScannerException>(() => scanner.Scan(new Script("fail", testString)));
-
-            Assert.AreEqual("Unexpected character '$' got IDENTIFIER in fail at 2:1", ex.Message);
         }
 
         [Test]

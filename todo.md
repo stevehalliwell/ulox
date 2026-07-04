@@ -103,10 +103,10 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-25-
 - Risk: off-by-one brace placement; cover all `loop` and `for` desugar tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only regressed 420,187.7 -> 430,887.7 μs (+2.55%); code reverted.
 
 ## 7. Replace LINQ in desugar hot paths
 - Current: `ClassInitArgMatchDesugar` and `LoopDesugar` use `Where`, `SelectMany`, and `Concat` while mutating token lists.

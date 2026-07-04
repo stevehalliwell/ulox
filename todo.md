@@ -44,10 +44,10 @@ Goal: minimise optimiser-only wall clock time first. Program behaviour and tests
 - Risk: off-by-one label or line-number shifts; cover unreachable-code, goto-reorder, duplicate-removal, and report-count tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
-- [ ] Improved and Committed
-- Notes: not attempted.
+- [x] Attempted
+- [x] Tested
+- [x] Improved and Committed
+- Notes: baseline rows before attempt: `Program.CompileVsExecute_CompileOnly` 404,156.100 μs, `RunScriptThenUpdateMany.OptimisationsOn` 6,549,466.000 μs, `RunScriptThenUpdateMany.OptimisationsOff` 6,859,557.700 μs. Tests: 775 passed. MODERATE benchmark `BenchmarkRun-joined-2026-07-04-21-04-25`: compile-only 387,647.200 μs (-4.08%), optimisations-on update-many 6,476,323.600 μs (-1.12%), optimisations-off update-many 6,813,529.400 μs (-0.67%). User chose keep.
 
 ## 3. Skip removal work when nothing was marked
 - Current: `RemoveMarkedInstructions` sorts `_toRemove` after every pass, even when no pass marked instructions.

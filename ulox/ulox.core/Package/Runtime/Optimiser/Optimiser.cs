@@ -38,7 +38,8 @@ namespace ULox
         };
         public OptimisationReporter OptimisationReporter { get; set; }
 
-        private List<(Chunk chunk, int inst)> _toRemove = new();
+        private readonly List<(Chunk chunk, int inst)> _toRemove = new();
+        private readonly List<int> _distinctRemovals = new();
 
         public void Optimise(CompiledScript compiledScript)
         {
@@ -80,24 +81,68 @@ namespace ULox
 
         public void RemoveMarkedInstructions()
         {
-            _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
-            var prevItem = default((Chunk chunk,int inst));
+            if (_toRemove.Count == 0)
+                return;
 
-            //PERF: doing this at instruction at a time is slow
-            //  ordering by chunk and marching from front to back 
-            //  with a running count would be faster (split read and write heads)
-            for (int i = _toRemove.Count - 1; i >= 0; i--)
+            _toRemove.Sort((x, y) => x.inst.CompareTo(y.inst));
+            _distinctRemovals.Clear();
+
+            var chunk = _toRemove[0].chunk;
+            var previousInst = -1;
+            foreach (var item in _toRemove)
             {
-                var item = _toRemove[i];
-                if (prevItem.chunk == item.chunk && prevItem.inst == item.inst)
+                if (item.inst == previousInst)
                     continue;
-                var (chunk, b) = item;
-                chunk.Instructions.RemoveAt(b);
-                chunk.AdjustLabelIndicies(b, -1);
-                chunk.AdjustLineNumbers(b, -1); ;
-                prevItem = item;
+                _distinctRemovals.Add(item.inst);
+                previousInst = item.inst;
             }
+
+            var write = 0;
+            var nextRemovalIndex = 0;
+            var nextRemoval = _distinctRemovals[nextRemovalIndex];
+            for (var read = 0; read < chunk.Instructions.Count; read++)
+            {
+                if (read == nextRemoval)
+                {
+                    nextRemovalIndex++;
+                    nextRemoval = nextRemovalIndex < _distinctRemovals.Count ? _distinctRemovals[nextRemovalIndex] : -1;
+                    continue;
+                }
+
+                if (write != read)
+                    chunk.Instructions[write] = chunk.Instructions[read];
+                write++;
+            }
+            chunk.Instructions.RemoveRange(write, chunk.Instructions.Count - write);
+
+            foreach (var label in new List<Label>(chunk.Labels.Keys))
+            {
+                var pos = chunk.Labels[label];
+                chunk.Labels[label] = pos - CountRemovalsAtOrBefore(pos);
+            }
+
+            for (var i = 0; i < chunk.RunLengthLineNumbers.Count; i++)
+            {
+                var item = chunk.RunLengthLineNumbers[i];
+                chunk.RunLengthLineNumbers[i] = new Chunk.RunLengthLineNumber()
+                {
+                    line = item.line,
+                    startingInstruction = item.startingInstruction - CountRemovalsAtOrBefore(item.startingInstruction)
+                };
+            }
+
             _toRemove.Clear();
+        }
+
+        private int CountRemovalsAtOrBefore(int instruction)
+        {
+            var count = 0;
+            for (; count < _distinctRemovals.Count; count++)
+            {
+                if (_distinctRemovals[count] > instruction)
+                    break;
+            }
+            return count;
         }
 
         public static bool IsIndexWeaved(Chunk chunk, int from)

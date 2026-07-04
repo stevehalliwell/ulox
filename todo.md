@@ -79,10 +79,10 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-25-
 - Risk: escape semantics drift; cover escaped string and interpolation tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only improved 430,819.7 -> 421,770.1 μs (-2.10%); runtime-heavy rows mixed/noisy.
 
 ## 5. Avoid scanner allocation for simple interpolated expressions
 - Current: `StringInterpDesugar` creates a new `Scanner` and `Script` for every interpolation expression.

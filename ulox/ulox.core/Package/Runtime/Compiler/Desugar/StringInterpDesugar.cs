@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text;
 
 namespace ULox
 {
@@ -38,13 +39,45 @@ namespace ULox
                    currentToken.Mutate(TokenType.STRING, postInterpStr),});
             }
 
-            newStr = System.Text.RegularExpressions.Regex.Unescape(newStr);
+            newStr = Unescape(newStr);
             tokens[currentTokenIndex] = currentToken.Mutate(TokenType.STRING, newStr);
 
             if (interpTokens != null)
             {
                 tokens.InsertRange(currentTokenIndex + 1, interpTokens);
             }
+        }
+
+        private static string Unescape(string str)
+        {
+            var slash = str.IndexOf('\\');
+            if (slash == -1)
+                return str;
+
+            var sb = new StringBuilder(str.Length);
+            sb.Append(str, 0, slash);
+            for (var i = slash; i < str.Length; i++)
+            {
+                var ch = str[i];
+                if (ch != '\\' || i == str.Length - 1)
+                {
+                    sb.Append(ch);
+                    continue;
+                }
+
+                ch = str[++i];
+                sb.Append(ch switch
+                {
+                    'n' => '\n',
+                    'r' => '\r',
+                    't' => '\t',
+                    'f' => '\f',
+                    'b' => '\b',
+                    _ => ch,
+                });
+            }
+
+            return sb.ToString();
         }
 
         private static int InterpolationStart(string literalString, int startAt)

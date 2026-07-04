@@ -268,10 +268,10 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-50-
 - Risk: hidden mutable state in future desugar steps; keep current stateless contract or document it. Cover all desugar tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only improved 403,842.2 -> 382,638.9 μs (-5.25%); allocated 1,004,802 -> 1,004,674 B; code reverted by request.
 
 ## 20. Pre-size compiler collections from token count
 - Current: chunks, compiler state stacks, and desugar output buffers use fixed small starting capacities and grow as scripts compile.

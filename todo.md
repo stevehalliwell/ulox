@@ -256,10 +256,10 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-50-
 - Risk: stale state around nested function/type compile boundaries; apply only within methods that do not push/pop state. Cover nested functions/classes.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only 402,963.0 -> 403,842.2 μs (+0.22%); not a meaningful win, code reverted.
 
 ## 19. Reuse compiler desugar step instances
 - Current: every `TokenIterator` construction allocates four desugar step objects.

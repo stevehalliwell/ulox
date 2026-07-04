@@ -153,10 +153,10 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-50-
 - Risk: none expected if same top loop state is used; cover nested loop break/continue tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only regressed 396,860.9 -> 402,963.0 μs (+1.54%); code reverted.
 
 ## 11. Replace enum duplicate list scan with set
 - Current: `EnumTypeDeclarationCompliette` checks `_enumKeys.Contains` on a `List<string>` for each enum key.

@@ -16,24 +16,24 @@ Use this shape when adding new todo items. Do one item at a time.
 
 ## Benchmark baseline - MODERATE - 2026-07-04
 
-Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-25-12-report.csv`
+Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-50-08-report.csv`
 
-| Name                                           |             Mean |         StdDev |             Prev Mean dif |      Gen |   Allocated |
-| :--------------------------------------------- | ---------------: | -------------: | ------------------------: | -------: | ----------: |
-| CompileExecuteSplit.Execute                    |       217.400 μs |       4.160 μs |        +1.100 μs (+0.51%) |        - |       192 B |
-| CompileExecuteSplitOptimiserOff.Execute        |       213.200 μs |       3.770 μs |        -1.400 μs (-0.65%) |        - |       192 B |
-| Program.CompileVsExecute_All                   |    90,901.600 μs |   2,149.460 μs |    -2,758.500 μs (-2.95%) |        - |   136,816 B |
-| Program.CompileVsExecute_CompileOnly           |   430,819.700 μs | 123,235.850 μs | -119,967.500 μs (-21.78%) | 125.0000 | 1,005,090 B |
-| Program.CompileVsExecute_DeepCloneOnly         |    11,731.100 μs |     247.250 μs |       -75.100 μs (-0.64%) |        - |    53,512 B |
-| Program.CompileVsExecute_NewEngineOnly         |     8,878.700 μs |     121.640 μs |      +146.900 μs (+1.68%) |        - |    38,592 B |
-| Program.CompileVsExecute_TokeniseOnly          |    13,714.300 μs |     198.620 μs |      -212.800 μs (-1.53%) |        - |    48,672 B |
-| Program.Conditional_If                         |     9,441.000 μs |     275.680 μs |      -120.300 μs (-1.26%) |        - |    38,648 B |
-| Program.Dissasm_Script                         |    69,848.200 μs |   1,304.260 μs |    +2,557.000 μs (+3.80%) |        - |    96,549 B |
-| Program.Looping_Loop                           |    34,248.500 μs |     776.850 μs |      -206.100 μs (-0.60%) |        - |    44,280 B |
-| Program.ScriptVsNativeFunctional_NativeMethods |   102,884.200 μs |   1,373.520 μs |      -326.000 μs (-0.32%) |        - |   154,744 B |
-| Program.ScriptVsNativeFunctional_UloxMethods   |   326,856.800 μs |  10,796.450 μs |    +8,051.000 μs (+2.53%) |  15.6250 |   345,480 B |
-| RunScriptThenUpdateMany.OptimisationsOff       | 7,149,605.600 μs | 142,373.240 μs |  +388,277.100 μs (+5.74%) |        - |    72,692 B |
-| RunScriptThenUpdateMany.OptimisationsOn        | 6,674,720.600 μs | 130,901.430 μs |  +118,666.200 μs (+1.81%) |        - |    78,833 B |
+| Name                                           |             Mean |         StdDev |           Prev Mean dif |      Gen |   Allocated |
+| :--------------------------------------------- | ---------------: | -------------: | ----------------------: | -------: | ----------: |
+| CompileExecuteSplit.Execute                    |       216.100 μs |       6.170 μs |      -6.800 μs (-3.05%) |        - |       192 B |
+| CompileExecuteSplitOptimiserOff.Execute        |       214.700 μs |       3.770 μs |      +0.100 μs (+0.05%) |        - |       192 B |
+| Program.CompileVsExecute_All                   |    88,868.800 μs |   1,572.100 μs |  -2,557.800 μs (-2.80%) |        - |   136,528 B |
+| Program.CompileVsExecute_CompileOnly           |   396,860.900 μs | 117,085.790 μs | -34,026.800 μs (-7.90%) | 125.0000 | 1,004,802 B |
+| Program.CompileVsExecute_DeepCloneOnly         |    11,588.200 μs |     147.220 μs |    -395.000 μs (-3.30%) |        - |    53,512 B |
+| Program.CompileVsExecute_NewEngineOnly         |     8,748.200 μs |     167.660 μs |    -136.000 μs (-1.53%) |        - |    38,592 B |
+| Program.CompileVsExecute_TokeniseOnly          |    13,949.300 μs |     630.370 μs |    +356.700 μs (+2.62%) |        - |    48,672 B |
+| Program.Conditional_If                         |     9,676.100 μs |     281.890 μs |    +239.800 μs (+2.54%) |        - |    38,648 B |
+| Program.Dissasm_Script                         |    66,976.400 μs |   1,703.600 μs |  +1,314.200 μs (+2.00%) |        - |    96,549 B |
+| Program.Looping_Loop                           |    34,136.200 μs |     517.580 μs |    -246.900 μs (-0.72%) |        - |    44,280 B |
+| Program.ScriptVsNativeFunctional_NativeMethods |   103,081.200 μs |   2,160.870 μs |  -3,013.200 μs (-2.84%) |        - |   154,744 B |
+| Program.ScriptVsNativeFunctional_UloxMethods   |   272,174.500 μs |  51,631.310 μs | -11,426.100 μs (-4.03%) |  15.6250 |   344,472 B |
+| RunScriptThenUpdateMany.OptimisationsOff       | 6,790,137.600 μs |  82,993.320 μs | -10,470.600 μs (-0.15%) |        - |    72,692 B |
+| RunScriptThenUpdateMany.OptimisationsOn        | 6,470,548.000 μs |  96,443.740 μs |  -4,254.100 μs (-0.07%) |        - |    78,833 B |
 
 ## Future session instructions
 
@@ -115,10 +115,10 @@ Source: `BenchmarkDotNet.Artifacts/results/BenchmarkRun-joined-2026-07-04-16-25-
 - Risk: changed token order; cover class init arg and loop tests.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: not started.
+- Notes: tests passed (771/771). MODERATE benchmark compile-only improved 430,887.7 -> 396,860.9 μs (-7.90%); allocated 1,005,090 -> 1,004,802 B.
 
 ## 8. Cache chunk string constants during compile
 - Current: `Chunk.AddConstant` linearly scans all constants for every string/double constant add.

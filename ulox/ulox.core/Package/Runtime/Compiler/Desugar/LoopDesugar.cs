@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace ULox
 {
@@ -57,7 +56,82 @@ namespace ULox
             var itemIdent = iIdent + "tem";
             var countIdent = iIdent + "count";
 
-            var expToPreserve = tokens.GetRange(currentTokenIndex + 1, endArrExpAt - currentTokenIndex - 1);
+            var insertTokens = new List<Token>(64 + endArrExpAt - currentTokenIndex);
+
+            //make local name for arr exp
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_BRACE));
+            insertTokens.Add(currentToken.MutateType(TokenType.VAR));
+            insertTokens.Add(arrIdent);
+            insertTokens.Add(currentToken.MutateType(TokenType.ASSIGN));
+            for (var i = currentTokenIndex + 1; i < endArrExpAt; i++)
+                insertTokens.Add(tokens[i]);
+            insertTokens.Add(currentToken.MutateType(TokenType.END_STATEMENT));
+
+            //if arr is valid
+            insertTokens.Add(currentToken.MutateType(TokenType.IF));
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_PAREN));
+            insertTokens.Add(arrIdent);
+            insertTokens.Add(currentToken.MutateType(TokenType.CLOSE_PAREN));
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_BRACE));
+
+            //get count
+            insertTokens.Add(currentToken.MutateType(TokenType.VAR));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, countIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.ASSIGN));
+            insertTokens.Add(currentToken.MutateType(TokenType.COUNT_OF));
+            insertTokens.Add(arrIdent);
+            insertTokens.Add(currentToken.MutateType(TokenType.END_STATEMENT));
+
+            //if count >0
+            insertTokens.Add(currentToken.MutateType(TokenType.IF));
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_PAREN));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, countIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.GREATER));
+            insertTokens.Add(currentToken.Mutate(TokenType.NUMBER, "0.0"));
+            insertTokens.Add(currentToken.MutateType(TokenType.CLOSE_PAREN));
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_BRACE));
+
+            //make i = 0
+            insertTokens.Add(currentToken.MutateType(TokenType.VAR));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, iIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.ASSIGN));
+            insertTokens.Add(currentToken.Mutate(TokenType.NUMBER, "0.0"));
+            insertTokens.Add(currentToken.MutateType(TokenType.END_STATEMENT));
+
+            //make item = arr[0]
+            insertTokens.Add(currentToken.MutateType(TokenType.VAR));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, itemIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.ASSIGN));
+            insertTokens.Add(arrIdent);
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_BRACKET));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, iIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.CLOSE_BRACKET));
+            insertTokens.Add(currentToken.MutateType(TokenType.END_STATEMENT));
+
+            //make for loop
+            insertTokens.Add(currentToken.MutateType(TokenType.FOR));
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_PAREN));
+            insertTokens.Add(currentToken.MutateType(TokenType.END_STATEMENT));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, iIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.LESS));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, countIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.END_STATEMENT));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, iIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.ASSIGN));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, iIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.PLUS));
+            insertTokens.Add(currentToken.Mutate(TokenType.NUMBER, "1.0"));
+            insertTokens.Add(currentToken.MutateType(TokenType.CLOSE_PAREN));
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_BRACE));
+
+            //make item = arr[i]
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, itemIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.ASSIGN));
+            insertTokens.Add(arrIdent);
+            insertTokens.Add(currentToken.MutateType(TokenType.OPEN_BRACKET));
+            insertTokens.Add(currentToken.Mutate(TokenType.IDENTIFIER, iIdent));
+            insertTokens.Add(currentToken.MutateType(TokenType.CLOSE_BRACKET));
+            insertTokens.Add(currentToken.MutateType(TokenType.END_STATEMENT));
 
             //remove the existing 'arr ... {' it's just easier that way
             tokens.RemoveRange(currentTokenIndex, toRemove + 1);
@@ -69,87 +143,7 @@ namespace ULox
                 currentToken.MutateType(TokenType.CLOSE_BRACE),
                 currentToken.MutateType(TokenType.CLOSE_BRACE),});
 
-            tokens.InsertRange(currentTokenIndex, new[] {
-                //make local name for arr exp
-                currentToken.MutateType(TokenType.OPEN_BRACE),
-                currentToken.MutateType(TokenType.VAR),
-                arrIdent,
-                currentToken.MutateType(TokenType.ASSIGN) }
-            .Concat(expToPreserve)
-            .Concat(new[] {
-                currentToken.MutateType(TokenType.END_STATEMENT),
-
-                //if arr is valid
-                currentToken.MutateType(TokenType.IF),
-                currentToken.MutateType(TokenType.OPEN_PAREN),
-                arrIdent,
-                currentToken.MutateType(TokenType.CLOSE_PAREN),
-                currentToken.MutateType(TokenType.OPEN_BRACE),
-
-
-                //get count
-                currentToken.MutateType(TokenType.VAR),
-                currentToken.Mutate(TokenType.IDENTIFIER, countIdent),
-                currentToken.MutateType(TokenType.ASSIGN),
-                currentToken.MutateType(TokenType.COUNT_OF),
-                arrIdent,
-                currentToken.MutateType(TokenType.END_STATEMENT),
-
-                //if count >0
-                currentToken.MutateType(TokenType.IF),
-                currentToken.MutateType(TokenType.OPEN_PAREN),
-                currentToken.Mutate(TokenType.IDENTIFIER, countIdent),
-                currentToken.MutateType(TokenType.GREATER),
-                currentToken.Mutate(TokenType.NUMBER, "0.0"),
-                currentToken.MutateType(TokenType.CLOSE_PAREN),
-                currentToken.MutateType(TokenType.OPEN_BRACE),
-
-                //make i = 0
-                currentToken.MutateType(TokenType.VAR),
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
-                currentToken.MutateType(TokenType.ASSIGN),
-                currentToken.Mutate(TokenType.NUMBER, "0.0"),
-                currentToken.MutateType(TokenType.END_STATEMENT),
-
-                //make item = arr[0]
-                currentToken.MutateType(TokenType.VAR),
-                currentToken.Mutate(TokenType.IDENTIFIER, itemIdent),
-                currentToken.MutateType(TokenType.ASSIGN),
-                arrIdent,
-                currentToken.MutateType(TokenType.OPEN_BRACKET),
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
-                currentToken.MutateType(TokenType.CLOSE_BRACKET),
-                currentToken.MutateType(TokenType.END_STATEMENT),
-
-                //make for loop
-                currentToken.MutateType(TokenType.FOR),
-                currentToken.MutateType(TokenType.OPEN_PAREN),
-                //empty init, we did it already
-                currentToken.MutateType(TokenType.END_STATEMENT),
-
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
-                currentToken.MutateType(TokenType.LESS),
-                currentToken.Mutate(TokenType.IDENTIFIER, countIdent),
-                currentToken.MutateType(TokenType.END_STATEMENT),
-
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
-                currentToken.MutateType(TokenType.ASSIGN),
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
-                currentToken.MutateType(TokenType.PLUS),
-                currentToken.Mutate(TokenType.NUMBER, "1.0"),
-                currentToken.MutateType(TokenType.CLOSE_PAREN),
-
-                currentToken.MutateType(TokenType.OPEN_BRACE),
-                
-                //make item = arr[i]
-                currentToken.Mutate(TokenType.IDENTIFIER, itemIdent),
-                currentToken.MutateType(TokenType.ASSIGN),
-                arrIdent,
-                currentToken.MutateType(TokenType.OPEN_BRACKET),
-                currentToken.Mutate(TokenType.IDENTIFIER, iIdent),
-                currentToken.MutateType(TokenType.CLOSE_BRACKET),
-                currentToken.MutateType(TokenType.END_STATEMENT),
-                }));
+            tokens.InsertRange(currentTokenIndex, insertTokens);
         }
 
         public void ProcessReplaceEndlessLoop(int currentTokenIndex, List<Token> tokens)

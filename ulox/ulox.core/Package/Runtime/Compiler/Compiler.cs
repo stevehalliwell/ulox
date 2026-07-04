@@ -207,7 +207,15 @@ namespace ULox
 
         public void EmitPacket(ByteCodePacket packet)
         {
+            if (TryEmitPeephole(packet))
+                return;
+
             CurrentChunk.WritePacket(packet, TokenIterator.PreviousTokenLine);
+        }
+
+        private bool TryEmitPeephole(ByteCodePacket packet)
+        {
+            return false;
         }
 
         public void EmitNULL()

@@ -124,7 +124,7 @@ namespace ULox
                         if (rhs.val.asInstance.Fields.Get(item.Key, out var rhsField))
                         {
                             lhsInst.Fields.Get(item.Key, out var lhsVal);
-                            lhsInst.Fields.Set(item.Key, ProcessUpdate(lhsVal, rhsField, func, vm));
+                            lhsInst.SetExistingField(item.Key, ProcessUpdate(lhsVal, rhsField, func, vm));
                         }
                     }
                 }

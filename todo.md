@@ -49,10 +49,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: benchmark-only work can grow; keep rows tiny and reuse existing benchmark harness.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
-- [ ] Improved and Committed
-- Notes: add baseline rows before changing VM code. User constraint: reuse existing rows where possible; do not noticeably lengthen LITE or MODERATE suites. Existing rows likely useful: `RunScriptThenUpdateMany.OptimisationsOn`, `CompileExecuteSplit.Execute`, `ScriptVsNativeFunctional_NativeMethods`, `ScriptVsNativeFunctional_UloxMethods`, `Looping_Loop`, `Conditional_If`. If adding rows, keep them LITE only unless user approves MODERATE cost.
+- [x] Attempted
+- [x] Tested
+- [x] Improved and Committed
+- Notes: added LITE-only `VMFocusedBaselines` rows for arithmetic locals, function calls, property get/set, method invoke, list index ops, map index ops, and global access. Existing MODERATE rows still useful: `RunScriptThenUpdateMany.OptimisationsOn`, `CompileExecuteSplit.Execute`, `ScriptVsNativeFunctional_NativeMethods`, `ScriptVsNativeFunctional_UloxMethods`, `Looping_Loop`, `Conditional_If`. Build passed. LITE benchmark passed 2026-07-05. Focused baseline rows: `ArithmeticLocals` 297,007.000 μs; `FunctionCalls` 290,903.300 μs; `PropertyGetSet` 291,462.400 μs; `MethodInvoke` 388,153.300 μs; `ListIndexOps` 274,655.800 μs; `MapIndexOps` 298,107.200 μs; `GlobalAccess` 244,249.900 μs.
 
 ## 3. Resolve jump targets before execution
 - Current: `GOTO` and `GOTO_IF_FALSE` decode a `Label` and call `chunk.GetLabelPosition`, which does a dictionary lookup during execution.

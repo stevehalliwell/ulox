@@ -215,7 +215,70 @@ namespace ULox
 
         private bool TryEmitPeephole(ByteCodePacket packet)
         {
-            return false;
+            var instructions = CurrentChunk.Instructions;
+            var previousIndex = instructions.Count - 1;
+            var previousPreviousIndex = instructions.Count - 2;
+
+            switch (packet.OpCode)
+            {
+            case OpCode.POP:
+            {
+                if (instructions.Count == 0)
+                    return false;
+                var previous = instructions[previousIndex];
+                if (previous.OpCode != OpCode.POP)
+                    return false;
+
+                instructions[previousIndex] = new ByteCodePacket(OpCode.POP, (byte)(previous.b1 + packet.b1));
+                return true;
+            }
+            case OpCode.ADD:
+            case OpCode.MULTIPLY:
+            case OpCode.EQUAL:
+            {
+                if (instructions.Count < 2)
+                    return false;
+
+                var previous = instructions[previousIndex];
+                var previousPrevious = instructions[previousPreviousIndex];
+
+                if (previousPrevious.OpCode != OpCode.GET_LOCAL)
+                    return false;
+
+                if (previous.OpCode != OpCode.PUSH_VALUE && previous.OpCode != OpCode.PUSH_CONSTANT)
+                    return false;
+
+                instructions[previousPreviousIndex] = previous;
+                instructions[previousIndex] = previousPrevious;
+                return false;
+            }
+            case OpCode.NEGATE:
+            case OpCode.NOT:
+            case OpCode.COUNT_OF:
+            case OpCode.DUPLICATE:
+            {
+                var previous = instructions[previousIndex];
+                if (previous.OpCode == OpCode.GET_LOCAL && previous.b2 == Optimiser.NOT_LOCAL_BYTE)
+                {
+                    instructions[previousIndex] = new ByteCodePacket(packet.OpCode, previous.b1);
+                    return true;
+                }
+                return false;
+            }
+            case OpCode.GET_PROPERTY:
+            {
+                var previous = instructions[previousIndex];
+
+                if (previous.OpCode == OpCode.GET_LOCAL && previous.b2 == Optimiser.NOT_LOCAL_BYTE)
+                {
+                    instructions[previousIndex] = new ByteCodePacket(packet.OpCode, packet.b1, packet.b2, previous.b1);
+                    return true;
+                }
+                return false;
+            }
+            default:
+                return false;
+            }
         }
 
         public void EmitNULL()

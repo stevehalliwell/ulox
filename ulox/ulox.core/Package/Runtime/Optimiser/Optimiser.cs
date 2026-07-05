@@ -22,8 +22,6 @@ namespace ULox
         public bool Enabled { get; set; } = true;
         public List<IOptimiserPass> OptimiserPasses { get; } = new List<IOptimiserPass>() 
         {
-            new OptimiserPreenGetLocalsPass(),
-            new OptimiserSimpleRegisterisePass(),
             new OptimiserRegisterisePass(),
             new OptimiserCollapseOpsPass(),
             new OptimiserRemoveLabelOpCodesPass(),

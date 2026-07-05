@@ -122,10 +122,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: cache invalidation for dynamic fields/classes; do not attempt before field-slot work or clear fallback rules.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: baseline method/property benchmark first. User chose keep, but complexity is a concern; try only with clear fallback rules. Do not mutate semantics for dynamic objects. Good first version: cache only method lookup for `INVOKE` on `UserTypeInternal`/stable `FromUserType`; fallback to current dictionary path when receiver type differs.
+- Notes: baseline method/property benchmark first. User chose keep, but complexity is a concern; try only with clear fallback rules. Do not mutate semantics for dynamic objects. Good first version: cache only method lookup for `INVOKE` on `UserTypeInternal`/stable `FromUserType`; fallback to current dictionary path when receiver type differs. Attempted per-instruction `INVOKE` method cache keyed by receiver class, preserving field lookup first. Tests passed: 775/775. LITE benchmark showed no clear win: `VMFocusedBaselines.MethodInvoke` 379,091.600 μs vs 377,778.800 μs baseline (+0.35%); `VMFocusedBaselines.PropertyGetSet` 291,706.100 μs vs 295,895.400 μs baseline (-1.42%, unrelated/noise); `ScriptVsNativeFunctional_UloxMethods` 279,145.600 μs vs 288,962.700 μs (-3.40%, high StdDev/noise). Reverted per user; no VM code kept.
 
 ## 9. Avoid `BoundMethod` allocation on method property access
 - Current: `GET_PROPERTY` creates a new `BoundMethod` object when a method is read from an instance.

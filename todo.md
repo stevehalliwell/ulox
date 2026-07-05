@@ -14,9 +14,10 @@
 - If benchmark does not improve beyond noise, ask whether to revert, keep, or stop.
 - When keeping performance changes, update the benchmark baseline in the todo before measuring the next performance item.
 - If implementation needs broader refactor than todo describes, stop and ask before changing code.
-- When user says to keep an item, update status, update baseline if requested, commit, then ask before moving on.
+- Never commit implementation/code changes until the user explicitly says to keep/commit after seeing test and benchmark results.
+- When user says to keep an item, update status, update baseline if requested, then commit.
 - Do not attempt any item marked `SKIP`.
-- When moving to a new item, regardless of keep or revert, update the todo and commit that change.
+- When moving to a new item, regardless of keep or revert, update the todo. Todo-only commits are OK; implementation commits require explicit user approval.
 
 ## Todo item template
 
@@ -109,10 +110,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: broad instance layout change; dynamic objects, frozen/read-only behaviour, and serialisation may rely on `Fields` table.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: baseline property get/set benchmark first. User: good idea but large; measure first and ask before implementation. Do not start implementation without confirming scope. Likely files: `InstanceInternal`, `UserTypeInternal`, field compilettes, `GET_FIELD`/`SET_FIELD`, serialisation/read-only handling. Safer preliminary task: add/choose property benchmark and inspect how many field table lookups occur.
+- Notes: user asked to skip measure-first and try implementation. Added fixed-field slot attempt, tests passed 776/776, benchmark looked like noise (`RunScriptThenUpdateMany.OptimisationsOn` -0.71%, compile/all allocations slightly up, added complexity). Reverted per user; code was harder to work with for noise-level benefit. Do not reattempt without explicit request.
 
 ## 8. Cache property and method lookup per call site
 - Current: `GET_PROPERTY`/`INVOKE` read name constants then look in fields/method tables every time.

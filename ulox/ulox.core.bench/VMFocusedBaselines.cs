@@ -12,6 +12,7 @@ namespace ULox.Core.Bench
         private Value _functionCalls;
         private Value _propertyGetSet;
         private Value _methodInvoke;
+        private Value _boundMethodImmediateCall;
         private Value _listIndexOps;
         private Value _mapIndexOps;
         private Value _globalAccess;
@@ -89,6 +90,27 @@ fun {nameof(MethodInvoke)}()
 }}
 ", out _methodInvoke);
 
+            Load(nameof(BoundMethodImmediateCall), $@"
+class BoundCounter
+{{
+    var x = 0;
+    Inc()
+    {{
+        this.x += 1;
+        retval = this.x;
+    }}
+}}
+var sink = 0;
+fun {nameof(BoundMethodImmediateCall)}()
+{{
+    var counter = BoundCounter();
+    for(var i = 0; i < {Repeat}; i += 1)
+    {{
+        sink = (counter.Inc)();
+    }}
+}}
+", out _boundMethodImmediateCall);
+
             Load(nameof(ListIndexOps), $@"
 var sink = 0;
 fun {nameof(ListIndexOps)}()
@@ -143,6 +165,9 @@ fun {nameof(GlobalAccess)}()
 
         [Benchmark]
         public InterpreterResult MethodInvoke() => Run(_methodInvoke);
+
+        [Benchmark]
+        public InterpreterResult BoundMethodImmediateCall() => Run(_boundMethodImmediateCall);
 
         [Benchmark]
         public InterpreterResult ListIndexOps() => Run(_listIndexOps);

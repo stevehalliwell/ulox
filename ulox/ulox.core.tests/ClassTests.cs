@@ -307,6 +307,26 @@ delegate();");
         }
 
         [Test]
+        public void Engine_Class_BoundMethod_ImmediateCall()
+        {
+            testEngine.Run(@"
+class CoffeeMaker {
+    var coffee; 
+    init(coffee) {}
+
+    brew() {
+        print (""Enjoy your cup of "" + this.coffee);
+        this.coffee = null;
+    }
+}
+
+var maker = CoffeeMaker(""coffee and chicory"");
+(maker.brew)();");
+
+            Assert.AreEqual("Enjoy your cup of coffee and chicory", testEngine.InterpreterResult);
+        }
+
+        [Test]
         public void Engine_Class_BoundMethod_InternalAndReturn()
         {
             testEngine.Run(@"

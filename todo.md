@@ -134,10 +134,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: bound method identity/lifetime may be observable; only skip allocation when call is immediate.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: baseline method-read/call benchmark first. User chose keep; VM lookahead acceptable. First inspect compiler output: many direct method calls may already emit `INVOKE`. Only optimise missed `GET_PROPERTY` + immediate `CALL`; if method value is stored/passed/returned, keep `BoundMethod`. Add test for escaped bound method if not already covered.
+- Notes: direct `obj.Method()` already emits `INVOKE`; missed zero-arg shape is `(obj.Method)()`, which emits `GET_PROPERTY` then `CALL`. Added focused `VMFocusedBaselines.BoundMethodImmediateCall` row. Baseline LITE: `BoundMethodImmediateCall` 388,163.000 μs, 48,368 B allocated. Added narrow VM lookahead for non-registerised `GET_PROPERTY` followed immediately by zero-arg `CALL`; skips `BoundMethod` allocation only when receiver is an instance, field does not shadow method, class method exists. Escaped/stored/passed method values still use `BoundMethod`. Added immediate-call test. Tests passed: 776/776. LITE after change: `BoundMethodImmediateCall` 366,305.400 μs (-5.63%), 368 B allocated; `MethodInvoke` 378,858.000 μs vs 374,349.600 μs baseline (+1.20%, likely noise); `PropertyGetSet` 299,512.900 μs vs 294,623.400 μs baseline (+1.66%, likely noise).
 
 ## 10. Replace open-upvalue `LinkedList` with simpler storage
 - Current: open upvalues use `LinkedList<Value>`, allocating nodes and pointer-chasing while capturing/closing closures.

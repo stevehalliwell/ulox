@@ -488,8 +488,13 @@ namespace ULox
                 case OpCode.GET_PROPERTY:
                 {
                     var targetVal = PopOrLocal(packet.b3);
-                    DoGetPropertyOp(chunk, packet.b1, targetVal);
                     var assignVal = packet.b2;
+                    if (assignVal == Optimiser.NOT_LOCAL_BYTE && TryCallImmediateBoundMethod(chunk, packet.b1, targetVal))
+                    {
+                        break;
+                    }
+
+                    DoGetPropertyOp(chunk, packet.b1, targetVal);
                     if(assignVal != Optimiser.NOT_LOCAL_BYTE)
                     {
                         SetLocalRegisterFromValue(assignVal, Pop());
@@ -1076,6 +1081,34 @@ namespace ULox
             var bound = Value.New(new BoundMethod(receiver, meth));
 
             Push(bound);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryCallImmediateBoundMethod(Chunk chunk, byte constantIndex, Value targetVal)
+        {
+            if (_currentCallFrame.InstructionPointer >= chunk.Instructions.Count)
+                return false;
+
+            var nextPacket = chunk.Instructions[_currentCallFrame.InstructionPointer];
+            if (nextPacket.OpCode != OpCode.CALL || nextPacket.b1 != 0)
+                return false;
+
+            if (targetVal.type != ValueType.Instance)
+                return false;
+
+            var instance = targetVal.val.asInstance;
+            var name = chunk.ReadConstant(constantIndex).val.asString; //always string
+            if (instance.Fields.Get(name, out _))
+                return false;
+
+            var fromClass = instance.FromUserType;
+            if (fromClass == null || !fromClass.Methods.Get(name, out var method))
+                return false;
+
+            Push(targetVal);
+            _currentCallFrame.InstructionPointer++;
+            Call(method.val.asClosure, 0);
+            return true;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

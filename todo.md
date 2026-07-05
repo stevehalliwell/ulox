@@ -73,10 +73,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: stale stack base after `CALL`, `RETURN`, `NATIVE_TYPE`, init-chain frame pushes, or yield paths.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: baseline arithmetic/local benchmark first. User chose keep. Keep change inside `VM.cs` if possible. Likely touch points: `Run`, `PopOrLocal`, `Pop2OrLocals`, `Pop3OrLocals`, `SetLocalRegisterFromValue`, `GET_LOCAL`, `SET_LOCAL`, call/return paths. Safer first attempt: local variable in `Run` only for direct `GET_LOCAL`/`SET_LOCAL` cases, then measure.
+- Notes: attempted local `stackStart` cache in `Run` for direct `GET_LOCAL`/`SET_LOCAL`, refreshed after return/call/native call/invoke/native type. Tests passed: 775/775. LITE benchmark after change: `VMFocusedBaselines.ArithmeticLocals` 291,211.000 μs vs 297,007.000 μs baseline (-1.95%); `Program.Looping_Loop` 34,858.100 μs vs 34,548.300 μs prior LITE (+0.90%); result looked within noise. Reverted per user; no VM code kept.
 
 ## 5. Split common registerised arithmetic fast paths
 - Current: arithmetic ops call `Pop2OrLocals`, branch on `NOT_LOCAL_BYTE` for each operand, then separately handle target local write.

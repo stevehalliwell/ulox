@@ -18,19 +18,6 @@ print (b.taste);");
         }
 
         [Test]
-        public void ClassFixedFields_WhenUpdated_ShouldReadLatestValue()
-        {
-            testEngine.Run(@"
-class Foo { var a = 1; }
-var foo = Foo();
-foo.a = 2;
-print(foo.a);
-print(foo[""a""]);");
-
-            Assert.AreEqual("22", testEngine.InterpreterResult);
-        }
-
-        [Test]
         public void ClassMixin_WhenCreated_ShouldHaveValues()
         {
             testEngine.Run(@"

@@ -15,7 +15,6 @@ namespace ULox
         public List<(Chunk chunk, Label labelID)> InitChains { get; protected set; } = new();
         public IReadOnlyList<HashedString> FieldNames => _fieldsNames;
         private readonly List<HashedString> _fieldsNames = new();
-        private readonly Dictionary<HashedString, int> _fieldSlots = new(new HashedStringComparer());
         protected TypeInfoEntry _typeInfoEntry;
 
         public UserTypeInternal(HashedString name, UserType userType)
@@ -101,14 +100,7 @@ namespace ULox
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddFieldName(HashedString fieldName)
-        {
-            _fieldSlots[fieldName] = _fieldsNames.Count;
-            _fieldsNames.Add(fieldName);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public bool TryGetFieldSlot(HashedString fieldName, out int slot)
-            => _fieldSlots.TryGetValue(fieldName, out slot);
+            => _fieldsNames.Add(fieldName);
 
         public override string ToString() => $"<{UserType} {Name}>";
     }

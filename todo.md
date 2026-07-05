@@ -38,7 +38,7 @@ Use this shape when adding new todo items.
 
 Goal: make VM execution take fewer cycles for same program behaviour. For these items, performance matters: run and record a baseline benchmark before each code change, then update the baseline in this todo when keeping a change.
 
-Current baseline (MODERATE, 2026-07-05, after item 7): tests 776 passed, 0 failed. Benchmark summary: `CompileExecuteSplit.Execute` 222.000 μs; `Program.Looping_Loop` 35,107.100 μs; `Program.Conditional_If` 9,760.000 μs; `Program.ScriptVsNativeFunctional_NativeMethods` 107,659.500 μs; `Program.ScriptVsNativeFunctional_UloxMethods` 283,009.500 μs; `RunScriptThenUpdateMany.OptimisationsOff` 6,750,106.300 μs; `RunScriptThenUpdateMany.OptimisationsOn` 6,428,274.800 μs.
+Current baseline (MODERATE, 2026-07-05): tests 775 passed, 0 failed. Benchmark summary: `CompileExecuteSplit.Execute` 220.300 μs; `Program.Looping_Loop` 34,035.200 μs; `Program.Conditional_If` 9,662.600 μs; `Program.ScriptVsNativeFunctional_NativeMethods` 106,262.300 μs; `Program.ScriptVsNativeFunctional_UloxMethods` 283,317.200 μs; `RunScriptThenUpdateMany.OptimisationsOff` 6,699,146.400 μs; `RunScriptThenUpdateMany.OptimisationsOn` 6,474,061.500 μs.
 
 Future-session start point: do item 2 first. Keep benchmark suite cost low; prefer existing rows and tiny added benchmarks over broad new MODERATE work.
 
@@ -109,10 +109,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: broad instance layout change; dynamic objects, frozen/read-only behaviour, and serialisation may rely on `Fields` table.
 
 ### Status
-- [x] Attempted
-- [x] Tested
-- [x] Improved and Committed
-- Notes: user asked to skip measure-first and implement. Added per-class field slot map and per-instance fixed-field array, while keeping `Fields` table in sync for dynamic field/serialisation compatibility. Updated fixed-field read paths plus set-through-index/Object.TraverseUpdate sync paths. Added class fixed-field update/index read test. Tests passed: 776/776. MODERATE benchmark after change: `RunScriptThenUpdateMany.OptimisationsOn` 6,428,274.800 μs vs prior baseline 6,474,061.500 μs (-0.71%); `RunScriptThenUpdateMany.OptimisationsOff` 6,750,106.300 μs vs 6,699,146.400 μs (+0.76%); `CompileExecuteSplit.Execute` 222.000 μs vs 220.300 μs (+0.77%). Kept; modest/noisy runtime win, semantics covered by tests.
+- [ ] Attempted
+- [ ] Tested
+- [ ] Improved and Committed
+- Notes: baseline property get/set benchmark first. User: good idea but large; measure first and ask before implementation. Do not start implementation without confirming scope. Likely files: `InstanceInternal`, `UserTypeInternal`, field compilettes, `GET_FIELD`/`SET_FIELD`, serialisation/read-only handling. Safer preliminary task: add/choose property benchmark and inspect how many field table lookups occur.
 
 ## 8. Cache property and method lookup per call site
 - Current: `GET_PROPERTY`/`INVOKE` read name constants then look in fields/method tables every time.

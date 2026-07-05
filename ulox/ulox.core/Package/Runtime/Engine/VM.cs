@@ -542,8 +542,7 @@ namespace ULox
                         else
                         {
                             var instance = targetValue.val.asInstance;
-                            if (!instance.TryGetFixedField(indexOrName.val.asString, out res)
-                                && !instance.Fields.Get(indexOrName.val.asString, out res))
+                            if (!instance.Fields.Get(indexOrName.val.asString, out res))
                             {
                                 ThrowRuntimeException($"No field of name '{indexOrName.val.asString}' could be found on instance '{instance}'");
                             }
@@ -721,7 +720,7 @@ namespace ULox
                 else
                 {
                     var inst = target.val.asInstance;
-                    inst.SetExistingField(indexOrName.val.asString, newValue);
+                    inst.Fields.Set(indexOrName.val.asString, newValue);
                 }
 
                 Push(newValue);
@@ -1042,8 +1041,7 @@ namespace ULox
 
             var name = chunk.ReadConstant(constantIndex).val.asString; //always string
 
-            if (instance.TryGetFixedField(name, out var val)
-                || instance.Fields.Get(name, out val))
+            if (instance.Fields.Get(name, out var val))
             {
                 Push(val);
                 return;
@@ -1116,8 +1114,7 @@ namespace ULox
                 ThrowRuntimeException($"Cannot get field on non instance type '{target.type}'");
 
             var inst = target.val.asInstance;
-            if (!inst.TryGetFixedField(argID.val.asString, out var val)
-                && !inst.Fields.Get(argID.val.asString, out val))
+            if (!inst.Fields.Get(argID.val.asString, out var val))
                 ThrowRuntimeException($"No field of name '{argID.val.asString}' found on '{inst}'");
 
             Push(val);

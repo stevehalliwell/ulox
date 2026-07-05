@@ -38,6 +38,8 @@ Use this shape when adding new todo items.
 
 Goal: make VM execution take fewer cycles for same program behaviour. For these items, performance matters: run and record a baseline benchmark before each code change, then update the baseline in this todo when keeping a change.
 
+Current baseline (MODERATE, 2026-07-05): tests 775 passed, 0 failed. Benchmark summary: `CompileExecuteSplit.Execute` 220.300 μs; `Program.Looping_Loop` 34,035.200 μs; `Program.Conditional_If` 9,662.600 μs; `Program.ScriptVsNativeFunctional_NativeMethods` 106,262.300 μs; `Program.ScriptVsNativeFunctional_UloxMethods` 283,317.200 μs; `RunScriptThenUpdateMany.OptimisationsOff` 6,699,146.400 μs; `RunScriptThenUpdateMany.OptimisationsOn` 6,474,061.500 μs.
+
 Future-session start point: do item 2 first. Keep benchmark suite cost low; prefer existing rows and tiny added benchmarks over broad new MODERATE work.
 
 ## 2. Add focused VM execution baselines

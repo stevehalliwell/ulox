@@ -97,10 +97,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: stack discipline is fragile; start with one proven bytecode pattern.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: baseline assignment/update benchmark first. User chose keep. Start by disassembling `RunScriptThenUpdateMany` or a tiny `x = x + 1;` loop and identify one repeated `op -> SET_LOCAL -> POP` or equivalent shape. Prefer compiler peephole if it avoids VM lookahead. Add a focused test asserting stack result/bytecode count before changing broad paths.
+- Notes: attempted VM lookahead for assigned arithmetic/compare/index result followed by `POP 1`: write target, advance IP over pop, skip result push. Added focused optimiser test during attempt proving `ADD -> POP 1` assignment pattern and result. Tests passed: 776/776. MODERATE benchmark after change: `RunScriptThenUpdateMany.OptimisationsOn` 6,642,003.400 μs vs current baseline 6,474,061.500 μs (+2.59% slower); `CompileExecuteSplit.Execute` 211.500 μs vs 220.300 μs (-4.00% faster); `Program.Looping_Loop` 36,286.000 μs vs 34,035.200 μs (+6.61% slower). Reverted per user; no code kept.
 
 ## 7. Add class field slot storage for fixed fields
 - Current: instance fields live in `Table`, so `GET_FIELD`, `SET_FIELD`, and many property paths pay hashed dictionary lookup.

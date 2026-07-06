@@ -158,10 +158,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: yield/return behaviour and native error reporting may depend on call frames.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: baseline native-list/native-math benchmark first. User chose keep. Likely files: `VM.cs`, `CallFrame.cs`, native library classes. Preserve `SetNativeReturn`, `GetArg`, exception wrapping, and stack cleanup exactly. First safe attempt may be direct native invocation with a temporary lightweight current native-call context rather than full frame removal.
+- Notes: added focused `VMFocusedBaselines.NativeMathCalls` row. Baseline LITE: `NativeMathCalls` 309,016.600 μs; `Program.ScriptVsNativeFunctional_NativeMethods` 108,035.200 μs. First direct-call attempt without native frame failed tests because native methods can call back into ULox. Second attempt keeps native frame on call stack but invokes delegate directly instead of dispatching `NATIVE_CALL`; native frame IP set to 1 to preserve native exception location. Tests passed: 776/776. LITE after change: `NativeMathCalls` 298,704.700 μs (-3.34%, high StdDev/noise); `Program.ScriptVsNativeFunctional_NativeMethods` 106,505.300 μs (-1.42%, likely noise).
 
 ## 12. Specialise native list/map index op paths
 - Current: `GET_INDEX`, `SET_INDEX`, and `COUNT_OF` go through `INativeCollection` interface checks/calls.

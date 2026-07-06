@@ -206,7 +206,7 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: target framework is `netstandard2.0`; no newer APIs unless guarded.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: baseline global/property update benchmark first. User chose keep. `CollectionsMarshal` is not available for `netstandard2.0`; simplest candidate is adding `SetExistingUnchecked`/`SetAfterContains` only for callers that already checked existence, or changing callers to one `Get` plus assignment helper. Avoid changing `Table.Set` semantics for missing keys.
+- Notes: baseline global/property update benchmark first. User chose keep. `CollectionsMarshal` is not available for `netstandard2.0`; simplest candidate is adding `SetExistingUnchecked`/`SetAfterContains` only for callers that already checked existence, or changing callers to one `Get` plus assignment helper. Avoid changing `Table.Set` semantics for missing keys. Baseline LITE: `VMFocusedBaselines.GlobalAccess` 249,501.600 μs; `VMFocusedBaselines.PropertyGetSet` 367,591.600 μs (noisy outlier). Attempted `Table.SetAfterContains()` for `ASSIGN_GLOBAL` after its existing `Contains` check. Tests passed: 776/776. LITE after change: `GlobalAccess` 246,813.800 μs (-1.08%, high StdDev/noise); `PropertyGetSet` 309,507.000 μs (baseline was too noisy to compare). Reverted per user; no code kept.

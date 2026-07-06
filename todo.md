@@ -182,10 +182,10 @@ Future-session start point: do item 2 first. Keep benchmark suite cost low; pref
 - Risk: ordering stability and random determinism may change; confirm expected behaviour first.
 
 ### Status
-- [ ] Attempted
-- [ ] Tested
+- [x] Attempted
+- [x] Tested
 - [ ] Improved and Committed
-- Notes: baseline native-list benchmark first. User chose keep. Likely file: `NativeListClass.cs`. `OrderBy` already has array of `(Value val, int index)` then LINQ allocates another array; `Array.Sort(orderByArr, comparer)` can avoid LINQ. For `Shuffle`, ask before changing randomness/determinism; `new Random()` per call may be acceptable unless benchmarked hot.
+- Notes: baseline native-list benchmark first. User chose keep. Likely file: `NativeListClass.cs`. `OrderBy` already has array of `(Value val, int index)` then LINQ allocates another array; `Array.Sort(orderByArr, comparer)` can avoid LINQ. For `Shuffle`, ask before changing randomness/determinism; `new Random()` per call may be acceptable unless benchmarked hot. Added temporary focused `VMFocusedBaselines.NativeOrderBy` row. Baseline LITE: `NativeOrderBy` 466,875.400 μs, 246,040 B allocated. Tried stable `Array.Sort` with index tiebreak. Tests passed: 776/776. Benchmark worsened despite lower allocation: lambda comparer 501,675.300 μs (+7.45%), 153,768 B; static comparer 509,548.900 μs (+9.14%), 153,832 B. Reverted per user; no code kept.
 
 ## 14. Add a fast `FastStack` copy/reset path for VM cloning
 - Current: `CopyStackFrom` loops and pushes each value/frame, paying capacity checks per element.
